@@ -1,0 +1,35 @@
+Moonline/
+├─ application/
+│  ├─ application.h
+│  ├─ application.cpp
+│  └─ managers/
+│
+├─ core/
+│  ├─ timer.h
+│  ├─ timer.cpp
+│  ├─ error/
+│  └─ filesystem/
+│
+├─ framework/
+│  ├─ game_object.h
+│  ├─ component.h
+│  ├─ transform.h
+│  └─ scene.h
+│
+├─ ui/
+│  ├─ progress_bar.h
+│  ├─ progress_bar.cpp
+│  ├─ button.h
+│  ├─ label.h
+│  └─ layout/
+│
+├─ gameplay/
+│  ├─ character/
+│  ├─ combat/
+│  ├─ skill/
+│  └─ stage/
+│
+├─ assets/
+├─ logs/
+├─ player_data/
+└─ main.cpp

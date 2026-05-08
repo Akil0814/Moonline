@@ -1,0 +1,22 @@
+{
+  "id": "ryougi_shiki",
+  "display_name": "Ryougi Shiki",
+
+  "stats": {
+    "hp": 1000,
+    "move_speed": 280,
+    "jump_speed": 650,
+    "gravity": 1800
+  },
+
+  "combat": {
+    "attack_power": 80,
+    "defense": 10,
+    "hitstun": 12
+  },
+
+  "collision": {
+    "width": 80,
+    "height": 160
+  }
+}
