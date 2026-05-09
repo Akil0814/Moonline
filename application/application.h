@@ -1,5 +1,5 @@
 #pragma once
-#include "singleton.h"
+#include "../framework/base/singleton.h"
 #include <SDL.h>
 
 class Application: public Singleton<Application>

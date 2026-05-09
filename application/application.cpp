@@ -1,6 +1,6 @@
 #include "application.h"
 
-#include "../ui/progress_bar.h"//test
+#include "../framework/ui/progress_bar.h"//test
 
 #include <iostream>
 #include <thread>
@@ -147,8 +147,6 @@ int  Application::run(int argc, char** argv)
 				_active = false;
 			//on_input();
 		}
-
-		std::cout << "main loop" << std::endl;
 
 		Uint64 current_counter = SDL_GetPerformanceCounter();//实现动态延时
 		double delta = (double)(current_counter - last_counter) / counter_freq;

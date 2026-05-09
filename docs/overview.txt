@@ -1,0 +1,35 @@
+Moonline/
+│
+├─ CMakeLists.txt
+├─ main.cpp->app入口
+│
+├─ application/->本游戏的启动与声明周期管理
+│  └─ application.h/cpp
+│
+├─ gameplay/具体玩法实现
+│  ├─ character/
+|  ├─ enemy/
+|  ├─ combat/
+|  ├─ skill/
+|  ├─ debug/
+│  └─ .../
+│
+├─ framework/->所有可复用的部件
+│  ├─ base/-不应该有任何外部依赖
+│  │  ├─ error.h
+│  │  ├─ result.h
+│  │  ├─ types.h
+│  │  └─ NonCopyable.h
+│  ├─ managers/...
+│  ├─ ui/...
+│  ├─ animation/...
+│  └─...
+│
+├─ assets/
+├─ docs/
+├─ thirdparty/
+├─ logs/
+└─ player_data/ 
+
+framework文件夹中不应该有任何对framework外类有依赖
+framework文件夹中的内容拿到任何2D游戏中应该都可以无缝接入

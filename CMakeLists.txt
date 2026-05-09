@@ -118,13 +118,13 @@ file(COPY ${ASSETS} DESTINATION ${CMAKE_BINARY_DIR})
 add_subdirectory(thirdparty/imgui)
 add_subdirectory(application)
 add_subdirectory(thirdparty/cJSON)
-add_subdirectory(ui)
+add_subdirectory(framework/)
 
-add_executable(MoonLine  "main.cpp")
+add_executable(MoonLine  "main.cpp" "framework/scene/scene.h")
 
 target_include_directories(MoonLine PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/imgui
 	${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/cJSON
 )
 
-target_link_libraries(MoonLine app_lib ui_lib imgui_lib cJSON_lib ${SDL2_LIBRARIES})
+target_link_libraries(MoonLine app_lib framework_lib imgui_lib cJSON_lib ${SDL2_LIBRARIES})
