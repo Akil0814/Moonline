@@ -4,6 +4,8 @@
 
 #include <iostream>
 #include <thread>
+#include <atomic>
+
 
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
