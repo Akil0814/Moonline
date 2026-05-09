@@ -3,6 +3,7 @@
 #include"scene.h"
 #include"../base/singleton.h"
 
+
 class SceneManager :public Singleton<SceneManager>
 {
 	friend class Singleton<SceneManager>;
@@ -13,7 +14,6 @@ protected:
 	~SceneManager() = default;
 
 public:
-	void set_current_scene(Scene* scene);
 	void switch_to(Scene* scene);
 
 	void on_update(double delta);

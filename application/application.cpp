@@ -1,6 +1,7 @@
 #include "application.h"
 
 #include "../framework/ui/progress_bar.h"//test
+#include "../framework/scene/scene_manager.h"
 
 #include <iostream>
 #include <thread>
@@ -147,7 +148,7 @@ int  Application::run(int argc, char** argv)
 		{
 			if (_event.type == SDL_QUIT)
 				_active = false;
-			//on_input();
+			SceneManager::instance()->on_input(_event);
 		}
 
 		Uint64 current_counter = SDL_GetPerformanceCounter();//实现动态延时
@@ -156,20 +157,25 @@ int  Application::run(int argc, char** argv)
 
 		if (delta * 1000 < 1000.0 / FPS)
 			SDL_Delay((Uint32)(1000.0 / FPS - delta * 1000));
-
-		//on_update(delta);
+		
+		SceneManager::instance()->on_update(delta);
 
 		SDL_SetRenderDrawColor(_renderer, 0,0,0,0);
 		SDL_RenderClear(_renderer);
 
-		//on_render();
+		SceneManager::instance()->on_render(_renderer);
 
 		SDL_RenderPresent(_renderer);
 	}
 
-	//shutdown();
+	shutdown();
 
     return 0;
+}
+
+void Application::shutdown()
+{
+	//...
 }
 
 

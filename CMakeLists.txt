@@ -120,7 +120,7 @@ add_subdirectory(application)
 add_subdirectory(thirdparty/cJSON)
 add_subdirectory(framework/)
 
-add_executable(MoonLine  "main.cpp" "framework/scene/scene.h")
+add_executable(MoonLine  "main.cpp" "framework/scene/scene.h" "gameplay/scene/loading_scene.cpp" "gameplay/scene/scene_factory.h")
 
 target_include_directories(MoonLine PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/imgui

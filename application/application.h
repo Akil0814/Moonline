@@ -11,6 +11,7 @@ public:
 
     bool init();
     int run(int argc, char** argv);
+    void shutdown();
 
 
     void init_assert(bool flag, const char* err_msg)

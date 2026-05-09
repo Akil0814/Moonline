@@ -1,4 +1,6 @@
-enum class SceneTyep
+#pragma once
+
+enum class SceneType
 {
 	LoadingScene,
 	MenuScene,

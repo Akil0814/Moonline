@@ -1,5 +1,6 @@
 #pragma once
 #include<SDL.h>
+#include<vector>
 
 class Scene
 {
@@ -12,6 +13,9 @@ public:
 
 	virtual void on_update(double delta) = 0;
 	virtual void on_render(SDL_Renderer* renderer) = 0;
-	virtual void on_input(const SDL_Event& event) = 0;
+	virtual void on_input(const SDL_Event& event) = 0;\
+
+private:
+
 };
 
