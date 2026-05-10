@@ -27,4 +27,5 @@ private:
 	bool _has_shot = false;
 	bool _is_one_shot = false;
 	TimeoutCallback _on_timeout;
+	unsigned long long _state_version = 0;
 };

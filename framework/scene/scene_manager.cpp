@@ -1,16 +1,12 @@
 #include "scene_manager.h"
 
-
-void SceneManager::switch_to(Scene* scene)
+SceneManager::~SceneManager()
 {
-    if (!scene || _current_scene == scene)
-        return;
-
     if (_current_scene)
+    {
         _current_scene->on_exit();
-
-    _current_scene = scene;
-    _current_scene->on_enter();
+        _current_scene = nullptr;
+    }
 }
 
 void SceneManager::on_update(double delta)
@@ -30,3 +26,12 @@ void SceneManager::on_input(const SDL_Event& event)
     if (_current_scene)
         _current_scene->on_input(event);
 }
+
+void SceneManager::reset_current_scene()
+{
+    if (_current_scene)
+        _current_scene->reset();
+}
+
+
+
