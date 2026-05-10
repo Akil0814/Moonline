@@ -4,7 +4,7 @@
 
 Moonline is a C++ 2D game project
 
-Estimated Code Volume 15-20k
+Around 20k LOC
 
 The current source layout shows a clear separation between:
 
