@@ -2,14 +2,17 @@
 #include <SDL.h>
 #include "base/vector2.h"
 #include "base/depth_layer.h"
+using GameObjectID = std::uint64_t;
 
 class GameObject
 {
 public:
     explicit GameObject( DepthLayer layer, int order = 0 )
-        :_depth_layer(layer), _order_in_layer(order){}
+        : _id(generate_id()),_depth_layer(layer), _order_in_layer(order){}
 
     virtual ~GameObject() = default;
+
+    GameObjectID id() const { return _id; }
 
     virtual void on_update(double delta) {}
     virtual void on_render(SDL_Renderer* renderer) {}
@@ -17,12 +20,9 @@ public:
 
     virtual void reset()
     {
-        _position = { 0, 0 };
-        _center = { 0, 0 };
-        _size = { 0, 0 };
-
         _visible = true;
         _active = true;
+        _destroyed = false;
         _update_when_paused = false;
     }
 
@@ -39,9 +39,7 @@ public:
     const Vector2& size() const { return _size; }
 
     DepthLayer depth_layer() const { return _depth_layer; }
-
     int order_in_layer() const { return _order_in_layer; }
-    void set_order_in_layer(int order) { _order_in_layer = order; }
 
     void set_visible(bool visible) { _visible = visible; }
     bool is_visible() const { return _visible; }
@@ -52,7 +50,19 @@ public:
     void set_update_when_paused(bool enable) { _update_when_paused = enable; }
     bool will_update_when_paused() const { return _update_when_paused; }
 
+    void set_input_when_paused(bool enable) { _input_when_paused = enable; }
+    bool will_input_when_paused() const { return _input_when_paused; }
+
 private:
+    static GameObjectID generate_id()
+    {
+        static GameObjectID next_id = 1;
+        return next_id++;
+    }
+
+private:
+    GameObjectID _id = 0;
+
     Vector2 _position{ 0 , 0 };
     Vector2 _center{ 0 , 0 };
     Vector2 _size { 0 , 0 };
@@ -65,4 +75,5 @@ private:
     bool _active = true;
 
     bool _update_when_paused = false;
+    bool _input_when_paused = false;
 };
