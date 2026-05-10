@@ -34,4 +34,3 @@ Moonline/
 Notes:
 1. Keep framework generic so it can be reused by other 2D game projects.
 2. Put game-specific behavior in gameplay instead of pushing it back into framework.
-3. Ignore generated folders such as out/ and .vs/ when thinking about source layout.
