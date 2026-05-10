@@ -39,6 +39,9 @@ T* SceneFactory::get_scene(Args&&... args)
 {
 	static_assert(std::is_base_of_v<Scene, T>, "T must derive from Scene");
 
+	// Scenes are cached by concrete type and reused after the first creation.
+	// If a cached scene already exists, new constructor arguments are ignored.
+	// To reload a scene, reset the existing instance or destroy it before recreating it.
 	const std::type_index cache_key(typeid(T));
 	auto iter = _scene_cache.find(cache_key);
 

@@ -37,6 +37,11 @@ private:
 	SceneFactory _scene_factory;
 };
 
+
+// switch_to reuses the cached scene instance of the same type if it already exists.
+// It does not guarantee reconstruction, so new arguments may not trigger a reload.
+// To refresh state, prefer reset_scene<T>() or reset_current_scene().
+// To rerun construction, destroy the cached scene first and then switch to it again.
 template<typename T, typename... Args>
 void SceneManager::switch_to(Args&&... args)
 {

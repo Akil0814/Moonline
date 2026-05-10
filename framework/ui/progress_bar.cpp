@@ -2,20 +2,19 @@
 
 #include <algorithm>
 
-void ProgressBar::set_progress(float value)
+ProgressBar::ProgressBar(Vector2 position,Vector2 size) :GameObject(DepthLayer::UI)
 {
-    _progress = std::clamp(value, 0.0f, 1.0f);
+    GameObject::set_world_position(position);
+    GameObject::set_size(size);
+    set_rect({ position.x,position.y,size.x,size.y });
 }
 
-void ProgressBar::set_rect(const SDL_FRect& rect)
+ProgressBar::~ProgressBar()
 {
-    _rect.x = static_cast<int>(rect.x);
-    _rect.y = static_cast<int>(rect.y);
-    _rect.w = std::max(0, static_cast<int>(rect.w));
-    _rect.h = std::max(0, static_cast<int>(rect.h));
+
 }
 
-void ProgressBar::render(SDL_Renderer* renderer) const
+void ProgressBar::on_render(SDL_Renderer* renderer)
 {
     if (!renderer || _rect.w <= 0 || _rect.h <= 0)
         return;
@@ -38,4 +37,24 @@ void ProgressBar::render(SDL_Renderer* renderer) const
     }
 
     SDL_SetRenderDrawColor(renderer, old_r, old_g, old_b, old_a);
+}
+
+void ProgressBar::reset()
+{
+    GameObject::reset();
+    _progress = 0.0f;
+}
+
+
+void ProgressBar::set_progress(float value)
+{
+    _progress = std::clamp(value, 0.0f, 1.0f);
+}
+
+void ProgressBar::set_rect(const SDL_FRect& rect)
+{
+    _rect.x = static_cast<int>(rect.x);
+    _rect.y = static_cast<int>(rect.y);
+    _rect.w = std::max(0, static_cast<int>(rect.w));
+    _rect.h = std::max(0, static_cast<int>(rect.h));
 }

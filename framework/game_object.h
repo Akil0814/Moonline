@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <SDL.h>
 #include "base/vector2.h"
 #include "base/depth_layer.h"
@@ -12,6 +13,11 @@ public:
 
     virtual ~GameObject() = default;
 
+    GameObject(const GameObject&) = delete;
+    GameObject& operator=(const GameObject&) = delete;
+    GameObject(GameObject&&) = default;
+    GameObject& operator=(GameObject&&) = default;
+
     GameObjectID id() const { return _id; }
 
     virtual void on_update(double delta) {}
@@ -24,19 +30,27 @@ public:
         _active = true;
         _destroyed = false;
         _update_when_paused = false;
+        _input_when_paused = false;
     }
 
     void destroy() { _destroyed = true; }
     bool is_destroyed() const { return _destroyed; }
 
-    void set_position(const Vector2& position) { _position = position; }
-    const Vector2& position() const { return _position; }
+    void set_world_position(const Vector2& position) { _world_pos = position; }
+    const Vector2& position() const { return _world_pos; }
 
-    void set_center(const Vector2& center) { _center = center; }
-    const Vector2& center() const { return _center; }
+    void set_center_pos(const Vector2& center_pos)
+    {
+        _world_pos = { center_pos.x - _size.x * 0.5f, center_pos.y - _size.y * 0.5f };
+    }
 
-    void set_size(const Vector2& size) { _size = size; }
+    Vector2 center() const
+    {
+        return { _world_pos.x + _size.x * 0.5f, _world_pos.y + _size.y * 0.5f };
+    }
+
     const Vector2& size() const { return _size; }
+    void set_size(const Vector2& size) { _size = size; }
 
     DepthLayer depth_layer() const { return _depth_layer; }
     int order_in_layer() const { return _order_in_layer; }
@@ -63,8 +77,7 @@ private:
 private:
     GameObjectID _id = 0;
 
-    Vector2 _position{ 0 , 0 };
-    Vector2 _center{ 0 , 0 };
+    Vector2 _world_pos{ 0 , 0 };
     Vector2 _size { 0 , 0 };
 
     DepthLayer _depth_layer = DepthLayer::Object;
