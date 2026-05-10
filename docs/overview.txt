@@ -1,35 +1,37 @@
 Moonline/
 │
 ├─ CMakeLists.txt
-├─ main.cpp->app入口
+├─ main.cpp                      -> program entry
 │
-├─ application/->本游戏的启动与声明周期管理
-│  └─ application.h/cpp
+├─ application/                  -> app startup and main loop
+│  ├─ CMakeLists.txt
+│  ├─ application.h
+│  └─ application.cpp
 │
-├─ gameplay/具体玩法实现
-│  ├─ character/
-|  ├─ enemy/
-|  ├─ combat/
-|  ├─ skill/
-|  ├─ debug/
-│  └─ .../
+├─ framework/                    -> reusable engine/framework layer
+│  ├─ CMakeLists.txt
+│  ├─ game_object.h             
+│  ├─ animation/
+│  ├─ base/
+│  ├─ io/
+│  ├─ resources/
+│  ├─ scene/
+│  └─ ui/
 │
-├─ framework/->所有可复用的部件
-│  ├─ base/-不应该有任何外部依赖
-│  │  ├─ error.h
-│  │  ├─ result.h
-│  │  ├─ types.h
-│  │  └─ NonCopyable.h
-│  ├─ managers/...
-│  ├─ ui/...
-│  ├─ animation/...
-│  └─...
+├─ gameplay/                     -> game-specific logic
+│  ├─ CMakeLists.txt
+│  └─ scene/
 │
-├─ assets/
-├─ docs/
-├─ thirdparty/
-├─ logs/
-└─ player_data/ 
+├─ thirdparty/                   -> external dependencies
+│  ├─ cJSON/
+│  ├─ imgui/
+│  └─ SDL2/
+|
+├─ assets/                       -> game assets
+│       
+└─ docs/                         -> project docs   
 
-framework文件夹中不应该有任何对framework外类有依赖
-framework文件夹中的内容拿到任何2D游戏中应该都可以无缝接入
+Notes:
+1. Keep framework generic so it can be reused by other 2D game projects.
+2. Put game-specific behavior in gameplay instead of pushing it back into framework.
+3. Ignore generated folders such as out/ and .vs/ when thinking about source layout.

@@ -1,15 +1,13 @@
 #pragma once
-#include <cstdint>
 #include <SDL.h>
 #include "base/vector2.h"
 #include "base/depth_layer.h"
-using GameObjectID = std::uint64_t;
 
 class GameObject
 {
 public:
     explicit GameObject( DepthLayer layer, int order = 0 )
-        : _id(generate_id()),_depth_layer(layer), _order_in_layer(order){}
+        :_depth_layer(layer), _order_in_layer(order){}
 
     virtual ~GameObject() = default;
 
@@ -18,7 +16,6 @@ public:
     GameObject(GameObject&&) = default;
     GameObject& operator=(GameObject&&) = default;
 
-    GameObjectID id() const { return _id; }
 
     virtual void on_update(double delta) {}
     virtual void on_render(SDL_Renderer* renderer) {}
@@ -68,15 +65,6 @@ public:
     bool will_input_when_paused() const { return _input_when_paused; }
 
 private:
-    static GameObjectID generate_id()
-    {
-        static GameObjectID next_id = 1;
-        return next_id++;
-    }
-
-private:
-    GameObjectID _id = 0;
-
     Vector2 _world_pos{ 0 , 0 };
     Vector2 _size { 0 , 0 };
 

@@ -9,10 +9,6 @@ ProgressBar::ProgressBar(Vector2 position,Vector2 size) :GameObject(DepthLayer::
     set_rect({ position.x,position.y,size.x,size.y });
 }
 
-ProgressBar::~ProgressBar()
-{
-
-}
 
 void ProgressBar::on_render(SDL_Renderer* renderer)
 {

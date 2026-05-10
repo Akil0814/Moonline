@@ -62,9 +62,7 @@ Application:: ~Application()
 bool Application::init()
 {
 	
-	ProgressBar load_bar;
-	load_bar.set_rect({ 1000.0f, 680.0f, 200.0f, 5.0f });
-
+	ProgressBar load_bar({ 1000.0f, 680.0f }, { 200.0f, 5.0f });
 	//-----------------------------testing-----------------
 	std::atomic<int> progress_count = 0;
 	std::atomic<bool> loading_finished = false;
@@ -117,7 +115,7 @@ bool Application::init()
 		SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
 		SDL_RenderClear(_renderer);
 
-		load_bar.render(_renderer);
+		load_bar.on_render(_renderer);
 
 		SDL_RenderPresent(_renderer);
 	}

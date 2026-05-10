@@ -1,3 +1,4 @@
+#pragma once
 #include <SDL.h>
 #include "../game_object.h"
 
@@ -5,7 +6,7 @@ class ProgressBar : public GameObject
 {
 public:
     ProgressBar(Vector2 position, Vector2 size);
-    ~ProgressBar();
+    ~ProgressBar()=default;
 
     void on_render(SDL_Renderer* renderer)override;
     void reset()override;
@@ -17,6 +18,6 @@ private:
     SDL_Rect _rect{};
     float _progress = 0.0f;
 
-    SDL_Color _bg_color{ 36, 36, 54, 255 };
-    SDL_Color _fill_color{ 180, 180, 220, 255 };
+    SDL_Color _bg_color{ 0, 43, 100, 255 };
+    SDL_Color _fill_color{ 245, 255, 255, 255 };
 };
