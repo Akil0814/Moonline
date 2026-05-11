@@ -24,6 +24,9 @@ public:
 	template<typename T, typename... Args>
 	void switch_to(Args&&... args);
 
+	//template<typename T, typename... Args>
+	//void recreate_scene_and_switch(Args&&... args);
+
 	void reset_current_scene();
 
 	template<typename T>
