@@ -43,12 +43,12 @@ std::filesystem::path PathManager::assets() const
 
 std::filesystem::path PathManager::configs() const
 {
-    return assets() / "configs";
+    return assets() / "config";
 }
 
 std::filesystem::path PathManager::fonts() const
 {
-    return assets() / "fonts";
+    return assets() / "font";
 }
 
 std::filesystem::path PathManager::preload() const
@@ -63,7 +63,7 @@ std::filesystem::path PathManager::audio() const
 
 std::filesystem::path PathManager::textures() const
 {
-    return assets() / "textures";
+    return assets() / "texture";
 }
 
 std::filesystem::path PathManager::player_data() const
@@ -95,11 +95,11 @@ std::optional<std::filesystem::path> PathManager::find_project_root(const std::f
 
     for (int depth = 0; depth < MAX_SEARCH_DEPTH; ++depth)
     {
-        const std::filesystem::path magic_file_path = current / ".moonline_root";
+        const std::filesystem::path assets_magic_file_path = current / "assets" / ".moonline_root";
         const std::filesystem::path assets_dir_path = current / "assets";
 
         error_c.clear();
-        const bool has_magic_file = std::filesystem::exists(magic_file_path, error_c);
+        const bool has_assets_magic_file = std::filesystem::exists(assets_magic_file_path, error_c);
 
         if (error_c)
             return std::nullopt;
@@ -118,7 +118,7 @@ std::optional<std::filesystem::path> PathManager::find_project_root(const std::f
 
         const bool has_assets_dir = assets_exists && assets_is_dir;
 
-        if (has_magic_file && has_assets_dir)
+        if (has_assets_magic_file && has_assets_dir)
             return current;
 
         if (current == current.root_path())
