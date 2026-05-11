@@ -32,12 +32,14 @@ if(WIN32)
         set(SDL2_LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/SDL2/lib/msvc")
         set(SDL2_LIBRARIES
             "${SDL2_LIB_DIR}/SDL2.lib"
+            "${SDL2_LIB_DIR}/SDL2_gfx.lib"
             "${SDL2_LIB_DIR}/SDL2_image.lib"
             "${SDL2_LIB_DIR}/SDL2_mixer.lib"
             "${SDL2_LIB_DIR}/SDL2_ttf.lib"
         )
         set(SDL2_RUNTIME_FILES
             "${SDL2_LIB_DIR}/SDL2.dll"
+            "${SDL2_LIB_DIR}/SDL2_gfx.dll"
             "${SDL2_LIB_DIR}/SDL2_image.dll"
             "${SDL2_LIB_DIR}/SDL2_mixer.dll"
             "${SDL2_LIB_DIR}/SDL2_ttf.dll"
@@ -46,12 +48,14 @@ if(WIN32)
         set(SDL2_LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/SDL2/lib/mingw")
         set(SDL2_LIBRARIES
             "${SDL2_LIB_DIR}/libSDL2.dll.a"
+            "${SDL2_LIB_DIR}/libSDL2_gfx.dll.a"
             "${SDL2_LIB_DIR}/libSDL2_image.dll.a"
             "${SDL2_LIB_DIR}/libSDL2_mixer.dll.a"
             "${SDL2_LIB_DIR}/libSDL2_ttf.dll.a"
         )
         set(SDL2_RUNTIME_FILES
             "${SDL2_LIB_DIR}/SDL2.dll"
+            "${SDL2_LIB_DIR}/SDL2_gfx.dll"
             "${SDL2_LIB_DIR}/SDL2_image.dll"
             "${SDL2_LIB_DIR}/SDL2_mixer.dll"
             "${SDL2_LIB_DIR}/SDL2_ttf.dll"
@@ -118,8 +122,8 @@ file(COPY ${ASSETS} DESTINATION ${CMAKE_BINARY_DIR})
 add_subdirectory(thirdparty/imgui)
 add_subdirectory(application)
 add_subdirectory(thirdparty/cJSON)
-add_subdirectory(framework/)
-add_subdirectory(gameplay/)
+add_subdirectory(framework)
+add_subdirectory(gameplay)
 
 add_executable(MoonLine "main.cpp")
 

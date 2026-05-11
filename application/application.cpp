@@ -2,11 +2,12 @@
 
 #include "../framework/ui/progress_bar.h"//test
 #include "../framework/scene/scene_manager.h"
+#include "../framework/io/path_manager.h"
 
 #include <iostream>
 #include <thread>
 #include <atomic>
-
+#include <filesystem>
 
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
@@ -61,6 +62,14 @@ Application:: ~Application()
 
 bool Application::init()
 {
+
+	if (!PathManager::instance()->init(std::filesystem::current_path()))
+		std::cout << "cant find" << std::endl;
+
+	std::cout << PathManager::instance()->assets() << std::endl;
+	std::cout << PathManager::instance()->audio() << std::endl;
+	std::cout << PathManager::instance()->configs() << std::endl;
+	std::cout << PathManager::instance()->fonts() << std::endl;
 	
 	ProgressBar load_bar({ 1000.0f, 680.0f }, { 200.0f, 5.0f });
 	//-----------------------------testing-----------------
