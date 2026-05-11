@@ -39,12 +39,12 @@ std::filesystem::path PathManager::assets() const
 
 std::filesystem::path PathManager::configs() const
 {
-    return assets() / "config";
+    return assets() / "configs";
 }
 
 std::filesystem::path PathManager::fonts() const
 {
-    return assets() / "font";
+    return assets() / "fonts";
 }
 
 std::filesystem::path PathManager::preload() const
@@ -59,7 +59,7 @@ std::filesystem::path PathManager::audio() const
 
 std::filesystem::path PathManager::textures() const
 {
-    return assets() / "texture";
+    return assets() / "textures";
 }
 
 std::filesystem::path PathManager::player_data() const
