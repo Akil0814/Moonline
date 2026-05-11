@@ -116,8 +116,7 @@ elseif(APPLE)
     include_directories(SYSTEM ${SDL2_INCLUDE_DIR})
 endif()
 
-file(GLOB ASSETS "./assets")
-file(COPY ${ASSETS} DESTINATION ${CMAKE_BINARY_DIR})
+
 
 add_subdirectory(thirdparty/imgui)
 add_subdirectory(application)

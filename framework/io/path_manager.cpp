@@ -13,21 +13,17 @@ bool PathManager::init(const std::filesystem::path& start_path)
 
 bool PathManager::ensure_runtime_dirs() const
 {
-    std::error_code error_c;
-
-    std::filesystem::create_directories(player_data(), error_c);
-    if (error_c)
+    try
+    {
+        std::filesystem::create_directories(player_data());
+        std::filesystem::create_directories(saves());
+        std::filesystem::create_directories(logs());
+        return true;
+    }
+    catch (const std::filesystem::filesystem_error&)
+    {
         return false;
-
-    std::filesystem::create_directories(saves(), error_c);
-    if (error_c)
-        return false;
-
-    std::filesystem::create_directories(logs(), error_c);
-    if (error_c)
-        return false;
-
-    return true;
+    }
 }
 
 
@@ -86,45 +82,30 @@ std::optional<std::filesystem::path> PathManager::find_project_root(const std::f
 {
     constexpr int MAX_SEARCH_DEPTH = 16;
 
-    std::error_code error_c;
-
-    std::filesystem::path current = std::filesystem::absolute(start_path, error_c);
-
-    if (error_c)
-        return std::nullopt;
-
-    for (int depth = 0; depth < MAX_SEARCH_DEPTH; ++depth)
+    try
     {
-        const std::filesystem::path assets_magic_file_path = current / "assets" / ".moonline_root";
-        const std::filesystem::path assets_dir_path = current / "assets";
+        std::filesystem::path current = std::filesystem::absolute(start_path);
 
-        error_c.clear();
-        const bool has_assets_magic_file = std::filesystem::exists(assets_magic_file_path, error_c);
+        for (int depth = 0; depth < MAX_SEARCH_DEPTH; ++depth)
+        {
+            const std::filesystem::path assets_magic_file_path = current / "assets" / ".moonline_root";
+            const std::filesystem::path assets_dir_path = current / "assets";
 
-        if (error_c)
-            return std::nullopt;
+            const bool has_assets_magic_file = std::filesystem::exists(assets_magic_file_path);
+            const bool assets_is_dir = std::filesystem::is_directory(assets_dir_path);
 
-        error_c.clear();
-        const bool assets_exists = std::filesystem::exists(assets_dir_path, error_c);
+            if (has_assets_magic_file && assets_is_dir)
+                return current;
 
-        if (error_c)
-            return std::nullopt;
+            if (current == current.root_path())
+                return std::nullopt;
 
-        error_c.clear();
-        const bool assets_is_dir = std::filesystem::is_directory(assets_dir_path, error_c);
-
-        if (error_c)
-            return std::nullopt;
-
-        const bool has_assets_dir = assets_exists && assets_is_dir;
-
-        if (has_assets_magic_file && has_assets_dir)
-            return current;
-
-        if (current == current.root_path())
-            return std::nullopt;
-
-        current = current.parent_path();
+            current = current.parent_path();
+        }
+    }
+    catch (const std::filesystem::filesystem_error&)
+    {
+        return std::nullopt;
     }
 
     return std::nullopt;

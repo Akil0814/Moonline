@@ -62,6 +62,7 @@ Application:: ~Application()
 
 bool Application::init()
 {
+	std::cout << "cwd: " << std::filesystem::current_path() << '\n';
 
 	if (!PathManager::instance()->init(std::filesystem::current_path()))
 		std::cout << "cant find" << std::endl;
@@ -95,7 +96,7 @@ bool Application::init()
 		{
 			for (int i = 1; i <= 100; ++i)
 			{
-				std::cout << "loading...\n";
+				//std::cout << "loading...\n";
 
 				std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
