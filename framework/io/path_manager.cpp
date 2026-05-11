@@ -80,7 +80,7 @@ std::filesystem::path PathManager::logs() const
 
 std::optional<std::filesystem::path> PathManager::find_project_root(const std::filesystem::path& start_path) const
 {
-    constexpr int MAX_SEARCH_DEPTH = 16;
+    constexpr int MAX_SEARCH_DEPTH = 8;
 
     try
     {
