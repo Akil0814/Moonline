@@ -1,12 +1,9 @@
 #pragma once
-#include "../base/singleton.h"
-
 #include <filesystem>
 #include <optional>
 
-class PathManager: public Singleton<PathManager>
+class PathManager
 {
-    friend Singleton<PathManager>;
 public:
     bool init(const std::filesystem::path& start_path);
     bool ensure_runtime_dirs() const;

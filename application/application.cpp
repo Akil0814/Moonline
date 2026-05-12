@@ -2,7 +2,8 @@
 
 #include "../framework/ui/progress_bar.h"//test
 #include "../framework/scene/scene_manager.h"
-#include "../framework/io/path_manager.h"
+
+#include "../framework/resources/resource_bootstrapper.h"
 
 #include <iostream>
 #include <thread>
@@ -63,14 +64,7 @@ Application:: ~Application()
 bool Application::init()
 {
 	std::cout << "cwd: " << std::filesystem::current_path() << '\n';
-
-	if (!PathManager::instance()->init(std::filesystem::current_path()))
-		std::cout << "cant find" << std::endl;
-
-	std::cout << PathManager::instance()->assets() << std::endl;
-	std::cout << PathManager::instance()->audio() << std::endl;
-	std::cout << PathManager::instance()->configs() << std::endl;
-	std::cout << PathManager::instance()->fonts() << std::endl;
+	ResourceBootstrapper::instance()->bootstrap(std::filesystem::current_path());
 	
 	ProgressBar load_bar({ 1000.0f, 680.0f }, { 200.0f, 5.0f });
 	//-----------------------------testing-----------------
