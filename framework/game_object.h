@@ -33,12 +33,17 @@ public:
     void destroy() { _destroyed = true; }
     bool is_destroyed() const { return _destroyed; }
 
-    void set_world_position(const Vector2& position) { _world_pos = position; }
+    void set_world_position(const Vector2& position)
+    {
+        _world_pos = position;
+        sync_rect();
+    }
     const Vector2& position() const { return _world_pos; }
 
     void set_center_pos(const Vector2& center_pos)
     {
         _world_pos = { center_pos.x - _size.x * 0.5f, center_pos.y - _size.y * 0.5f };
+        sync_rect();
     }
 
     Vector2 center() const
@@ -47,7 +52,13 @@ public:
     }
 
     const Vector2& size() const { return _size; }
-    void set_size(const Vector2& size) { _size = size; }
+    void set_size(const Vector2& size)
+    {
+        _size = size;
+        sync_rect();
+    }
+
+    const SDL_Rect& rect() const { return _obj_rect; }
 
     DepthLayer depth_layer() const { return _depth_layer; }
     int order_in_layer() const { return _order_in_layer; }
@@ -65,8 +76,21 @@ public:
     bool will_input_when_paused() const { return _input_when_paused; }
 
 private:
+    void sync_rect()
+    {
+        _obj_rect.x = static_cast<int>(_world_pos.x);
+        _obj_rect.y = static_cast<int>(_world_pos.y);
+
+        const int width = static_cast<int>(_size.x);
+        const int height = static_cast<int>(_size.y);
+        _obj_rect.w = width > 0 ? width : 0;
+        _obj_rect.h = height > 0 ? height : 0;
+    }
+
     Vector2 _world_pos{ 0 , 0 };
     Vector2 _size { 0 , 0 };
+
+    SDL_Rect _obj_rect{ 0 };
 
     DepthLayer _depth_layer = DepthLayer::Object;
     int _order_in_layer = 0;
