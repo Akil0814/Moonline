@@ -1,6 +1,8 @@
 #include "application.h"
 
 #include "../framework/ui/progress_bar.h"//test
+#include "../framework/ui/fade_image.h"//test
+
 #include "../framework/scene/scene_manager.h"
 
 #include "../framework/resources/resource_bootstrapper.h"
@@ -49,7 +51,6 @@ Application:: Application()
 	init_assert(SDL_RenderSetLogicalSize(_renderer, 1280, 720) == 0, "SDL_RenderSetLogicalSize Error");
 }
 
-
 Application:: ~Application()
 {
 	SDL_DestroyRenderer(_renderer);
@@ -63,11 +64,24 @@ Application:: ~Application()
 
 bool Application::init()
 {
+	//-----------------------------testing-----------------
+
 	std::cout << "cwd: " << std::filesystem::current_path() << '\n';
 	ResourceBootstrapper::instance()->bootstrap(std::filesystem::current_path());
-	
-	ProgressBar load_bar({ 1000.0f, 680.0f }, { 200.0f, 5.0f });
+
 	//-----------------------------testing-----------------
+	SDL_Surface* suf_img = IMG_Load("G:/Coding/Projects/Moonline/assets/preload/Akil.png");//将图片加载到内存中
+	SDL_Texture* tex_ing = SDL_CreateTextureFromSurface(_renderer, suf_img);//将内存中的图片通过渲染器变成纹理数据
+
+
+	FadeImage image(tex_ing, { 10,10 }, { 100,100 });
+
+	ProgressBar load_bar({ 1000.0f, 680.0f }, { 200.0f, 5.0f });
+
+	image.set_play(FadeMode::FadeInOut, 100, 10, 10);
+	image.play();
+
+
 	std::atomic<int> progress_count = 0;
 	std::atomic<bool> loading_finished = false;
 
@@ -102,6 +116,11 @@ bool Application::init()
 
 	std::thread loading_thread(loading_function);
 
+	//
+	Uint64 last_counter = SDL_GetPerformanceCounter();
+	const Uint64 counter_freq = SDL_GetPerformanceFrequency();
+	std::srand(static_cast<unsigned>(std::time(nullptr)));
+
 	while (!loading_finished.load(std::memory_order_acquire))
 	{
 		SDL_Event event;
@@ -113,13 +132,24 @@ bool Application::init()
 			}
 		}
 
+		Uint64 current_counter = SDL_GetPerformanceCounter();//实现动态延时
+		double delta = (double)(current_counter - last_counter) / counter_freq;
+		last_counter = current_counter;
+
+		if (delta * 1000 < 1000.0 / FPS)
+			SDL_Delay((Uint32)(1000.0 / FPS - delta * 1000));
+
+		image.on_update(delta);
+
 		float progress = progress_count.load(std::memory_order_relaxed) / 100.0f;
 		load_bar.set_progress(progress);
 
-		SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
+		SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 0);
 		SDL_RenderClear(_renderer);
 
+		//test
 		load_bar.on_render(_renderer);
+		image.on_render(_renderer);
 
 		SDL_RenderPresent(_renderer);
 	}
