@@ -13,15 +13,21 @@ FadeImage::FadeImage(SDL_Texture* texture, Vector2 pos, Vector2 size)
 void FadeImage::set_play(FadeMode mode, double hold_time, float fade_in_duration, float fade_out_duration)
 {
 	_mode = mode;
-	_timer.set_wait_time(hold_time);
+
+    if (hold_time < 0)
+        hold_time = 0.0;
+
+    _hold_time = hold_time;
+	_timer.set_wait_time(_hold_time);
     _timer.set_on_timeout([this] {
         switch (_mode)
         {
         case FadeMode::FadeIn:
-            _state == FadeState::Finished;
+            _state = FadeState::Finished;
             break;
         case FadeMode::FadeOut:
         case FadeMode::FadeInOut:
+            _elapsed = 0.0;
             _state = FadeState::FadingOut;
                 break;
         default:
@@ -35,14 +41,19 @@ void FadeImage::set_play(FadeMode mode, double hold_time, float fade_in_duration
 
 void FadeImage::play()
 {
+    _elapsed = 0.0;
+
     switch (_mode)
     {
     case FadeMode::FadeIn:
     case FadeMode::FadeInOut:
+        _alpha = 0;
         _state = FadeState::FadingIn;
+        break;
 
     case FadeMode::FadeOut:
-        _state = FadeState::Holding;
+        _alpha = 255;
+        start_hold();
         break;
 
     default:
@@ -83,7 +94,8 @@ void FadeImage::on_render(SDL_Renderer* renderer)
         return;
 
     SDL_SetTextureAlphaMod(_texture, _alpha);
-    SDL_RenderCopy(renderer, _texture, nullptr,&GameObject::rect());
+    const SDL_Rect& dst_rect = rect();
+    SDL_RenderCopy(renderer, _texture, nullptr, &dst_rect);
     SDL_SetTextureAlphaMod(_texture, 255);
 }
 
@@ -96,9 +108,9 @@ void FadeImage::update_fade_in(double delta)
 
     if (t >= 1.0)
     {
+        _elapsed = 0.0;
         _alpha = 255;
-        _state = FadeState::Holding;
-        _timer.restart();
+        start_hold();
     }
 }
 
@@ -130,4 +142,28 @@ double FadeImage::ratio(double value, double max_value) const
         return 1.0;
 
     return t;
+}
+
+void FadeImage::start_hold()
+{
+    if (_hold_time <= 0.0)
+    {
+        switch (_mode)
+        {
+        case FadeMode::FadeIn:
+            _state = FadeState::Finished;
+            break;
+        case FadeMode::FadeOut:
+        case FadeMode::FadeInOut:
+            _elapsed = 0.0;
+            _state = FadeState::FadingOut;
+            break;
+        default:
+            break;
+        }
+        return;
+    }
+
+    _state = FadeState::Holding;
+    _timer.restart();
 }

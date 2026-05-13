@@ -46,6 +46,7 @@ private:
     SDL_Texture* _texture = nullptr;
 
     double _elapsed = 0.0;
+    double _hold_time = 0.0;
 
     double _fade_in_duration = 1.0;
     double _fade_out_duration = 1.0;

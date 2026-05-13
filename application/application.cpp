@@ -74,11 +74,11 @@ bool Application::init()
 	SDL_Texture* tex_ing = SDL_CreateTextureFromSurface(_renderer, suf_img);//将内存中的图片通过渲染器变成纹理数据
 
 
-	FadeImage image(tex_ing, { 10,10 }, { 100,100 });
+	FadeImage image(tex_ing, { 530,270 }, { 250,250 });
 
 	ProgressBar load_bar({ 1000.0f, 680.0f }, { 200.0f, 5.0f });
 
-	image.set_play(FadeMode::FadeInOut, 100, 10, 10);
+	image.set_play(FadeMode::FadeInOut, 2, 1, 1);
 	image.play();
 
 
@@ -102,13 +102,13 @@ bool Application::init()
 
 	auto loading_function = [&]()
 		{
-			for (int i = 1; i <= 100; ++i)
+			for (int i = 1; i <= 20; ++i)
 			{
 				//std::cout << "loading...\n";
 
-				std::this_thread::sleep_for(std::chrono::milliseconds(50));
+				std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-				progress_count.store(i, std::memory_order_relaxed);
+				progress_count.store(i*5, std::memory_order_relaxed);
 			}
 
 			loading_finished.store(true, std::memory_order_release);
