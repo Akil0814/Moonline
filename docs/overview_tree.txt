@@ -23,7 +23,7 @@ Moonline/
 │  └─ scene/
 │
 ├─ thirdparty/                   -> external dependencies
-│  ├─ cJSON/
+│  ├─ JSON/
 │  ├─ imgui/
 │  └─ SDL2/
 |

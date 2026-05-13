@@ -18,7 +18,7 @@ public:
     {
         if (flag)
             return;
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, u8"Game Start Error", err_msg, _window);
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Game Start Error", err_msg, _window);
         exit(-1);
     }
 

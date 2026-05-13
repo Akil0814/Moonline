@@ -1,6 +1,7 @@
 #pragma once
 #include "../io/file_manager.h"
 #include "../io/path_manager.h"
+#include "../io/json_loader.h"
 
 #include "../base/singleton.h"
 #include "../core/error.h"
@@ -21,6 +22,9 @@ public:
 private:
     PathManager _path_manager;
     FileManager _file_manager;
+    JsonLoader _json_loader;
+
+    std::vector<std::filesystem::path> _all_file_path;
 
     std::vector<Error> _error_list;
 };

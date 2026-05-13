@@ -1,0 +1,17 @@
+{
+  "required_directories": [
+    "assets/audio/character",
+
+    "assets/configs/character",
+    "assets/configs/enemy",
+    "assets/configs/global",
+    "assets/configs/scene",
+
+    "assets/i18n/en",
+    "assets/i18n/zh",
+
+    "assets/textures/character",
+    "assets/textures/stage",
+    "assets/textures/ui"
+  ]
+}

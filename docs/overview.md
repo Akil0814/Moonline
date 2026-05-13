@@ -4,7 +4,7 @@
 
 Moonline is a C++ 2D game project
 
-Around 20k LOC
+Around 25k LOC
 
 The current source layout shows a clear separation between:
 

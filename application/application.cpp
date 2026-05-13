@@ -17,21 +17,21 @@
 
 Application:: Application()
 {
-	init_assert(!SDL_Init(SDL_INIT_EVERYTHING), u8"SDL2 Error");
+	init_assert(!SDL_Init(SDL_INIT_EVERYTHING), "SDL2 Error");
 
 	int img_flags = IMG_INIT_JPG | IMG_INIT_PNG;
-	init_assert((IMG_Init(img_flags) & img_flags) == img_flags, u8"SDL_image Error");
+	init_assert((IMG_Init(img_flags) & img_flags) == img_flags, "SDL_image Error");
 
 	int mix_flags = MIX_INIT_MP3;
-	init_assert((Mix_Init(mix_flags) & mix_flags) == mix_flags, u8"SDL_mixer Error");
+	init_assert((Mix_Init(mix_flags) & mix_flags) == mix_flags, "SDL_mixer Error");
 
-	init_assert(!TTF_Init(), u8"SDL_ttf Error");
-	init_assert(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) == 0, u8"Mix_OpenAudio Error");
+	init_assert(!TTF_Init(), "SDL_ttf Error");
+	init_assert(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) == 0, "Mix_OpenAudio Error");
 
 	SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
 
 	_window = SDL_CreateWindow("Moonline", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_SHOWN);
-	init_assert(_window, u8"SDL_CreateWindow Error");
+	init_assert(_window, "SDL_CreateWindow Error");
 
 	if (SDL_SetWindowFullscreen(_window, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)
 	{
@@ -44,9 +44,9 @@ Application:: Application()
 	}
 
 	_renderer = SDL_CreateRenderer(_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);//硬件加速 垂直同步 目标纹理
-	init_assert(_renderer, u8"SDL_CreateRenderer Error");
+	init_assert(_renderer, "SDL_CreateRenderer Error");
 
-	init_assert(SDL_RenderSetLogicalSize(_renderer, 1280, 720) == 0, u8"SDL_RenderSetLogicalSize Error");
+	init_assert(SDL_RenderSetLogicalSize(_renderer, 1280, 720) == 0, "SDL_RenderSetLogicalSize Error");
 }
 
 
