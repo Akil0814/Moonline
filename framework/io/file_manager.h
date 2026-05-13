@@ -1,9 +1,7 @@
 #pragma once
-#include "../base/singleton.h"
 
-class FileManager : public Singleton<FileManager>
+class FileManager
 {
-	friend Singleton<FileManager>;
 public:
 	bool init();
 	bool config_preload();
