@@ -24,7 +24,7 @@ public:
 
 private:
 
-    const int _logical_width = 1080;
+    const int _logical_width = 1280;
     const int _logical_height = 720;
 
     double FPS = 60;

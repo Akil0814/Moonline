@@ -1,0 +1,22 @@
+主线程 / Bootstrapper
+    收集所有 json 路径
+        ↓
+任务队列 JsonLoadTask
+        ↓
+多个 worker thread
+    每个线程有自己的 JsonLoader
+        ↓
+解析 json
+        ↓
+把结果放进结果队列
+        ↓
+主线程 / ResourceManager 整合结果
+
+ResourceBootstrapper
+    -> AnimationManager::load_from_directory(path)
+        -> AnimationLoader::load_directory(path, ResourceManager&)
+            -> JsonLoader 解析 animation.json
+            -> ResourceManager::get_or_load_atlas(...)
+                -> AtlasLoader::load(...)
+            -> 组装 Animation
+        -> AnimationManager 保存 Animation

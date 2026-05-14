@@ -1,59 +1,47 @@
 #include "json_loader.h"
+
 #include <fstream>
 
-#include <iostream>
-
-bool JsonLoader::bind_file_path(const std::filesystem::path& path)
+void JsonLoader::add_error_message(
+    JsonReadResult& result,
+    const std::string& error
+)
 {
-	if (path.empty())
-		return false;
-
-	std::ifstream file(path);
-
-	if (!file.is_open())
-	{
-		std::cout << "JSON open failed: " << std::endl;
-		return false;
-	}
-
-	try
-	{
-		file >> _root;
-	}
-	catch (const std::exception& error)
-	{
-		return false;
-		std::cout << "JSON root failed: " << std::endl;
-
-	}
-
-
-	_current_file_path = path;
-	return true;
+    result.error += error;
+    result.error += '\n';
 }
 
-bool JsonLoader::get_file_path_array(std::string_view key, std::vector<std::filesystem::path>& out) const
+JsonReadResult JsonLoader::open_file(
+    const std::filesystem::path& path
+)
 {
-	if (_root.is_null() || key.empty())
-		return false;
 
-	std::string key_string(key);
-	if (!_root.contains(key))
-		return false;
+    JsonReadResult result;
 
-	if (!_root.at(key).is_array())
-		return false;
+    if (path.empty())
+    {
+        add_error_message(result, "JSON path is empty.");
+        return result;
+    }
 
-	out.clear();
+    std::ifstream file(path);
 
-	for (const auto& item : _root.at(key))
-	{
-		if (!item.is_string())
-			return false;
+    if (!file.is_open())
+    {
+        add_error_message(result, "JSON open failed: " + path.string());
+        return result;
+    }
 
-		out.emplace_back(item.get<std::string>());
-	}
+    try
+    {
+        file >> _root;
+    }
+    catch (const std::exception& error)
+    {
+        add_error_message(result, "JSON parse failed: " + path.string());
+        add_error_message(result, std::string("Reason: ") + error.what());
+        return result;
+    }
 
-	return true;
+    return result;
 }
-

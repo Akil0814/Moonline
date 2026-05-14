@@ -2,6 +2,7 @@
 #include <SDL.h>
 #include "base/vector2.h"
 #include "base/depth_layer.h"
+#include "input/input_system.h"
 
 class GameObject
 {
@@ -16,10 +17,11 @@ public:
     GameObject(GameObject&&) = default;
     GameObject& operator=(GameObject&&) = default;
 
-
     virtual void on_update(double delta) {}
     virtual void on_render(SDL_Renderer* renderer) {}
-    virtual void on_input(const SDL_Event& event) {}
+
+    virtual void on_input(const InputSnapshot& input) {}
+    virtual void on_input_event(const InputEvent& event) {}
 
     virtual void reset()
     {

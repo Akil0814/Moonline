@@ -32,7 +32,7 @@ Application:: Application()
 
 	SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
 
-	_window = SDL_CreateWindow("Moonline", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, SDL_WINDOW_SHOWN);
+	_window = SDL_CreateWindow("Moonline", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, _logical_width, _logical_height, SDL_WINDOW_SHOWN);
 	init_assert(_window, "SDL_CreateWindow Error");
 
 	if (SDL_SetWindowFullscreen(_window, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)
@@ -41,14 +41,14 @@ Application:: Application()
 		SDL_ClearError();
 
 		//fallback
-		SDL_SetWindowSize(_window, 1280, 720);
+		SDL_SetWindowSize(_window, _logical_width, _logical_height);
 		SDL_SetWindowPosition(_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 	}
 
 	_renderer = SDL_CreateRenderer(_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);//硬件加速 垂直同步 目标纹理
 	init_assert(_renderer, "SDL_CreateRenderer Error");
 
-	init_assert(SDL_RenderSetLogicalSize(_renderer, 1280, 720) == 0, "SDL_RenderSetLogicalSize Error");
+	init_assert(SDL_RenderSetLogicalSize(_renderer, _logical_width, _logical_height) == 0, "SDL_RenderSetLogicalSize Error");
 }
 
 Application:: ~Application()

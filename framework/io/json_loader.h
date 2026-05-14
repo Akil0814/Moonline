@@ -8,22 +8,68 @@
 
 using json = nlohmann::json;
 
+struct JsonReadResult
+{
+    bool success = false;
+    std::string error;
+};
+
 class JsonLoader
 {
 public:
-	bool bind_file_path(const std::filesystem::path& path);
+    JsonReadResult open_file(const std::filesystem::path& path);
+    void reset();
 
-    bool get_file_path_array(
+    bool is_loaded() const;
+    const json& root() const;
+
+    template<typename T>
+    JsonReadResult get(std::string_view key, T& out) const;
+
+    template<typename T>
+    JsonReadResult get(
+        const json& node,
         std::string_view key,
-        std::vector<std::filesystem::path>& out
+        T& out
     ) const;
 
+    template<typename T>
+    JsonReadResult get_array(std::string_view key, std::vector<T>& out) const;
 
-    const std::string& error() const;//
+    template<typename T>
+    JsonReadResult get_array(
+        const json& node,
+        std::string_view key,
+        std::vector<T>& out
+    ) const;
+
+    template<typename T>
+    T get_or(std::string_view key, T default_value) const;
+
+    template<typename T>
+    T get_or(
+        const json& node,
+        std::string_view key,
+        T default_value
+    ) const;
+
+    JsonReadResult get_object(
+        std::string_view key,
+        const json*& out
+    ) const;
+
+    JsonReadResult get_object(
+        const json& node,
+        std::string_view key,
+        const json*& out
+    ) const;
+
+private:
+    void add_error_message(JsonReadResult& result,
+        const std::string& error);
 
 private:
     json _root;
-    std::filesystem::path _current_file_path;
-
-    mutable std::string _error;//
+    std::filesystem::path _path;
+    bool _loaded = false;
 };
