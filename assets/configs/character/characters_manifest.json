@@ -1,0 +1,16 @@
+{
+  "characters": [
+    {
+      "id": "ryougi_shiki",
+      "asset_key": "RyougiShiki",
+      "enabled": true,
+      "config": "configs/character/RyougiShiki/character_info.json"
+    },
+    {
+      "id": "aozaki_aoko",
+      "asset_key": "AozakiAoko",
+      "enabled": false,
+      "config": "configs/character/AozakiAoko/character_info.json"
+    }
+  ]
+}

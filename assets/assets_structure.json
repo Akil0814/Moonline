@@ -19,5 +19,9 @@
 
   "audio_directories": [
     "character"
-  ]
+  ],
+
+  "manifests": {
+    "characters": "configs/character/characters_manifest.json"
+  }
 }

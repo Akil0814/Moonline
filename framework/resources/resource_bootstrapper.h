@@ -6,6 +6,8 @@
 #include "../base/singleton.h"
 #include "../core/error.h"
 
+#include <SDL.h>
+
 #include<vector>
 #include <filesystem>
 
@@ -13,7 +15,7 @@ class ResourceBootstrapper : public Singleton<ResourceBootstrapper>
 {
     friend Singleton<ResourceBootstrapper>;
 public:
-    bool bootstrap(const std::filesystem::path& start_path);
+    bool bootstrap(const std::filesystem::path& start_path, SDL_Renderer* renderer);
     bool load_prload_resource();
     bool load_assets();
 

@@ -6,6 +6,8 @@
 #include "../framework/scene/scene_manager.h"
 
 #include "../framework/resources/resource_bootstrapper.h"
+#include "../framework/resources/surface_loader.h"
+#include "../framework/resources/texture_loader.h"
 
 #include <iostream>
 #include <thread>
@@ -67,14 +69,27 @@ bool Application::init()
 	//-----------------------------testing-----------------
 
 	std::cout << "cwd: " << std::filesystem::current_path() << '\n';
-	ResourceBootstrapper::instance()->bootstrap(std::filesystem::current_path());
+	ResourceBootstrapper::instance()->bootstrap(std::filesystem::current_path(), _renderer);
 
 	//-----------------------------testing-----------------
-	SDL_Surface* suf_img = IMG_Load("G:/Coding/Projects/Moonline/assets/preload/Akil.png");//将图片加载到内存中
-	SDL_Texture* tex_ing = SDL_CreateTextureFromSurface(_renderer, suf_img);//将内存中的图片通过渲染器变成纹理数据
+	SurfaceLoader surface_loader;
+	SurfaceLoadRequest preload_surface_request;
+	preload_surface_request._asset_key = "preload.Akil";
+	preload_surface_request._frame_path =
+		std::filesystem::current_path() / "assets" / "preload" / "Akil.png";
+	preload_surface_request._frame_index = 0;
+
+	SurfaceLoadResult preload_surface_result =
+		surface_loader.load_surface(preload_surface_request);
+	init_assert(preload_surface_result._success, "Preload surface load error");
+
+	TextureLoader texture_loader;
+	TextureLoadResult preload_texture_result =
+		texture_loader.load_texture(_renderer, preload_surface_result);
+	init_assert(preload_texture_result._success, "Preload texture load error");
 
 
-	FadeImage image(tex_ing, { 530,270 }, { 250,250 });
+	FadeImage image(preload_texture_result._texture.get(), { 530,270 }, { 250,250 });
 
 	ProgressBar load_bar({ 1000.0f, 680.0f }, { 200.0f, 5.0f });
 

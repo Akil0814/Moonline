@@ -8,6 +8,7 @@
 
 struct FrameInfo
 {
+	std::filesystem::path _path;
 	SDL_Texture* _texture = nullptr;
 	int _width = 0;
 	int _height = 0;
@@ -36,7 +37,7 @@ public:
 	SDL_Texture* texture_at(size_t frame_index) const;
 
 	template<typename... TextureTypes>
-	bool add_t  extures(TextureTypes*... textures)
+	bool add_textures(TextureTypes*... textures)
 	{
 		if constexpr (sizeof...(textures) == 0)
 			return false;
