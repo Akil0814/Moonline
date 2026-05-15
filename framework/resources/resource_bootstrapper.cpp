@@ -2,6 +2,7 @@
 
 #include "resource_manager.h"
 #include "../animation/animation_manager.h"
+#include "../io/path_manager.h"
 
 #include <iostream>
 
@@ -16,14 +17,15 @@ bool ResourceBootstrapper::bootstrap(
 		return false;
 	}
 
-	if (!_path_manager.init(start_path))
+	PathManager* path_manager = PathManager::instance();
+	if (!path_manager->init(start_path))
 	{
 		std::cout << "Resource bootstrap failed: path manager init failed: "
 			<< start_path << std::endl;
 		return false;
 	}
 
-	if (!_file_manager.load_assets_strcutre(_path_manager.assets() / "assets_structure.json"))
+	if (!_file_manager.load_assets_strcutre(path_manager->assets_structure()))
 	{
 		std::cout << "Resource bootstrap failed: assets structure load failed."
 			<< std::endl;

@@ -16,7 +16,10 @@ public:
 
 	void on_update(double delta)override;
 	void on_render(SDL_Renderer* renderer)override;
-	void on_input(const SDL_Event& event)override;
+	void on_input(
+		const InputSnapshot& input,
+		const std::vector<InputEvent>& events
+	)override;
 
 	void reset() override;
 private:

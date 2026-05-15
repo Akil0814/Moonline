@@ -21,7 +21,11 @@ void LoadingScene::on_render(SDL_Renderer* renderer)
 
 }
 
-void LoadingScene::on_input(const SDL_Event& event)
+void LoadingScene::on_input(
+	const InputSnapshot& input,
+	const std::vector<InputEvent>& events
+)
 {
-
+	(void)input;
+	(void)events;
 }

@@ -57,7 +57,10 @@ public:
 		}
 	}
 
-	virtual void on_input(const SDL_Event& event)
+	virtual void on_input(
+		const InputSnapshot& input,
+		const std::vector<InputEvent>& events
+	)
 	{
 		for (auto& layer : _object_layers)
 		{
@@ -72,7 +75,10 @@ public:
 				if (_paused && !obj->will_input_when_paused())
 					continue;
 
-				obj->on_input(event);
+				obj->on_input(input);
+
+				for (const InputEvent& input_event : events)
+					obj->on_input_event(input_event);
 			}
 		}
 	}

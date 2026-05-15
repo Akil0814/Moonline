@@ -5,6 +5,7 @@
 
 #include "../framework/scene/scene_manager.h"
 
+#include "../framework/io/path_manager.h"
 #include "../framework/resources/resource_bootstrapper.h"
 #include "../framework/resources/surface_loader.h"
 #include "../framework/resources/texture_loader.h"
@@ -64,19 +65,21 @@ Application:: ~Application()
 	SDL_Quit();
 }
 
-bool Application::init()
+bool Application::init(int argc, char** argv)
 {
 	//-----------------------------testing-----------------
 
-	std::cout << "cwd: " << std::filesystem::current_path() << '\n';
-	ResourceBootstrapper::instance()->bootstrap(std::filesystem::current_path(), _renderer);
+	init_assert(argc > 0 && argv && argv[0], "Application start path error");
+	init_assert(
+		ResourceBootstrapper::instance()->bootstrap(argv[0], _renderer),
+		"Resource bootstrap error"
+	);
 
 	//-----------------------------testing-----------------
 	SurfaceLoader surface_loader;
 	SurfaceLoadRequest preload_surface_request;
 	preload_surface_request._asset_key = "preload.Akil";
-	preload_surface_request._frame_path =
-		std::filesystem::current_path() / "assets" / "preload" / "Akil.png";
+	preload_surface_request._frame_path = PathManager::instance()->preload_file("Akil.png");
 	preload_surface_request._frame_index = 0;
 
 	SurfaceLoadResult preload_surface_result =
@@ -189,14 +192,21 @@ int  Application::run(int argc, char** argv)
 	_counter_freq = SDL_GetPerformanceFrequency();
 	_last_counter = SDL_GetPerformanceCounter();
 
+
 	while (_active)
 	{
+		_input_system.begin_frame();
 		while (SDL_PollEvent(&_event))
 		{
 			if (_event.type == SDL_QUIT)
 				_active = false;
-			SceneManager::instance()->on_input(_event);
+			_input_system.process_event(_event);
 		}
+
+		SceneManager::instance()->on_input(
+			_input_system.snapshot(),
+			_input_system.events()
+		);
 
 		Uint64 current_counter = SDL_GetPerformanceCounter();//实现动态延时
 		double delta = (double)(current_counter - last_counter) / counter_freq;
@@ -205,6 +215,7 @@ int  Application::run(int argc, char** argv)
 		if (delta * 1000 < 1000.0 / FPS)
 			SDL_Delay((Uint32)(1000.0 / FPS - delta * 1000));
 		
+
 		SceneManager::instance()->on_update(delta);
 
 		SDL_SetRenderDrawColor(_renderer, 0,0,0,0);

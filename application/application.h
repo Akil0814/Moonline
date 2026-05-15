@@ -1,5 +1,7 @@
 #pragma once
 #include "../framework/base/singleton.h"
+#include "../framework/input/input_system.h"
+
 #include <SDL.h>
 
 class Application: public Singleton<Application>
@@ -9,7 +11,7 @@ public:
     Application();
     ~Application();
 
-    bool init();
+    bool init(int argc, char** argv);
     int run(int argc, char** argv);
     void shutdown();
 
@@ -33,6 +35,7 @@ private:
     Uint64 _counter_freq = 0;
 
     SDL_Event _event;
+    InputSystem _input_system;
 
     SDL_Window* _window = nullptr;
     SDL_Renderer* _renderer = nullptr;

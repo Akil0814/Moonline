@@ -1,5 +1,6 @@
 #pragma once
 #include<SDL.h>
+#include <vector>
 #include <type_traits> 
 #include <utility>
 
@@ -19,7 +20,10 @@ private:
 public:
 	void on_update(double delta);
 	void on_render(SDL_Renderer* renderer);
-	void on_input(const SDL_Event& event);
+	void on_input(
+		const InputSnapshot& input,
+		const std::vector<InputEvent>& events
+	);
 
 	template<typename T, typename... Args>
 	void switch_to(Args&&... args);

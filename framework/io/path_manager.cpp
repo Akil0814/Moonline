@@ -1,5 +1,7 @@
 #include "path_manager.h"
 
+#include <string>
+
 bool PathManager::init(const std::filesystem::path& start_path)
 {
     std::optional<std::filesystem::path> root_path = find_project_root(start_path);
@@ -9,6 +11,11 @@ bool PathManager::init(const std::filesystem::path& start_path)
 
     _root = root_path.value();
     return true;
+}
+
+bool PathManager::is_initialized() const
+{
+    return !_root.empty();
 }
 
 bool PathManager::ensure_runtime_dirs() const
@@ -77,6 +84,69 @@ std::filesystem::path PathManager::logs() const
     return _root / "logs";
 }
 
+std::filesystem::path PathManager::assets_structure() const
+{
+    return assets() / "assets_structure.json";
+}
+
+std::filesystem::path PathManager::resolve_project_path(const std::filesystem::path& path) const
+{
+    if (path.is_absolute())
+        return path.lexically_normal();
+
+    return (_root / path).lexically_normal();
+}
+
+std::filesystem::path PathManager::resolve_asset_path(const std::filesystem::path& path) const
+{
+    if (path.is_absolute())
+        return path.lexically_normal();
+
+    if (path_starts_with(path, "assets"))
+        return resolve_project_path(path);
+
+    return (assets() / path).lexically_normal();
+}
+
+std::filesystem::path PathManager::resolve_config_path(const std::filesystem::path& path) const
+{
+    if (path.is_absolute())
+        return path.lexically_normal();
+
+    if (path_starts_with(path, "assets"))
+        return resolve_project_path(path);
+
+    if (path_starts_with(path, "configs"))
+        return resolve_asset_path(path);
+
+    return (configs() / path).lexically_normal();
+}
+
+std::filesystem::path PathManager::preload_file(const std::filesystem::path& file_name) const
+{
+    if (file_name.is_absolute())
+        return file_name.lexically_normal();
+
+    if (path_starts_with(file_name, "assets"))
+        return resolve_project_path(file_name);
+
+    if (path_starts_with(file_name, "preload"))
+        return resolve_asset_path(file_name);
+
+    return (preload() / file_name).lexically_normal();
+}
+
+bool PathManager::path_starts_with(
+    const std::filesystem::path& path,
+    const std::string& first_part
+) const
+{
+    std::filesystem::path::iterator iterator = path.begin();
+    if (iterator == path.end())
+        return false;
+
+    return iterator->string() == first_part;
+}
 
 std::optional<std::filesystem::path> PathManager::find_project_root(const std::filesystem::path& start_path) const
 {
@@ -85,6 +155,8 @@ std::optional<std::filesystem::path> PathManager::find_project_root(const std::f
     try
     {
         std::filesystem::path current = std::filesystem::absolute(start_path);
+        if (!std::filesystem::is_directory(current))
+            current = current.parent_path();
 
         for (int depth = 0; depth < MAX_SEARCH_DEPTH; ++depth)
         {

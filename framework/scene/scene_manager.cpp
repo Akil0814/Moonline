@@ -21,10 +21,13 @@ void SceneManager::on_render(SDL_Renderer* renderer)
         _current_scene->on_render(renderer);
 }
 
-void SceneManager::on_input(const SDL_Event& event)
+void SceneManager::on_input(
+    const InputSnapshot& input,
+    const std::vector<InputEvent>& events
+)
 {
     if (_current_scene)
-        _current_scene->on_input(event);
+        _current_scene->on_input(input, events);
 }
 
 void SceneManager::reset_current_scene()
