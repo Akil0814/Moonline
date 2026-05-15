@@ -1,17 +1,23 @@
 {
-  "required_directories": [
-    "assets/audio/character",
+  "textures_directories": [
+    "character",
+    "stage",
+    "ui"
+  ],
 
-    "assets/configs/character",
-    "assets/configs/enemy",
-    "assets/configs/global",
-    "assets/configs/scene",
+  "i18n_directories": [
+    "en",
+    "zh"
+  ],
 
-    "assets/i18n/en",
-    "assets/i18n/zh",
+  "configs_directories": [
+    "character",
+    "enemy",
+    "global",
+    "scene"
+  ],
 
-    "assets/textures/character",
-    "assets/textures/stage",
-    "assets/textures/ui"
+  "audio_directories": [
+    "character"
   ]
 }

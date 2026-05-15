@@ -1,0 +1,58 @@
+{
+  "animation_type": [
+    "base",
+    "movement",
+    "attack",
+    "reaction",
+    "effects"
+  ],
+
+  "base": [
+    "idle",
+    "idle_into_long",
+    "idle_long",
+    "strengthen"
+  ],
+
+  "movement": [
+    "dash/back",
+    "dash/front",
+    "dash/in_air_back",
+    "dash/in_air_front",
+    "jump/apex",
+    "jump/fall",
+    "jump/land",
+    "jump/rise",
+    "jump/start",
+    "run/enter",
+    "run/exit",
+    "run/loop",
+    "walk/enter",
+    "walk/loop"
+  ],
+
+  "attack": [
+    "aerial",
+    "normal",
+    "ranged/air",
+    "ranged/ground",
+    "special/ex1",
+    "special/ex2"
+  ],
+
+  "reaction": [
+    "getup",
+    "guard/air",
+    "guard/ground",
+    "hurt",
+    "knockdown",
+    "knockdown_air/enter",
+    "knockdown_air/land",
+    "knockdown_air/loop",
+    "start"
+  ],
+
+  "effects": [
+    //tmp
+  ]
+}

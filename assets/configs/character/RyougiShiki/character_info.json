@@ -1,22 +1,89 @@
 {
   "id": "ryougi_shiki",
+  "asset_key": "RyougiShiki",
   "display_name": "Ryougi Shiki",
+  "display_name_key": "character.ryougi_shiki.name",
+
+  "resources": {
+    "texture_root": "assets/textures/character/RyougiShiki",
+    "animation_config": "assets/configs/character/RyougiShiki/animation_info.json",
+    "skill_config": "assets/configs/character/RyougiShiki/skill_info.json",
+    "portrait": "assets/textures/character/RyougiShiki/character1.png",
+    "skill_cut": "assets/textures/character/RyougiShiki/skill_cut.png",
+    "ex_skill_cut": "assets/textures/character/RyougiShiki/ex_skill_cut.png"
+  },
+
+  "initial_state": {
+    "animation": "Idle",
+    "facing": "right",
+    "team": "player"
+  },
 
   "stats": {
-    "hp": 1000,
-    "move_speed": 280,
+    "max_hp": 1000,
+    "max_mp": 100,
+    "initial_mp": 0,
+    "mp_recover_per_second": 6,
+    "poise": 100
+  },
+
+  "movement": {
+    "walk_speed": 180,
+    "run_speed": 360,
+    "dash_speed": 520,
+    "back_dash_speed": 440,
+    "air_dash_speed": 480,
     "jump_speed": 650,
-    "gravity": 1800
+    "gravity": 1800,
+    "max_fall_speed": 1100,
+    "ground_acceleration": 2200,
+    "air_acceleration": 1200,
+    "ground_friction": 1800,
+    "air_friction": 250,
+    "air_jump_count": 1,
+    "air_dash_count": 1
   },
 
   "combat": {
     "attack_power": 80,
     "defense": 10,
-    "hitstun": 12
+    "guard_defense": 35,
+    "guard_meter": 100,
+    "hitstun_frames": 12,
+    "blockstun_frames": 8,
+    "knockback_resistance": 0.15,
+    "normal_attack_combo_count": 6,
+    "air_attack_combo_count": 3,
+    "special_gauge_cost": 50,
+    "ex_gauge_cost": 100
   },
 
   "collision": {
-    "width": 80,
-    "height": 160
+    "body": {
+      "width": 72,
+      "height": 148,
+      "offset_x": 0,
+      "offset_y": -74
+    },
+    "hurt_box": {
+      "width": 82,
+      "height": 154,
+      "offset_x": 0,
+      "offset_y": -77
+    },
+    "push_box": {
+      "width": 58,
+      "height": 118,
+      "offset_x": 0,
+      "offset_y": -59
+    }
+  },
+
+  "render": {
+    "scale": 1.0,
+    "pivot_x": 0.5,
+    "pivot_y": 1.0,
+    "shadow_radius": 38,
+    "draw_layer": "Character"
   }
 }
