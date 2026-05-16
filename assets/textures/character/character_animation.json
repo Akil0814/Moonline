@@ -1,58 +1,266 @@
 {
-  "animation_type": [
-    "base",
-    "movement",
-    "attack",
-    "reaction",
-    "effects"
-  ],
-
-  "base": [
-    "idle",
-    "idle_into_long",
-    "idle_long",
-    "strengthen"
-  ],
-
-  "movement": [
-    "dash/back",
-    "dash/front",
-    "dash/in_air_back",
-    "dash/in_air_front",
-    "jump/apex",
-    "jump/fall",
-    "jump/land",
-    "jump/rise",
-    "jump/start",
-    "run/enter",
-    "run/exit",
-    "run/loop",
-    "walk/enter",
-    "walk/loop"
-  ],
-
-  "attack": [
-    "aerial",
-    "normal",
-    "ranged/air",
-    "ranged/ground",
-    "special/ex1",
-    "special/ex2"
-  ],
-
-  "reaction": [
-    "getup",
-    "guard/air",
-    "guard/ground",
-    "hurt",
-    "knockdown",
-    "knockdown_air/enter",
-    "knockdown_air/land",
-    "knockdown_air/loop",
-    "start"
-  ],
-
-  "effects": [
-    //tmp
-  ]
+    "animation_type":  [
+                           "base",
+                           "movement",
+                           "attack",
+                           "reaction",
+                           "effects"
+                       ],
+    "base":  [
+                 "idle",
+                 "idle_into_long",
+                 "idle_long",
+                 "strengthen"
+             ],
+    "movement":  [
+                     "dash/back",
+                     "dash/front",
+                     "dash/in_air_back",
+                     "dash/in_air_front",
+                     "jump/apex",
+                     "jump/fall",
+                     "jump/land",
+                     "jump/rise",
+                     "jump/start",
+                     "run/enter",
+                     "run/exit",
+                     "run/loop",
+                     "walk/enter",
+                     "walk/loop"
+                 ],
+    "attack":  [
+                   "aerial",
+                   "normal",
+                   "ranged/air",
+                   "ranged/ground",
+                   "special/ex1",
+                   "special/ex2"
+               ],
+    "reaction":  [
+                     "getup",
+                     "guard/air",
+                     "guard/ground",
+                     "hurt",
+                     "knockdown",
+                     "knockdown_air/enter",
+                     "knockdown_air/land",
+                     "knockdown_air/loop",
+                     "start"
+                 ],
+    "effects":  [
+                    "shiki_effects_02",
+                    "shiki_effects_03",
+                    "shiki_effects_05",
+                    "shiki_effects_07",
+                    "shiki_effects_08",
+                    "shiki_effects_09",
+                    "shiki_effects_36",
+                    "shiki_effects_37",
+                    "shiki_effects_38",
+                    "shiki_effects_40",
+                    "shiki_effects_41",
+                    "shiki_effects_43",
+                    "shiki_effects_44",
+                    "shiki_effects_45",
+                    "shiki_effects_46",
+                    "shiki_effects_48",
+                    "shiki_effects_49",
+                    "shiki_effects_50",
+                    "shiki_effects_52",
+                    "shiki_effects_53",
+                    "shiki_effects_54",
+                    "shiki_effects_55",
+                    "shiki_effects_59",
+                    "shiki_effects_60",
+                    "shiki_effects_62",
+                    "shiki_effects_65",
+                    "shiki_effects_66",
+                    "shiki_effects_69",
+                    "shiki_effects_70"
+                ],
+    "animations":  {
+                       "Idle":  {
+                                    "path":  "animation/base/idle"
+                                },
+                       "IdleIntoLong":  {
+                                            "path":  "animation/base/idle_into_long"
+                                        },
+                       "IdleLong":  {
+                                        "path":  "animation/base/idle_long"
+                                    },
+                       "Strengthen":  {
+                                          "path":  "animation/base/strengthen"
+                                      },
+                       "WalkEnter":  {
+                                         "path":  "animation/movement/walk/enter"
+                                     },
+                       "WalkLoop":  {
+                                        "path":  "animation/movement/walk/loop"
+                                    },
+                       "RunEnter":  {
+                                        "path":  "animation/movement/run/enter"
+                                    },
+                       "RunLoop":  {
+                                       "path":  "animation/movement/run/loop"
+                                   },
+                       "RunExit":  {
+                                       "path":  "animation/movement/run/exit"
+                                   },
+                       "DashBack":  {
+                                        "path":  "animation/movement/dash/back"
+                                    },
+                       "DashForward":  {
+                                           "path":  "animation/movement/dash/front"
+                                       },
+                       "AirDashBack":  {
+                                           "path":  "animation/movement/dash/in_air_back"
+                                       },
+                       "AirDashForward":  {
+                                              "path":  "animation/movement/dash/in_air_front"
+                                          },
+                       "JumpStart":  {
+                                         "path":  "animation/movement/jump/start"
+                                     },
+                       "JumpUp":  {
+                                      "path":  "animation/movement/jump/rise"
+                                  },
+                       "JumpApex":  {
+                                        "path":  "animation/movement/jump/apex"
+                                    },
+                       "JumpFall":  {
+                                        "path":  "animation/movement/jump/fall"
+                                    },
+                       "JumpLand":  {
+                                        "path":  "animation/movement/jump/land"
+                                    },
+                       "AttackNormal":  {
+                                            "segment_path":  "animation/attack/normal/{segment}"
+                                        },
+                       "AttackAir":  {
+                                         "segment_path":  "animation/attack/aerial/{segment}"
+                                     },
+                       "AttackRangedGround":  {
+                                                  "path":  "animation/attack/ranged/ground"
+                                              },
+                       "AttackRangedAir":  {
+                                               "path":  "animation/attack/ranged/air"
+                                           },
+                       "AttackSpecial":  {
+                                             "segment_path":  "animation/attack/special/ex{segment}"
+                                         },
+                       "GuardGround":  {
+                                           "path":  "animation/reaction/guard/ground"
+                                       },
+                       "GuardAir":  {
+                                        "path":  "animation/reaction/guard/air"
+                                    },
+                       "Hurt":  {
+                                    "path":  "animation/reaction/hurt"
+                                },
+                       "Knockdown":  {
+                                         "path":  "animation/reaction/knockdown"
+                                     },
+                       "KnockdownAirEnter":  {
+                                                 "path":  "animation/reaction/knockdown_air/enter"
+                                             },
+                       "KnockdownAirLoop":  {
+                                                "path":  "animation/reaction/knockdown_air/loop"
+                                            },
+                       "KnockdownAirLand":  {
+                                                "path":  "animation/reaction/knockdown_air/land"
+                                            },
+                       "Getup":  {
+                                     "path":  "animation/reaction/getup"
+                                 },
+                       "Start":  {
+                                     "path":  "animation/reaction/start"
+                                 },
+                       "EffectShikiEffects02":  {
+                                                    "path":  "animation/effects/shiki_effects_02"
+                                                },
+                       "EffectShikiEffects03":  {
+                                                    "path":  "animation/effects/shiki_effects_03"
+                                                },
+                       "EffectShikiEffects05":  {
+                                                    "path":  "animation/effects/shiki_effects_05"
+                                                },
+                       "EffectShikiEffects07":  {
+                                                    "path":  "animation/effects/shiki_effects_07"
+                                                },
+                       "EffectShikiEffects08":  {
+                                                    "path":  "animation/effects/shiki_effects_08"
+                                                },
+                       "EffectShikiEffects09":  {
+                                                    "path":  "animation/effects/shiki_effects_09"
+                                                },
+                       "EffectShikiEffects36":  {
+                                                    "path":  "animation/effects/shiki_effects_36"
+                                                },
+                       "EffectShikiEffects37":  {
+                                                    "path":  "animation/effects/shiki_effects_37"
+                                                },
+                       "EffectShikiEffects38":  {
+                                                    "path":  "animation/effects/shiki_effects_38"
+                                                },
+                       "EffectShikiEffects40":  {
+                                                    "path":  "animation/effects/shiki_effects_40"
+                                                },
+                       "EffectShikiEffects41":  {
+                                                    "path":  "animation/effects/shiki_effects_41"
+                                                },
+                       "EffectShikiEffects43":  {
+                                                    "path":  "animation/effects/shiki_effects_43"
+                                                },
+                       "EffectShikiEffects44":  {
+                                                    "path":  "animation/effects/shiki_effects_44"
+                                                },
+                       "EffectShikiEffects45":  {
+                                                    "path":  "animation/effects/shiki_effects_45"
+                                                },
+                       "EffectShikiEffects46":  {
+                                                    "path":  "animation/effects/shiki_effects_46"
+                                                },
+                       "EffectShikiEffects48":  {
+                                                    "path":  "animation/effects/shiki_effects_48"
+                                                },
+                       "EffectShikiEffects49":  {
+                                                    "path":  "animation/effects/shiki_effects_49"
+                                                },
+                       "EffectShikiEffects50":  {
+                                                    "path":  "animation/effects/shiki_effects_50"
+                                                },
+                       "EffectShikiEffects52":  {
+                                                    "path":  "animation/effects/shiki_effects_52"
+                                                },
+                       "EffectShikiEffects53":  {
+                                                    "path":  "animation/effects/shiki_effects_53"
+                                                },
+                       "EffectShikiEffects54":  {
+                                                    "path":  "animation/effects/shiki_effects_54"
+                                                },
+                       "EffectShikiEffects55":  {
+                                                    "path":  "animation/effects/shiki_effects_55"
+                                                },
+                       "EffectShikiEffects59":  {
+                                                    "path":  "animation/effects/shiki_effects_59"
+                                                },
+                       "EffectShikiEffects60":  {
+                                                    "path":  "animation/effects/shiki_effects_60"
+                                                },
+                       "EffectShikiEffects62":  {
+                                                    "path":  "animation/effects/shiki_effects_62"
+                                                },
+                       "EffectShikiEffects65":  {
+                                                    "path":  "animation/effects/shiki_effects_65"
+                                                },
+                       "EffectShikiEffects66":  {
+                                                    "path":  "animation/effects/shiki_effects_66"
+                                                },
+                       "EffectShikiEffects69":  {
+                                                    "path":  "animation/effects/shiki_effects_69"
+                                                },
+                       "EffectShikiEffects70":  {
+                                                    "path":  "animation/effects/shiki_effects_70"
+                                                }
+                   }
 }

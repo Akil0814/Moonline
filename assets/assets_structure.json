@@ -22,6 +22,7 @@
   ],
 
   "manifests": {
-    "characters": "configs/character/characters_manifest.json"
+    "characters": "configs/character/characters_manifest.json",
+    "character_animations": "textures/character/character_animation.json"
   }
 }

@@ -2,6 +2,7 @@
 
 #include "animation_config_loader.h"
 #include "assets_structure_loader.h"
+#include "character_animation_layout_loader.h"
 #include "character_config_loader.h"
 #include "character_manifest_loader.h"
 #include "resource_request_builder.h"
@@ -80,6 +81,24 @@ const std::vector<AnimationBuildRequest>& FileManager::animation_build_requests(
 
 bool FileManager::load_character_configs(const std::filesystem::path& manifest_path)
 {
+	std::unordered_map<std::string, std::filesystem::path>::const_iterator layout_iterator =
+		_manifest_paths.find("character_animations");
+	if (layout_iterator == _manifest_paths.end())
+	{
+		std::cout << "Load character configs failed: character animation layout is missing."
+			<< std::endl;
+		return false;
+	}
+
+	CharacterAnimationLayout character_animation_layout;
+	CharacterAnimationLayoutLoader character_animation_layout_loader;
+	if (!character_animation_layout_loader.load(
+		layout_iterator->second,
+		character_animation_layout))
+	{
+		return false;
+	}
+
 	CharacterManifest character_manifest;
 	CharacterManifestLoader character_manifest_loader;
 	if (!character_manifest_loader.load(manifest_path, character_manifest))
@@ -98,6 +117,7 @@ bool FileManager::load_character_configs(const std::filesystem::path& manifest_p
 		AnimationConfig animation_config;
 		if (!animation_config_loader.load(
 			character_config._animation_config_path,
+			character_animation_layout,
 			animation_config))
 		{
 			return false;

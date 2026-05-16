@@ -38,6 +38,19 @@ struct CharacterConfig
 	std::filesystem::path _animation_config_path;
 };
 
+struct CharacterAnimationLayoutEntry
+{
+	std::filesystem::path _path;
+	std::filesystem::path _segment_path;
+	bool _has_path = false;
+	bool _has_segment_path = false;
+};
+
+struct CharacterAnimationLayout
+{
+	std::unordered_map<std::string, CharacterAnimationLayoutEntry> _animations;
+};
+
 struct AnimationClipConfig
 {
 	std::string _animation_name;

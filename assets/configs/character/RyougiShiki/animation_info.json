@@ -1,426 +1,354 @@
 {
-  "Idle": {
-    "path": "animation/base/idle",
-    "frame_count": 7,
-    "fps": 10,
-    "loop": true
-  },
-  "IdleIntoLong": {
-    "path": "animation/base/idle_into_long",
-    "frame_count": 13,
-    "fps": 10,
-    "loop": false
-  },
-  "IdleLong": {
-    "path": "animation/base/idle_long",
-    "frame_count": 4,
-    "fps": 10,
-    "loop": true
-  },
-  "Strengthen": {
-    "path": "animation/base/strengthen",
-    "frame_count": 10,
-    "fps": 10,
-    "loop": false
-  },
-
-  "WalkEnter": {
-    "path": "animation/movement/walk/enter",
-    "frame_count": 2,
-    "fps": 10,
-    "loop": false
-  },
-  "WalkLoop": {
-    "path": "animation/movement/walk/loop",
-    "frame_count": 10,
-    "fps": 10,
-    "loop": true
-  },
-  "RunEnter": {
-    "path": "animation/movement/run/enter",
-    "frame_count": 4,
-    "fps": 10,
-    "loop": false
-  },
-  "RunLoop": {
-    "path": "animation/movement/run/loop",
-    "frame_count": 8,
-    "fps": 10,
-    "loop": true
-  },
-  "RunExit": {
-    "path": "animation/movement/run/exit",
-    "frame_count": 5,
-    "fps": 10,
-    "loop": false
-  },
-  "DashBack": {
-    "path": "animation/movement/dash/back",
-    "frame_count": 7,
-    "fps": 10,
-    "loop": false
-  },
-  "DashForward": {
-    "path": "animation/movement/dash/front",
-    "frame_count": 3,
-    "fps": 10,
-    "loop": false
-  },
-  "AirDashBack": {
-    "path": "animation/movement/dash/in_air_back",
-    "frame_count": 4,
-    "fps": 10,
-    "loop": false
-  },
-  "AirDashForward": {
-    "path": "animation/movement/dash/in_air_front",
-    "frame_count": 4,
-    "fps": 10,
-    "loop": false
-  },
-  "JumpStart": {
-    "path": "animation/movement/jump/start",
-    "frame_count": 5,
-    "fps": 10,
-    "loop": false
-  },
-  "JumpUp": {
-    "path": "animation/movement/jump/rise",
-    "frame_count": 3,
-    "fps": 10,
-    "loop": false
-  },
-  "JumpApex": {
-    "path": "animation/movement/jump/apex",
-    "frame_count": 3,
-    "fps": 10,
-    "loop": false
-  },
-  "JumpFall": {
-    "path": "animation/movement/jump/fall",
-    "frame_count": 3,
-    "fps": 10,
-    "loop": false
-  },
-  "JumpLand": {
-    "path": "animation/movement/jump/land",
-    "frame_count": 6,
-    "fps": 10,
-    "loop": false
-  },
-
-  "AttackNormal": {
-    "segments": [
-      {
-        "path": "animation/attack/normal/1",
-        "frame_count": 8,
-        "fps": 10,
-        "loop": false
-      },
-      {
-        "path": "animation/attack/normal/2",
-        "frame_count": 7,
-        "fps": 10,
-        "loop": false
-      },
-      {
-        "path": "animation/attack/normal/3",
-        "frame_count": 8,
-        "fps": 10,
-        "loop": false
-      },
-      {
-        "path": "animation/attack/normal/4",
-        "frame_count": 14,
-        "fps": 10,
-        "loop": false
-      },
-      {
-        "path": "animation/attack/normal/5",
-        "frame_count": 9,
-        "fps": 10,
-        "loop": false
-      },
-      {
-        "path": "animation/attack/normal/6",
-        "frame_count": 12,
-        "fps": 10,
-        "loop": false
-      }
-    ]
-  },
-  "AttackAir": {
-    "segments": [
-      {
-        "path": "animation/attack/aerial/1",
-        "frame_count": 7,
-        "fps": 10,
-        "loop": false
-      },
-      {
-        "path": "animation/attack/aerial/2",
-        "frame_count": 5,
-        "fps": 10,
-        "loop": false
-      },
-      {
-        "path": "animation/attack/aerial/3",
-        "frame_count": 6,
-        "fps": 10,
-        "loop": false
-      }
-    ]
-  },
-  "AttackRangedGround": {
-    "path": "animation/attack/ranged/ground",
-    "frame_count": 43,
-    "fps": 10,
-    "loop": false
-  },
-  "AttackRangedAir": {
-    "path": "animation/attack/ranged/air",
-    "frame_count": 13,
-    "fps": 10,
-    "loop": false
-  },
-  "AttackSpecial": {
-    "segments": [
-      {
-        "path": "animation/attack/special/ex1",
-        "frame_count": 51,
-        "fps": 10,
-        "loop": false
-      }
-    ]
-  },
-
-  "GuardGround": {
-    "path": "animation/reaction/guard/ground",
-    "frame_count": 6,
-    "fps": 10,
-    "loop": true
-  },
-  "GuardAir": {
-    "path": "animation/reaction/guard/air",
-    "frame_count": 4,
-    "fps": 10,
-    "loop": true
-  },
-  "Hurt": {
-    "path": "animation/reaction/hurt",
-    "frame_count": 7,
-    "fps": 10,
-    "loop": false
-  },
-  "Knockdown": {
-    "path": "animation/reaction/knockdown",
-    "frame_count": 14,
-    "fps": 10,
-    "loop": false
-  },
-  "KnockdownAirEnter": {
-    "path": "animation/reaction/knockdown_air/enter",
-    "frame_count": 7,
-    "fps": 10,
-    "loop": false
-  },
-  "KnockdownAirLoop": {
-    "path": "animation/reaction/knockdown_air/loop",
-    "frame_count": 2,
-    "fps": 10,
-    "loop": true
-  },
-  "KnockdownAirLand": {
-    "path": "animation/reaction/knockdown_air/land",
-    "frame_count": 7,
-    "fps": 10,
-    "loop": false
-  },
-  "Getup": {
-    "path": "animation/reaction/getup",
-    "frame_count": 18,
-    "fps": 10,
-    "loop": false
-  },
-  "Start": {
-    "path": "animation/reaction/start",
-    "frame_count": 18,
-    "fps": 10,
-    "loop": false
-  },
-
-  "EffectShikiEffects02": {
-    "path": "animation/effects/shiki_effects_02",
-    "frame_count": 6,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects03": {
-    "path": "animation/effects/shiki_effects_03",
-    "frame_count": 3,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects05": {
-    "path": "animation/effects/shiki_effects_05",
-    "frame_count": 3,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects07": {
-    "path": "animation/effects/shiki_effects_07",
-    "frame_count": 4,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects08": {
-    "path": "animation/effects/shiki_effects_08",
-    "frame_count": 3,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects09": {
-    "path": "animation/effects/shiki_effects_09",
-    "frame_count": 3,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects36": {
-    "path": "animation/effects/shiki_effects_36",
-    "frame_count": 3,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects37": {
-    "path": "animation/effects/shiki_effects_37",
-    "frame_count": 3,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects38": {
-    "path": "animation/effects/shiki_effects_38",
-    "frame_count": 2,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects40": {
-    "path": "animation/effects/shiki_effects_40",
-    "frame_count": 6,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects41": {
-    "path": "animation/effects/shiki_effects_41",
-    "frame_count": 3,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects43": {
-    "path": "animation/effects/shiki_effects_43",
-    "frame_count": 3,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects44": {
-    "path": "animation/effects/shiki_effects_44",
-    "frame_count": 3,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects45": {
-    "path": "animation/effects/shiki_effects_45",
-    "frame_count": 2,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects46": {
-    "path": "animation/effects/shiki_effects_46",
-    "frame_count": 3,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects48": {
-    "path": "animation/effects/shiki_effects_48",
-    "frame_count": 6,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects49": {
-    "path": "animation/effects/shiki_effects_49",
-    "frame_count": 3,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects50": {
-    "path": "animation/effects/shiki_effects_50",
-    "frame_count": 8,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects52": {
-    "path": "animation/effects/shiki_effects_52",
-    "frame_count": 14,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects53": {
-    "path": "animation/effects/shiki_effects_53",
-    "frame_count": 3,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects54": {
-    "path": "animation/effects/shiki_effects_54",
-    "frame_count": 3,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects55": {
-    "path": "animation/effects/shiki_effects_55",
-    "frame_count": 3,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects59": {
-    "path": "animation/effects/shiki_effects_59",
-    "frame_count": 3,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects60": {
-    "path": "animation/effects/shiki_effects_60",
-    "frame_count": 6,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects62": {
-    "path": "animation/effects/shiki_effects_62",
-    "frame_count": 31,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects65": {
-    "path": "animation/effects/shiki_effects_65",
-    "frame_count": 31,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects66": {
-    "path": "animation/effects/shiki_effects_66",
-    "frame_count": 27,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects69": {
-    "path": "animation/effects/shiki_effects_69",
-    "frame_count": 9,
-    "fps": 10,
-    "loop": false
-  },
-  "EffectShikiEffects70": {
-    "path": "animation/effects/shiki_effects_70",
-    "frame_count": 9,
-    "fps": 10,
-    "loop": false
-  }
+    "Idle":  {
+                 "frame_count":  7,
+                 "fps":  10,
+                 "loop":  true
+             },
+    "IdleIntoLong":  {
+                         "frame_count":  13,
+                         "fps":  10,
+                         "loop":  false
+                     },
+    "IdleLong":  {
+                     "frame_count":  4,
+                     "fps":  10,
+                     "loop":  true
+                 },
+    "Strengthen":  {
+                       "frame_count":  10,
+                       "fps":  10,
+                       "loop":  false
+                   },
+    "WalkEnter":  {
+                      "frame_count":  2,
+                      "fps":  10,
+                      "loop":  false
+                  },
+    "WalkLoop":  {
+                     "frame_count":  10,
+                     "fps":  10,
+                     "loop":  true
+                 },
+    "RunEnter":  {
+                     "frame_count":  4,
+                     "fps":  10,
+                     "loop":  false
+                 },
+    "RunLoop":  {
+                    "frame_count":  8,
+                    "fps":  10,
+                    "loop":  true
+                },
+    "RunExit":  {
+                    "frame_count":  5,
+                    "fps":  10,
+                    "loop":  false
+                },
+    "DashBack":  {
+                     "frame_count":  7,
+                     "fps":  10,
+                     "loop":  false
+                 },
+    "DashForward":  {
+                        "frame_count":  3,
+                        "fps":  10,
+                        "loop":  false
+                    },
+    "AirDashBack":  {
+                        "frame_count":  4,
+                        "fps":  10,
+                        "loop":  false
+                    },
+    "AirDashForward":  {
+                           "frame_count":  4,
+                           "fps":  10,
+                           "loop":  false
+                       },
+    "JumpStart":  {
+                      "frame_count":  5,
+                      "fps":  10,
+                      "loop":  false
+                  },
+    "JumpUp":  {
+                   "frame_count":  3,
+                   "fps":  10,
+                   "loop":  false
+               },
+    "JumpApex":  {
+                     "frame_count":  3,
+                     "fps":  10,
+                     "loop":  false
+                 },
+    "JumpFall":  {
+                     "frame_count":  3,
+                     "fps":  10,
+                     "loop":  false
+                 },
+    "JumpLand":  {
+                     "frame_count":  6,
+                     "fps":  10,
+                     "loop":  false
+                 },
+    "AttackNormal":  {
+                         "segments":  [
+                                          {
+                                              "frame_count":  8,
+                                              "fps":  10,
+                                              "loop":  false
+                                          },
+                                          {
+                                              "frame_count":  7,
+                                              "fps":  10,
+                                              "loop":  false
+                                          },
+                                          {
+                                              "frame_count":  8,
+                                              "fps":  10,
+                                              "loop":  false
+                                          },
+                                          {
+                                              "frame_count":  14,
+                                              "fps":  10,
+                                              "loop":  false
+                                          },
+                                          {
+                                              "frame_count":  9,
+                                              "fps":  10,
+                                              "loop":  false
+                                          },
+                                          {
+                                              "frame_count":  12,
+                                              "fps":  10,
+                                              "loop":  false
+                                          }
+                                      ]
+                     },
+    "AttackAir":  {
+                      "segments":  [
+                                       {
+                                           "frame_count":  7,
+                                           "fps":  10,
+                                           "loop":  false
+                                       },
+                                       {
+                                           "frame_count":  5,
+                                           "fps":  10,
+                                           "loop":  false
+                                       },
+                                       {
+                                           "frame_count":  6,
+                                           "fps":  10,
+                                           "loop":  false
+                                       }
+                                   ]
+                  },
+    "AttackRangedGround":  {
+                               "frame_count":  43,
+                               "fps":  10,
+                               "loop":  false
+                           },
+    "AttackRangedAir":  {
+                            "frame_count":  13,
+                            "fps":  10,
+                            "loop":  false
+                        },
+    "AttackSpecial":  {
+                          "segments":  [
+                                           {
+                                               "frame_count":  51,
+                                               "fps":  10,
+                                               "loop":  false
+                                           }
+                                       ]
+                      },
+    "GuardGround":  {
+                        "frame_count":  6,
+                        "fps":  10,
+                        "loop":  true
+                    },
+    "GuardAir":  {
+                     "frame_count":  4,
+                     "fps":  10,
+                     "loop":  true
+                 },
+    "Hurt":  {
+                 "frame_count":  7,
+                 "fps":  10,
+                 "loop":  false
+             },
+    "Knockdown":  {
+                      "frame_count":  14,
+                      "fps":  10,
+                      "loop":  false
+                  },
+    "KnockdownAirEnter":  {
+                              "frame_count":  7,
+                              "fps":  10,
+                              "loop":  false
+                          },
+    "KnockdownAirLoop":  {
+                             "frame_count":  2,
+                             "fps":  10,
+                             "loop":  true
+                         },
+    "KnockdownAirLand":  {
+                             "frame_count":  7,
+                             "fps":  10,
+                             "loop":  false
+                         },
+    "Getup":  {
+                  "frame_count":  18,
+                  "fps":  10,
+                  "loop":  false
+              },
+    "Start":  {
+                  "frame_count":  18,
+                  "fps":  10,
+                  "loop":  false
+              },
+    "EffectShikiEffects02":  {
+                                 "frame_count":  6,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects03":  {
+                                 "frame_count":  3,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects05":  {
+                                 "frame_count":  3,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects07":  {
+                                 "frame_count":  4,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects08":  {
+                                 "frame_count":  3,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects09":  {
+                                 "frame_count":  3,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects36":  {
+                                 "frame_count":  3,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects37":  {
+                                 "frame_count":  3,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects38":  {
+                                 "frame_count":  2,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects40":  {
+                                 "frame_count":  6,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects41":  {
+                                 "frame_count":  3,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects43":  {
+                                 "frame_count":  3,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects44":  {
+                                 "frame_count":  3,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects45":  {
+                                 "frame_count":  2,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects46":  {
+                                 "frame_count":  3,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects48":  {
+                                 "frame_count":  6,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects49":  {
+                                 "frame_count":  3,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects50":  {
+                                 "frame_count":  8,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects52":  {
+                                 "frame_count":  14,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects53":  {
+                                 "frame_count":  3,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects54":  {
+                                 "frame_count":  3,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects55":  {
+                                 "frame_count":  3,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects59":  {
+                                 "frame_count":  3,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects60":  {
+                                 "frame_count":  6,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects62":  {
+                                 "frame_count":  31,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects65":  {
+                                 "frame_count":  31,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects66":  {
+                                 "frame_count":  27,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects69":  {
+                                 "frame_count":  9,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "EffectShikiEffects70":  {
+                                 "frame_count":  9,
+                                 "fps":  10,
+                                 "loop":  false
+                             }
 }
