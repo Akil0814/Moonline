@@ -8,7 +8,7 @@ Moonline/
 │  ├─ application.h
 │  └─ application.cpp
 │
-├─ framework/                    -> reusable engine/framework layer
+├─ engine/                    -> reusable game engine layer
 │  ├─ CMakeLists.txt
 │  ├─ game_object.h             
 │  ├─ animation/
@@ -32,8 +32,8 @@ Moonline/
 └─ docs/                         -> project docs   
 
 Notes:
-1. Keep framework generic so it can be reused by other 2D game projects.
-2. Put game-specific behavior in gameplay instead of pushing it back into framework.
+1. Keep engine generic so it can be reused by other 2D game projects.
+2. Put game-specific behavior in gameplay instead of pushing it back into engine.
 
 
 Manager 管生命周期和缓存

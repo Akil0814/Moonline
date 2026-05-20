@@ -1,6 +1,6 @@
 #pragma once
-#include "../framework/base/singleton.h"
-#include "../framework/input/input_system.h"
+#include "../engine/base/singleton.h"
+#include "../engine/input/input_system.h"
 
 #include <SDL.h>
 

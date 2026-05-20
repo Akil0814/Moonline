@@ -9,12 +9,12 @@ Around 25k LOC
 The current source layout shows a clear separation between:
 
 - `application/`: application startup and main loop
-- `framework/`: reusable engine-like foundation
+- `engine/`: reusable game engine foundation
 - `gameplay/`: game-specific logic
 - `assets/`: textures, audio, fonts, configs, preload resources
 - `docs/`: project notes and planning documents
 
-The current development priority is to complete the core framework and data pipeline first, then build gameplay systems on top of that foundation.
+The current development priority is to complete the core engine and data pipeline first, then build gameplay systems on top of that foundation.
 
 
 ## Planned Game Features
@@ -35,9 +35,9 @@ The intended target feature set currently includes:
 
 These systems are expected to share a common save data model and common gameplay state flow.
 
-### Framework Responsibilities
+### Engine Responsibilities
 
-The framework layer should eventually provide:
+The engine layer should eventually provide:
 
 - application lifecycle
 - scene switching and scene stack behavior if needed
@@ -66,7 +66,7 @@ The gameplay layer should eventually provide:
 
 ## Priority Development Areas
 
-The next major work should focus on the framework rather than adding many end-user features immediately.
+The next major work should focus on the engine rather than adding many end-user features immediately.
 
 Recommended implementation order:
 
@@ -107,5 +107,5 @@ Even if the final game direction changes later, many systems remain useful and s
 - UI flow
 - input abstraction
 
-The part most likely to change with genre direction is the combat core. For that reason, framework work should avoid overcommitting to 
+The part most likely to change with genre direction is the combat core. For that reason, engine work should avoid overcommitting to
 one combat implementation too early unless the direction is confirmed.

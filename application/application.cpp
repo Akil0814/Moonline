@@ -1,14 +1,14 @@
 #include "application.h"
 
-#include "../framework/ui/progress_bar.h"//test
-#include "../framework/ui/fade_image.h"//test
+#include "../engine/ui/progress_bar.h"//test
+#include "../engine/ui/fade_image.h"//test
 
-#include "../framework/scene/scene_manager.h"
+#include "../engine/scene/scene_manager.h"
 
-#include "../framework/io/path_manager.h"
-#include "../framework/resources/resource_bootstrapper.h"
-#include "../framework/resources/surface_loader.h"
-#include "../framework/resources/texture_loader.h"
+#include "../engine/io/path_manager.h"
+#include "../engine/resources/resource_bootstrapper.h"
+#include "../engine/resources/surface_loader.h"
+#include "../engine/resources/texture_loader.h"
 
 #include <iostream>
 #include <thread>

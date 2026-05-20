@@ -1,6 +1,6 @@
 #pragma once
-#include "../../framework/scene/scene.h"
-#include "../../framework/ui/progress_bar.h"
+#include "../../engine/scene/scene.h"
+#include "../../engine/ui/progress_bar.h"
 #include <thread>
 #include <atomic>
 
