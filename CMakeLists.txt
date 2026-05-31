@@ -32,6 +32,7 @@ if(WIN32)
         set(SDL2_LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/SDL2/lib/msvc")
         set(SDL2_LIBRARIES
             "${SDL2_LIB_DIR}/SDL2.lib"
+            "${SDL2_LIB_DIR}/SDL2_net.lib"
             "${SDL2_LIB_DIR}/SDL2_gfx.lib"
             "${SDL2_LIB_DIR}/SDL2_image.lib"
             "${SDL2_LIB_DIR}/SDL2_mixer.lib"
@@ -39,6 +40,7 @@ if(WIN32)
         )
         set(SDL2_RUNTIME_FILES
             "${SDL2_LIB_DIR}/SDL2.dll"
+            "${SDL2_LIB_DIR}/SDL2_net.dll"
             "${SDL2_LIB_DIR}/SDL2_gfx.dll"
             "${SDL2_LIB_DIR}/SDL2_image.dll"
             "${SDL2_LIB_DIR}/SDL2_mixer.dll"
@@ -48,6 +50,7 @@ if(WIN32)
         set(SDL2_LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/SDL2/lib/mingw")
         set(SDL2_LIBRARIES
             "${SDL2_LIB_DIR}/libSDL2.dll.a"
+            "${SDL2_LIB_DIR}/libSDL2_net.dll.a"
             "${SDL2_LIB_DIR}/libSDL2_gfx.dll.a"
             "${SDL2_LIB_DIR}/libSDL2_image.dll.a"
             "${SDL2_LIB_DIR}/libSDL2_mixer.dll.a"
@@ -55,6 +58,7 @@ if(WIN32)
         )
         set(SDL2_RUNTIME_FILES
             "${SDL2_LIB_DIR}/SDL2.dll"
+            "${SDL2_LIB_DIR}/SDL2_net.dll"
             "${SDL2_LIB_DIR}/SDL2_gfx.dll"
             "${SDL2_LIB_DIR}/SDL2_image.dll"
             "${SDL2_LIB_DIR}/SDL2_mixer.dll"
@@ -92,6 +96,13 @@ elseif(APPLE)
         REQUIRED
     )
     find_library(
+        SDL2_NET_LIBRARY
+        SDL2_net
+        HINTS ${SDL2_SEARCH_ROOTS}
+        PATH_SUFFIXES lib
+        REQUIRED
+    )
+    find_library(
         SDL2_MIXER_LIBRARY
         SDL2_mixer
         HINTS ${SDL2_SEARCH_ROOTS}
@@ -108,6 +119,7 @@ elseif(APPLE)
 
     set(SDL2_LIBRARIES
         ${SDL2_LIBRARY}
+        ${SDL2_NET_LIBRARY}
         ${SDL2_IMAGE_LIBRARY}
         ${SDL2_MIXER_LIBRARY}
         ${SDL2_TTF_LIBRARY}
