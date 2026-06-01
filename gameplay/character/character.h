@@ -1,5 +1,5 @@
 #pragma once
-#include "../../engine/game_object.h"
+#include "../../engine/core/game_object.h"
 
 class character
 {

@@ -2,7 +2,7 @@
 #include "../io/file_manager.h"
 #include "../io/json_loader.h"
 
-#include "../base/singleton.h"
+#include "../tools/singleton.h"
 #include "../core/error.h"
 
 #include <SDL.h>

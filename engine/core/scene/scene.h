@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "../game_object.h"
-#include "../base/depth_layer.h"
+#include "../depth_layer.h"
 
 class Scene
 {

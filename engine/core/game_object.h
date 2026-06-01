@@ -1,8 +1,8 @@
 #pragma once
 #include <SDL.h>
-#include "base/vector2.h"
-#include "base/depth_layer.h"
-#include "input/input_system.h"
+#include "../tools/vector2.h"
+#include "depth_layer.h"
+#include "../input/input_system.h"
 
 class GameObject
 {

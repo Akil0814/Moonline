@@ -8,5 +8,5 @@ enum class DepthLayer
     Character,
     Effect,
     UI,
-	Count
+    Count
 };

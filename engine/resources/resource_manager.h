@@ -4,7 +4,7 @@
 #include "font_manager.h"
 #include "texture_manager.h"
 
-#include "../base/singleton.h"
+#include "../tools/singleton.h"
 
 #include <SDL.h>
 #include <SDL_mixer.h>

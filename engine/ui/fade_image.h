@@ -1,6 +1,6 @@
 #pragma once
-#include "../game_object.h"
-#include "../base/timer.h"
+#include "../core/game_object.h"
+#include "../tools/timer.h"
 
 enum class FadeMode
 {

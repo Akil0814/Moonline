@@ -1,5 +1,5 @@
 #pragma once
-#include "../engine/base/singleton.h"
+#include "../engine/tools/singleton.h"
 #include "../engine/input/input_system.h"
 
 #include <SDL.h>

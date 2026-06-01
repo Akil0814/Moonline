@@ -1,5 +1,5 @@
 #pragma once
-#include "../../engine/scene/scene.h"
+#include "../../engine/core/scene/scene.h"
 #include "../../engine/ui/progress_bar.h"
 #include <thread>
 #include <atomic>

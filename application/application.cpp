@@ -3,7 +3,7 @@
 #include "../engine/ui/progress_bar.h"//test
 #include "../engine/ui/fade_image.h"//test
 
-#include "../engine/scene/scene_manager.h"
+#include "../engine/core/scene/scene_manager.h"
 
 #include "../engine/io/path_manager.h"
 #include "../engine/resources/resource_bootstrapper.h"

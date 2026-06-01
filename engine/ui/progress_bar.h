@@ -1,6 +1,6 @@
 #pragma once
 #include <SDL.h>
-#include "../game_object.h"
+#include "../core/game_object.h"
 
 class ProgressBar : public GameObject
 {
