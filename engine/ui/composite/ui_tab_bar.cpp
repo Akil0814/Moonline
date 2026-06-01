@@ -1,0 +1,305 @@
+#include "ui_tab_bar.h"
+
+#include <algorithm>
+
+UiTabBar::UiTabBar(Vector2 position, Vector2 size, int order)
+    : UiPanel(position, size, order)
+{
+    _button_group.set_on_selection_changed(
+        [this](int index, UiSelectableButton* button)
+        {
+            (void)button;
+            handle_group_selection_changed(index, button);
+        }
+    );
+
+    reset();
+}
+
+void UiTabBar::reset()
+{
+    UiPanel::reset();
+    set_direction(LayoutDirection::Horizontal);
+    set_anchor(LayoutAnchor::TopLeft);
+    set_cross_align(LayoutAlign::Center);
+    set_spacing(12.0f);
+    set_padding({ 8.0f, 8.0f, 8.0f, 8.0f });
+    set_draw_background(false);
+
+    _items.clear();
+    _buttons.clear();
+    _button_group.clear_buttons();
+    _on_selection_changed = nullptr;
+    _tab_size = { 160.0f, 52.0f };
+    _font_key = "ui.default";
+    _button_style = ButtonStyle{};
+    _button_theme_role = UiButtonThemeRole::Primary;
+    _selected_index = -1;
+    _enabled = true;
+    _is_focused = false;
+    _has_button_style_override = false;
+    clear_children();
+}
+
+int UiTabBar::add_tab(const std::string& id, const std::string& text, bool enabled)
+{
+    UiTabBarItem item;
+    item._id = id;
+    item._text = text;
+    item._enabled = enabled;
+    _items.push_back(std::move(item));
+    rebuild_tabs();
+    return static_cast<int>(_items.size()) - 1;
+}
+
+void UiTabBar::set_tabs(const std::vector<UiTabBarItem>& items)
+{
+    _items = items;
+    rebuild_tabs();
+}
+
+void UiTabBar::clear_tabs()
+{
+    _items.clear();
+    _buttons.clear();
+    _selected_index = -1;
+    _button_group.clear_buttons();
+    clear_children();
+}
+
+size_t UiTabBar::tab_count() const
+{
+    return _items.size();
+}
+
+int UiTabBar::selected_index() const
+{
+    return _selected_index;
+}
+
+void UiTabBar::set_selected_index(int index)
+{
+    if (_items.empty())
+    {
+        _selected_index = -1;
+        sync_button_focus();
+        return;
+    }
+
+    const int clamped_index = std::clamp(index, 0, static_cast<int>(_items.size()) - 1);
+    _button_group.set_selected_index(clamped_index);
+}
+
+const UiTabBarItem* UiTabBar::selected_tab() const
+{
+    if (_selected_index < 0 || _selected_index >= static_cast<int>(_items.size()))
+    {
+        return nullptr;
+    }
+
+    return &_items[static_cast<size_t>(_selected_index)];
+}
+
+void UiTabBar::set_tab_size(const Vector2& tab_size)
+{
+    _tab_size = tab_size;
+    rebuild_tabs();
+}
+
+const Vector2& UiTabBar::tab_size() const
+{
+    return _tab_size;
+}
+
+void UiTabBar::set_font_key(const std::string& font_key)
+{
+    _font_key = font_key;
+    rebuild_tabs();
+}
+
+const std::string& UiTabBar::font_key() const
+{
+    return _font_key;
+}
+
+void UiTabBar::set_button_theme_role(UiButtonThemeRole button_theme_role)
+{
+    _button_theme_role = button_theme_role;
+    rebuild_tabs();
+}
+
+UiButtonThemeRole UiTabBar::button_theme_role() const
+{
+    return _button_theme_role;
+}
+
+void UiTabBar::set_button_style(const ButtonStyle& button_style)
+{
+    _button_style = button_style;
+    _has_button_style_override = true;
+    rebuild_tabs();
+}
+
+const ButtonStyle& UiTabBar::button_style() const
+{
+    return _button_style;
+}
+
+void UiTabBar::clear_button_style_override()
+{
+    _button_style = ButtonStyle{};
+    _has_button_style_override = false;
+    rebuild_tabs();
+}
+
+bool UiTabBar::has_button_style_override() const
+{
+    return _has_button_style_override;
+}
+
+void UiTabBar::set_on_selection_changed(UiTabBarSelectionChangedCallback on_selection_changed)
+{
+    _on_selection_changed = std::move(on_selection_changed);
+}
+
+void UiTabBar::set_enabled(bool enabled)
+{
+    _enabled = enabled;
+    sync_button_focus();
+}
+
+bool UiTabBar::is_enabled() const
+{
+    return _enabled;
+}
+
+void UiTabBar::set_focused(bool focused)
+{
+    _is_focused = focused;
+    sync_button_focus();
+}
+
+bool UiTabBar::is_focused() const
+{
+    return _is_focused;
+}
+
+bool UiTabBar::handle_focused_input_event(const InputEvent& event)
+{
+    if (!_enabled || !_is_focused || event.type != InputEventType::Pressed || _items.empty())
+    {
+        return false;
+    }
+
+    switch (event.action)
+    {
+    case InputAction::Left:
+        set_selected_index(_selected_index - 1);
+        return true;
+
+    case InputAction::Right:
+        set_selected_index(_selected_index + 1);
+        return true;
+
+    case InputAction::Confirm:
+        emit_selection_changed();
+        return true;
+
+    default:
+        return false;
+    }
+}
+
+GameObject* UiTabBar::game_object()
+{
+    return this;
+}
+
+const GameObject* UiTabBar::game_object() const
+{
+    return this;
+}
+
+void UiTabBar::rebuild_tabs()
+{
+    clear_children();
+    _buttons.clear();
+    _button_group.clear_buttons();
+
+    for (const UiTabBarItem& item : _items)
+    {
+        std::shared_ptr<UiSelectableButton> button = std::make_shared<UiSelectableButton>(
+            Vector2::zero(),
+            _tab_size
+        );
+        button->set_text(item._text);
+        button->set_font_key(_font_key);
+        button->set_button_theme_role(_button_theme_role);
+        button->set_enabled(_enabled && item._enabled);
+        if (_has_button_style_override)
+        {
+            UiStyle::apply_button(*button, _button_style);
+        }
+
+        LayoutChildOptions options;
+        options._use_size_override = true;
+        options._size_override = _tab_size;
+        add_child(button, options);
+        _button_group.add_button(button);
+        _buttons.push_back(std::move(button));
+    }
+
+    if (_items.empty())
+    {
+        _selected_index = -1;
+        return;
+    }
+
+    if (_selected_index < 0 || _selected_index >= static_cast<int>(_items.size()))
+    {
+        _selected_index = 0;
+    }
+
+    _button_group.set_selected_index(_selected_index);
+    sync_button_focus();
+}
+
+void UiTabBar::sync_button_focus()
+{
+    for (int index = 0; index < static_cast<int>(_buttons.size()); ++index)
+    {
+        const std::shared_ptr<UiSelectableButton>& button = _buttons[static_cast<size_t>(index)];
+        if (!button)
+        {
+            continue;
+        }
+
+        const bool enabled = _enabled && _items[static_cast<size_t>(index)]._enabled;
+        button->set_enabled(enabled);
+        button->set_focused(enabled && _is_focused && index == _selected_index);
+    }
+}
+
+void UiTabBar::handle_group_selection_changed(int index, UiSelectableButton* button)
+{
+    (void)button;
+    _selected_index = index;
+    sync_button_focus();
+    emit_selection_changed();
+}
+
+void UiTabBar::emit_selection_changed()
+{
+    if (!_on_selection_changed)
+    {
+        return;
+    }
+
+    const UiTabBarItem* item = selected_tab();
+    if (!item)
+    {
+        return;
+    }
+
+    _on_selection_changed(_selected_index, item->_id, item->_text);
+}

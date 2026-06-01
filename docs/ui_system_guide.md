@@ -36,7 +36,7 @@ UI 系统最底层仍然建立在 [game_object.h](/G:/Coding/Projects/Moonline/e
 
 ### 2.2 `UiElement`
 
-新的 UI 共同基类是 [ui_element.h](/G:/Coding/Projects/Moonline/engine/ui/ui_element.h)。
+新的 UI 共同基类是 [ui_element.h](/G:/Coding/Projects/Moonline/engine/ui/base/ui_element.h)。
 
 它在 `GameObject` 之上补了这些 UI 共性：
 
@@ -51,7 +51,7 @@ UI 系统最底层仍然建立在 [game_object.h](/G:/Coding/Projects/Moonline/e
 
 ### 2.3 `UiControl`
 
-可交互 UI 的共同基类是 [ui_control.h](/G:/Coding/Projects/Moonline/engine/ui/ui_control.h)。
+可交互 UI 的共同基类是 [ui_control.h](/G:/Coding/Projects/Moonline/engine/ui/base/ui_control.h)。
 
 它继承 `UiElement + UiFocusable`，统一收口了：
 
@@ -68,7 +68,7 @@ UI 系统最底层仍然建立在 [game_object.h](/G:/Coding/Projects/Moonline/e
 
 ### 2.4 `UiFocusable`
 
-[ui_focusable.h](/G:/Coding/Projects/Moonline/engine/ui/ui_focusable.h) 是焦点系统的最小契约。
+[ui_focusable.h](/G:/Coding/Projects/Moonline/engine/ui/base/ui_focusable.h) 是焦点系统的最小契约。
 
 它要求交互控件至少实现：
 
@@ -179,7 +179,7 @@ UI 系统最底层仍然建立在 [game_object.h](/G:/Coding/Projects/Moonline/e
 
 - [ui_label.h](/G:/Coding/Projects/Moonline/engine/ui/widgets/ui_label.h)
 - [ui_image_view.h](/G:/Coding/Projects/Moonline/engine/ui/widgets/ui_image_view.h)
-- [ui_progress_bar.h](/G:/Coding/Projects/Moonline/engine/ui/ui_progress_bar.h)
+- [ui_progress_bar.h](/G:/Coding/Projects/Moonline/engine/ui/widgets/ui_progress_bar.h)
 - [bar.h](/G:/Coding/Projects/Moonline/engine/ui/bar.h)
 
 职责分别是：
@@ -198,7 +198,7 @@ UI 系统最底层仍然建立在 [game_object.h](/G:/Coding/Projects/Moonline/e
 
 ### 4.2 交互控件
 
-- [ui_button.h](/G:/Coding/Projects/Moonline/engine/ui/ui_button.h)
+- [ui_button.h](/G:/Coding/Projects/Moonline/engine/ui/widgets/ui_button.h)
 - [ui_text_button.h](/G:/Coding/Projects/Moonline/engine/ui/widgets/ui_text_button.h)
 - [ui_slider.h](/G:/Coding/Projects/Moonline/engine/ui/widgets/ui_slider.h)
 - [ui_toggle.h](/G:/Coding/Projects/Moonline/engine/ui/widgets/ui_toggle.h)

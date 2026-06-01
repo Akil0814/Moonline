@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../containers/ui_scroll_panel.h"
-#include "../ui_focusable.h"
+#include "../base/ui_focusable.h"
 #include "../style/ui_style.h"
 #include "../widgets/ui_text_button.h"
 

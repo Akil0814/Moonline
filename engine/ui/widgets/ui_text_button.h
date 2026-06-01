@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../ui_button.h"
+#include "ui_button.h"
 #include "../../resources/texture/texture_loader.h"
 
 #include <SDL.h>

@@ -1,5 +1,5 @@
 #include "loading_scene.h"
-#include "../../engine/ui/ui_progress_bar.h"//test
+#include "../../engine/ui/widgets/ui_progress_bar.h"//test
 
 void LoadingScene::on_enter()
 {

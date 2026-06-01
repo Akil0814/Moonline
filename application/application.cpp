@@ -1,6 +1,6 @@
 #include "application.h"
 
-#include "../engine/ui/ui_progress_bar.h"//test
+#include "../engine/ui/widgets/ui_progress_bar.h"//test
 #include "../engine/ui/fade_image.h"//test
 
 #include "../engine/core/time.h"

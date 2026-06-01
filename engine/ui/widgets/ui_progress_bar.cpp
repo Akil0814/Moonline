@@ -1,7 +1,7 @@
 #include "ui_progress_bar.h"
 
-#include "style/ui_theme.h"
-#include "style/ui_style.h"
+#include "../style/ui_theme.h"
+#include "../style/ui_style.h"
 
 UiProgressBar::UiProgressBar(Vector2 position, Vector2 size, int order)
     : UiElement(position, size, order)

@@ -1,6 +1,6 @@
 #include "ui_element.h"
 
-#include "style/ui_theme_manager.h"
+#include "../style/ui_theme_manager.h"
 
 UiElement::UiElement(Vector2 position, Vector2 size, int order)
     : GameObject(DepthLayer::UI, order)

@@ -2,8 +2,8 @@
 
 #include "../animation/ui_transition.h"
 #include "ui_panel.h"
-#include "../ui_button.h"
-#include "../ui_focusable.h"
+#include "../widgets/ui_button.h"
+#include "../base/ui_focusable.h"
 
 #include <memory>
 #include <vector>

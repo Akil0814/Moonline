@@ -1,8 +1,8 @@
 #pragma once
 #include <SDL.h>
-#include "bar.h"
-#include "style/ui_theme_roles.h"
-#include "ui_element.h"
+#include "../bar.h"
+#include "../style/ui_theme_roles.h"
+#include "../base/ui_element.h"
 
 struct UiTheme;
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../core/game_object.h"
-#include "../input/input_types.h"
+#include "../../core/game_object.h"
+#include "../../input/input_types.h"
 
 class UiFocusable
 {

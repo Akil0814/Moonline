@@ -4,7 +4,7 @@ void UiStyle::apply_button(UiButton& button, const ButtonStyle& style)
 {
     if (style._use_state_textures)
     {
-        button.set_state_textures(
+        button.set_theme_state_textures(
             style._idle_texture,
             style._hovered_texture,
             style._pushed_texture
@@ -13,7 +13,7 @@ void UiStyle::apply_button(UiButton& button, const ButtonStyle& style)
     }
 
     button.clear_state_textures();
-    button.set_state_colors(
+    button.set_theme_state_colors(
         style._idle_color,
         style._hovered_color,
         style._pushed_color,

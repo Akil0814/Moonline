@@ -1,6 +1,6 @@
 #pragma once
-#include "style/ui_theme_roles.h"
-#include "ui_control.h"
+#include "../style/ui_theme_roles.h"
+#include "../base/ui_control.h"
 
 struct UiTheme;
 
@@ -11,6 +11,13 @@ struct UiTheme;
 class UiButton : public UiControl
 {
 public:
+    enum class AppearanceMode
+    {
+        Theme,
+        LocalColors,
+        LocalTextures
+    };
+
     enum class Status
     {
         Idle = 0,
@@ -49,7 +56,21 @@ public:
         SDL_Texture* texture_hovered,
         SDL_Texture* texture_pushed
     );
+    void set_theme_state_colors(
+        SDL_Color color_idle,
+        SDL_Color color_hovered,
+        SDL_Color color_pushed,
+        SDL_Color color_frame
+    );
+    void set_theme_state_textures(
+        SDL_Texture* texture_idle,
+        SDL_Texture* texture_hovered,
+        SDL_Texture* texture_pushed
+    );
     void clear_state_textures();
+    void use_theme_appearance();
+    [[nodiscard]] bool uses_theme_appearance() const;
+    [[nodiscard]] AppearanceMode appearance_mode() const;
     void set_enabled(bool enabled) override;
     [[nodiscard]] bool handle_focused_input_event(const InputEvent& event) override;
     [[nodiscard]] int click_count() const;
@@ -60,7 +81,7 @@ public:
     void set_button_theme_role(UiButtonThemeRole button_theme_role);
     [[nodiscard]] UiButtonThemeRole button_theme_role() const;
 
-private:
+protected:
     [[nodiscard]] SDL_Rect message_rect() const;
     [[nodiscard]] bool contains_point(int x, int y) const;
     bool update_hover_status(int x, int y);
@@ -68,7 +89,24 @@ private:
     void finish_press(int x, int y);
     void play_sound(Mix_Chunk* sound_effect) const;
     void init_assert(const void* ptr, const char* err_msg) const;
+    virtual void on_activated();
+    [[nodiscard]] virtual Status visual_status() const;
     void apply_theme(const UiTheme& theme) override;
+
+private:
+    void set_state_colors_internal(
+        SDL_Color color_idle,
+        SDL_Color color_hovered,
+        SDL_Color color_pushed,
+        SDL_Color color_frame,
+        AppearanceMode appearance_mode
+    );
+    void set_state_textures_internal(
+        SDL_Texture* texture_idle,
+        SDL_Texture* texture_hovered,
+        SDL_Texture* texture_pushed,
+        AppearanceMode appearance_mode
+    );
 
 private:
     Mix_Chunk* _sound_effect_down = nullptr;
@@ -93,4 +131,5 @@ private:
 
     int _click_count = 0;
     UiButtonThemeRole _button_theme_role = UiButtonThemeRole::Default;
+    AppearanceMode _appearance_mode = AppearanceMode::Theme;
 };

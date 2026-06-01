@@ -1,7 +1,7 @@
 #include "ui_button.h"
 
-#include "style/ui_theme.h"
-#include "style/ui_style.h"
+#include "../style/ui_theme.h"
+#include "../style/ui_style.h"
 
 #include <algorithm>
 #include <stdexcept>
@@ -26,10 +26,7 @@ UiButton::UiButton(Vector2 position, Vector2 size, SDL_Texture* texture_message,
     SDL_Color color_idle, SDL_Color color_hovered, SDL_Color color_pushed, SDL_Color color_frame, int order)
     : UiButton(position, size, texture_message, sound_effect_down, sound_effect_up, order)
 {
-    _color_idle = color_idle;
-    _color_hovered = color_hovered;
-    _color_pushed = color_pushed;
-    _color_frame = color_frame;
+    set_state_colors(color_idle, color_hovered, color_pushed, color_frame);
 }
 
 UiButton::UiButton(Vector2 position, Vector2 size, SDL_Texture* texture_message,
@@ -45,6 +42,7 @@ UiButton::UiButton(Vector2 position, Vector2 size, SDL_Texture* texture_message,
     _texture_idle = texture_idle;
     _texture_hovered = texture_hovered;
     _texture_pushed = texture_pushed;
+    _appearance_mode = AppearanceMode::LocalTextures;
 }
 
 void UiButton::init_assert(const void* ptr, const char* err_msg) const
@@ -71,12 +69,9 @@ void UiButton::on_render(SDL_Renderer* renderer)
     Uint8 old_a = 0;
     SDL_GetRenderDrawColor(renderer, &old_r, &old_g, &old_b, &old_a);
 
+    const Status draw_status = visual_status();
     if (!_has_state_textures)
     {
-        const Status draw_status = _is_focused && _status == Status::Idle
-            ? Status::Hovered
-            : _status;
-
         switch (draw_status)
         {
         case Status::Idle:
@@ -97,9 +92,6 @@ void UiButton::on_render(SDL_Renderer* renderer)
     else
     {
         SDL_Texture* current_texture = _texture_idle;
-        const Status draw_status = _is_focused && _status == Status::Idle
-            ? Status::Hovered
-            : _status;
 
         switch (draw_status)
         {
@@ -168,6 +160,7 @@ void UiButton::reset()
     _is_pressing = false;
     _was_mouse_down = false;
     _click_count = 0;
+    _appearance_mode = AppearanceMode::Theme;
     mark_theme_dirty();
 }
 
@@ -227,6 +220,7 @@ void UiButton::finish_press(int x, int y)
     if (hovered)
     {
         ++_click_count;
+        on_activated();
         if (_on_click)
         {
             _on_click();
@@ -271,11 +265,13 @@ void UiButton::set_state_colors(
     SDL_Color color_frame
 )
 {
-    _color_idle = color_idle;
-    _color_hovered = color_hovered;
-    _color_pushed = color_pushed;
-    _color_frame = color_frame;
-    _has_state_textures = false;
+    set_state_colors_internal(
+        color_idle,
+        color_hovered,
+        color_pushed,
+        color_frame,
+        AppearanceMode::LocalColors
+    );
 }
 
 void UiButton::set_state_textures(
@@ -284,14 +280,42 @@ void UiButton::set_state_textures(
     SDL_Texture* texture_pushed
 )
 {
-    init_assert(texture_idle, "UiButton texture_idle must not be null.");
-    init_assert(texture_hovered, "UiButton texture_hovered must not be null.");
-    init_assert(texture_pushed, "UiButton texture_pushed must not be null.");
+    set_state_textures_internal(
+        texture_idle,
+        texture_hovered,
+        texture_pushed,
+        AppearanceMode::LocalTextures
+    );
+}
 
-    _texture_idle = texture_idle;
-    _texture_hovered = texture_hovered;
-    _texture_pushed = texture_pushed;
-    _has_state_textures = true;
+void UiButton::set_theme_state_colors(
+    SDL_Color color_idle,
+    SDL_Color color_hovered,
+    SDL_Color color_pushed,
+    SDL_Color color_frame
+)
+{
+    set_state_colors_internal(
+        color_idle,
+        color_hovered,
+        color_pushed,
+        color_frame,
+        AppearanceMode::Theme
+    );
+}
+
+void UiButton::set_theme_state_textures(
+    SDL_Texture* texture_idle,
+    SDL_Texture* texture_hovered,
+    SDL_Texture* texture_pushed
+)
+{
+    set_state_textures_internal(
+        texture_idle,
+        texture_hovered,
+        texture_pushed,
+        AppearanceMode::Theme
+    );
 }
 
 void UiButton::clear_state_textures()
@@ -300,6 +324,22 @@ void UiButton::clear_state_textures()
     _texture_idle = nullptr;
     _texture_hovered = nullptr;
     _texture_pushed = nullptr;
+}
+
+void UiButton::use_theme_appearance()
+{
+    _appearance_mode = AppearanceMode::Theme;
+    mark_theme_dirty();
+}
+
+bool UiButton::uses_theme_appearance() const
+{
+    return _appearance_mode == AppearanceMode::Theme;
+}
+
+UiButton::AppearanceMode UiButton::appearance_mode() const
+{
+    return _appearance_mode;
 }
 
 void UiButton::set_enabled(bool enabled)
@@ -328,6 +368,7 @@ bool UiButton::handle_focused_input_event(const InputEvent& event)
     play_sound(_sound_effect_down);
     play_sound(_sound_effect_up);
     ++_click_count;
+    on_activated();
     if (_on_click)
     {
         _on_click();
@@ -357,8 +398,24 @@ UiButtonThemeRole UiButton::button_theme_role() const
     return _button_theme_role;
 }
 
+void UiButton::on_activated()
+{
+}
+
+UiButton::Status UiButton::visual_status() const
+{
+    return _is_focused && _status == Status::Idle
+        ? Status::Hovered
+        : _status;
+}
+
 void UiButton::apply_theme(const UiTheme& theme)
 {
+    if (!uses_theme_appearance())
+    {
+        return;
+    }
+
     const ButtonStyle* style = &theme._default_button;
     switch (_button_theme_role)
     {
@@ -376,4 +433,38 @@ void UiButton::apply_theme(const UiTheme& theme)
     }
 
     UiStyle::apply_button(*this, *style);
+}
+
+void UiButton::set_state_colors_internal(
+    SDL_Color color_idle,
+    SDL_Color color_hovered,
+    SDL_Color color_pushed,
+    SDL_Color color_frame,
+    AppearanceMode appearance_mode
+)
+{
+    _color_idle = color_idle;
+    _color_hovered = color_hovered;
+    _color_pushed = color_pushed;
+    _color_frame = color_frame;
+    _has_state_textures = false;
+    _appearance_mode = appearance_mode;
+}
+
+void UiButton::set_state_textures_internal(
+    SDL_Texture* texture_idle,
+    SDL_Texture* texture_hovered,
+    SDL_Texture* texture_pushed,
+    AppearanceMode appearance_mode
+)
+{
+    init_assert(texture_idle, "UiButton texture_idle must not be null.");
+    init_assert(texture_hovered, "UiButton texture_hovered must not be null.");
+    init_assert(texture_pushed, "UiButton texture_pushed must not be null.");
+
+    _texture_idle = texture_idle;
+    _texture_hovered = texture_hovered;
+    _texture_pushed = texture_pushed;
+    _has_state_textures = true;
+    _appearance_mode = appearance_mode;
 }

@@ -2,7 +2,7 @@
 
 #include "../containers/ui_scroll_panel.h"
 #include "../style/ui_style.h"
-#include "../ui_focusable.h"
+#include "../base/ui_focusable.h"
 #include "../widgets/ui_label.h"
 #include "../widgets/ui_slider.h"
 #include "../widgets/ui_toggle.h"

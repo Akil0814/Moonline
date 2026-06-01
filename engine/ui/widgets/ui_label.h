@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../style/ui_theme_roles.h"
-#include "../ui_element.h"
+#include "../base/ui_element.h"
 #include "../../resources/texture/texture_loader.h"
 
 struct UiTheme;

@@ -1,6 +1,6 @@
 #include "ui_theme_manager.h"
 
-#include "../ui_element.h"
+#include "../base/ui_element.h"
 
 #include <algorithm>
 

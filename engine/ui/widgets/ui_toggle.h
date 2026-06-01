@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../ui_control.h"
+#include "../base/ui_control.h"
 #include "ui_label.h"
 
 #include <functional>

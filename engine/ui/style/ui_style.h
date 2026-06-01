@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../bar.h"
-#include "../ui_button.h"
+#include "../widgets/ui_button.h"
 #include "../containers/ui_panel.h"
 #include "../widgets/ui_label.h"
 #include "../widgets/ui_text_input.h"
