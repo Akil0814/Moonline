@@ -46,6 +46,16 @@ std::optional<InputAction> action_from_key(SDL_Keycode key)
     case SDLK_LSHIFT:
     case SDLK_RSHIFT:
         return InputAction::Dash;
+    case SDLK_BACKSPACE:
+        return InputAction::Backspace;
+    case SDLK_DELETE:
+        return InputAction::DeleteKey;
+    case SDLK_HOME:
+        return InputAction::Home;
+    case SDLK_END:
+        return InputAction::End;
+    case SDLK_TAB:
+        return InputAction::Tab;
     default:
         return std::nullopt;
     }
@@ -138,6 +148,34 @@ std::vector<InputEvent> InputTranslator::translate_event(const SDL_Event& event)
     case SDL_CONTROLLERBUTTONUP:
         append_controller_button_events(events, event.cbutton.button, input_event_type(event.type == SDL_CONTROLLERBUTTONDOWN));
         break;
+    case SDL_MOUSEWHEEL:
+    {
+        InputEvent input_event;
+        input_event.type = InputEventType::MouseWheel;
+        input_event.device = InputDevice::Mouse;
+        input_event.wheel_x = event.wheel.x;
+        input_event.wheel_y = event.wheel.y;
+        events.push_back(input_event);
+        break;
+    }
+    case SDL_TEXTINPUT:
+    {
+        InputEvent input_event;
+        input_event.type = InputEventType::TextInput;
+        input_event.device = InputDevice::Keyboard;
+        input_event.text = event.text.text;
+        events.push_back(input_event);
+        break;
+    }
+    case SDL_TEXTEDITING:
+    {
+        InputEvent input_event;
+        input_event.type = InputEventType::TextEditing;
+        input_event.device = InputDevice::Keyboard;
+        input_event.text = event.edit.text;
+        events.push_back(input_event);
+        break;
+    }
     case SDL_QUIT:
         append_event(events, InputAction::Exit, InputEventType::Pressed, InputDevice::Unknown);
         break;

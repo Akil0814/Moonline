@@ -3,6 +3,7 @@
 
 #include <SDL_ttf.h>
 
+#include <filesystem>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -14,6 +15,12 @@ class FontManager : public ResourceSubManager
 public:
 	~FontManager() override;
 
+	bool load_font(
+		const std::string& key,
+		const std::filesystem::path& file_path,
+		int point_size
+	);
+	bool store_font(const std::string& key, TTF_Font* font);
 	TTF_Font* find_font(const std::string_view& key) const;
 
 	void clear() override;

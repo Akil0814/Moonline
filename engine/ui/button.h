@@ -1,10 +1,11 @@
 #pragma once
 #include "../core/game_object.h"
+#include "ui_focusable.h"
 #include <SDL.h>
 #include <SDL_mixer.h>
 #include <functional>
 
-class Button : public GameObject
+class Button : public GameObject, public UiFocusable
 {
 public:
     enum class Status
@@ -36,8 +37,25 @@ public:
     void reset() override;
 
     void set_message_texture(SDL_Texture* new_texture_message);
+    void set_state_colors(
+        SDL_Color color_idle,
+        SDL_Color color_hovered,
+        SDL_Color color_pushed,
+        SDL_Color color_frame
+    );
+    void set_state_textures(
+        SDL_Texture* texture_idle,
+        SDL_Texture* texture_hovered,
+        SDL_Texture* texture_pushed
+    );
+    void clear_state_textures();
     void set_enabled(bool enabled);
     [[nodiscard]] bool is_enabled() const;
+    void set_focused(bool focused);
+    [[nodiscard]] bool is_focused() const;
+    [[nodiscard]] bool handle_focused_input_event(const InputEvent& event) override;
+    [[nodiscard]] GameObject* game_object() override;
+    [[nodiscard]] const GameObject* game_object() const override;
     [[nodiscard]] int click_count() const;
     void reset_click_count();
     void set_on_click(std::function<void()> func);
@@ -72,6 +90,7 @@ private:
 
     bool _has_state_textures = false;
     bool _enabled = true;
+    bool _is_focused = false;
     bool _is_pressing = false;
     bool _was_mouse_down = false;
 

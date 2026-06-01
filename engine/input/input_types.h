@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 enum class InputAction
 {
     Left,
@@ -16,6 +18,11 @@ enum class InputAction
     Special,
     Guard,
     Dash,
+    Backspace,
+    DeleteKey,
+    Home,
+    End,
+    Tab,
 
     Exit,
 
@@ -41,7 +48,10 @@ enum class InputDevice
 enum class InputEventType
 {
     Pressed,
-    Released
+    Released,
+    MouseWheel,
+    TextInput,
+    TextEditing
 };
 
 struct InputEvent
@@ -49,4 +59,7 @@ struct InputEvent
     InputAction action = InputAction::Count;
     InputEventType type = InputEventType::Released;
     InputDevice device = InputDevice::Unknown;
+    int wheel_x = 0;
+    int wheel_y = 0;
+    std::string text;
 };

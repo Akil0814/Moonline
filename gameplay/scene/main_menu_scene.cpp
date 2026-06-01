@@ -1,0 +1,372 @@
+#include "main_menu_scene.h"
+
+#include "options_scene.h"
+#include "ui_forms_demo_scene.h"
+
+#include "../../engine/core/scene/scene_manager.h"
+#include "../../engine/ui/style/ui_style.h"
+
+#include <SDL.h>
+
+void MainMenuScene::on_enter()
+{
+    ensure_ui();
+    reset();
+}
+
+void MainMenuScene::on_exit()
+{
+}
+
+void MainMenuScene::on_update(double delta)
+{
+    Scene::on_update(delta);
+}
+
+void MainMenuScene::on_render(SDL_Renderer* renderer)
+{
+    Scene::on_render(renderer);
+}
+
+void MainMenuScene::on_input(
+    const InputSnapshot& input,
+    const std::vector<InputEvent>& events
+)
+{
+    Scene::on_input(input, events);
+}
+
+void MainMenuScene::reset()
+{
+    clear_objects();
+    ensure_ui();
+
+    if (_screen)
+    {
+        _screen->reset();
+        _screen->set_world_position({ 0.0f, 0.0f });
+        _screen->set_size({ 1280.0f, 720.0f });
+        _screen->set_direction(LayoutDirection::Vertical);
+        _screen->set_anchor(LayoutAnchor::Center);
+        _screen->set_cross_align(LayoutAlign::Center);
+        _screen->set_spacing(18.0f);
+        _screen->set_padding({ 120.0f, 96.0f, 120.0f, 96.0f });
+        _screen->set_transition_enabled(true);
+
+        PanelStyle screen_style;
+        screen_style._background_color = SDL_Color{ 12, 18, 28, 255 };
+        screen_style._draw_background = true;
+        screen_style._draw_border = false;
+        UiStyle::apply_panel(*_screen, screen_style);
+    }
+
+    if (_title_label)
+    {
+        _title_label->reset();
+        _title_label->set_text("Moonline");
+        _title_label->set_font_key("ui.default");
+        _title_label->set_padding(8);
+        _title_label->set_auto_size(true);
+
+        LabelStyle title_style;
+        title_style._text_color = SDL_Color{ 244, 244, 248, 255 };
+        title_style._horizontal_align = TextHorizontalAlign::Center;
+        title_style._vertical_align = TextVerticalAlign::Center;
+        UiStyle::apply_label(*_title_label, title_style);
+    }
+
+    if (_subtitle_label)
+    {
+        _subtitle_label->reset();
+        _subtitle_label->set_text("Prototype Main Menu");
+        _subtitle_label->set_font_key("ui.default");
+        _subtitle_label->set_padding(4);
+        _subtitle_label->set_auto_size(true);
+
+        LabelStyle subtitle_style;
+        subtitle_style._text_color = SDL_Color{ 168, 186, 212, 255 };
+        subtitle_style._horizontal_align = TextHorizontalAlign::Center;
+        subtitle_style._vertical_align = TextVerticalAlign::Center;
+        UiStyle::apply_label(*_subtitle_label, subtitle_style);
+    }
+
+    if (_menu_list)
+    {
+        _menu_list->reset();
+        _menu_list->set_size({ 420.0f, 280.0f });
+        _menu_list->set_anchor(LayoutAnchor::TopCenter);
+        _menu_list->set_cross_align(LayoutAlign::Center);
+        _menu_list->set_spacing(14.0f);
+        _menu_list->set_padding({ 12.0f, 12.0f, 12.0f, 12.0f });
+        _menu_list->set_item_size({ 360.0f, 60.0f });
+        _menu_list->set_font_key("ui.default");
+        _menu_list->set_text_color(SDL_Color{ 248, 248, 252, 255 });
+
+        PanelStyle list_style;
+        list_style._background_color = SDL_Color{ 28, 36, 52, 220 };
+        list_style._border_color = SDL_Color{ 110, 140, 182, 255 };
+        list_style._draw_background = true;
+        list_style._draw_border = true;
+        UiStyle::apply_panel(*_menu_list, list_style);
+
+        ButtonStyle button_style;
+        button_style._idle_color = SDL_Color{ 36, 48, 70, 255 };
+        button_style._hovered_color = SDL_Color{ 62, 84, 122, 255 };
+        button_style._pushed_color = SDL_Color{ 28, 40, 58, 255 };
+        button_style._frame_color = SDL_Color{ 110, 140, 182, 255 };
+        _menu_list->set_button_style(button_style);
+        _menu_list->set_on_select(
+            [this](int index, const std::string& id, const std::string& text)
+            {
+                select_menu_item(index, id, text);
+            }
+        );
+        rebuild_menu_items();
+    }
+
+    if (_menu_scroll_bar)
+    {
+        _menu_scroll_bar->reset();
+        _menu_scroll_bar->set_target(_menu_list.get());
+
+        ScrollBarStyle scroll_bar_style;
+        scroll_bar_style._track_color = SDL_Color{ 18, 24, 36, 180 };
+        scroll_bar_style._thumb_color = SDL_Color{ 120, 154, 206, 255 };
+        scroll_bar_style._thickness = 10.0f;
+        scroll_bar_style._target_margin = 8.0f;
+        scroll_bar_style._min_thumb_size = 28.0f;
+        scroll_bar_style._draw_track = true;
+        scroll_bar_style._auto_hide = true;
+        UiStyle::apply_scroll_bar(*_menu_scroll_bar, scroll_bar_style);
+    }
+
+    if (_quit_dialog)
+    {
+        _quit_dialog->reset();
+        _quit_dialog->set_world_position({ 380.0f, 200.0f });
+        _quit_dialog->set_title("Quit Moonline");
+        _quit_dialog->set_message("Are you sure you want to quit this prototype build?");
+        _quit_dialog->set_actions({
+            { "cancel", "Cancel" },
+            { "quit", "Quit" }
+        });
+        _quit_dialog->set_on_action(
+            [this](const std::string& id, const std::string& text)
+            {
+                handle_quit_dialog_action(id, text);
+            }
+        );
+        _quit_dialog->hide_dialog();
+    }
+
+    if (_footer_label)
+    {
+        _footer_label->reset();
+        _footer_label->set_text("Enter Confirm  |  Esc Cancel  |  Arrow Keys Navigate");
+        _footer_label->set_font_key("ui.default");
+        _footer_label->set_padding(4);
+        _footer_label->set_auto_size(true);
+
+        LabelStyle footer_style;
+        footer_style._text_color = SDL_Color{ 148, 164, 186, 255 };
+        footer_style._horizontal_align = TextHorizontalAlign::Center;
+        footer_style._vertical_align = TextVerticalAlign::Center;
+        UiStyle::apply_label(*_footer_label, footer_style);
+    }
+
+    if (_screen && _title_label && _subtitle_label && _menu_list && _footer_label)
+    {
+        _screen->clear_focusable_controls();
+
+        LayoutChildOptions title_options;
+        title_options._use_custom_cross_align = true;
+        title_options._cross_align = LayoutAlign::Center;
+
+        LayoutChildOptions subtitle_options = title_options;
+
+        LayoutChildOptions menu_options = title_options;
+        menu_options._margin.top = 16.0f;
+        menu_options._margin.bottom = 12.0f;
+
+        LayoutChildOptions footer_options = title_options;
+        footer_options._margin.top = 10.0f;
+
+        _screen->add_child(_title_label, title_options);
+        _screen->add_child(_subtitle_label, subtitle_options);
+        _screen->add_child(_menu_list, menu_options);
+        _screen->add_child(_footer_label, footer_options);
+        _screen->register_focusable_control(_menu_list);
+        _screen->set_focused_control(0);
+        _screen->open();
+        add_object(_screen);
+        if (_menu_scroll_bar)
+        {
+            add_object(_menu_scroll_bar);
+        }
+        if (_quit_dialog)
+        {
+            add_object(_quit_dialog);
+        }
+    }
+}
+
+void MainMenuScene::ensure_ui()
+{
+    if (!_screen)
+    {
+        _screen = std::make_shared<UiScreen>();
+    }
+
+    if (!_title_label)
+    {
+        _title_label = std::make_shared<Label>();
+    }
+
+    if (!_subtitle_label)
+    {
+        _subtitle_label = std::make_shared<Label>();
+    }
+
+    if (!_footer_label)
+    {
+        _footer_label = std::make_shared<Label>();
+    }
+
+    if (!_menu_list)
+    {
+        _menu_list = std::make_shared<UiMenuList>();
+    }
+
+    if (!_menu_scroll_bar)
+    {
+        _menu_scroll_bar = std::make_shared<UiScrollBar>();
+    }
+
+    if (!_quit_dialog)
+    {
+        _quit_dialog = std::make_shared<UiDialog>(Vector2::zero(), Vector2::zero(), 10);
+    }
+}
+
+void MainMenuScene::rebuild_menu_items()
+{
+    if (!_menu_list)
+    {
+        return;
+    }
+
+    std::vector<UiMenuListItem> items{
+        { "start", "Start", true },
+        { "options", "Options", true },
+        { "gallery", "UI Demo", true },
+        { "quit", "Quit", true }
+    };
+
+    _menu_list->set_items(items);
+    _menu_list->set_selected_index(0);
+}
+
+void MainMenuScene::select_menu_item(
+    int index,
+    const std::string& id,
+    const std::string& text
+)
+{
+    (void)index;
+    (void)text;
+
+    if (!_subtitle_label)
+    {
+        return;
+    }
+
+    if (id == "quit")
+    {
+        open_quit_dialog();
+        return;
+    }
+
+    if (id == "start")
+    {
+        _subtitle_label->set_text("Start selected. Gameplay scene is not wired yet.");
+        return;
+    }
+
+    if (id == "options")
+    {
+        SceneManager::instance()->switch_to<OptionsScene>();
+        return;
+    }
+
+    if (id == "gallery")
+    {
+        SceneManager::instance()->switch_to<UiFormsDemoScene>();
+        return;
+    }
+}
+
+void MainMenuScene::request_quit()
+{
+    SDL_Event quit_event{};
+    quit_event.type = SDL_QUIT;
+    SDL_PushEvent(&quit_event);
+}
+
+void MainMenuScene::open_quit_dialog()
+{
+    if (_subtitle_label)
+    {
+        _subtitle_label->set_text("Quit selected. Confirmation required.");
+    }
+
+    if (_screen)
+    {
+        _screen->set_input_enabled(false);
+    }
+
+    if (_menu_list)
+    {
+        _menu_list->set_active(false);
+    }
+
+    if (_quit_dialog)
+    {
+        _quit_dialog->show_dialog();
+    }
+}
+
+void MainMenuScene::handle_quit_dialog_action(const std::string& id, const std::string& text)
+{
+    (void)text;
+
+    if (_quit_dialog)
+    {
+        _quit_dialog->hide_dialog();
+    }
+
+    if (_screen)
+    {
+        _screen->set_input_enabled(true);
+    }
+
+    if (_menu_list)
+    {
+        _menu_list->set_active(true);
+    }
+
+    if (id == "quit")
+    {
+        if (_subtitle_label)
+        {
+            _subtitle_label->set_text("Closing...");
+        }
+
+        request_quit();
+        return;
+    }
+
+    if (_subtitle_label)
+    {
+        _subtitle_label->set_text("Prototype Main Menu");
+    }
+}

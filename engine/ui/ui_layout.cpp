@@ -23,6 +23,11 @@ void UILayout::set_size(const Vector2& size)
 
 void UILayout::add_child(const std::shared_ptr<GameObject>& child)
 {
+    add_child(child, LayoutChildOptions{});
+}
+
+void UILayout::add_child(const std::shared_ptr<GameObject>& child, const LayoutChildOptions& options)
+{
     if (!child)
     {
         return;
@@ -31,6 +36,7 @@ void UILayout::add_child(const std::shared_ptr<GameObject>& child)
     LayoutChild layout_child;
     layout_child._object = child;
     layout_child._base_size = child->size();
+    layout_child._options = options;
     _children.push_back(std::move(layout_child));
     mark_dirty();
 }
@@ -61,6 +67,39 @@ void UILayout::clear_children()
 {
     _children.clear();
     mark_dirty();
+}
+
+bool UILayout::set_child_options(const GameObject* child, const LayoutChildOptions& options)
+{
+    for (LayoutChild& layout_child : _children)
+    {
+        if (layout_child._object.get() != child)
+        {
+            continue;
+        }
+
+        layout_child._options = options;
+        mark_dirty();
+        return true;
+    }
+
+    return false;
+}
+
+bool UILayout::try_get_child_options(const GameObject* child, LayoutChildOptions& out_options) const
+{
+    for (const LayoutChild& layout_child : _children)
+    {
+        if (layout_child._object.get() != child)
+        {
+            continue;
+        }
+
+        out_options = layout_child._options;
+        return true;
+    }
+
+    return false;
 }
 
 size_t UILayout::child_count() const
@@ -171,6 +210,62 @@ void UILayout::set_transform_scale(const Vector2& scale)
 const Vector2& UILayout::transform_scale() const
 {
     return _transform.scale;
+}
+
+void UILayout::set_content_offset(const Vector2& offset)
+{
+    _content_offset.x = std::max(0.0f, offset.x);
+    _content_offset.y = std::max(0.0f, offset.y);
+    mark_dirty();
+}
+
+const Vector2& UILayout::content_offset() const
+{
+    return _content_offset;
+}
+
+void UILayout::set_auto_size(bool auto_width, bool auto_height)
+{
+    _auto_width = auto_width;
+    _auto_height = auto_height;
+    mark_dirty();
+}
+
+bool UILayout::auto_sizes_width() const
+{
+    return _auto_width;
+}
+
+bool UILayout::auto_sizes_height() const
+{
+    return _auto_height;
+}
+
+Vector2 UILayout::content_view_size() const
+{
+    return available_content_area();
+}
+
+Vector2 UILayout::measure_content_size()
+{
+    sync_child_sizes();
+    return content_size(available_content_area());
+}
+
+bool UILayout::try_get_child_rect(const GameObject* child, SDL_Rect& out_rect) const
+{
+    for (const LayoutChild& layout_child : _children)
+    {
+        if (layout_child._object.get() != child)
+        {
+            continue;
+        }
+
+        out_rect = layout_child._object->rect();
+        return true;
+    }
+
+    return false;
 }
 
 void UILayout::relayout()
@@ -285,6 +380,23 @@ void UILayout::mark_dirty()
     _layout_dirty = true;
 }
 
+void UILayout::sync_child_sizes()
+{
+    for (LayoutChild& child : _children)
+    {
+        if (!child._object)
+        {
+            continue;
+        }
+
+        const Vector2 current_size = child._object->size();
+        if (!current_size.nearly_equals(child._applied_size))
+        {
+            child._base_size = current_size;
+        }
+    }
+}
+
 void UILayout::remove_destroyed_children()
 {
     const size_t original_size = _children.size();
@@ -311,7 +423,28 @@ void UILayout::apply_layout()
         return;
     }
 
-    const Vector2 layout_content_size = content_size();
+    sync_child_sizes();
+
+    const Vector2 available_area_before_auto_size = available_content_area();
+    const Vector2 content_size_before_auto_size = content_size(available_area_before_auto_size);
+    if (_auto_width || _auto_height)
+    {
+        Vector2 layout_size = size();
+        if (_auto_width)
+        {
+            layout_size.x = content_size_before_auto_size.x + _padding.left + _padding.right;
+        }
+
+        if (_auto_height)
+        {
+            layout_size.y = content_size_before_auto_size.y + _padding.top + _padding.bottom;
+        }
+
+        GameObject::set_size(layout_size);
+    }
+
+    const Vector2 available_area = available_content_area();
+    const Vector2 layout_content_size = content_size(available_area);
     const Vector2 start = content_origin(layout_content_size);
     const float spacing_x = _spacing * _transform.scale.x;
     const float spacing_y = _spacing * _transform.scale.y;
@@ -324,39 +457,103 @@ void UILayout::apply_layout()
             continue;
         }
 
-        const Vector2 child_size = scaled_child_size(child);
+        const Vector2 child_size = child_layout_size(child, available_area);
+        const Vector2 child_outer_size = UILayout::child_outer_size(child, available_area);
+        const LayoutMargin& margin = child._options._margin;
+        const LayoutAlign align = child._options._use_custom_cross_align
+            ? child._options._cross_align
+            : _cross_align;
         Vector2 child_world_position = start;
 
         if (_direction == LayoutDirection::Horizontal)
         {
-            child_world_position.x += main_axis_cursor;
-            child_world_position.y += cross_axis_offset(layout_content_size.y, child_size.y);
-            main_axis_cursor += child_size.x + spacing_x;
+            child_world_position.x += main_axis_cursor + margin.left;
+            child_world_position.y += cross_axis_offset(
+                layout_content_size.y,
+                child_outer_size.y,
+                align
+            ) + margin.top;
+            main_axis_cursor += child_outer_size.x + spacing_x;
         }
         else
         {
-            child_world_position.x += cross_axis_offset(layout_content_size.x, child_size.x);
-            child_world_position.y += main_axis_cursor;
-            main_axis_cursor += child_size.y + spacing_y;
+            child_world_position.x += cross_axis_offset(
+                layout_content_size.x,
+                child_outer_size.x,
+                align
+            ) + margin.left;
+            child_world_position.y += main_axis_cursor + margin.top;
+            main_axis_cursor += child_outer_size.y + spacing_y;
         }
 
         child._local_position = child_world_position - position();
         child._object->set_world_position(child_world_position);
         child._object->set_size(child_size);
+        child._applied_size = child_size;
     }
 
     _layout_dirty = false;
 }
 
-Vector2 UILayout::scaled_child_size(const LayoutChild& child) const
+Vector2 UILayout::available_content_area() const
 {
+    const Vector2 layout_size = size();
     return {
-        std::max(0.0f, child._base_size.x * _transform.scale.x),
-        std::max(0.0f, child._base_size.y * _transform.scale.y)
+        std::max(0.0f, layout_size.x - _padding.left - _padding.right),
+        std::max(0.0f, layout_size.y - _padding.top - _padding.bottom)
     };
 }
 
-Vector2 UILayout::content_size() const
+Vector2 UILayout::child_layout_size(
+    const LayoutChild& child,
+    const Vector2& available_content_area
+) const
+{
+    Vector2 base_size = child._options._use_size_override
+        ? child._options._size_override
+        : child._base_size;
+
+    Vector2 child_size{
+        std::max(0.0f, base_size.x * _transform.scale.x),
+        std::max(0.0f, base_size.y * _transform.scale.y)
+    };
+
+    const LayoutMargin& margin = child._options._margin;
+    if (child._options._fill_cross_axis)
+    {
+        if (_direction == LayoutDirection::Horizontal)
+        {
+            child_size.y = std::max(
+                0.0f,
+                available_content_area.y - margin.top - margin.bottom
+            );
+        }
+        else
+        {
+            child_size.x = std::max(
+                0.0f,
+                available_content_area.x - margin.left - margin.right
+            );
+        }
+    }
+
+    return child_size;
+}
+
+Vector2 UILayout::child_outer_size(
+    const LayoutChild& child,
+    const Vector2& available_content_area
+) const
+{
+    const Vector2 child_size = child_layout_size(child, available_content_area);
+    const LayoutMargin& margin = child._options._margin;
+    return {
+        child_size.x + margin.left + margin.right,
+        child_size.y + margin.top + margin.bottom
+    };
+}
+
+Vector2 UILayout::content_size(const Vector2& available_content_area) const
 {
     if (_children.empty())
     {
@@ -375,7 +572,7 @@ Vector2 UILayout::content_size() const
         }
 
         ++valid_child_count;
-        const Vector2 child_size = scaled_child_size(child);
+        const Vector2 child_size = child_outer_size(child, available_content_area);
         if (_direction == LayoutDirection::Horizontal)
         {
             width += child_size.x;
@@ -457,12 +654,18 @@ Vector2 UILayout::content_origin(const Vector2& content_size) const
         break;
     }
 
+    x -= _content_offset.x;
+    y -= _content_offset.y;
     return { x, y };
 }
 
-float UILayout::cross_axis_offset(float content_extent, float child_extent) const
+float UILayout::cross_axis_offset(
+    float content_extent,
+    float child_extent,
+    LayoutAlign align
+) const
 {
-    switch (_cross_align)
+    switch (align)
     {
     case LayoutAlign::Start:
         return 0.0f;

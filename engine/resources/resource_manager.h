@@ -10,6 +10,7 @@
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
 
+#include <filesystem>
 #include <string_view>
 #include <vector>
 
@@ -24,6 +25,11 @@ public:
 	bool load_atlases(
 		SDL_Renderer* renderer,
 		const std::vector<AtlasLoadRequest>& requests
+	);
+	bool load_font(
+		const std::string& key,
+		const std::filesystem::path& file_path,
+		int point_size
 	);
 
 	Atlas* find_atlas(const std::string_view& key) const;

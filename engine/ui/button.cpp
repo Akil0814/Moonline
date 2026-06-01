@@ -70,7 +70,11 @@ void Button::on_render(SDL_Renderer* renderer)
 
     if (!_has_state_textures)
     {
-        switch (_status)
+        const Status draw_status = _is_focused && _status == Status::Idle
+            ? Status::Hovered
+            : _status;
+
+        switch (draw_status)
         {
         case Status::Idle:
             SDL_SetRenderDrawColor(renderer, _color_idle.r, _color_idle.g, _color_idle.b, _color_idle.a);
@@ -90,7 +94,11 @@ void Button::on_render(SDL_Renderer* renderer)
     else
     {
         SDL_Texture* current_texture = _texture_idle;
-        switch (_status)
+        const Status draw_status = _is_focused && _status == Status::Idle
+            ? Status::Hovered
+            : _status;
+
+        switch (draw_status)
         {
         case Status::Idle:
             current_texture = _texture_idle;
@@ -155,6 +163,7 @@ void Button::reset()
     GameObject::reset();
     _status = Status::Idle;
     _enabled = true;
+    _is_focused = false;
     _is_pressing = false;
     _was_mouse_down = false;
     _click_count = 0;
@@ -253,6 +262,44 @@ void Button::set_message_texture(SDL_Texture* new_texture_message)
     _texture_message = new_texture_message;
 }
 
+void Button::set_state_colors(
+    SDL_Color color_idle,
+    SDL_Color color_hovered,
+    SDL_Color color_pushed,
+    SDL_Color color_frame
+)
+{
+    _color_idle = color_idle;
+    _color_hovered = color_hovered;
+    _color_pushed = color_pushed;
+    _color_frame = color_frame;
+    _has_state_textures = false;
+}
+
+void Button::set_state_textures(
+    SDL_Texture* texture_idle,
+    SDL_Texture* texture_hovered,
+    SDL_Texture* texture_pushed
+)
+{
+    init_assert(texture_idle, "Button texture_idle must not be null.");
+    init_assert(texture_hovered, "Button texture_hovered must not be null.");
+    init_assert(texture_pushed, "Button texture_pushed must not be null.");
+
+    _texture_idle = texture_idle;
+    _texture_hovered = texture_hovered;
+    _texture_pushed = texture_pushed;
+    _has_state_textures = true;
+}
+
+void Button::clear_state_textures()
+{
+    _has_state_textures = false;
+    _texture_idle = nullptr;
+    _texture_hovered = nullptr;
+    _texture_pushed = nullptr;
+}
+
 void Button::set_enabled(bool new_enabled)
 {
     _enabled = new_enabled;
@@ -267,6 +314,49 @@ void Button::set_enabled(bool new_enabled)
 bool Button::is_enabled() const
 {
     return _enabled;
+}
+
+void Button::set_focused(bool focused)
+{
+    _is_focused = focused;
+}
+
+bool Button::is_focused() const
+{
+    return _is_focused;
+}
+
+bool Button::handle_focused_input_event(const InputEvent& event)
+{
+    if (!_enabled || !_is_focused)
+    {
+        return false;
+    }
+
+    if (event.type != InputEventType::Pressed || event.action != InputAction::Confirm)
+    {
+        return false;
+    }
+
+    play_sound(_sound_effect_down);
+    play_sound(_sound_effect_up);
+    ++_click_count;
+    if (_on_click)
+    {
+        _on_click();
+    }
+
+    return true;
+}
+
+GameObject* Button::game_object()
+{
+    return this;
+}
+
+const GameObject* Button::game_object() const
+{
+    return this;
 }
 
 int Button::click_count() const

@@ -21,6 +21,15 @@ bool ResourceManager::load_atlases(
 	return _atlas_manager.load_atlases(renderer, requests);
 }
 
+bool ResourceManager::load_font(
+	const std::string& key,
+	const std::filesystem::path& file_path,
+	int point_size
+)
+{
+	return _font_manager.load_font(key, file_path, point_size);
+}
+
 Atlas* ResourceManager::find_atlas(const std::string_view& key) const
 {
 	return _atlas_manager.find_atlas(key);

@@ -7,14 +7,18 @@
 #include "../engine/core/scene/scene_manager.h"
 
 #include "../engine/io/path/path_manager.h"
+#include "../engine/resources/resource_manager.h"
 #include "../engine/resources/resource_bootstrapper.h"
 #include "../engine/resources/texture/surface_loader.h"
 #include "../engine/resources/texture/texture_loader.h"
+
+#include "../gameplay/scene/main_menu_scene.h"
 
 #include <iostream>
 #include <thread>
 #include <atomic>
 #include <filesystem>
+#include <algorithm>
 
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
@@ -53,10 +57,12 @@ Application:: Application()
 	init_assert(_renderer, "SDL_CreateRenderer Error");
 
 	init_assert(SDL_RenderSetLogicalSize(_renderer, _logical_width, _logical_height) == 0, "SDL_RenderSetLogicalSize Error");
+	open_connected_controllers();
 }
 
 Application:: ~Application()
 {
+	close_all_controllers();
 	SDL_DestroyRenderer(_renderer);
 	SDL_DestroyWindow(_window);
 
@@ -74,6 +80,16 @@ bool Application::init(int argc, char** argv)
 	init_assert(
 		ResourceBootstrapper::instance()->bootstrap(argv[0], _renderer),
 		"Resource bootstrap error"
+	);
+
+	ResourceManager* resource_manager = ResourceManager::instance();
+	init_assert(
+		resource_manager->load_font(
+			"ui.default",
+			PathManager::instance()->fonts() / "IPix.ttf",
+			24
+		),
+		"Default UI font load error"
 	);
 
 	//-----------------------------testing-----------------
@@ -181,6 +197,9 @@ bool Application::init(int argc, char** argv)
 	if (loading_thread.joinable())
 		loading_thread.join();
 
+	_input_system.set_context(InputContext::UI);
+	SceneManager::instance()->switch_to<MainMenuScene>();
+
     return true;
 }
 
@@ -204,6 +223,7 @@ int  Application::run(int argc, char** argv)
 		{
 			if (_event.type == SDL_QUIT)
 				_active = false;
+			handle_controller_device_event(_event);
 			_input_system.process_event(_event);
 		}
 
@@ -238,7 +258,108 @@ int  Application::run(int argc, char** argv)
 
 void Application::shutdown()
 {
-	//...
+	close_all_controllers();
+}
+
+void Application::open_connected_controllers()
+{
+	const int joystick_count = SDL_NumJoysticks();
+	for (int joystick_index = 0; joystick_index < joystick_count; ++joystick_index)
+	{
+		open_controller(joystick_index);
+	}
+}
+
+void Application::open_controller(int joystick_index)
+{
+	if (!SDL_IsGameController(joystick_index))
+	{
+		return;
+	}
+
+	SDL_GameController* controller = SDL_GameControllerOpen(joystick_index);
+	if (!controller)
+	{
+		SDL_Log("Failed to open controller %d: %s", joystick_index, SDL_GetError());
+		SDL_ClearError();
+		return;
+	}
+
+	SDL_Joystick* joystick = SDL_GameControllerGetJoystick(controller);
+	const SDL_JoystickID joystick_id = SDL_JoystickInstanceID(joystick);
+
+	for (SDL_GameController* existing_controller : _controllers)
+	{
+		if (!existing_controller)
+		{
+			continue;
+		}
+
+		SDL_Joystick* existing_joystick = SDL_GameControllerGetJoystick(existing_controller);
+		if (SDL_JoystickInstanceID(existing_joystick) == joystick_id)
+		{
+			SDL_GameControllerClose(controller);
+			return;
+		}
+	}
+
+	_controllers.push_back(controller);
+}
+
+void Application::close_controller(SDL_JoystickID joystick_id)
+{
+	std::vector<SDL_GameController*>::iterator iter = std::remove_if(
+		_controllers.begin(),
+		_controllers.end(),
+		[joystick_id](SDL_GameController* controller)
+		{
+			if (!controller)
+			{
+				return true;
+			}
+
+			SDL_Joystick* joystick = SDL_GameControllerGetJoystick(controller);
+			if (SDL_JoystickInstanceID(joystick) != joystick_id)
+			{
+				return false;
+			}
+
+			SDL_GameControllerClose(controller);
+			return true;
+		}
+	);
+
+	_controllers.erase(iter, _controllers.end());
+}
+
+void Application::close_all_controllers()
+{
+	for (SDL_GameController* controller : _controllers)
+	{
+		if (controller)
+		{
+			SDL_GameControllerClose(controller);
+		}
+	}
+
+	_controllers.clear();
+}
+
+void Application::handle_controller_device_event(const SDL_Event& event)
+{
+	switch (event.type)
+	{
+	case SDL_CONTROLLERDEVICEADDED:
+		open_controller(event.cdevice.which);
+		break;
+
+	case SDL_CONTROLLERDEVICEREMOVED:
+		close_controller(event.cdevice.which);
+		break;
+
+	default:
+		break;
+	}
 }
 
 
