@@ -3,10 +3,8 @@
 #include <algorithm>
 
 UiGridLayout::UiGridLayout(Vector2 position, Vector2 size, int order)
-    : GameObject(DepthLayer::UI, order)
+    : UiElement(position, size, order)
 {
-    GameObject::set_world_position(position);
-    GameObject::set_size(size);
 }
 
 void UiGridLayout::set_world_position(const Vector2& position)
@@ -99,6 +97,7 @@ LayoutAlign UiGridLayout::vertical_align() const
 
 void UiGridLayout::on_update(double delta)
 {
+    refresh_theme_if_needed();
     apply_layout();
 
     for (const std::shared_ptr<GameObject>& child : _children)
@@ -114,6 +113,7 @@ void UiGridLayout::on_update(double delta)
 
 void UiGridLayout::on_render(SDL_Renderer* renderer)
 {
+    refresh_theme_if_needed();
     apply_layout();
 
     for (const std::shared_ptr<GameObject>& child : _children)
@@ -129,6 +129,7 @@ void UiGridLayout::on_render(SDL_Renderer* renderer)
 
 void UiGridLayout::on_input(const InputSnapshot& input)
 {
+    refresh_theme_if_needed();
     apply_layout();
 
     for (const std::shared_ptr<GameObject>& child : _children)
@@ -144,6 +145,7 @@ void UiGridLayout::on_input(const InputSnapshot& input)
 
 void UiGridLayout::on_input_event(const InputEvent& event)
 {
+    refresh_theme_if_needed();
     apply_layout();
 
     for (const std::shared_ptr<GameObject>& child : _children)
@@ -159,7 +161,7 @@ void UiGridLayout::on_input_event(const InputEvent& event)
 
 void UiGridLayout::reset()
 {
-    GameObject::reset();
+    UiElement::reset();
     _padding = LayoutPadding{};
     _horizontal_spacing = 0.0f;
     _vertical_spacing = 0.0f;
@@ -252,4 +254,9 @@ float UiGridLayout::aligned_offset(float cell_extent, float child_extent, Layout
     }
 
     return 0.0f;
+}
+
+void UiGridLayout::apply_theme(const UiTheme& theme)
+{
+    (void)theme;
 }

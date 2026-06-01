@@ -1,12 +1,11 @@
 #pragma once
 
-#include "../../core/game_object.h"
 #include "../ui_layout.h"
 
 #include <memory>
 #include <vector>
 
-class UiGridLayout : public GameObject
+class UiGridLayout : public UiElement
 {
 public:
     explicit UiGridLayout(Vector2 position = Vector2::zero(), Vector2 size = Vector2::zero(), int order = 0);
@@ -43,6 +42,7 @@ private:
     void mark_dirty();
     void apply_layout();
     [[nodiscard]] float aligned_offset(float cell_extent, float child_extent, LayoutAlign align) const;
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     std::vector<std::shared_ptr<GameObject>> _children;

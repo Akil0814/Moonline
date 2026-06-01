@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../containers/ui_scroll_panel.h"
-#include "../../core/game_object.h"
+#include "../ui_element.h"
 
 #include <SDL.h>
 
@@ -11,7 +11,7 @@ enum class ScrollBarOrientation
     Horizontal
 };
 
-class UiScrollBar : public GameObject
+class UiScrollBar : public UiElement
 {
 public:
     explicit UiScrollBar(Vector2 position = Vector2::zero(), Vector2 size = Vector2::zero(), int order = 0);
@@ -58,6 +58,7 @@ private:
     [[nodiscard]] bool should_draw() const;
     [[nodiscard]] bool contains_point(const SDL_Rect& target_rect, int x, int y) const;
     void update_target_from_point(int x, int y);
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     UiScrollPanel* _target = nullptr;

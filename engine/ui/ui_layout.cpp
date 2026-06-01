@@ -3,10 +3,8 @@
 #include <algorithm>
 
 UILayout::UILayout(Vector2 position, Vector2 size, int order)
-    : GameObject(DepthLayer::UI, order)
+    : UiElement(position, size, order)
 {
-    GameObject::set_world_position(position);
-    GameObject::set_size(size);
 }
 
 void UILayout::set_world_position(const Vector2& position)
@@ -275,6 +273,7 @@ void UILayout::relayout()
 
 void UILayout::on_update(double delta)
 {
+    refresh_theme_if_needed();
     remove_destroyed_children();
     apply_layout();
 
@@ -298,6 +297,7 @@ void UILayout::on_update(double delta)
 
 void UILayout::on_render(SDL_Renderer* renderer)
 {
+    refresh_theme_if_needed();
     remove_destroyed_children();
     apply_layout();
 
@@ -319,6 +319,7 @@ void UILayout::on_render(SDL_Renderer* renderer)
 
 void UILayout::on_input(const InputSnapshot& input)
 {
+    refresh_theme_if_needed();
     remove_destroyed_children();
     apply_layout();
 
@@ -340,6 +341,7 @@ void UILayout::on_input(const InputSnapshot& input)
 
 void UILayout::on_input_event(const InputEvent& event)
 {
+    refresh_theme_if_needed();
     remove_destroyed_children();
     apply_layout();
 
@@ -361,7 +363,7 @@ void UILayout::on_input_event(const InputEvent& event)
 
 void UILayout::reset()
 {
-    GameObject::reset();
+    UiElement::reset();
 
     for (LayoutChild& child : _children)
     {
@@ -373,6 +375,11 @@ void UILayout::reset()
 
     mark_dirty();
     apply_layout();
+}
+
+void UILayout::apply_theme(const UiTheme& theme)
+{
+    (void)theme;
 }
 
 void UILayout::mark_dirty()

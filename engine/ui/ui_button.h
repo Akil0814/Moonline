@@ -1,11 +1,14 @@
 #pragma once
-#include "../core/game_object.h"
-#include "ui_focusable.h"
+#include "style/ui_theme_roles.h"
+#include "ui_control.h"
+
+struct UiTheme;
+
 #include <SDL.h>
 #include <SDL_mixer.h>
 #include <functional>
 
-class Button : public GameObject, public UiFocusable
+class UiButton : public UiControl
 {
 public:
     enum class Status
@@ -16,21 +19,19 @@ public:
     };
 
 public:
-    explicit Button(Vector2 position, Vector2 size, int order = 0);
-    Button(Vector2 position, Vector2 size, SDL_Texture* texture_message,
+    explicit UiButton(Vector2 position, Vector2 size, int order = 0);
+    UiButton(Vector2 position, Vector2 size, SDL_Texture* texture_message,
         Mix_Chunk* sound_effect_down = nullptr, Mix_Chunk* sound_effect_up = nullptr, int order = 0);
-    Button(Vector2 position, Vector2 size, SDL_Texture* texture_message,
+    UiButton(Vector2 position, Vector2 size, SDL_Texture* texture_message,
         Mix_Chunk* sound_effect_down, Mix_Chunk* sound_effect_up,
         SDL_Color color_idle, SDL_Color color_hovered, SDL_Color color_pushed, SDL_Color color_frame, int order = 0);
-    Button(Vector2 position, Vector2 size, SDL_Texture* texture_message,
+    UiButton(Vector2 position, Vector2 size, SDL_Texture* texture_message,
         Mix_Chunk* sound_effect_down, Mix_Chunk* sound_effect_up,
         SDL_Texture* texture_idle, SDL_Texture* texture_hovered, SDL_Texture* texture_pushed, int order = 0);
 
-    Button(const Button&) = delete;
-    Button& operator=(const Button&) = delete;
-    Button(Button&&) = default;
-    Button& operator=(Button&&) = default;
-    ~Button() = default;
+    UiButton(const UiButton&) = delete;
+    UiButton& operator=(const UiButton&) = delete;
+    ~UiButton() = default;
 
     void on_render(SDL_Renderer* renderer) override;
     void on_input(const InputSnapshot& input) override;
@@ -49,18 +50,15 @@ public:
         SDL_Texture* texture_pushed
     );
     void clear_state_textures();
-    void set_enabled(bool enabled);
-    [[nodiscard]] bool is_enabled() const;
-    void set_focused(bool focused);
-    [[nodiscard]] bool is_focused() const;
+    void set_enabled(bool enabled) override;
     [[nodiscard]] bool handle_focused_input_event(const InputEvent& event) override;
-    [[nodiscard]] GameObject* game_object() override;
-    [[nodiscard]] const GameObject* game_object() const override;
     [[nodiscard]] int click_count() const;
     void reset_click_count();
     void set_on_click(std::function<void()> func);
     [[nodiscard]] Status status() const;
     [[nodiscard]] Status get_status() const;
+    void set_button_theme_role(UiButtonThemeRole button_theme_role);
+    [[nodiscard]] UiButtonThemeRole button_theme_role() const;
 
 private:
     [[nodiscard]] SDL_Rect message_rect() const;
@@ -70,6 +68,7 @@ private:
     void finish_press(int x, int y);
     void play_sound(Mix_Chunk* sound_effect) const;
     void init_assert(const void* ptr, const char* err_msg) const;
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     Mix_Chunk* _sound_effect_down = nullptr;
@@ -89,10 +88,9 @@ private:
     std::function<void()> _on_click;
 
     bool _has_state_textures = false;
-    bool _enabled = true;
-    bool _is_focused = false;
     bool _is_pressing = false;
     bool _was_mouse_down = false;
 
     int _click_count = 0;
+    UiButtonThemeRole _button_theme_role = UiButtonThemeRole::Default;
 };

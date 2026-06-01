@@ -2,7 +2,7 @@
 
 #include "../animation/ui_transition.h"
 #include "ui_panel.h"
-#include "../button.h"
+#include "../ui_button.h"
 #include "../ui_focusable.h"
 
 #include <memory>
@@ -47,7 +47,7 @@ public:
     void set_focused_control(int index);
     [[nodiscard]] int focused_control_index() const;
 
-    void register_focusable_button(const std::shared_ptr<Button>& button);
+    void register_focusable_button(const std::shared_ptr<UiButton>& button);
     void clear_focusable_buttons();
     void focus_next_button();
     void focus_previous_button();

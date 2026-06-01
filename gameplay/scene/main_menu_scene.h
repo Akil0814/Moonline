@@ -4,7 +4,7 @@
 #include "../../engine/ui/composite/ui_menu_list.h"
 #include "../../engine/ui/composite/ui_dialog.h"
 #include "../../engine/ui/containers/ui_screen.h"
-#include "../../engine/ui/widgets/label.h"
+#include "../../engine/ui/widgets/ui_label.h"
 #include "../../engine/ui/widgets/ui_scroll_bar.h"
 
 #include <memory>
@@ -38,9 +38,9 @@ private:
 
 private:
     std::shared_ptr<UiScreen> _screen;
-    std::shared_ptr<Label> _title_label;
-    std::shared_ptr<Label> _subtitle_label;
-    std::shared_ptr<Label> _footer_label;
+    std::shared_ptr<UiLabel> _title_label;
+    std::shared_ptr<UiLabel> _subtitle_label;
+    std::shared_ptr<UiLabel> _footer_label;
     std::shared_ptr<UiMenuList> _menu_list;
     std::shared_ptr<UiScrollBar> _menu_scroll_bar;
     std::shared_ptr<UiDialog> _quit_dialog;

@@ -1,23 +1,22 @@
-#include "image_view.h"
+#include "ui_image_view.h"
 
 #include "../../resources/resource_manager.h"
 
 #include <algorithm>
 
-ImageView::ImageView(Vector2 position, Vector2 size, int order)
-    : GameObject(DepthLayer::UI, order)
+UiImageView::UiImageView(Vector2 position, Vector2 size, int order)
+    : UiElement(position, size, order)
 {
-    GameObject::set_world_position(position);
-    GameObject::set_size(size);
 }
 
-void ImageView::on_render(SDL_Renderer* renderer)
+void UiImageView::on_render(SDL_Renderer* renderer)
 {
     if (!renderer)
     {
         return;
     }
 
+    refresh_theme_if_needed();
     SDL_Texture* resolved_texture = resolve_texture();
     if (!resolved_texture)
     {
@@ -74,9 +73,9 @@ void ImageView::on_render(SDL_Renderer* renderer)
     SDL_SetTextureAlphaMod(resolved_texture, old_a);
 }
 
-void ImageView::reset()
+void UiImageView::reset()
 {
-    GameObject::reset();
+    UiElement::reset();
     _texture = nullptr;
     _texture_key.clear();
     _source_rect.reset();
@@ -86,82 +85,82 @@ void ImageView::reset()
     _auto_size = false;
 }
 
-void ImageView::set_texture(SDL_Texture* texture)
+void UiImageView::set_texture(SDL_Texture* texture)
 {
     _texture = texture;
 }
 
-SDL_Texture* ImageView::texture() const
+SDL_Texture* UiImageView::texture() const
 {
     return _texture;
 }
 
-void ImageView::set_texture_key(const std::string& texture_key)
+void UiImageView::set_texture_key(const std::string& texture_key)
 {
     _texture_key = texture_key;
 }
 
-const std::string& ImageView::texture_key() const
+const std::string& UiImageView::texture_key() const
 {
     return _texture_key;
 }
 
-void ImageView::set_source_rect(const SDL_Rect& source_rect)
+void UiImageView::set_source_rect(const SDL_Rect& source_rect)
 {
     _source_rect = source_rect;
 }
 
-void ImageView::clear_source_rect()
+void UiImageView::clear_source_rect()
 {
     _source_rect.reset();
 }
 
-bool ImageView::has_source_rect() const
+bool UiImageView::has_source_rect() const
 {
     return _source_rect.has_value();
 }
 
-void ImageView::set_tint_color(SDL_Color tint_color)
+void UiImageView::set_tint_color(SDL_Color tint_color)
 {
     _tint_color = tint_color;
 }
 
-SDL_Color ImageView::tint_color() const
+SDL_Color UiImageView::tint_color() const
 {
     return _tint_color;
 }
 
-void ImageView::set_alpha(Uint8 alpha)
+void UiImageView::set_alpha(Uint8 alpha)
 {
     _alpha = alpha;
 }
 
-Uint8 ImageView::alpha() const
+Uint8 UiImageView::alpha() const
 {
     return _alpha;
 }
 
-void ImageView::set_scale_mode(ImageScaleMode scale_mode)
+void UiImageView::set_scale_mode(ImageScaleMode scale_mode)
 {
     _scale_mode = scale_mode;
 }
 
-ImageScaleMode ImageView::scale_mode() const
+ImageScaleMode UiImageView::scale_mode() const
 {
     return _scale_mode;
 }
 
-void ImageView::set_auto_size(bool auto_size)
+void UiImageView::set_auto_size(bool auto_size)
 {
     _auto_size = auto_size;
 }
 
-bool ImageView::auto_sizes() const
+bool UiImageView::auto_sizes() const
 {
     return _auto_size;
 }
 
-SDL_Texture* ImageView::resolve_texture() const
+SDL_Texture* UiImageView::resolve_texture() const
 {
     if (_texture)
     {
@@ -176,7 +175,7 @@ SDL_Texture* ImageView::resolve_texture() const
     return ResourceManager::instance()->find_texture(_texture_key);
 }
 
-SDL_Rect ImageView::destination_rect(int texture_width, int texture_height) const
+SDL_Rect UiImageView::destination_rect(int texture_width, int texture_height) const
 {
     SDL_Rect destination = rect();
     if (_scale_mode == ImageScaleMode::Stretch)
@@ -208,4 +207,9 @@ SDL_Rect ImageView::destination_rect(int texture_width, int texture_height) cons
     destination.w = draw_width;
     destination.h = draw_height;
     return destination;
+}
+
+void UiImageView::apply_theme(const UiTheme& theme)
+{
+    (void)theme;
 }

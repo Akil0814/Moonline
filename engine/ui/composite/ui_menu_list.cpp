@@ -1,11 +1,14 @@
 #include "ui_menu_list.h"
 
+#include "../style/ui_theme.h"
+
 #include <algorithm>
 #include <utility>
 
 UiMenuList::UiMenuList(Vector2 position, Vector2 size, int order)
     : UiScrollPanel(position, size, order)
 {
+    set_panel_theme_role(UiPanelThemeRole::List);
     set_direction(LayoutDirection::Vertical);
     set_allow_horizontal_scroll(false);
     set_allow_vertical_scroll(true);
@@ -23,6 +26,7 @@ void UiMenuList::on_input_event(const InputEvent& event)
 void UiMenuList::reset()
 {
     UiScrollPanel::reset();
+    set_panel_theme_role(UiPanelThemeRole::List);
     set_direction(LayoutDirection::Vertical);
     set_allow_horizontal_scroll(false);
     set_allow_vertical_scroll(true);
@@ -199,7 +203,7 @@ void UiMenuList::rebuild_items()
     {
         const UiMenuListItem& item = _items[index];
 
-        std::shared_ptr<TextButton> button = std::make_shared<TextButton>(
+        std::shared_ptr<UiTextButton> button = std::make_shared<UiTextButton>(
             Vector2::zero(),
             _item_size
         );
@@ -238,7 +242,7 @@ void UiMenuList::sync_selection_visuals()
 {
     for (size_t index = 0; index < _buttons.size(); ++index)
     {
-        std::shared_ptr<TextButton>& button = _buttons[index];
+        std::shared_ptr<UiTextButton>& button = _buttons[index];
         if (!button)
         {
             continue;
@@ -251,7 +255,7 @@ void UiMenuList::sync_selection_visuals()
     }
 }
 
-void UiMenuList::handle_item_click(TextButton* button)
+void UiMenuList::handle_item_click(UiTextButton* button)
 {
     if (!button)
     {
@@ -354,4 +358,12 @@ GameObject* UiMenuList::game_object()
 const GameObject* UiMenuList::game_object() const
 {
     return this;
+}
+
+void UiMenuList::apply_theme(const UiTheme& theme)
+{
+    UiPanel::apply_theme(theme);
+    _text_color = theme._default_label._text_color;
+    _button_style = theme._primary_button;
+    rebuild_items();
 }

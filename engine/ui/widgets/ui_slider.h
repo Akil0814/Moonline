@@ -1,8 +1,8 @@
 #pragma once
 
 #include "../bar.h"
-#include "../ui_focusable.h"
-#include "label.h"
+#include "../ui_control.h"
+#include "ui_label.h"
 
 #include <functional>
 #include <string>
@@ -15,7 +15,7 @@ enum class UiSliderOrientation
 
 using UiSliderValueChangedCallback = std::function<void(float value)>;
 
-class UiSlider : public GameObject, public UiFocusable
+class UiSlider : public UiControl
 {
 public:
     explicit UiSlider(Vector2 position = Vector2::zero(), Vector2 size = Vector2::zero(), int order = 0);
@@ -64,15 +64,8 @@ public:
     [[nodiscard]] SDL_Color text_color() const;
 
     void set_enabled(bool enabled) override;
-    [[nodiscard]] bool is_enabled() const override;
-
-    void set_focused(bool focused) override;
-    [[nodiscard]] bool is_focused() const override;
-
     void set_on_value_changed(UiSliderValueChangedCallback on_value_changed);
     [[nodiscard]] bool handle_focused_input_event(const InputEvent& event) override;
-    [[nodiscard]] GameObject* game_object() override;
-    [[nodiscard]] const GameObject* game_object() const override;
 
 private:
     void sync_value_label();
@@ -82,10 +75,11 @@ private:
     [[nodiscard]] SDL_Rect thumb_rect() const;
     [[nodiscard]] bool contains_point(int x, int y) const;
     void update_value_from_point(int x, int y, bool notify);
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     Bar _bar;
-    Label _value_label;
+    UiLabel _value_label;
 
     UiSliderValueChangedCallback _on_value_changed;
 
@@ -100,8 +94,6 @@ private:
 
     int _value_precision = 0;
 
-    bool _enabled = true;
-    bool _is_focused = false;
     bool _is_dragging = false;
     bool _was_mouse_down = false;
     bool _show_value_text = false;

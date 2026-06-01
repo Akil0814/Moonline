@@ -3,7 +3,7 @@
 #include "../containers/ui_scroll_panel.h"
 #include "../style/ui_style.h"
 #include "../ui_focusable.h"
-#include "../widgets/label.h"
+#include "../widgets/ui_label.h"
 #include "../widgets/ui_slider.h"
 #include "../widgets/ui_toggle.h"
 
@@ -112,7 +112,7 @@ private:
     struct RowWidgets
     {
         std::shared_ptr<UiPanel> _panel;
-        std::shared_ptr<Label> _label;
+        std::shared_ptr<UiLabel> _label;
         std::shared_ptr<GameObject> _control_object;
         std::shared_ptr<UiFocusable> _control;
     };
@@ -124,6 +124,7 @@ private:
     void emit_value_changed(int index);
     void handle_row_click(UiFocusable* control);
     [[nodiscard]] std::string value_text(const UiOptionListItem& item) const;
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     std::vector<UiOptionListItem> _items;

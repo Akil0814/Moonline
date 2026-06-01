@@ -1,6 +1,8 @@
 #include "ui_panel.h"
 
 #include "../../resources/resource_manager.h"
+#include "../style/ui_theme.h"
+#include "../style/ui_style.h"
 
 UiPanel::UiPanel(Vector2 position, Vector2 size, int order)
     : UILayout(position, size, order)
@@ -14,6 +16,7 @@ void UiPanel::on_render(SDL_Renderer* renderer)
         return;
     }
 
+    refresh_theme_if_needed();
     const SDL_Rect& object_rect = rect();
     if (object_rect.w > 0 && object_rect.h > 0)
     {
@@ -105,6 +108,8 @@ void UiPanel::reset()
     _draw_background = true;
     _draw_border = false;
     _clip_children = false;
+    _panel_theme_role = UiPanelThemeRole::Default;
+    mark_theme_dirty();
 }
 
 void UiPanel::set_draw_background(bool draw_background)
@@ -177,6 +182,17 @@ Uint8 UiPanel::background_alpha() const
     return _background_alpha;
 }
 
+void UiPanel::set_panel_theme_role(UiPanelThemeRole panel_theme_role)
+{
+    _panel_theme_role = panel_theme_role;
+    mark_theme_dirty();
+}
+
+UiPanelThemeRole UiPanel::panel_theme_role() const
+{
+    return _panel_theme_role;
+}
+
 void UiPanel::set_clip_children(bool clip_children)
 {
     _clip_children = clip_children;
@@ -200,4 +216,29 @@ SDL_Texture* UiPanel::resolve_background_texture() const
     }
 
     return ResourceManager::instance()->find_texture(_background_texture_key);
+}
+
+void UiPanel::apply_theme(const UiTheme& theme)
+{
+    const PanelStyle* style = &theme._default_panel;
+    switch (_panel_theme_role)
+    {
+    case UiPanelThemeRole::Default:
+        style = &theme._default_panel;
+        break;
+
+    case UiPanelThemeRole::Screen:
+        style = &theme._screen_panel;
+        break;
+
+    case UiPanelThemeRole::Dialog:
+        style = &theme._dialog_panel;
+        break;
+
+    case UiPanelThemeRole::List:
+        style = &theme._list_panel;
+        break;
+    }
+
+    UiStyle::apply_panel(*this, *style);
 }

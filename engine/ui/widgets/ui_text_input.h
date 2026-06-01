@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../ui_focusable.h"
+#include "../ui_control.h"
 #include "../../resources/texture/texture_loader.h"
 
 #include <SDL.h>
@@ -9,12 +9,12 @@
 #include <functional>
 #include <string>
 
-using TextInputChangedCallback = std::function<void(const std::string& text)>;
+using UiTextInputChangedCallback = std::function<void(const std::string& text)>;
 
-class TextInput : public GameObject, public UiFocusable
+class UiTextInput : public UiControl
 {
 public:
-    explicit TextInput(Vector2 position = Vector2::zero(), Vector2 size = Vector2::zero(), int order = 0);
+    explicit UiTextInput(Vector2 position = Vector2::zero(), Vector2 size = Vector2::zero(), int order = 0);
 
     void on_update(double delta) override;
     void on_render(SDL_Renderer* renderer) override;
@@ -41,12 +41,8 @@ public:
 
     void set_password_mode(bool password_mode);
     [[nodiscard]] bool is_password_mode() const;
-
     void set_enabled(bool enabled) override;
-    [[nodiscard]] bool is_enabled() const override;
-
     void set_focused(bool focused) override;
-    [[nodiscard]] bool is_focused() const override;
 
     void set_padding(int padding);
     [[nodiscard]] int padding() const;
@@ -69,10 +65,8 @@ public:
     void set_caret_color(SDL_Color color);
     [[nodiscard]] SDL_Color caret_color() const;
 
-    void set_on_text_changed(TextInputChangedCallback on_text_changed);
+    void set_on_text_changed(UiTextInputChangedCallback on_text_changed);
     [[nodiscard]] bool handle_focused_input_event(const InputEvent& event) override;
-    [[nodiscard]] GameObject* game_object() override;
-    [[nodiscard]] const GameObject* game_object() const override;
 
 private:
     void mark_dirty();
@@ -88,6 +82,7 @@ private:
     void update_caret_from_mouse(int mouse_x);
     [[nodiscard]] int caret_pixel_x() const;
     [[nodiscard]] bool contains_point(int x, int y) const;
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     std::string _text;
@@ -97,7 +92,7 @@ private:
     TTF_Font* _font = nullptr;
     TexturePtr _texture;
 
-    TextInputChangedCallback _on_text_changed;
+    UiTextInputChangedCallback _on_text_changed;
 
     SDL_Color _text_color{ 244, 244, 248, 255 };
     SDL_Color _placeholder_color{ 142, 154, 170, 255 };
@@ -117,8 +112,6 @@ private:
 
     bool _read_only = false;
     bool _password_mode = false;
-    bool _enabled = true;
-    bool _is_focused = false;
     bool _show_caret = true;
     bool _dirty = true;
     bool _was_mouse_down = false;

@@ -1,16 +1,18 @@
 #include "ui_scroll_bar.h"
 
+#include "../style/ui_theme.h"
+#include "../style/ui_style.h"
+
 #include <algorithm>
 
 UiScrollBar::UiScrollBar(Vector2 position, Vector2 size, int order)
-    : GameObject(DepthLayer::UI, order)
+    : UiElement(position, size, order)
 {
-    GameObject::set_world_position(position);
-    GameObject::set_size(size);
 }
 
 void UiScrollBar::on_update(double delta)
 {
+    refresh_theme_if_needed();
     (void)delta;
     sync_with_target();
 }
@@ -22,6 +24,7 @@ void UiScrollBar::on_render(SDL_Renderer* renderer)
         return;
     }
 
+    refresh_theme_if_needed();
     const SDL_Rect track = track_rect();
     const SDL_Rect thumb = thumb_rect();
     if (track.w <= 0 || track.h <= 0 || thumb.w <= 0 || thumb.h <= 0)
@@ -106,7 +109,7 @@ void UiScrollBar::on_input(const InputSnapshot& input)
 
 void UiScrollBar::reset()
 {
-    GameObject::reset();
+    UiElement::reset();
     _target = nullptr;
     _track_color = SDL_Color{ 32, 40, 56, 180 };
     _thumb_color = SDL_Color{ 126, 156, 196, 255 };
@@ -120,6 +123,7 @@ void UiScrollBar::reset()
     _is_dragging = false;
     _was_mouse_down = false;
     _orientation = ScrollBarOrientation::Vertical;
+    mark_theme_dirty();
 }
 
 void UiScrollBar::set_target(UiScrollPanel* target)
@@ -376,4 +380,9 @@ void UiScrollBar::update_target_from_point(int x, int y)
     }
 
     _target->set_scroll_offset(next_offset);
+}
+
+void UiScrollBar::apply_theme(const UiTheme& theme)
+{
+    UiStyle::apply_scroll_bar(*this, theme._scroll_bar);
 }

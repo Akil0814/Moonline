@@ -58,11 +58,7 @@ void UiFormsDemoScene::reset()
         _screen->set_spacing(20.0f);
         _screen->set_padding({ 92.0f, 84.0f, 92.0f, 84.0f });
         _screen->set_transition_enabled(true);
-
-        PanelStyle screen_style;
-        screen_style._background_color = SDL_Color{ 12, 18, 28, 255 };
-        screen_style._draw_background = true;
-        UiStyle::apply_panel(*_screen, screen_style);
+        _screen->set_panel_theme_role(UiPanelThemeRole::Screen);
     }
 
     if (_title_label)
@@ -72,12 +68,10 @@ void UiFormsDemoScene::reset()
         _title_label->set_font_key("ui.default");
         _title_label->set_auto_size(true);
         _title_label->set_padding(8);
+        _title_label->set_horizontal_align(TextHorizontalAlign::Center);
+        _title_label->set_vertical_align(TextVerticalAlign::Center);
 
-        LabelStyle title_style;
-        title_style._text_color = SDL_Color{ 244, 244, 248, 255 };
-        title_style._horizontal_align = TextHorizontalAlign::Center;
-        title_style._vertical_align = TextVerticalAlign::Center;
-        UiStyle::apply_label(*_title_label, title_style);
+        _title_label->set_label_theme_role(UiLabelThemeRole::Title);
     }
 
     if (_subtitle_label)
@@ -87,12 +81,10 @@ void UiFormsDemoScene::reset()
         _subtitle_label->set_font_key("ui.default");
         _subtitle_label->set_auto_size(true);
         _subtitle_label->set_padding(4);
+        _subtitle_label->set_horizontal_align(TextHorizontalAlign::Center);
+        _subtitle_label->set_vertical_align(TextVerticalAlign::Center);
 
-        LabelStyle subtitle_style;
-        subtitle_style._text_color = SDL_Color{ 166, 188, 220, 255 };
-        subtitle_style._horizontal_align = TextHorizontalAlign::Center;
-        subtitle_style._vertical_align = TextVerticalAlign::Center;
-        UiStyle::apply_label(*_subtitle_label, subtitle_style);
+        _subtitle_label->set_label_theme_role(UiLabelThemeRole::Subtitle);
     }
 
     if (_footer_label)
@@ -102,12 +94,10 @@ void UiFormsDemoScene::reset()
         _footer_label->set_font_key("ui.default");
         _footer_label->set_auto_size(true);
         _footer_label->set_padding(4);
+        _footer_label->set_horizontal_align(TextHorizontalAlign::Center);
+        _footer_label->set_vertical_align(TextVerticalAlign::Center);
 
-        LabelStyle footer_style;
-        footer_style._text_color = SDL_Color{ 148, 164, 186, 255 };
-        footer_style._horizontal_align = TextHorizontalAlign::Center;
-        footer_style._vertical_align = TextVerticalAlign::Center;
-        UiStyle::apply_label(*_footer_label, footer_style);
+        _footer_label->set_label_theme_role(UiLabelThemeRole::Muted);
     }
 
     if (_form_grid)
@@ -161,17 +151,17 @@ void UiFormsDemoScene::ensure_ui()
 
     if (!_title_label)
     {
-        _title_label = std::make_shared<Label>();
+        _title_label = std::make_shared<UiLabel>();
     }
 
     if (!_subtitle_label)
     {
-        _subtitle_label = std::make_shared<Label>();
+        _subtitle_label = std::make_shared<UiLabel>();
     }
 
     if (!_footer_label)
     {
-        _footer_label = std::make_shared<Label>();
+        _footer_label = std::make_shared<UiLabel>();
     }
 
     if (!_form_grid)
@@ -181,27 +171,27 @@ void UiFormsDemoScene::ensure_ui()
 
     if (!_name_label)
     {
-        _name_label = std::make_shared<Label>();
+        _name_label = std::make_shared<UiLabel>();
     }
 
     if (!_name_input)
     {
-        _name_input = std::make_shared<TextInput>();
+        _name_input = std::make_shared<UiTextInput>();
     }
 
     if (!_password_label)
     {
-        _password_label = std::make_shared<Label>();
+        _password_label = std::make_shared<UiLabel>();
     }
 
     if (!_password_input)
     {
-        _password_input = std::make_shared<TextInput>();
+        _password_input = std::make_shared<UiTextInput>();
     }
 
     if (!_toggle_label)
     {
-        _toggle_label = std::make_shared<Label>();
+        _toggle_label = std::make_shared<UiLabel>();
     }
 
     if (!_toggle)
@@ -211,7 +201,7 @@ void UiFormsDemoScene::ensure_ui()
 
     if (!_slider_label)
     {
-        _slider_label = std::make_shared<Label>();
+        _slider_label = std::make_shared<UiLabel>();
     }
 
     if (!_slider)
@@ -221,7 +211,7 @@ void UiFormsDemoScene::ensure_ui()
 
     if (!_back_button)
     {
-        _back_button = std::make_shared<TextButton>(Vector2::zero(), Vector2{ 240.0f, 56.0f });
+        _back_button = std::make_shared<UiTextButton>(Vector2::zero(), Vector2{ 240.0f, 56.0f });
     }
 }
 
@@ -234,20 +224,11 @@ void UiFormsDemoScene::rebuild_form()
 
     _form_grid->clear_children();
 
-    LabelStyle field_label_style;
-    field_label_style._text_color = SDL_Color{ 244, 244, 248, 255 };
-    field_label_style._horizontal_align = TextHorizontalAlign::Left;
-    field_label_style._vertical_align = TextVerticalAlign::Center;
-
     TextInputStyle input_style;
     input_style._padding = 10;
 
     ToggleStyle toggle_style;
     SliderStyle slider_style;
-    slider_style._bar_style._background_color = SDL_Color{ 22, 30, 42, 255 };
-    slider_style._bar_style._fill_color = SDL_Color{ 126, 156, 196, 255 };
-    slider_style._bar_style._border_color = SDL_Color{ 108, 136, 176, 255 };
-    slider_style._bar_style._draw_border = true;
     slider_style._value_precision = 0;
 
     if (_name_label)
@@ -257,7 +238,9 @@ void UiFormsDemoScene::rebuild_form()
         _name_label->set_font_key("ui.default");
         _name_label->set_auto_size(false);
         _name_label->set_size({ 240.0f, 44.0f });
-        UiStyle::apply_label(*_name_label, field_label_style);
+        _name_label->set_label_theme_role(UiLabelThemeRole::Default);
+        _name_label->set_horizontal_align(TextHorizontalAlign::Left);
+        _name_label->set_vertical_align(TextVerticalAlign::Center);
         _form_grid->add_child(_name_label);
     }
 
@@ -285,7 +268,9 @@ void UiFormsDemoScene::rebuild_form()
         _password_label->set_font_key("ui.default");
         _password_label->set_auto_size(false);
         _password_label->set_size({ 240.0f, 44.0f });
-        UiStyle::apply_label(*_password_label, field_label_style);
+        _password_label->set_label_theme_role(UiLabelThemeRole::Default);
+        _password_label->set_horizontal_align(TextHorizontalAlign::Left);
+        _password_label->set_vertical_align(TextVerticalAlign::Center);
         _form_grid->add_child(_password_label);
     }
 
@@ -314,7 +299,9 @@ void UiFormsDemoScene::rebuild_form()
         _toggle_label->set_font_key("ui.default");
         _toggle_label->set_auto_size(false);
         _toggle_label->set_size({ 240.0f, 44.0f });
-        UiStyle::apply_label(*_toggle_label, field_label_style);
+        _toggle_label->set_label_theme_role(UiLabelThemeRole::Default);
+        _toggle_label->set_horizontal_align(TextHorizontalAlign::Left);
+        _toggle_label->set_vertical_align(TextVerticalAlign::Center);
         _form_grid->add_child(_toggle_label);
     }
 
@@ -342,7 +329,9 @@ void UiFormsDemoScene::rebuild_form()
         _slider_label->set_font_key("ui.default");
         _slider_label->set_auto_size(false);
         _slider_label->set_size({ 240.0f, 44.0f });
-        UiStyle::apply_label(*_slider_label, field_label_style);
+        _slider_label->set_label_theme_role(UiLabelThemeRole::Default);
+        _slider_label->set_horizontal_align(TextHorizontalAlign::Left);
+        _slider_label->set_vertical_align(TextVerticalAlign::Center);
         _form_grid->add_child(_slider_label);
     }
 
@@ -379,12 +368,7 @@ void UiFormsDemoScene::rebuild_form()
             }
         );
 
-        ButtonStyle button_style;
-        button_style._idle_color = SDL_Color{ 36, 48, 70, 255 };
-        button_style._hovered_color = SDL_Color{ 62, 84, 122, 255 };
-        button_style._pushed_color = SDL_Color{ 28, 40, 58, 255 };
-        button_style._frame_color = SDL_Color{ 110, 140, 182, 255 };
-        UiStyle::apply_button(*_back_button, button_style);
+        _back_button->set_button_theme_role(UiButtonThemeRole::Primary);
     }
 }
 

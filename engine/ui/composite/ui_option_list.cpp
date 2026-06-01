@@ -1,5 +1,7 @@
 #include "ui_option_list.h"
 
+#include "../style/ui_theme.h"
+
 #include <SDL.h>
 
 #include <algorithm>
@@ -9,6 +11,7 @@
 UiOptionList::UiOptionList(Vector2 position, Vector2 size, int order)
     : UiScrollPanel(position, size, order)
 {
+    set_panel_theme_role(UiPanelThemeRole::List);
     set_direction(LayoutDirection::Vertical);
     set_allow_horizontal_scroll(false);
     set_allow_vertical_scroll(true);
@@ -62,6 +65,7 @@ void UiOptionList::on_input_event(const InputEvent& event)
 void UiOptionList::reset()
 {
     UiScrollPanel::reset();
+    set_panel_theme_role(UiPanelThemeRole::List);
     set_direction(LayoutDirection::Vertical);
     set_allow_horizontal_scroll(false);
     set_allow_vertical_scroll(true);
@@ -336,7 +340,7 @@ void UiOptionList::rebuild_rows()
         row._panel->set_spacing(16.0f);
         row._panel->set_padding({ 18.0f, 12.0f, 18.0f, 12.0f });
 
-        row._label = std::make_shared<Label>();
+        row._label = std::make_shared<UiLabel>();
         row._label->set_font_key(_font_key);
         row._label->set_text(item._label);
         row._label->set_auto_size(false);
@@ -423,6 +427,20 @@ void UiOptionList::rebuild_rows()
     }
 
     set_selected_row_index(_selected_row_index);
+}
+
+void UiOptionList::apply_theme(const UiTheme& theme)
+{
+    UiPanel::apply_theme(theme);
+    _style._row_background_color = theme._default_panel._background_color;
+    _style._row_selected_background_color = theme._primary_button._hovered_color;
+    _style._row_disabled_background_color = SDL_Color{ 10, 18, 30, 180 };
+    _style._row_border_color = theme._list_panel._border_color;
+    _style._label_text_color = theme._default_label._text_color;
+    _style._disabled_text_color = theme._muted_label._text_color;
+    _style._toggle_style = theme._toggle;
+    _style._slider_style = theme._slider;
+    rebuild_rows();
 }
 
 void UiOptionList::sync_row_visuals()

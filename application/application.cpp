@@ -1,6 +1,6 @@
 #include "application.h"
 
-#include "../engine/ui/progress_bar.h"//test
+#include "../engine/ui/ui_progress_bar.h"//test
 #include "../engine/ui/fade_image.h"//test
 
 #include "../engine/core/time.h"
@@ -111,7 +111,7 @@ bool Application::init(int argc, char** argv)
 
 	FadeImage image(preload_texture_result._texture.get(), { 530,270 }, { 250,250 });
 
-	ProgressBar load_bar({ 1000.0f, 680.0f }, { 200.0f, 5.0f });
+	UiProgressBar load_bar({ 1000.0f, 680.0f }, { 200.0f, 5.0f });
 
 	image.set_play(FadeMode::FadeInOut, 2, 1, 1);
 	image.play();

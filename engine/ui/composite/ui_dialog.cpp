@@ -5,6 +5,7 @@
 UiDialog::UiDialog(Vector2 position, Vector2 size, int order)
     : UiScreen(position, size, order)
 {
+    set_panel_theme_role(UiPanelThemeRole::Dialog);
     ensure_controls();
     reset();
 }
@@ -34,6 +35,7 @@ void UiDialog::on_input_event(const InputEvent& event)
 void UiDialog::reset()
 {
     UiScreen::reset();
+    set_panel_theme_role(UiPanelThemeRole::Dialog);
     set_size({ 520.0f, 320.0f });
     set_anchor(LayoutAnchor::Center);
     set_cross_align(LayoutAlign::Center);
@@ -42,24 +44,14 @@ void UiDialog::reset()
     set_transition_enabled(true);
     set_open(false);
 
-    PanelStyle panel_style;
-    panel_style._background_color = SDL_Color{ 18, 26, 40, 245 };
-    panel_style._border_color = SDL_Color{ 120, 150, 192, 255 };
-    panel_style._draw_background = true;
-    panel_style._draw_border = true;
-    UiStyle::apply_panel(*this, panel_style);
-
     if (_title_label)
     {
         _title_label->reset();
         _title_label->set_font_key("ui.default");
         _title_label->set_auto_size(true);
-
-        LabelStyle title_style;
-        title_style._text_color = SDL_Color{ 248, 248, 252, 255 };
-        title_style._horizontal_align = TextHorizontalAlign::Center;
-        title_style._vertical_align = TextVerticalAlign::Center;
-        UiStyle::apply_label(*_title_label, title_style);
+        _title_label->set_horizontal_align(TextHorizontalAlign::Center);
+        _title_label->set_vertical_align(TextVerticalAlign::Center);
+        _title_label->set_label_theme_role(UiLabelThemeRole::Title);
     }
 
     if (_message_label)
@@ -69,12 +61,9 @@ void UiDialog::reset()
         _message_label->set_auto_size(false);
         _message_label->set_size({ 420.0f, 88.0f });
         _message_label->set_wrap_width(420);
-
-        LabelStyle message_style;
-        message_style._text_color = SDL_Color{ 190, 206, 226, 255 };
-        message_style._horizontal_align = TextHorizontalAlign::Center;
-        message_style._vertical_align = TextVerticalAlign::Center;
-        UiStyle::apply_label(*_message_label, message_style);
+        _message_label->set_horizontal_align(TextHorizontalAlign::Center);
+        _message_label->set_vertical_align(TextVerticalAlign::Center);
+        _message_label->set_label_theme_role(UiLabelThemeRole::Subtitle);
     }
 
     if (_action_list)
@@ -83,21 +72,7 @@ void UiDialog::reset()
         _action_list->set_size({ 360.0f, 120.0f });
         _action_list->set_item_size({ 300.0f, 50.0f });
         _action_list->set_font_key("ui.default");
-        _action_list->set_text_color(SDL_Color{ 248, 248, 252, 255 });
-
-        PanelStyle list_style;
-        list_style._background_color = SDL_Color{ 24, 34, 52, 220 };
-        list_style._border_color = SDL_Color{ 108, 136, 176, 255 };
-        list_style._draw_background = true;
-        list_style._draw_border = true;
-        UiStyle::apply_panel(*_action_list, list_style);
-
-        ButtonStyle button_style;
-        button_style._idle_color = SDL_Color{ 34, 48, 72, 255 };
-        button_style._hovered_color = SDL_Color{ 58, 84, 124, 255 };
-        button_style._pushed_color = SDL_Color{ 24, 38, 58, 255 };
-        button_style._frame_color = SDL_Color{ 108, 136, 176, 255 };
-        _action_list->set_button_style(button_style);
+        _action_list->set_panel_theme_role(UiPanelThemeRole::List);
         _action_list->set_on_select(
             [this](int index, const std::string& id, const std::string& text)
             {
@@ -111,14 +86,6 @@ void UiDialog::reset()
         _action_scroll_bar->reset();
         _action_scroll_bar->set_target(_action_list.get());
 
-        ScrollBarStyle scroll_bar_style;
-        scroll_bar_style._track_color = SDL_Color{ 16, 22, 34, 180 };
-        scroll_bar_style._thumb_color = SDL_Color{ 120, 154, 206, 255 };
-        scroll_bar_style._thickness = 8.0f;
-        scroll_bar_style._target_margin = 6.0f;
-        scroll_bar_style._min_thumb_size = 20.0f;
-        scroll_bar_style._auto_hide = true;
-        UiStyle::apply_scroll_bar(*_action_scroll_bar, scroll_bar_style);
     }
 
     rebuild();
@@ -181,12 +148,12 @@ void UiDialog::ensure_controls()
 {
     if (!_title_label)
     {
-        _title_label = std::make_shared<Label>();
+        _title_label = std::make_shared<UiLabel>();
     }
 
     if (!_message_label)
     {
-        _message_label = std::make_shared<Label>();
+        _message_label = std::make_shared<UiLabel>();
     }
 
     if (!_action_list)

@@ -58,11 +58,7 @@ void OptionsScene::reset()
         _screen->set_spacing(16.0f);
         _screen->set_padding({ 110.0f, 88.0f, 110.0f, 88.0f });
         _screen->set_transition_enabled(true);
-
-        PanelStyle screen_style;
-        screen_style._background_color = SDL_Color{ 10, 16, 26, 255 };
-        screen_style._draw_background = true;
-        UiStyle::apply_panel(*_screen, screen_style);
+        _screen->set_panel_theme_role(UiPanelThemeRole::Screen);
     }
 
     if (_title_label)
@@ -72,12 +68,10 @@ void OptionsScene::reset()
         _title_label->set_font_key("ui.default");
         _title_label->set_padding(8);
         _title_label->set_auto_size(true);
+        _title_label->set_horizontal_align(TextHorizontalAlign::Center);
+        _title_label->set_vertical_align(TextVerticalAlign::Center);
 
-        LabelStyle title_style;
-        title_style._text_color = SDL_Color{ 244, 244, 248, 255 };
-        title_style._horizontal_align = TextHorizontalAlign::Center;
-        title_style._vertical_align = TextVerticalAlign::Center;
-        UiStyle::apply_label(*_title_label, title_style);
+        _title_label->set_label_theme_role(UiLabelThemeRole::Title);
     }
 
     if (_subtitle_label)
@@ -87,12 +81,10 @@ void OptionsScene::reset()
         _subtitle_label->set_font_key("ui.default");
         _subtitle_label->set_padding(4);
         _subtitle_label->set_auto_size(true);
+        _subtitle_label->set_horizontal_align(TextHorizontalAlign::Center);
+        _subtitle_label->set_vertical_align(TextVerticalAlign::Center);
 
-        LabelStyle subtitle_style;
-        subtitle_style._text_color = SDL_Color{ 166, 188, 220, 255 };
-        subtitle_style._horizontal_align = TextHorizontalAlign::Center;
-        subtitle_style._vertical_align = TextVerticalAlign::Center;
-        UiStyle::apply_label(*_subtitle_label, subtitle_style);
+        _subtitle_label->set_label_theme_role(UiLabelThemeRole::Subtitle);
     }
 
     if (_option_list)
@@ -104,18 +96,6 @@ void OptionsScene::reset()
         list_style._row_size = { 540.0f, 62.0f };
         list_style._row_spacing = 12.0f;
         list_style._panel_padding = 14.0f;
-        list_style._row_background_color = SDL_Color{ 28, 36, 52, 220 };
-        list_style._row_selected_background_color = SDL_Color{ 52, 78, 116, 235 };
-        list_style._row_disabled_background_color = SDL_Color{ 22, 26, 34, 180 };
-        list_style._row_border_color = SDL_Color{ 110, 140, 182, 255 };
-        list_style._label_text_color = SDL_Color{ 246, 246, 248, 255 };
-        list_style._disabled_text_color = SDL_Color{ 130, 140, 152, 255 };
-        list_style._toggle_style._text_color = SDL_Color{ 194, 218, 248, 255 };
-        list_style._slider_style._text_color = SDL_Color{ 194, 218, 248, 255 };
-        list_style._slider_style._bar_style._background_color = SDL_Color{ 18, 24, 36, 255 };
-        list_style._slider_style._bar_style._fill_color = SDL_Color{ 120, 154, 206, 255 };
-        list_style._slider_style._bar_style._border_color = SDL_Color{ 110, 140, 182, 255 };
-        list_style._slider_style._bar_style._draw_border = true;
         _option_list->set_style(list_style);
         _option_list->set_font_key("ui.default");
         _option_list->set_on_value_changed(
@@ -131,16 +111,6 @@ void OptionsScene::reset()
     {
         _scroll_bar->reset();
         _scroll_bar->set_target(_option_list.get());
-
-        ScrollBarStyle scroll_bar_style;
-        scroll_bar_style._track_color = SDL_Color{ 18, 24, 36, 180 };
-        scroll_bar_style._thumb_color = SDL_Color{ 120, 154, 206, 255 };
-        scroll_bar_style._thickness = 10.0f;
-        scroll_bar_style._target_margin = 8.0f;
-        scroll_bar_style._min_thumb_size = 28.0f;
-        scroll_bar_style._draw_track = true;
-        scroll_bar_style._auto_hide = true;
-        UiStyle::apply_scroll_bar(*_scroll_bar, scroll_bar_style);
     }
 
     if (_footer_label)
@@ -150,12 +120,10 @@ void OptionsScene::reset()
         _footer_label->set_font_key("ui.default");
         _footer_label->set_padding(4);
         _footer_label->set_auto_size(true);
+        _footer_label->set_horizontal_align(TextHorizontalAlign::Center);
+        _footer_label->set_vertical_align(TextVerticalAlign::Center);
 
-        LabelStyle footer_style;
-        footer_style._text_color = SDL_Color{ 148, 164, 186, 255 };
-        footer_style._horizontal_align = TextHorizontalAlign::Center;
-        footer_style._vertical_align = TextVerticalAlign::Center;
-        UiStyle::apply_label(*_footer_label, footer_style);
+        _footer_label->set_label_theme_role(UiLabelThemeRole::Muted);
     }
 
     if (_screen && _title_label && _subtitle_label && _option_list && _footer_label)
@@ -198,17 +166,17 @@ void OptionsScene::ensure_ui()
 
     if (!_title_label)
     {
-        _title_label = std::make_shared<Label>();
+        _title_label = std::make_shared<UiLabel>();
     }
 
     if (!_subtitle_label)
     {
-        _subtitle_label = std::make_shared<Label>();
+        _subtitle_label = std::make_shared<UiLabel>();
     }
 
     if (!_footer_label)
     {
-        _footer_label = std::make_shared<Label>();
+        _footer_label = std::make_shared<UiLabel>();
     }
 
     if (!_option_list)

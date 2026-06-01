@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../button.h"
+#include "../ui_button.h"
 #include "../../resources/texture/texture_loader.h"
 
 #include <SDL.h>
@@ -8,10 +8,10 @@
 
 #include <string>
 
-class TextButton : public Button
+class UiTextButton : public UiButton
 {
 public:
-    explicit TextButton(Vector2 position = Vector2::zero(), Vector2 size = Vector2::zero(), int order = 0);
+    explicit UiTextButton(Vector2 position = Vector2::zero(), Vector2 size = Vector2::zero(), int order = 0);
 
     void on_render(SDL_Renderer* renderer) override;
     void reset() override;

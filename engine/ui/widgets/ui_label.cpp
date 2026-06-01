@@ -1,23 +1,24 @@
-#include "label.h"
+#include "ui_label.h"
 
 #include "../../resources/resource_manager.h"
+#include "../style/ui_theme.h"
+#include "../style/ui_style.h"
 
 #include <algorithm>
 
-Label::Label(Vector2 position, Vector2 size, int order)
-    : GameObject(DepthLayer::UI, order)
+UiLabel::UiLabel(Vector2 position, Vector2 size, int order)
+    : UiElement(position, size, order)
 {
-    GameObject::set_world_position(position);
-    GameObject::set_size(size);
 }
 
-void Label::on_render(SDL_Renderer* renderer)
+void UiLabel::on_render(SDL_Renderer* renderer)
 {
     if (!renderer)
     {
         return;
     }
 
+    refresh_theme_if_needed();
     refresh_texture(renderer);
 
     const SDL_Rect& object_rect = rect();
@@ -53,9 +54,9 @@ void Label::on_render(SDL_Renderer* renderer)
     SDL_RenderCopy(renderer, _texture.get(), nullptr, &destination_rect);
 }
 
-void Label::reset()
+void UiLabel::reset()
 {
-    GameObject::reset();
+    UiElement::reset();
     _text.clear();
     _font_key.clear();
     _font = nullptr;
@@ -71,132 +72,144 @@ void Label::reset()
     _dirty = true;
     _horizontal_align = TextHorizontalAlign::Left;
     _vertical_align = TextVerticalAlign::Top;
+    _label_theme_role = UiLabelThemeRole::Default;
     GameObject::set_size(Vector2::zero());
 }
 
-void Label::set_text(const std::string& text)
+void UiLabel::set_text(const std::string& text)
 {
     _text = text;
     mark_dirty();
 }
 
-const std::string& Label::text() const
+const std::string& UiLabel::text() const
 {
     return _text;
 }
 
-void Label::set_font(TTF_Font* font)
+void UiLabel::set_font(TTF_Font* font)
 {
     _font = font;
     mark_dirty();
 }
 
-TTF_Font* Label::font() const
+TTF_Font* UiLabel::font() const
 {
     return _font;
 }
 
-void Label::set_font_key(const std::string& font_key)
+void UiLabel::set_font_key(const std::string& font_key)
 {
     _font_key = font_key;
     mark_dirty();
 }
 
-const std::string& Label::font_key() const
+const std::string& UiLabel::font_key() const
 {
     return _font_key;
 }
 
-void Label::set_text_color(SDL_Color color)
+void UiLabel::set_text_color(SDL_Color color)
 {
     _text_color = color;
     mark_dirty();
 }
 
-SDL_Color Label::text_color() const
+SDL_Color UiLabel::text_color() const
 {
     return _text_color;
 }
 
-void Label::set_background_color(SDL_Color color)
+void UiLabel::set_background_color(SDL_Color color)
 {
     _background_color = color;
 }
 
-SDL_Color Label::background_color() const
+SDL_Color UiLabel::background_color() const
 {
     return _background_color;
 }
 
-void Label::set_draw_background(bool draw_background)
+void UiLabel::set_draw_background(bool draw_background)
 {
     _draw_background = draw_background;
 }
 
-bool Label::draws_background() const
+bool UiLabel::draws_background() const
 {
     return _draw_background;
 }
 
-void Label::set_padding(int padding)
+void UiLabel::set_padding(int padding)
 {
     _padding = std::max(0, padding);
     mark_dirty();
 }
 
-int Label::padding() const
+int UiLabel::padding() const
 {
     return _padding;
 }
 
-void Label::set_auto_size(bool auto_size)
+void UiLabel::set_auto_size(bool auto_size)
 {
     _auto_size = auto_size;
     mark_dirty();
 }
 
-bool Label::auto_sizes() const
+bool UiLabel::auto_sizes() const
 {
     return _auto_size;
 }
 
-void Label::set_horizontal_align(TextHorizontalAlign align)
+void UiLabel::set_horizontal_align(TextHorizontalAlign align)
 {
     _horizontal_align = align;
 }
 
-TextHorizontalAlign Label::horizontal_align() const
+TextHorizontalAlign UiLabel::horizontal_align() const
 {
     return _horizontal_align;
 }
 
-void Label::set_vertical_align(TextVerticalAlign align)
+void UiLabel::set_vertical_align(TextVerticalAlign align)
 {
     _vertical_align = align;
 }
 
-TextVerticalAlign Label::vertical_align() const
+TextVerticalAlign UiLabel::vertical_align() const
 {
     return _vertical_align;
 }
 
-void Label::set_wrap_width(int wrap_width)
+void UiLabel::set_wrap_width(int wrap_width)
 {
     _wrap_width = std::max(0, wrap_width);
     mark_dirty();
 }
 
-int Label::wrap_width() const
+int UiLabel::wrap_width() const
 {
     return _wrap_width;
 }
 
-void Label::mark_dirty()
+void UiLabel::set_label_theme_role(UiLabelThemeRole label_theme_role)
+{
+    _label_theme_role = label_theme_role;
+    mark_theme_dirty();
+}
+
+UiLabelThemeRole UiLabel::label_theme_role() const
+{
+    return _label_theme_role;
+}
+
+void UiLabel::mark_dirty()
 {
     _dirty = true;
 }
 
-void Label::refresh_texture(SDL_Renderer* renderer)
+void UiLabel::refresh_texture(SDL_Renderer* renderer)
 {
     if (!_dirty)
     {
@@ -271,7 +284,7 @@ void Label::refresh_texture(SDL_Renderer* renderer)
     }
 }
 
-TTF_Font* Label::resolve_font() const
+TTF_Font* UiLabel::resolve_font() const
 {
     if (_font)
     {
@@ -286,7 +299,7 @@ TTF_Font* Label::resolve_font() const
     return ResourceManager::instance()->find_font(_font_key);
 }
 
-SDL_Rect Label::text_rect() const
+SDL_Rect UiLabel::text_rect() const
 {
     const SDL_Rect& object_rect = rect();
 
@@ -330,4 +343,31 @@ SDL_Rect Label::text_rect() const
     }
 
     return destination_rect;
+}
+
+void UiLabel::apply_theme(const UiTheme& theme)
+{
+    const LabelStyle* style = &theme._default_label;
+    switch (_label_theme_role)
+    {
+    case UiLabelThemeRole::Default:
+        style = &theme._default_label;
+        break;
+
+    case UiLabelThemeRole::Title:
+        style = &theme._title_label;
+        break;
+
+    case UiLabelThemeRole::Subtitle:
+        style = &theme._subtitle_label;
+        break;
+
+    case UiLabelThemeRole::Muted:
+        style = &theme._muted_label;
+        break;
+    }
+
+    set_text_color(style->_text_color);
+    set_background_color(style->_background_color);
+    set_draw_background(style->_draw_background);
 }

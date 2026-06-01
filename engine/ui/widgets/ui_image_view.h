@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../core/game_object.h"
+#include "../ui_element.h"
 
 #include <SDL.h>
 
@@ -14,10 +14,10 @@ enum class ImageScaleMode
     None
 };
 
-class ImageView : public GameObject
+class UiImageView : public UiElement
 {
 public:
-    explicit ImageView(Vector2 position = Vector2::zero(), Vector2 size = Vector2::zero(), int order = 0);
+    explicit UiImageView(Vector2 position = Vector2::zero(), Vector2 size = Vector2::zero(), int order = 0);
 
     void on_render(SDL_Renderer* renderer) override;
     void reset() override;
@@ -47,6 +47,7 @@ public:
 private:
     [[nodiscard]] SDL_Texture* resolve_texture() const;
     [[nodiscard]] SDL_Rect destination_rect(int texture_width, int texture_height) const;
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     SDL_Texture* _texture = nullptr;

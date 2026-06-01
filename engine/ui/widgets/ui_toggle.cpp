@@ -1,19 +1,21 @@
 #include "ui_toggle.h"
 
+#include "../style/ui_theme.h"
+#include "../style/ui_style.h"
+
 #include <SDL.h>
 
 UiToggle::UiToggle(Vector2 position, Vector2 size, int order)
-    : GameObject(DepthLayer::UI, order),
+    : UiControl(position, size, order),
       _label(Vector2::zero(), Vector2::zero(), order + 1),
       _value_label(Vector2::zero(), Vector2::zero(), order + 1)
 {
-    GameObject::set_world_position(position);
-    GameObject::set_size(size);
     reset();
 }
 
 void UiToggle::on_update(double delta)
 {
+    refresh_theme_if_needed();
     _label.on_update(delta);
     _value_label.on_update(delta);
 }
@@ -25,6 +27,7 @@ void UiToggle::on_render(SDL_Renderer* renderer)
         return;
     }
 
+    refresh_theme_if_needed();
     const SDL_Rect toggle_rect = rect();
     if (toggle_rect.w <= 0 || toggle_rect.h <= 0)
     {
@@ -90,7 +93,7 @@ void UiToggle::on_input(const InputSnapshot& input)
 
 void UiToggle::reset()
 {
-    GameObject::reset();
+    UiControl::reset();
     _label.reset();
     _label.set_font_key(_font_key);
     _label.set_auto_size(false);
@@ -115,11 +118,10 @@ void UiToggle::reset()
     _focused_background_color = SDL_Color{ 52, 78, 116, 235 };
     _border_color = SDL_Color{ 112, 140, 180, 255 };
     _value = false;
-    _enabled = true;
-    _is_focused = false;
     _was_mouse_down = false;
 
     sync_labels();
+    mark_theme_dirty();
 }
 
 void UiToggle::set_value(bool value)
@@ -219,26 +221,6 @@ SDL_Color UiToggle::border_color() const
     return _border_color;
 }
 
-void UiToggle::set_enabled(bool enabled)
-{
-    _enabled = enabled;
-}
-
-bool UiToggle::is_enabled() const
-{
-    return _enabled;
-}
-
-void UiToggle::set_focused(bool focused)
-{
-    _is_focused = focused;
-}
-
-bool UiToggle::is_focused() const
-{
-    return _is_focused;
-}
-
 void UiToggle::set_on_changed(UiToggleChangedCallback on_changed)
 {
     _on_changed = std::move(on_changed);
@@ -268,16 +250,6 @@ bool UiToggle::handle_focused_input_event(const InputEvent& event)
     default:
         return false;
     }
-}
-
-GameObject* UiToggle::game_object()
-{
-    return this;
-}
-
-const GameObject* UiToggle::game_object() const
-{
-    return this;
 }
 
 void UiToggle::toggle()
@@ -333,4 +305,9 @@ bool UiToggle::contains_point(int x, int y) const
 {
     const SDL_Point point{ x, y };
     return SDL_PointInRect(&point, &rect()) == SDL_TRUE;
+}
+
+void UiToggle::apply_theme(const UiTheme& theme)
+{
+    UiStyle::apply_toggle(*this, theme._toggle);
 }

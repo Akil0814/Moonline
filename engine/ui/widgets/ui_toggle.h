@@ -1,14 +1,14 @@
 #pragma once
 
-#include "../ui_focusable.h"
-#include "label.h"
+#include "../ui_control.h"
+#include "ui_label.h"
 
 #include <functional>
 #include <string>
 
 using UiToggleChangedCallback = std::function<void(bool value)>;
 
-class UiToggle : public GameObject, public UiFocusable
+class UiToggle : public UiControl
 {
 public:
     explicit UiToggle(Vector2 position = Vector2::zero(), Vector2 size = Vector2::zero(), int order = 0);
@@ -44,26 +44,19 @@ public:
     void set_border_color(SDL_Color color);
     [[nodiscard]] SDL_Color border_color() const;
 
-    void set_enabled(bool enabled) override;
-    [[nodiscard]] bool is_enabled() const override;
-
-    void set_focused(bool focused) override;
-    [[nodiscard]] bool is_focused() const override;
-
     void set_on_changed(UiToggleChangedCallback on_changed);
     [[nodiscard]] bool handle_focused_input_event(const InputEvent& event) override;
-    [[nodiscard]] GameObject* game_object() override;
-    [[nodiscard]] const GameObject* game_object() const override;
 
 private:
     void toggle();
     void set_value_internal(bool value, bool notify);
     void sync_labels();
     [[nodiscard]] bool contains_point(int x, int y) const;
+    void apply_theme(const UiTheme& theme) override;
 
 private:
-    Label _label;
-    Label _value_label;
+    UiLabel _label;
+    UiLabel _value_label;
 
     UiToggleChangedCallback _on_changed;
 
@@ -78,7 +71,5 @@ private:
     SDL_Color _border_color{ 112, 140, 180, 255 };
 
     bool _value = false;
-    bool _enabled = true;
-    bool _is_focused = false;
     bool _was_mouse_down = false;
 };

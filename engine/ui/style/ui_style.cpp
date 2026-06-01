@@ -1,6 +1,6 @@
 #include "ui_style.h"
 
-void UiStyle::apply_button(Button& button, const ButtonStyle& style)
+void UiStyle::apply_button(UiButton& button, const ButtonStyle& style)
 {
     if (style._use_state_textures)
     {
@@ -21,7 +21,7 @@ void UiStyle::apply_button(Button& button, const ButtonStyle& style)
     );
 }
 
-void UiStyle::apply_label(Label& label, const LabelStyle& style)
+void UiStyle::apply_label(UiLabel& label, const LabelStyle& style)
 {
     label.set_text_color(style._text_color);
     label.set_background_color(style._background_color);
@@ -78,7 +78,7 @@ void UiStyle::apply_toggle(UiToggle& toggle, const ToggleStyle& style)
     toggle.set_border_color(style._border_color);
 }
 
-void UiStyle::apply_text_input(TextInput& text_input, const TextInputStyle& style)
+void UiStyle::apply_text_input(UiTextInput& text_input, const TextInputStyle& style)
 {
     text_input.set_text_color(style._text_color);
     text_input.set_placeholder_color(style._placeholder_color);

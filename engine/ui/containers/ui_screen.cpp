@@ -5,6 +5,7 @@
 UiScreen::UiScreen(Vector2 position, Vector2 size, int order)
     : UiPanel(position, size, order)
 {
+    set_panel_theme_role(UiPanelThemeRole::Screen);
     UiTransitionState shown_state;
     shown_state._transform = transform();
     shown_state._background_alpha = background_alpha();
@@ -135,6 +136,7 @@ void UiScreen::on_input_event(const InputEvent& event)
 void UiScreen::reset()
 {
     UiPanel::reset();
+    set_panel_theme_role(UiPanelThemeRole::Screen);
     _is_open = true;
     _is_closing = false;
     _input_enabled = true;
@@ -402,7 +404,7 @@ int UiScreen::focused_control_index() const
     return _focused_control_index;
 }
 
-void UiScreen::register_focusable_button(const std::shared_ptr<Button>& button)
+void UiScreen::register_focusable_button(const std::shared_ptr<UiButton>& button)
 {
     register_focusable_control(button);
 }

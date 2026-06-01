@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../containers/ui_screen.h"
-#include "../widgets/label.h"
+#include "../widgets/ui_label.h"
 #include "../widgets/ui_scroll_bar.h"
 #include "ui_menu_list.h"
 
@@ -60,8 +60,8 @@ private:
 
     UiDialogActionCallback _on_action;
 
-    std::shared_ptr<Label> _title_label;
-    std::shared_ptr<Label> _message_label;
+    std::shared_ptr<UiLabel> _title_label;
+    std::shared_ptr<UiLabel> _message_label;
     std::shared_ptr<UiMenuList> _action_list;
     std::shared_ptr<UiScrollBar> _action_scroll_bar;
 };

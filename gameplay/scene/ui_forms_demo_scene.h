@@ -3,9 +3,9 @@
 #include "../../engine/core/scene/scene.h"
 #include "../../engine/ui/containers/ui_screen.h"
 #include "../../engine/ui/layout/ui_grid_layout.h"
-#include "../../engine/ui/widgets/label.h"
-#include "../../engine/ui/widgets/text_button.h"
-#include "../../engine/ui/widgets/text_input.h"
+#include "../../engine/ui/widgets/ui_label.h"
+#include "../../engine/ui/widgets/ui_text_button.h"
+#include "../../engine/ui/widgets/ui_text_input.h"
 #include "../../engine/ui/widgets/ui_slider.h"
 #include "../../engine/ui/widgets/ui_toggle.h"
 
@@ -34,17 +34,17 @@ private:
 
 private:
     std::shared_ptr<UiScreen> _screen;
-    std::shared_ptr<Label> _title_label;
-    std::shared_ptr<Label> _subtitle_label;
-    std::shared_ptr<Label> _footer_label;
+    std::shared_ptr<UiLabel> _title_label;
+    std::shared_ptr<UiLabel> _subtitle_label;
+    std::shared_ptr<UiLabel> _footer_label;
     std::shared_ptr<UiGridLayout> _form_grid;
-    std::shared_ptr<Label> _name_label;
-    std::shared_ptr<TextInput> _name_input;
-    std::shared_ptr<Label> _password_label;
-    std::shared_ptr<TextInput> _password_input;
-    std::shared_ptr<Label> _toggle_label;
+    std::shared_ptr<UiLabel> _name_label;
+    std::shared_ptr<UiTextInput> _name_input;
+    std::shared_ptr<UiLabel> _password_label;
+    std::shared_ptr<UiTextInput> _password_input;
+    std::shared_ptr<UiLabel> _toggle_label;
     std::shared_ptr<UiToggle> _toggle;
-    std::shared_ptr<Label> _slider_label;
+    std::shared_ptr<UiLabel> _slider_label;
     std::shared_ptr<UiSlider> _slider;
-    std::shared_ptr<TextButton> _back_button;
+    std::shared_ptr<UiTextButton> _back_button;
 };

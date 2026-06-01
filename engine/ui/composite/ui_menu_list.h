@@ -3,7 +3,7 @@
 #include "../containers/ui_scroll_panel.h"
 #include "../ui_focusable.h"
 #include "../style/ui_style.h"
-#include "../widgets/text_button.h"
+#include "../widgets/ui_text_button.h"
 
 #include <functional>
 #include <memory>
@@ -67,11 +67,12 @@ public:
 private:
     void rebuild_items();
     void sync_selection_visuals();
-    void handle_item_click(TextButton* button);
+    void handle_item_click(UiTextButton* button);
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     std::vector<UiMenuListItem> _items;
-    std::vector<std::shared_ptr<TextButton>> _buttons;
+    std::vector<std::shared_ptr<UiTextButton>> _buttons;
 
     Vector2 _item_size{ 320.0f, 56.0f };
     std::string _font_key = "ui.default";

@@ -1,5 +1,8 @@
 #include "ui_slider.h"
 
+#include "../style/ui_theme.h"
+#include "../style/ui_style.h"
+
 #include <SDL.h>
 
 #include <algorithm>
@@ -8,15 +11,14 @@
 #include <sstream>
 
 UiSlider::UiSlider(Vector2 position, Vector2 size, int order)
-    : GameObject(DepthLayer::UI, order), _value_label(Vector2::zero(), Vector2::zero(), order + 1)
+    : UiControl(position, size, order), _value_label(Vector2::zero(), Vector2::zero(), order + 1)
 {
-    GameObject::set_world_position(position);
-    GameObject::set_size(size);
     reset();
 }
 
 void UiSlider::on_update(double delta)
 {
+    refresh_theme_if_needed();
     (void)delta;
     _value_label.on_update(delta);
 }
@@ -28,6 +30,7 @@ void UiSlider::on_render(SDL_Renderer* renderer)
         return;
     }
 
+    refresh_theme_if_needed();
     const SDL_Rect slider_rect = rect();
     if (slider_rect.w <= 0 || slider_rect.h <= 0)
     {
@@ -102,7 +105,7 @@ void UiSlider::on_input(const InputSnapshot& input)
 
 void UiSlider::reset()
 {
-    GameObject::reset();
+    UiControl::reset();
     _bar.reset();
     _bar.set_range(0.0f, 100.0f);
     _bar.set_value(50.0f);
@@ -121,8 +124,6 @@ void UiSlider::reset()
     _step = 1.0f;
     _thumb_size = 16.0f;
     _value_precision = 0;
-    _enabled = true;
-    _is_focused = false;
     _is_dragging = false;
     _was_mouse_down = false;
     _show_value_text = false;
@@ -131,6 +132,7 @@ void UiSlider::reset()
     _text_color = SDL_Color{ 244, 244, 248, 255 };
 
     sync_value_label();
+    mark_theme_dirty();
 }
 
 void UiSlider::set_range(float min_value, float max_value)
@@ -273,27 +275,12 @@ SDL_Color UiSlider::text_color() const
 
 void UiSlider::set_enabled(bool enabled)
 {
-    _enabled = enabled;
+    UiControl::set_enabled(enabled);
     if (!_enabled)
     {
         _is_dragging = false;
         _was_mouse_down = false;
     }
-}
-
-bool UiSlider::is_enabled() const
-{
-    return _enabled;
-}
-
-void UiSlider::set_focused(bool focused)
-{
-    _is_focused = focused;
-}
-
-bool UiSlider::is_focused() const
-{
-    return _is_focused;
 }
 
 void UiSlider::set_on_value_changed(UiSliderValueChangedCallback on_value_changed)
@@ -338,16 +325,6 @@ bool UiSlider::handle_focused_input_event(const InputEvent& event)
     }
 
     return false;
-}
-
-GameObject* UiSlider::game_object()
-{
-    return this;
-}
-
-const GameObject* UiSlider::game_object() const
-{
-    return this;
 }
 
 void UiSlider::sync_value_label()
@@ -465,4 +442,9 @@ void UiSlider::update_value_from_point(int x, int y, bool notify)
         : 0.0f;
     const float next_value = _bar.min_value() + (_bar.max_value() - _bar.min_value()) * ratio;
     set_value_internal(next_value, notify);
+}
+
+void UiSlider::apply_theme(const UiTheme& theme)
+{
+    UiStyle::apply_slider(*this, theme._slider);
 }

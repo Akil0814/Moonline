@@ -1,7 +1,10 @@
 #pragma once
 
-#include "../../core/game_object.h"
+#include "../style/ui_theme_roles.h"
+#include "../ui_element.h"
 #include "../../resources/texture/texture_loader.h"
+
+struct UiTheme;
 
 #include <SDL.h>
 #include <SDL_ttf.h>
@@ -22,10 +25,10 @@ enum class TextVerticalAlign
     Bottom
 };
 
-class Label : public GameObject
+class UiLabel : public UiElement
 {
 public:
-    explicit Label(Vector2 position = Vector2::zero(), Vector2 size = Vector2::zero(), int order = 0);
+    explicit UiLabel(Vector2 position = Vector2::zero(), Vector2 size = Vector2::zero(), int order = 0);
 
     void on_render(SDL_Renderer* renderer) override;
     void reset() override;
@@ -62,12 +65,15 @@ public:
 
     void set_wrap_width(int wrap_width);
     [[nodiscard]] int wrap_width() const;
+    void set_label_theme_role(UiLabelThemeRole label_theme_role);
+    [[nodiscard]] UiLabelThemeRole label_theme_role() const;
 
 private:
     void mark_dirty();
     void refresh_texture(SDL_Renderer* renderer);
     [[nodiscard]] TTF_Font* resolve_font() const;
     [[nodiscard]] SDL_Rect text_rect() const;
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     std::string _text;
@@ -90,4 +96,5 @@ private:
 
     TextHorizontalAlign _horizontal_align = TextHorizontalAlign::Left;
     TextVerticalAlign _vertical_align = TextVerticalAlign::Top;
+    UiLabelThemeRole _label_theme_role = UiLabelThemeRole::Default;
 };

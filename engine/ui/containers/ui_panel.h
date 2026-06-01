@@ -1,10 +1,13 @@
 #pragma once
 
+#include "../style/ui_theme_roles.h"
 #include "../ui_layout.h"
 
 #include <SDL.h>
 
 #include <string>
+
+struct UiTheme;
 
 class UiPanel : public UILayout
 {
@@ -34,12 +37,15 @@ public:
 
     void set_background_alpha(Uint8 alpha);
     [[nodiscard]] Uint8 background_alpha() const;
+    void set_panel_theme_role(UiPanelThemeRole panel_theme_role);
+    [[nodiscard]] UiPanelThemeRole panel_theme_role() const;
 
     void set_clip_children(bool clip_children);
     [[nodiscard]] bool clips_children() const;
 
-private:
+protected:
     [[nodiscard]] SDL_Texture* resolve_background_texture() const;
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     SDL_Texture* _background_texture = nullptr;
@@ -53,4 +59,5 @@ private:
     bool _draw_background = true;
     bool _draw_border = false;
     bool _clip_children = false;
+    UiPanelThemeRole _panel_theme_role = UiPanelThemeRole::Default;
 };

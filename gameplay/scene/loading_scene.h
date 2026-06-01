@@ -1,6 +1,6 @@
 #pragma once
 #include "../../engine/core/scene/scene.h"
-#include "../../engine/ui/progress_bar.h"
+#include "../../engine/ui/ui_progress_bar.h"
 #include <thread>
 #include <atomic>
 
@@ -23,5 +23,5 @@ public:
 
 	void reset() override;
 private:
-	ProgressBar load_bar;
+	UiProgressBar load_bar;
 };

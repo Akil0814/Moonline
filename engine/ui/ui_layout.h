@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../core/game_object.h"
+#include "ui_element.h"
 
 #include <array>
 #include <memory>
@@ -65,7 +65,7 @@ struct UILayoutTransform
     Vector2 scale{ 1.0f, 1.0f };
 };
 
-class UILayout : public GameObject
+class UILayout : public UiElement
 {
 public:
     explicit UILayout(Vector2 position = Vector2::zero(), Vector2 size = Vector2::zero(), int order = 0);
@@ -158,6 +158,7 @@ private:
         float child_extent,
         LayoutAlign align
     ) const;
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     std::vector<LayoutChild> _children;
