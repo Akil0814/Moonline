@@ -6,10 +6,10 @@
 #include "../engine/core/time.h"
 #include "../engine/core/scene/scene_manager.h"
 
-#include "../engine/io/path_manager.h"
+#include "../engine/io/path/path_manager.h"
 #include "../engine/resources/resource_bootstrapper.h"
-#include "../engine/resources/surface_loader.h"
-#include "../engine/resources/texture_loader.h"
+#include "../engine/resources/texture/surface_loader.h"
+#include "../engine/resources/texture/texture_loader.h"
 
 #include <iostream>
 #include <thread>

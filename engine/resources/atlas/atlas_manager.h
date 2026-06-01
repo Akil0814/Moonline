@@ -1,7 +1,7 @@
 #pragma once
 #include "atlas.h"
-#include "resource_sub_manager.h"
-#include "resource_types.h"
+#include "../resource_sub_manager.h"
+#include "../resource_types.h"
 
 #include <SDL.h>
 

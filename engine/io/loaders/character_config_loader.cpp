@@ -1,7 +1,7 @@
 #include "character_config_loader.h"
 
-#include "json_loader.h"
-#include "path_manager.h"
+#include "../json/json_loader.h"
+#include "../path/path_manager.h"
 
 #include <iostream>
 

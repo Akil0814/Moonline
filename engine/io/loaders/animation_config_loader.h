@@ -1,6 +1,6 @@
 #pragma once
 #include "asset_config_types.h"
-#include "json_loader.h"
+#include "../json/json_loader.h"
 
 #include <cstddef>
 #include <filesystem>

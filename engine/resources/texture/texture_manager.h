@@ -1,5 +1,5 @@
 #pragma once
-#include "resource_sub_manager.h"
+#include "../resource_sub_manager.h"
 #include "texture_loader.h"
 
 #include <SDL.h>

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "atlas.h"
-#include "resource_types.h"
-#include "texture_loader.h"
+#include "../resource_types.h"
+#include "../texture/texture_loader.h"
 
 #include <vector>
 
@@ -15,4 +15,3 @@ public:
 		Atlas& atlas
 	) const;
 };
-

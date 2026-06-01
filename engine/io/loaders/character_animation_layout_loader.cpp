@@ -1,6 +1,6 @@
 #include "character_animation_layout_loader.h"
 
-#include "json_loader.h"
+#include "../json/json_loader.h"
 
 #include <iostream>
 #include <utility>

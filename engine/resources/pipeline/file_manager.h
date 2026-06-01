@@ -1,7 +1,6 @@
 #pragma once
-#include "asset_config_types.h"
-
-#include "../resources/resource_types.h"
+#include "../../io/loaders/asset_config_types.h"
+#include "../resource_types.h"
 
 #include <filesystem>
 #include <string>

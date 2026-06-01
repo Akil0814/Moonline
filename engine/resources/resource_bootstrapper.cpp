@@ -2,7 +2,7 @@
 
 #include "resource_manager.h"
 #include "../animation/animation_manager.h"
-#include "../io/path_manager.h"
+#include "../io/path/path_manager.h"
 
 #include <iostream>
 

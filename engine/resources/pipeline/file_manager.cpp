@@ -1,10 +1,10 @@
 #include "file_manager.h"
 
-#include "animation_config_loader.h"
-#include "assets_structure_loader.h"
-#include "character_animation_layout_loader.h"
-#include "character_config_loader.h"
-#include "character_manifest_loader.h"
+#include "../../io/loaders/animation_config_loader.h"
+#include "../../io/loaders/assets_structure_loader.h"
+#include "../../io/loaders/character_animation_layout_loader.h"
+#include "../../io/loaders/character_config_loader.h"
+#include "../../io/loaders/character_manifest_loader.h"
 #include "resource_request_builder.h"
 
 #include <iostream>

@@ -1,8 +1,8 @@
 #pragma once
-#include "atlas_manager.h"
-#include "audio_manager.h"
-#include "font_manager.h"
-#include "texture_manager.h"
+#include "atlas/atlas_manager.h"
+#include "audio/audio_manager.h"
+#include "font/font_manager.h"
+#include "texture/texture_manager.h"
 
 #include "../tools/singleton.h"
 

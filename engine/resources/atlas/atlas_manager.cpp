@@ -1,9 +1,9 @@
 #include "atlas_manager.h"
 
 #include "atlas_builder.h"
-#include "surface_loader.h"
-#include "texture_loader.h"
-#include "texture_manager.h"
+#include "../texture/surface_loader.h"
+#include "../texture/texture_loader.h"
+#include "../texture/texture_manager.h"
 
 #include <algorithm>
 #include <cctype>
