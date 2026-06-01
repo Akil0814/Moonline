@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL.h>
+#include <algorithm>
 #include "../tools/vector2.h"
 #include "depth_layer.h"
 #include "../input/input_system.h"
@@ -30,6 +31,7 @@ public:
         _destroyed = false;
         _update_when_paused = false;
         _input_when_paused = false;
+        _time_scale = 1.0;
     }
 
     void destroy() { _destroyed = true; }
@@ -77,6 +79,13 @@ public:
     void set_input_when_paused(bool enable) { _input_when_paused = enable; }
     bool will_input_when_paused() const { return _input_when_paused; }
 
+    void set_time_scale(double scale) { _time_scale = std::max(0.0, scale); }
+    [[nodiscard]] double time_scale() const { return _time_scale; }
+    [[nodiscard]] double scaled_delta(double parent_delta) const
+    {
+        return parent_delta * _time_scale;
+    }
+
 private:
     void sync_rect()
     {
@@ -103,4 +112,5 @@ private:
 
     bool _update_when_paused = false;
     bool _input_when_paused = false;
+    double _time_scale = 1.0;
 };

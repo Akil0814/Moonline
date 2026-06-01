@@ -33,7 +33,7 @@ public:
 				if (_paused && !obj->will_update_when_paused())
 					continue;
 
-				obj->on_update(delta);
+				obj->on_update(obj->scaled_delta(delta));
 			}
 		}
 

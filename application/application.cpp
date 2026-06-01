@@ -3,6 +3,7 @@
 #include "../engine/ui/progress_bar.h"//test
 #include "../engine/ui/fade_image.h"//test
 
+#include "../engine/core/time.h"
 #include "../engine/core/scene/scene_manager.h"
 
 #include "../engine/io/path_manager.h"
@@ -133,6 +134,7 @@ bool Application::init(int argc, char** argv)
 		};
 
 	std::thread loading_thread(loading_function);
+	Time::instance()->reset();
 
 	//
 	Uint64 last_counter = SDL_GetPerformanceCounter();
@@ -153,11 +155,12 @@ bool Application::init(int argc, char** argv)
 		Uint64 current_counter = SDL_GetPerformanceCounter();//实现动态延时
 		double delta = (double)(current_counter - last_counter) / counter_freq;
 		last_counter = current_counter;
+		Time::instance()->begin_frame(delta);
 
 		if (delta * 1000 < 1000.0 / FPS)
 			SDL_Delay((Uint32)(1000.0 / FPS - delta * 1000));
 
-		image.on_update(delta);
+		image.on_update(Time::instance()->delta());
 
 		float progress = progress_count.load(std::memory_order_relaxed) / 100.0f;
 		load_bar.set_progress(progress);
@@ -191,6 +194,7 @@ int  Application::run(int argc, char** argv)
 
 	_counter_freq = SDL_GetPerformanceFrequency();
 	_last_counter = SDL_GetPerformanceCounter();
+	Time::instance()->reset();
 
 
 	while (_active)
@@ -211,12 +215,13 @@ int  Application::run(int argc, char** argv)
 		Uint64 current_counter = SDL_GetPerformanceCounter();//实现动态延时
 		double delta = (double)(current_counter - last_counter) / counter_freq;
 		last_counter = current_counter;
+		Time::instance()->begin_frame(delta);
 
 		if (delta * 1000 < 1000.0 / FPS)
 			SDL_Delay((Uint32)(1000.0 / FPS - delta * 1000));
 		
 
-		SceneManager::instance()->on_update(delta);
+		SceneManager::instance()->on_update(Time::instance()->delta());
 
 		SDL_SetRenderDrawColor(_renderer, 0,0,0,0);
 		SDL_RenderClear(_renderer);
