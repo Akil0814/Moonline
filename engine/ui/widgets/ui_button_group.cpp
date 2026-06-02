@@ -1,7 +1,5 @@
 #include "ui_button_group.h"
 
-#include <algorithm>
-
 UiButtonGroup::~UiButtonGroup()
 {
     clear_buttons();
@@ -14,22 +12,18 @@ void UiButtonGroup::add_button(const std::shared_ptr<UiSelectableButton>& button
         return;
     }
 
-    cleanup_buttons();
-    if (button_index(button.get()) >= 0)
+    if (!ui_selectable_button_group_utils::add_button(
+            _buttons,
+            button,
+            UiSelectableActivationBehavior::Select,
+            [this](UiSelectableButton& selectable_button, bool selected)
+            {
+                handle_button_selection_changed(&selectable_button, selected);
+            }
+        ))
     {
         return;
     }
-
-    ButtonRegistration registration;
-    registration._button = button;
-    button->set_activation_behavior(UiSelectableActivationBehavior::Select);
-    registration._listener_id = button->add_selection_listener(
-        [this](UiSelectableButton& selectable_button, bool selected)
-        {
-            handle_button_selection_changed(&selectable_button, selected);
-        }
-    );
-    _buttons.push_back(std::move(registration));
 
     if (button->is_selected())
     {
@@ -39,20 +33,11 @@ void UiButtonGroup::add_button(const std::shared_ptr<UiSelectableButton>& button
 
 bool UiButtonGroup::remove_button(const UiSelectableButton* button)
 {
-    cleanup_buttons();
     const int index = button_index(button);
-    if (index < 0)
+    if (index < 0 || !ui_selectable_button_group_utils::remove_button(_buttons, button))
     {
         return false;
     }
-
-    const std::shared_ptr<UiSelectableButton> button_handle = _buttons[static_cast<size_t>(index)]._button.lock();
-    if (button_handle)
-    {
-        button_handle->remove_selection_listener(_buttons[static_cast<size_t>(index)]._listener_id);
-    }
-
-    _buttons.erase(_buttons.begin() + index);
     if (_selected_index == index)
     {
         _selected_index = -1;
@@ -72,16 +57,7 @@ bool UiButtonGroup::remove_button(const UiSelectableButton* button)
 
 void UiButtonGroup::clear_buttons()
 {
-    for (ButtonRegistration& registration : _buttons)
-    {
-        const std::shared_ptr<UiSelectableButton> button = registration._button.lock();
-        if (button)
-        {
-            button->remove_selection_listener(registration._listener_id);
-        }
-    }
-
-    _buttons.clear();
+    ui_selectable_button_group_utils::clear_registrations(_buttons);
     _selected_index = -1;
 }
 
@@ -104,7 +80,7 @@ void UiButtonGroup::set_selected_index(int index)
 
     if (index < 0 || index >= static_cast<int>(_buttons.size()))
     {
-        for (ButtonRegistration& registration : _buttons)
+        for (UiSelectableButtonRegistration& registration : _buttons)
         {
             const std::shared_ptr<UiSelectableButton> button = registration._button.lock();
             if (button)
@@ -161,17 +137,7 @@ void UiButtonGroup::set_on_selection_changed(UiButtonGroupSelectionChangedCallba
 
 void UiButtonGroup::cleanup_buttons()
 {
-    _buttons.erase(
-        std::remove_if(
-            _buttons.begin(),
-            _buttons.end(),
-            [](const ButtonRegistration& registration)
-            {
-                return registration._button.expired();
-            }
-        ),
-        _buttons.end()
-    );
+    ui_selectable_button_group_utils::cleanup_registrations(_buttons);
 
     if (_selected_index >= static_cast<int>(_buttons.size()))
     {
@@ -210,19 +176,5 @@ void UiButtonGroup::handle_button_selection_changed(UiSelectableButton* button, 
 
 int UiButtonGroup::button_index(const UiSelectableButton* button) const
 {
-    if (!button)
-    {
-        return -1;
-    }
-
-    for (int index = 0; index < static_cast<int>(_buttons.size()); ++index)
-    {
-        const std::shared_ptr<UiSelectableButton> current_button = _buttons[static_cast<size_t>(index)]._button.lock();
-        if (current_button.get() == button)
-        {
-            return index;
-        }
-    }
-
-    return -1;
+    return ui_selectable_button_group_utils::button_index(_buttons, button);
 }

@@ -1,5 +1,7 @@
 #include "ui_layout.h"
 
+#include "base/ui_child_object_utils.h"
+
 #include <algorithm>
 
 UiLayout::UiLayout(Vector2 position, Vector2 size, int order)
@@ -276,28 +278,7 @@ void UiLayout::on_update(double delta)
     refresh_theme_if_needed();
     remove_destroyed_children();
     apply_layout();
-
-    std::vector<std::shared_ptr<GameObject>> child_objects;
-    child_objects.reserve(_children.size());
-    for (const LayoutChild& child : _children)
-    {
-        child_objects.push_back(child._object);
-    }
-
-    for (const std::shared_ptr<GameObject>& child_object : child_objects)
-    {
-        if (!child_object || child_object->is_destroyed())
-        {
-            continue;
-        }
-
-        if (!child_object->is_active())
-        {
-            continue;
-        }
-
-        child_object->on_update(child_object->scaled_delta(delta));
-    }
+    ui_child_object_utils::update_children(child_objects(), delta);
 
     remove_destroyed_children();
 }
@@ -307,28 +288,7 @@ void UiLayout::on_render(SDL_Renderer* renderer)
     refresh_theme_if_needed();
     remove_destroyed_children();
     apply_layout();
-
-    std::vector<std::shared_ptr<GameObject>> child_objects;
-    child_objects.reserve(_children.size());
-    for (const LayoutChild& child : _children)
-    {
-        child_objects.push_back(child._object);
-    }
-
-    for (const std::shared_ptr<GameObject>& child_object : child_objects)
-    {
-        if (!child_object || child_object->is_destroyed())
-        {
-            continue;
-        }
-
-        if (!child_object->is_visible())
-        {
-            continue;
-        }
-
-        child_object->on_render(renderer);
-    }
+    ui_child_object_utils::render_children(child_objects(), renderer);
 }
 
 void UiLayout::on_input(const InputSnapshot& input)
@@ -336,28 +296,7 @@ void UiLayout::on_input(const InputSnapshot& input)
     refresh_theme_if_needed();
     remove_destroyed_children();
     apply_layout();
-
-    std::vector<std::shared_ptr<GameObject>> child_objects;
-    child_objects.reserve(_children.size());
-    for (const LayoutChild& child : _children)
-    {
-        child_objects.push_back(child._object);
-    }
-
-    for (const std::shared_ptr<GameObject>& child_object : child_objects)
-    {
-        if (!child_object || child_object->is_destroyed())
-        {
-            continue;
-        }
-
-        if (!child_object->is_active())
-        {
-            continue;
-        }
-
-        child_object->on_input(input);
-    }
+    ui_child_object_utils::input_children(child_objects(), input);
 }
 
 void UiLayout::on_input_event(const InputEvent& event)
@@ -365,48 +304,13 @@ void UiLayout::on_input_event(const InputEvent& event)
     refresh_theme_if_needed();
     remove_destroyed_children();
     apply_layout();
-
-    std::vector<std::shared_ptr<GameObject>> child_objects;
-    child_objects.reserve(_children.size());
-    for (const LayoutChild& child : _children)
-    {
-        child_objects.push_back(child._object);
-    }
-
-    for (const std::shared_ptr<GameObject>& child_object : child_objects)
-    {
-        if (!child_object || child_object->is_destroyed())
-        {
-            continue;
-        }
-
-        if (!child_object->is_active())
-        {
-            continue;
-        }
-
-        child_object->on_input_event(event);
-    }
+    ui_child_object_utils::input_event_children(child_objects(), event);
 }
 
 void UiLayout::reset()
 {
     UiElement::reset();
-
-    std::vector<std::shared_ptr<GameObject>> child_objects;
-    child_objects.reserve(_children.size());
-    for (const LayoutChild& child : _children)
-    {
-        child_objects.push_back(child._object);
-    }
-
-    for (const std::shared_ptr<GameObject>& child_object : child_objects)
-    {
-        if (child_object)
-        {
-            child_object->reset();
-        }
-    }
+    ui_child_object_utils::reset_children(child_objects());
 
     mark_dirty();
     apply_layout();
@@ -415,6 +319,18 @@ void UiLayout::reset()
 void UiLayout::apply_theme(const UiTheme& theme)
 {
     (void)theme;
+}
+
+std::vector<std::shared_ptr<GameObject>> UiLayout::child_objects() const
+{
+    std::vector<std::shared_ptr<GameObject>> objects;
+    objects.reserve(_children.size());
+    for (const LayoutChild& child : _children)
+    {
+        objects.push_back(child._object);
+    }
+
+    return objects;
 }
 
 void UiLayout::mark_dirty()

@@ -194,12 +194,6 @@ UiSliderOrientation UiSlider::orientation() const
     return _orientation;
 }
 
-void UiSlider::copy_bar_appearance_from(const UiBar& style_source)
-{
-    _bar = style_source;
-    sync_value_label();
-}
-
 UiBar& UiSlider::bar()
 {
     return _bar;

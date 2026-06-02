@@ -40,7 +40,6 @@ public:
     void set_orientation(UiSliderOrientation orientation);
     [[nodiscard]] UiSliderOrientation orientation() const;
 
-    void copy_bar_appearance_from(const UiBar& style_source);
     UiBar& bar();
     [[nodiscard]] const UiBar& bar() const;
 

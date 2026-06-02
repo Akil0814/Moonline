@@ -98,13 +98,6 @@ void UiDialog::reset()
         );
     }
 
-    if (_action_scroll_bar)
-    {
-        _action_scroll_bar->reset();
-        _action_scroll_bar->set_target(_action_list.get());
-
-    }
-
     rebuild();
     set_transition_enabled(true);
 }
@@ -180,10 +173,6 @@ void UiDialog::ensure_controls()
         _action_list = std::make_shared<UiMenuList>();
     }
 
-    if (!_action_scroll_bar)
-    {
-        _action_scroll_bar = std::make_shared<UiScrollBar>();
-    }
 }
 
 void UiDialog::rebuild()

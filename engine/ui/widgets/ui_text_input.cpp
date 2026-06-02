@@ -1,6 +1,5 @@
 #include "ui_text_input.h"
 
-#include "../../resources/resource_manager.h"
 #include "../ui_mouse_utils.h"
 #include "../style/ui_theme.h"
 #include "../style/ui_style.h"
@@ -415,48 +414,27 @@ void UiTextInput::refresh_texture(SDL_Renderer* renderer)
         return;
     }
 
-    TTF_Font* resolved_font = resolve_font();
+    TTF_Font* resolved_font = ui_resolve_font(_font, _font_key);
     if (!resolved_font)
     {
         return;
     }
 
     const SDL_Color render_color = display_text().empty() ? _placeholder_color : _text_color;
-    SDL_Surface* text_surface = TTF_RenderUTF8_Blended(resolved_font, render_text.c_str(), render_color);
-    if (!text_surface)
+    UiTextTextureResult texture_result = ui_render_text_texture(
+        renderer,
+        resolved_font,
+        render_text,
+        render_color
+    );
+    if (!texture_result._texture)
     {
         return;
     }
 
-    SDL_Texture* raw_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
-    _texture_width = text_surface->w;
-    _texture_height = text_surface->h;
-    SDL_FreeSurface(text_surface);
-
-    if (!raw_texture)
-    {
-        _texture_width = 0;
-        _texture_height = 0;
-        return;
-    }
-
-    _texture.reset(raw_texture);
-    SDL_SetTextureBlendMode(_texture.get(), SDL_BLENDMODE_BLEND);
-}
-
-TTF_Font* UiTextInput::resolve_font() const
-{
-    if (_font)
-    {
-        return _font;
-    }
-
-    if (_font_key.empty())
-    {
-        return nullptr;
-    }
-
-    return ResourceManager::instance()->find_font(_font_key);
+    _texture_width = texture_result._width;
+    _texture_height = texture_result._height;
+    _texture = std::move(texture_result._texture);
 }
 
 std::string UiTextInput::display_text() const
@@ -558,7 +536,7 @@ void UiTextInput::erase_right()
 
 void UiTextInput::update_caret_from_mouse(int mouse_x)
 {
-    TTF_Font* resolved_font = resolve_font();
+    TTF_Font* resolved_font = ui_resolve_font(_font, _font_key);
     if (!resolved_font)
     {
         return;
@@ -589,7 +567,7 @@ void UiTextInput::update_caret_from_mouse(int mouse_x)
 
 int UiTextInput::caret_pixel_x() const
 {
-    TTF_Font* resolved_font = resolve_font();
+    TTF_Font* resolved_font = ui_resolve_font(_font, _font_key);
     if (!resolved_font)
     {
         return rect().x + _padding;

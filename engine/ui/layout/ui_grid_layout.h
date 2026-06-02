@@ -40,6 +40,7 @@ public:
 
 private:
     void mark_dirty();
+    void remove_destroyed_children();
     void apply_layout();
     [[nodiscard]] float aligned_offset(float cell_extent, float child_extent, UiLayoutAlign align) const;
     void apply_theme(const UiTheme& theme) override;

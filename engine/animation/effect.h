@@ -6,11 +6,10 @@
 
 #include <memory>
 
-using EffectId = std::string;
 class Effect : public GameObject
 {
 public:
-	Effect(EffectId id, Animation* animaiton);
+	Effect(std::string effect_key, std::string animation_key, std::unique_ptr<Animation> animation);
 	~Effect() override = default;
 
 	void on_render(SDL_Renderer* renderer)override;
@@ -20,10 +19,9 @@ public:
 
 	void set_angle(const Vector2& target_position, double angle_degrees);
 
-	bool bind_animation(Animation* animaiton);
-
 private:
-	EffectId _id;
+	std::string _effect_key;
+	std::string _animation_key;
 	double _angle_degrees = 0.0;
 	std::unique_ptr<Animation> _animation;
 };

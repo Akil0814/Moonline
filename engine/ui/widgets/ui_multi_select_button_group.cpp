@@ -1,7 +1,5 @@
 #include "ui_multi_select_button_group.h"
 
-#include <algorithm>
-
 UiMultiSelectButtonGroup::~UiMultiSelectButtonGroup()
 {
     clear_buttons();
@@ -14,61 +12,38 @@ void UiMultiSelectButtonGroup::add_button(const std::shared_ptr<UiSelectableButt
         return;
     }
 
-    cleanup_buttons();
-    if (button_index(button.get()) >= 0)
+    if (!ui_selectable_button_group_utils::add_button(
+            _buttons,
+            button,
+            UiSelectableActivationBehavior::Toggle,
+            [this](UiSelectableButton& selectable_button, bool selected)
+            {
+                handle_button_selection_changed(&selectable_button, selected);
+            }
+        ))
     {
         return;
     }
-
-    ButtonRegistration registration;
-    registration._button = button;
-    button->set_activation_behavior(UiSelectableActivationBehavior::Toggle);
-    registration._listener_id = button->add_selection_listener(
-        [this](UiSelectableButton& selectable_button, bool selected)
-        {
-            handle_button_selection_changed(&selectable_button, selected);
-        }
-    );
-    _buttons.push_back(std::move(registration));
 }
 
 bool UiMultiSelectButtonGroup::remove_button(const UiSelectableButton* button)
 {
-    cleanup_buttons();
-    const int index = button_index(button);
-    if (index < 0)
+    if (!ui_selectable_button_group_utils::remove_button(_buttons, button))
     {
         return false;
     }
-
-    const std::shared_ptr<UiSelectableButton> button_handle = _buttons[static_cast<size_t>(index)]._button.lock();
-    if (button_handle)
-    {
-        button_handle->remove_selection_listener(_buttons[static_cast<size_t>(index)]._listener_id);
-    }
-
-    _buttons.erase(_buttons.begin() + index);
     return true;
 }
 
 void UiMultiSelectButtonGroup::clear_buttons()
 {
-    for (ButtonRegistration& registration : _buttons)
-    {
-        const std::shared_ptr<UiSelectableButton> button = registration._button.lock();
-        if (button)
-        {
-            button->remove_selection_listener(registration._listener_id);
-        }
-    }
-
-    _buttons.clear();
+    ui_selectable_button_group_utils::clear_registrations(_buttons);
 }
 
 void UiMultiSelectButtonGroup::clear_selection()
 {
     _is_syncing_selection = true;
-    for (ButtonRegistration& registration : _buttons)
+    for (UiSelectableButtonRegistration& registration : _buttons)
     {
         const std::shared_ptr<UiSelectableButton> button = registration._button.lock();
         if (button)
@@ -132,7 +107,7 @@ std::vector<int> UiMultiSelectButtonGroup::selected_indices() const
 std::vector<std::shared_ptr<UiSelectableButton>> UiMultiSelectButtonGroup::selected_buttons() const
 {
     std::vector<std::shared_ptr<UiSelectableButton>> buttons;
-    for (const ButtonRegistration& registration : _buttons)
+    for (const UiSelectableButtonRegistration& registration : _buttons)
     {
         const std::shared_ptr<UiSelectableButton> button = registration._button.lock();
         if (button && button->is_selected())
@@ -153,17 +128,7 @@ void UiMultiSelectButtonGroup::set_on_selection_changed(
 
 void UiMultiSelectButtonGroup::cleanup_buttons()
 {
-    _buttons.erase(
-        std::remove_if(
-            _buttons.begin(),
-            _buttons.end(),
-            [](const ButtonRegistration& registration)
-            {
-                return registration._button.expired();
-            }
-        ),
-        _buttons.end()
-    );
+    ui_selectable_button_group_utils::cleanup_registrations(_buttons);
 }
 
 void UiMultiSelectButtonGroup::handle_button_selection_changed(UiSelectableButton* button, bool selected)
@@ -187,29 +152,10 @@ void UiMultiSelectButtonGroup::handle_button_selection_changed(UiSelectableButto
 
 int UiMultiSelectButtonGroup::button_index(const UiSelectableButton* button) const
 {
-    if (!button)
-    {
-        return -1;
-    }
-
-    for (int index = 0; index < static_cast<int>(_buttons.size()); ++index)
-    {
-        const std::shared_ptr<UiSelectableButton> current_button = _buttons[static_cast<size_t>(index)]._button.lock();
-        if (current_button.get() == button)
-        {
-            return index;
-        }
-    }
-
-    return -1;
+    return ui_selectable_button_group_utils::button_index(_buttons, button);
 }
 
 std::shared_ptr<UiSelectableButton> UiMultiSelectButtonGroup::button_at(int index) const
 {
-    if (index < 0 || index >= static_cast<int>(_buttons.size()))
-    {
-        return nullptr;
-    }
-
-    return _buttons[static_cast<size_t>(index)]._button.lock();
+    return ui_selectable_button_group_utils::button_at(_buttons, index);
 }

@@ -1,7 +1,5 @@
 #include "ui_text_button.h"
 
-#include "../../resources/resource_manager.h"
-
 #include <algorithm>
 
 UiTextButton::UiTextButton(Vector2 position, Vector2 size, int order)
@@ -104,59 +102,24 @@ void UiTextButton::refresh_text_texture(SDL_Renderer* renderer)
         return;
     }
 
-    TTF_Font* resolved_font = resolve_font();
+    TTF_Font* resolved_font = ui_resolve_font(_font, _font_key);
     if (!resolved_font)
     {
         return;
     }
 
-    SDL_Surface* text_surface = nullptr;
-    if (_wrap_width > 0)
-    {
-        text_surface = TTF_RenderUTF8_Blended_Wrapped(
-            resolved_font,
-            _text.c_str(),
-            _text_color,
-            static_cast<Uint32>(_wrap_width)
-        );
-    }
-    else
-    {
-        text_surface = TTF_RenderUTF8_Blended(
-            resolved_font,
-            _text.c_str(),
-            _text_color
-        );
-    }
-
-    if (!text_surface)
+    UiTextTextureResult texture_result = ui_render_text_texture(
+        renderer,
+        resolved_font,
+        _text,
+        _text_color,
+        _wrap_width
+    );
+    if (!texture_result._texture)
     {
         return;
     }
 
-    SDL_Texture* raw_texture = SDL_CreateTextureFromSurface(renderer, text_surface);
-    SDL_FreeSurface(text_surface);
-    if (!raw_texture)
-    {
-        return;
-    }
-
-    _message_texture.reset(raw_texture);
-    SDL_SetTextureBlendMode(_message_texture.get(), SDL_BLENDMODE_BLEND);
+    _message_texture = std::move(texture_result._texture);
     set_message_texture(_message_texture.get());
-}
-
-TTF_Font* UiTextButton::resolve_font() const
-{
-    if (_font)
-    {
-        return _font;
-    }
-
-    if (_font_key.empty())
-    {
-        return nullptr;
-    }
-
-    return ResourceManager::instance()->find_font(_font_key);
 }

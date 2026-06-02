@@ -1,7 +1,6 @@
 #pragma once
 
-#include "../containers/ui_scroll_panel.h"
-#include "../base/ui_focusable.h"
+#include "ui_selectable_scroll_list.h"
 #include "../style/ui_style.h"
 #include "../widgets/ui_text_button.h"
 
@@ -23,12 +22,11 @@ using UiMenuSelectionChangedCallback = std::function<void(
     const std::string& text
 )>;
 
-class UiMenuList : public UiScrollPanel, public UiFocusable
+class UiMenuList : public UiSelectableScrollList
 {
 public:
     explicit UiMenuList(Vector2 position = Vector2::zero(), Vector2 size = Vector2::zero(), int order = 0);
 
-    void on_input_event(const InputEvent& event) override;
     void reset() override;
 
     int add_item(const std::string& id, const std::string& text, bool enabled = true);
@@ -36,8 +34,6 @@ public:
     void set_items(const std::vector<UiMenuListItem>& items);
 
     [[nodiscard]] size_t item_count() const;
-    [[nodiscard]] int selected_index() const;
-    void set_selected_index(int index);
     [[nodiscard]] const UiMenuListItem* selected_item() const;
 
     bool set_item_enabled(int index, bool enabled);
@@ -54,22 +50,17 @@ public:
 
     void set_button_style(const ButtonStyle& button_style);
     [[nodiscard]] const ButtonStyle& button_style() const;
-    void set_selection_view_padding(float selection_view_padding);
-    [[nodiscard]] float selection_view_padding() const;
 
     void set_on_selection_changed(UiMenuSelectionChangedCallback on_selection_changed);
-    void set_enabled(bool enabled) override;
-    [[nodiscard]] bool is_enabled() const override;
-    void set_focused(bool focused) override;
-    [[nodiscard]] bool is_focused() const override;
     [[nodiscard]] bool handle_focused_input_event(const InputEvent& event) override;
-    [[nodiscard]] GameObject* game_object() override;
-    [[nodiscard]] const GameObject* game_object() const override;
 
 private:
     void rebuild_items();
-    void sync_selection_visuals();
+    void sync_selection_state() override;
     void handle_item_click(UiTextButton* button);
+    [[nodiscard]] size_t selectable_item_count() const override;
+    [[nodiscard]] bool selectable_item_enabled(int index) const override;
+    [[nodiscard]] const GameObject* selected_item_view_target() const override;
     void apply_theme(const UiTheme& theme) override;
 
 private:
@@ -80,11 +71,6 @@ private:
     std::string _font_key = "ui.default";
     SDL_Color _text_color{ 255, 255, 255, 255 };
     ButtonStyle _button_style;
-    float _selection_view_padding = 24.0f;
 
     UiMenuSelectionChangedCallback _on_selection_changed;
-
-    int _selected_index = -1;
-    bool _enabled = true;
-    bool _is_focused = false;
 };

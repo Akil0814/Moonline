@@ -2,7 +2,7 @@
 
 #include "../style/ui_theme_roles.h"
 #include "../base/ui_element.h"
-#include "../../resources/texture/texture_loader.h"
+#include "../text/ui_text_render_utils.h"
 
 struct UiTheme;
 
@@ -71,7 +71,6 @@ public:
 private:
     void mark_dirty();
     void refresh_texture(SDL_Renderer* renderer);
-    [[nodiscard]] TTF_Font* resolve_font() const;
     [[nodiscard]] SDL_Rect text_rect() const;
     void apply_theme(const UiTheme& theme) override;
 

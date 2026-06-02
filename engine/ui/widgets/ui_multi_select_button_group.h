@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ui_selectable_button_group_utils.h"
 #include "ui_selectable_button.h"
 
 #include <functional>
@@ -31,21 +32,13 @@ public:
 
     void set_on_selection_changed(UiMultiSelectButtonGroupSelectionChangedCallback on_selection_changed);
 
-private:
-    struct ButtonRegistration
-    {
-        std::weak_ptr<UiSelectableButton> _button;
-        UiSelectableButtonListenerId _listener_id = 0;
-    };
-
-private:
     void cleanup_buttons();
     void handle_button_selection_changed(UiSelectableButton* button, bool selected);
     [[nodiscard]] int button_index(const UiSelectableButton* button) const;
     [[nodiscard]] std::shared_ptr<UiSelectableButton> button_at(int index) const;
 
 private:
-    std::vector<ButtonRegistration> _buttons;
+    std::vector<UiSelectableButtonRegistration> _buttons;
     UiMultiSelectButtonGroupSelectionChangedCallback _on_selection_changed;
     bool _is_syncing_selection = false;
 };

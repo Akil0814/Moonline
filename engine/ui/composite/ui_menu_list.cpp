@@ -2,46 +2,23 @@
 
 #include "../style/ui_theme.h"
 
-#include <algorithm>
 #include <utility>
 
 UiMenuList::UiMenuList(Vector2 position, Vector2 size, int order)
-    : UiScrollPanel(position, size, order)
+    : UiSelectableScrollList(position, size, order)
 {
-    set_panel_theme_role(UiPanelThemeRole::List);
-    set_direction(UiLayoutDirection::Vertical);
-    set_allow_horizontal_scroll(false);
-    set_allow_vertical_scroll(true);
-    set_clamp_scroll(true);
-}
-
-void UiMenuList::on_input_event(const InputEvent& event)
-{
-    if (event.type == InputEventType::MouseWheel && event.device == InputDevice::Mouse)
-    {
-        UiScrollPanel::on_input_event(event);
-    }
 }
 
 void UiMenuList::reset()
 {
-    UiScrollPanel::reset();
-    set_panel_theme_role(UiPanelThemeRole::List);
-    set_direction(UiLayoutDirection::Vertical);
-    set_allow_horizontal_scroll(false);
-    set_allow_vertical_scroll(true);
-    set_clamp_scroll(true);
+    UiSelectableScrollList::reset();
     _items.clear();
     _buttons.clear();
     _item_size = { 320.0f, 56.0f };
     _font_key = "ui.default";
     _text_color = SDL_Color{ 255, 255, 255, 255 };
     _button_style = ButtonStyle{};
-    _selection_view_padding = 24.0f;
     _on_selection_changed = nullptr;
-    _selected_index = -1;
-    _enabled = true;
-    _is_focused = false;
     clear_children();
 }
 
@@ -60,9 +37,9 @@ void UiMenuList::clear_items()
 {
     _items.clear();
     _buttons.clear();
-    _selected_index = -1;
     clear_children();
     set_scroll_offset(Vector2::zero());
+    set_selected_index(-1);
 }
 
 void UiMenuList::set_items(const std::vector<UiMenuListItem>& items)
@@ -76,53 +53,14 @@ size_t UiMenuList::item_count() const
     return _items.size();
 }
 
-int UiMenuList::selected_index() const
-{
-    return _selected_index;
-}
-
-void UiMenuList::set_selected_index(int index)
-{
-    if (_items.empty())
-    {
-        _selected_index = -1;
-        sync_selection_visuals();
-        return;
-    }
-
-    int clamped_index = std::clamp(index, 0, static_cast<int>(_items.size()) - 1);
-    const int start_index = clamped_index;
-    while (!_items[static_cast<size_t>(clamped_index)]._enabled)
-    {
-        clamped_index = (clamped_index + 1) % static_cast<int>(_items.size());
-        if (clamped_index == start_index)
-        {
-            _selected_index = -1;
-            sync_selection_visuals();
-            return;
-        }
-    }
-
-    _selected_index = clamped_index;
-    sync_selection_visuals();
-
-    if (_selected_index >= 0 && _selected_index < static_cast<int>(_buttons.size()))
-    {
-        ensure_child_visible(
-            _buttons[static_cast<size_t>(_selected_index)].get(),
-            { 0.0f, _selection_view_padding }
-        );
-    }
-}
-
 const UiMenuListItem* UiMenuList::selected_item() const
 {
-    if (_selected_index < 0 || _selected_index >= static_cast<int>(_items.size()))
+    if (selected_index() < 0 || selected_index() >= static_cast<int>(_items.size()))
     {
         return nullptr;
     }
 
-    return &_items[static_cast<size_t>(_selected_index)];
+    return &_items[static_cast<size_t>(selected_index())];
 }
 
 bool UiMenuList::set_item_enabled(int index, bool enabled)
@@ -193,27 +131,40 @@ const ButtonStyle& UiMenuList::button_style() const
     return _button_style;
 }
 
-void UiMenuList::set_selection_view_padding(float selection_view_padding)
-{
-    _selection_view_padding = std::max(0.0f, selection_view_padding);
-
-    if (_selected_index >= 0 && _selected_index < static_cast<int>(_buttons.size()))
-    {
-        ensure_child_visible(
-            _buttons[static_cast<size_t>(_selected_index)].get(),
-            { 0.0f, _selection_view_padding }
-        );
-    }
-}
-
-float UiMenuList::selection_view_padding() const
-{
-    return _selection_view_padding;
-}
-
 void UiMenuList::set_on_selection_changed(UiMenuSelectionChangedCallback on_selection_changed)
 {
     _on_selection_changed = std::move(on_selection_changed);
+}
+
+bool UiMenuList::handle_focused_input_event(const InputEvent& event)
+{
+    if (handle_navigation_input_event(event))
+    {
+        return true;
+    }
+
+    if (!is_enabled() || !is_focused() || event.type != InputEventType::Pressed)
+    {
+        return false;
+    }
+
+    if (event.action != InputAction::Confirm)
+    {
+        return false;
+    }
+
+    const UiMenuListItem* item = selected_item();
+    if (!item || !item->_enabled)
+    {
+        return true;
+    }
+
+    if (_on_selection_changed)
+    {
+        _on_selection_changed(selected_index(), item->_id, item->_text);
+    }
+
+    return true;
 }
 
 void UiMenuList::rebuild_items()
@@ -222,10 +173,8 @@ void UiMenuList::rebuild_items()
     _buttons.clear();
     set_scroll_step({ _item_size.x + spacing(), _item_size.y + spacing() });
 
-    for (size_t index = 0; index < _items.size(); ++index)
+    for (const UiMenuListItem& item : _items)
     {
-        const UiMenuListItem& item = _items[index];
-
         std::shared_ptr<UiTextButton> button = std::make_shared<UiTextButton>(
             Vector2::zero(),
             _item_size
@@ -233,7 +182,7 @@ void UiMenuList::rebuild_items()
         button->set_text(item._text);
         button->set_font_key(_font_key);
         button->set_text_color(_text_color);
-        button->set_enabled(_enabled && item._enabled);
+        button->set_enabled(is_enabled() && item._enabled);
         UiStyle::apply_button(*button, _button_style);
         button->set_on_click([this, raw_button = button.get()]()
             {
@@ -248,20 +197,21 @@ void UiMenuList::rebuild_items()
 
     if (_items.empty())
     {
-        _selected_index = -1;
+        set_selected_index(-1);
         set_scroll_offset(Vector2::zero());
         return;
     }
 
-    if (_selected_index < 0 || _selected_index >= static_cast<int>(_items.size()))
+    if (selected_index() < 0 || selected_index() >= static_cast<int>(_items.size()))
     {
-        _selected_index = 0;
+        set_selected_index(0);
+        return;
     }
 
-    set_selected_index(_selected_index);
+    set_selected_index(selected_index());
 }
 
-void UiMenuList::sync_selection_visuals()
+void UiMenuList::sync_selection_state()
 {
     for (size_t index = 0; index < _buttons.size(); ++index)
     {
@@ -271,10 +221,10 @@ void UiMenuList::sync_selection_visuals()
             continue;
         }
 
-        const bool enabled = _enabled && _items[index]._enabled;
+        const bool enabled = is_enabled() && _items[index]._enabled;
         button->set_enabled(enabled);
-        const bool focused = static_cast<int>(index) == _selected_index;
-        button->set_focused(_is_focused && enabled && focused);
+        const bool focused = static_cast<int>(index) == selected_index();
+        button->set_focused(is_focused() && enabled && focused);
     }
 }
 
@@ -293,7 +243,6 @@ void UiMenuList::handle_item_click(UiTextButton* button)
         }
 
         set_selected_index(static_cast<int>(index));
-
         if (_on_selection_changed)
         {
             const UiMenuListItem& item = _items[index];
@@ -303,94 +252,27 @@ void UiMenuList::handle_item_click(UiTextButton* button)
     }
 }
 
-void UiMenuList::set_enabled(bool enabled)
+size_t UiMenuList::selectable_item_count() const
 {
-    _enabled = enabled;
-    sync_selection_visuals();
+    return _items.size();
 }
 
-bool UiMenuList::is_enabled() const
+bool UiMenuList::selectable_item_enabled(int index) const
 {
-    return _enabled;
+    return index >= 0
+        && index < static_cast<int>(_items.size())
+        && _items[static_cast<size_t>(index)]._enabled;
 }
 
-void UiMenuList::set_focused(bool focused)
+const GameObject* UiMenuList::selected_item_view_target() const
 {
-    _is_focused = focused;
-    sync_selection_visuals();
-}
-
-bool UiMenuList::is_focused() const
-{
-    return _is_focused;
-}
-
-bool UiMenuList::handle_focused_input_event(const InputEvent& event)
-{
-    if (!_enabled || !_is_focused)
+    const int index = selected_index();
+    if (index < 0 || index >= static_cast<int>(_buttons.size()))
     {
-        return false;
+        return nullptr;
     }
 
-    if (event.type == InputEventType::MouseWheel)
-    {
-        if (event.device == InputDevice::Gamepad)
-        {
-            scroll_by({
-                -static_cast<float>(event.wheel_x) * scroll_step().x,
-                -static_cast<float>(event.wheel_y) * scroll_step().y
-            });
-        }
-        else
-        {
-            UiScrollPanel::on_input_event(event);
-        }
-        return true;
-    }
-
-    if (event.type != InputEventType::Pressed)
-    {
-        return false;
-    }
-
-    switch (event.action)
-    {
-    case InputAction::Up:
-        set_selected_index(_selected_index - 1);
-        return true;
-
-    case InputAction::Down:
-        set_selected_index(_selected_index + 1);
-        return true;
-
-    case InputAction::Confirm:
-    {
-        const UiMenuListItem* item = selected_item();
-        if (!item || !item->_enabled)
-        {
-            return true;
-        }
-
-        if (_on_selection_changed)
-        {
-            _on_selection_changed(_selected_index, item->_id, item->_text);
-        }
-        return true;
-    }
-
-    default:
-        return false;
-    }
-}
-
-GameObject* UiMenuList::game_object()
-{
-    return this;
-}
-
-const GameObject* UiMenuList::game_object() const
-{
-    return this;
+    return _buttons[static_cast<size_t>(index)].get();
 }
 
 void UiMenuList::apply_theme(const UiTheme& theme)

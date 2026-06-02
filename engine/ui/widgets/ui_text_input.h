@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../base/ui_control.h"
-#include "../../resources/texture/texture_loader.h"
+#include "../text/ui_text_render_utils.h"
 
 #include <SDL.h>
 #include <SDL_ttf.h>
@@ -71,7 +71,6 @@ public:
 private:
     void mark_dirty();
     void refresh_texture(SDL_Renderer* renderer);
-    [[nodiscard]] TTF_Font* resolve_font() const;
     [[nodiscard]] std::string display_text() const;
     void set_text_internal(const std::string& text, bool notify);
     void move_caret_left();

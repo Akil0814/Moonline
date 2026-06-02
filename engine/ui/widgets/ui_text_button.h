@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ui_button.h"
-#include "../../resources/texture/texture_loader.h"
+#include "../text/ui_text_render_utils.h"
 
 #include <SDL.h>
 #include <SDL_ttf.h>
@@ -34,7 +34,6 @@ public:
 private:
     void mark_dirty();
     void refresh_text_texture(SDL_Renderer* renderer);
-    [[nodiscard]] TTF_Font* resolve_font() const;
 
 private:
     std::string _text;

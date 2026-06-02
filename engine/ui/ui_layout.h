@@ -141,6 +141,7 @@ private:
     void remove_destroyed_children();
     void sync_child_sizes();
     void apply_layout();
+    [[nodiscard]] std::vector<std::shared_ptr<GameObject>> child_objects() const;
 
     [[nodiscard]] Vector2 available_content_area() const;
     [[nodiscard]] Vector2 child_layout_size(

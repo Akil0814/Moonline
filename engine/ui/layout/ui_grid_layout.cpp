@@ -1,5 +1,7 @@
 #include "ui_grid_layout.h"
 
+#include "../base/ui_child_object_utils.h"
+
 #include <algorithm>
 
 UiGridLayout::UiGridLayout(Vector2 position, Vector2 size, int order)
@@ -98,65 +100,34 @@ UiLayoutAlign UiGridLayout::vertical_align() const
 void UiGridLayout::on_update(double delta)
 {
     refresh_theme_if_needed();
+    remove_destroyed_children();
     apply_layout();
-
-    for (const std::shared_ptr<GameObject>& child : _children)
-    {
-        if (!child || child->is_destroyed() || !child->is_active())
-        {
-            continue;
-        }
-
-        child->on_update(child->scaled_delta(delta));
-    }
+    ui_child_object_utils::update_children(_children, delta);
+    remove_destroyed_children();
 }
 
 void UiGridLayout::on_render(SDL_Renderer* renderer)
 {
     refresh_theme_if_needed();
+    remove_destroyed_children();
     apply_layout();
-
-    for (const std::shared_ptr<GameObject>& child : _children)
-    {
-        if (!child || child->is_destroyed() || !child->is_visible())
-        {
-            continue;
-        }
-
-        child->on_render(renderer);
-    }
+    ui_child_object_utils::render_children(_children, renderer);
 }
 
 void UiGridLayout::on_input(const InputSnapshot& input)
 {
     refresh_theme_if_needed();
+    remove_destroyed_children();
     apply_layout();
-
-    for (const std::shared_ptr<GameObject>& child : _children)
-    {
-        if (!child || child->is_destroyed() || !child->is_active())
-        {
-            continue;
-        }
-
-        child->on_input(input);
-    }
+    ui_child_object_utils::input_children(_children, input);
 }
 
 void UiGridLayout::on_input_event(const InputEvent& event)
 {
     refresh_theme_if_needed();
+    remove_destroyed_children();
     apply_layout();
-
-    for (const std::shared_ptr<GameObject>& child : _children)
-    {
-        if (!child || child->is_destroyed() || !child->is_active())
-        {
-            continue;
-        }
-
-        child->on_input_event(event);
-    }
+    ui_child_object_utils::input_event_children(_children, event);
 }
 
 void UiGridLayout::reset()
@@ -169,14 +140,7 @@ void UiGridLayout::reset()
     _horizontal_align = UiLayoutAlign::Start;
     _vertical_align = UiLayoutAlign::Start;
     _layout_dirty = true;
-
-    for (const std::shared_ptr<GameObject>& child : _children)
-    {
-        if (child)
-        {
-            child->reset();
-        }
-    }
+    ui_child_object_utils::reset_children(_children);
 }
 
 void UiGridLayout::relayout()
@@ -187,6 +151,14 @@ void UiGridLayout::relayout()
 void UiGridLayout::mark_dirty()
 {
     _layout_dirty = true;
+}
+
+void UiGridLayout::remove_destroyed_children()
+{
+    if (ui_child_object_utils::remove_destroyed_children(_children))
+    {
+        mark_dirty();
+    }
 }
 
 void UiGridLayout::apply_layout()
