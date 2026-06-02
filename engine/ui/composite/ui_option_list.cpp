@@ -79,6 +79,7 @@ void UiOptionList::reset()
     _rows.clear();
     _font_key = "ui.default";
     _style = UiOptionListStyle{};
+    _selection_view_padding = 24.0f;
     _on_value_changed = nullptr;
     _selected_index = -1;
     _enabled = true;
@@ -149,7 +150,10 @@ void UiOptionList::set_selected_index(int index)
 
     if (_selected_index >= 0 && _selected_index < static_cast<int>(_rows.size()))
     {
-        ensure_child_visible(_rows[static_cast<size_t>(_selected_index)]._panel.get());
+        ensure_child_visible(
+            _rows[static_cast<size_t>(_selected_index)]._panel.get(),
+            { 0.0f, _selection_view_padding }
+        );
     }
 }
 
@@ -233,6 +237,24 @@ void UiOptionList::set_style(const UiOptionListStyle& style)
 const UiOptionListStyle& UiOptionList::style() const
 {
     return _style;
+}
+
+void UiOptionList::set_selection_view_padding(float selection_view_padding)
+{
+    _selection_view_padding = std::max(0.0f, selection_view_padding);
+
+    if (_selected_index >= 0 && _selected_index < static_cast<int>(_rows.size()))
+    {
+        ensure_child_visible(
+            _rows[static_cast<size_t>(_selected_index)]._panel.get(),
+            { 0.0f, _selection_view_padding }
+        );
+    }
+}
+
+float UiOptionList::selection_view_padding() const
+{
+    return _selection_view_padding;
 }
 
 void UiOptionList::set_on_value_changed(UiOptionValueChangedCallback on_value_changed)

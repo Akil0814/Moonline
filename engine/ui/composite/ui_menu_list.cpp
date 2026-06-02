@@ -37,6 +37,7 @@ void UiMenuList::reset()
     _font_key = "ui.default";
     _text_color = SDL_Color{ 255, 255, 255, 255 };
     _button_style = ButtonStyle{};
+    _selection_view_padding = 24.0f;
     _on_selection_changed = nullptr;
     _selected_index = -1;
     _enabled = true;
@@ -107,7 +108,10 @@ void UiMenuList::set_selected_index(int index)
 
     if (_selected_index >= 0 && _selected_index < static_cast<int>(_buttons.size()))
     {
-        ensure_child_visible(_buttons[static_cast<size_t>(_selected_index)].get());
+        ensure_child_visible(
+            _buttons[static_cast<size_t>(_selected_index)].get(),
+            { 0.0f, _selection_view_padding }
+        );
     }
 }
 
@@ -187,6 +191,24 @@ void UiMenuList::set_button_style(const ButtonStyle& button_style)
 const ButtonStyle& UiMenuList::button_style() const
 {
     return _button_style;
+}
+
+void UiMenuList::set_selection_view_padding(float selection_view_padding)
+{
+    _selection_view_padding = std::max(0.0f, selection_view_padding);
+
+    if (_selected_index >= 0 && _selected_index < static_cast<int>(_buttons.size()))
+    {
+        ensure_child_visible(
+            _buttons[static_cast<size_t>(_selected_index)].get(),
+            { 0.0f, _selection_view_padding }
+        );
+    }
+}
+
+float UiMenuList::selection_view_padding() const
+{
+    return _selection_view_padding;
 }
 
 void UiMenuList::set_on_selection_changed(UiMenuSelectionChangedCallback on_selection_changed)

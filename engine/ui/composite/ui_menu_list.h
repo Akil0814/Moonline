@@ -54,6 +54,8 @@ public:
 
     void set_button_style(const ButtonStyle& button_style);
     [[nodiscard]] const ButtonStyle& button_style() const;
+    void set_selection_view_padding(float selection_view_padding);
+    [[nodiscard]] float selection_view_padding() const;
 
     void set_on_selection_changed(UiMenuSelectionChangedCallback on_selection_changed);
     void set_enabled(bool enabled) override;
@@ -78,6 +80,7 @@ private:
     std::string _font_key = "ui.default";
     SDL_Color _text_color{ 255, 255, 255, 255 };
     ButtonStyle _button_style;
+    float _selection_view_padding = 24.0f;
 
     UiMenuSelectionChangedCallback _on_selection_changed;
 

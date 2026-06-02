@@ -155,7 +155,7 @@ Vector2 UiScrollPanel::max_scroll_offset()
     return max_scroll;
 }
 
-void UiScrollPanel::ensure_child_visible(const GameObject* child)
+void UiScrollPanel::ensure_child_visible(const GameObject* child, const Vector2& padding)
 {
     if (!child)
     {
@@ -171,12 +171,14 @@ void UiScrollPanel::ensure_child_visible(const GameObject* child)
     }
 
     const SDL_Rect& panel_rect = rect();
+    const int horizontal_padding = std::max(0, static_cast<int>(padding.x));
+    const int vertical_padding = std::max(0, static_cast<int>(padding.y));
 
     Vector2 next_scroll = _scroll_offset;
     if (_allow_horizontal_scroll)
     {
-        const int visible_left = panel_rect.x;
-        const int visible_right = panel_rect.x + panel_rect.w;
+        const int visible_left = panel_rect.x + horizontal_padding;
+        const int visible_right = panel_rect.x + panel_rect.w - horizontal_padding;
         const int child_left = child_rect.x;
         const int child_right = child_rect.x + child_rect.w;
 
@@ -192,8 +194,8 @@ void UiScrollPanel::ensure_child_visible(const GameObject* child)
 
     if (_allow_vertical_scroll)
     {
-        const int visible_top = panel_rect.y;
-        const int visible_bottom = panel_rect.y + panel_rect.h;
+        const int visible_top = panel_rect.y + vertical_padding;
+        const int visible_bottom = panel_rect.y + panel_rect.h - vertical_padding;
         const int child_top = child_rect.y;
         const int child_bottom = child_rect.y + child_rect.h;
 

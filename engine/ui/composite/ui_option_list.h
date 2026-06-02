@@ -97,6 +97,8 @@ public:
 
     void set_style(const UiOptionListStyle& style);
     [[nodiscard]] const UiOptionListStyle& style() const;
+    void set_selection_view_padding(float selection_view_padding);
+    [[nodiscard]] float selection_view_padding() const;
 
     void set_on_value_changed(UiOptionValueChangedCallback on_value_changed);
 
@@ -132,6 +134,7 @@ private:
 
     std::string _font_key = "ui.default";
     UiOptionListStyle _style;
+    float _selection_view_padding = 24.0f;
     UiOptionValueChangedCallback _on_value_changed;
 
     int _selected_index = -1;

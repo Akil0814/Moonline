@@ -33,7 +33,7 @@ public:
     [[nodiscard]] bool clamps_scroll() const;
 
     Vector2 max_scroll_offset();
-    void ensure_child_visible(const GameObject* child);
+    void ensure_child_visible(const GameObject* child, const Vector2& padding = Vector2::zero());
 
 private:
     void clamp_scroll_offset();
