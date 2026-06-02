@@ -16,6 +16,30 @@ void MainMenuScene::on_enter()
 
 void MainMenuScene::on_exit()
 {
+    clear_objects();
+
+    if (_menu_scroll_bar)
+    {
+        _menu_scroll_bar->set_target(nullptr);
+    }
+
+    if (_menu_list)
+    {
+        _menu_list->set_on_selection_changed({});
+    }
+
+    if (_quit_dialog)
+    {
+        _quit_dialog->set_on_action({});
+    }
+
+    _quit_dialog.reset();
+    _menu_scroll_bar.reset();
+    _menu_list.reset();
+    _footer_label.reset();
+    _subtitle_label.reset();
+    _title_label.reset();
+    _screen.reset();
 }
 
 void MainMenuScene::on_update(double delta)
