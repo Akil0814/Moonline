@@ -277,19 +277,26 @@ void UiLayout::on_update(double delta)
     remove_destroyed_children();
     apply_layout();
 
-    for (LayoutChild& child : _children)
+    std::vector<std::shared_ptr<GameObject>> child_objects;
+    child_objects.reserve(_children.size());
+    for (const LayoutChild& child : _children)
     {
-        if (!child._object || child._object->is_destroyed())
+        child_objects.push_back(child._object);
+    }
+
+    for (const std::shared_ptr<GameObject>& child_object : child_objects)
+    {
+        if (!child_object || child_object->is_destroyed())
         {
             continue;
         }
 
-        if (!child._object->is_active())
+        if (!child_object->is_active())
         {
             continue;
         }
 
-        child._object->on_update(child._object->scaled_delta(delta));
+        child_object->on_update(child_object->scaled_delta(delta));
     }
 
     remove_destroyed_children();
@@ -301,19 +308,26 @@ void UiLayout::on_render(SDL_Renderer* renderer)
     remove_destroyed_children();
     apply_layout();
 
-    for (LayoutChild& child : _children)
+    std::vector<std::shared_ptr<GameObject>> child_objects;
+    child_objects.reserve(_children.size());
+    for (const LayoutChild& child : _children)
     {
-        if (!child._object || child._object->is_destroyed())
+        child_objects.push_back(child._object);
+    }
+
+    for (const std::shared_ptr<GameObject>& child_object : child_objects)
+    {
+        if (!child_object || child_object->is_destroyed())
         {
             continue;
         }
 
-        if (!child._object->is_visible())
+        if (!child_object->is_visible())
         {
             continue;
         }
 
-        child._object->on_render(renderer);
+        child_object->on_render(renderer);
     }
 }
 
@@ -323,19 +337,26 @@ void UiLayout::on_input(const InputSnapshot& input)
     remove_destroyed_children();
     apply_layout();
 
-    for (LayoutChild& child : _children)
+    std::vector<std::shared_ptr<GameObject>> child_objects;
+    child_objects.reserve(_children.size());
+    for (const LayoutChild& child : _children)
     {
-        if (!child._object || child._object->is_destroyed())
+        child_objects.push_back(child._object);
+    }
+
+    for (const std::shared_ptr<GameObject>& child_object : child_objects)
+    {
+        if (!child_object || child_object->is_destroyed())
         {
             continue;
         }
 
-        if (!child._object->is_active())
+        if (!child_object->is_active())
         {
             continue;
         }
 
-        child._object->on_input(input);
+        child_object->on_input(input);
     }
 }
 
@@ -345,19 +366,26 @@ void UiLayout::on_input_event(const InputEvent& event)
     remove_destroyed_children();
     apply_layout();
 
-    for (LayoutChild& child : _children)
+    std::vector<std::shared_ptr<GameObject>> child_objects;
+    child_objects.reserve(_children.size());
+    for (const LayoutChild& child : _children)
     {
-        if (!child._object || child._object->is_destroyed())
+        child_objects.push_back(child._object);
+    }
+
+    for (const std::shared_ptr<GameObject>& child_object : child_objects)
+    {
+        if (!child_object || child_object->is_destroyed())
         {
             continue;
         }
 
-        if (!child._object->is_active())
+        if (!child_object->is_active())
         {
             continue;
         }
 
-        child._object->on_input_event(event);
+        child_object->on_input_event(event);
     }
 }
 
@@ -365,11 +393,18 @@ void UiLayout::reset()
 {
     UiElement::reset();
 
-    for (LayoutChild& child : _children)
+    std::vector<std::shared_ptr<GameObject>> child_objects;
+    child_objects.reserve(_children.size());
+    for (const LayoutChild& child : _children)
     {
-        if (child._object)
+        child_objects.push_back(child._object);
+    }
+
+    for (const std::shared_ptr<GameObject>& child_object : child_objects)
+    {
+        if (child_object)
         {
-            child._object->reset();
+            child_object->reset();
         }
     }
 

@@ -22,7 +22,8 @@ public:
 	{
 		for (auto& layer : _object_layers)
 		{
-			for (auto& obj : layer)
+			const std::vector<std::shared_ptr<GameObject>> objects = layer;
+			for (const std::shared_ptr<GameObject>& obj : objects)
 			{
 				if (!obj || obj->is_destroyed())
 					continue;
@@ -44,7 +45,8 @@ public:
 	{
 		for (auto& layer : _object_layers)
 		{
-			for (auto& obj : layer)
+			const std::vector<std::shared_ptr<GameObject>> objects = layer;
+			for (const std::shared_ptr<GameObject>& obj : objects)
 			{
 				if (!obj || obj->is_destroyed())
 					continue;
@@ -64,7 +66,8 @@ public:
 	{
 		for (auto& layer : _object_layers)
 		{
-			for (auto& obj : layer)
+			const std::vector<std::shared_ptr<GameObject>> objects = layer;
+			for (const std::shared_ptr<GameObject>& obj : objects)
 			{
 				if (!obj || obj->is_destroyed())
 					continue;
@@ -122,7 +125,8 @@ protected:
 	{
 		for (auto& layer : _object_layers)
 		{
-			for (auto& obj : layer)
+			const std::vector<std::shared_ptr<GameObject>> objects = layer;
+			for (const std::shared_ptr<GameObject>& obj : objects)
 			{
 				if (obj)
 					obj->reset();

@@ -18,6 +18,7 @@ class InputSystem
 {
 public:
     void begin_frame();
+    void end_frame();
     void process_event(const SDL_Event& event);
     InputSnapshot snapshot() const;
     const std::vector<InputEvent>& events() const;
@@ -28,8 +29,12 @@ public:
 private:
     void translate_event(const SDL_Event& event);
     void apply_event(const InputEvent& event);
+    void append_event(const InputEvent& event);
     InputDevice detect_event_device(const SDL_Event& event) const;
     bool is_keyboard_or_mouse(InputDevice device) const;
+    void update_controller_axis_state(const SDL_Event& event);
+    void emit_ui_gamepad_scroll();
+    void reset_gamepad_scroll_state();
 
 private:
     InputState _state;
@@ -37,4 +42,7 @@ private:
     InputContext _context = InputContext::Gameplay;
     InputDevice _current_device = InputDevice::Unknown;
     bool _device_switched_this_frame = false;
+    float _left_stick_x = 0.0f;
+    float _left_stick_y = 0.0f;
+    float _gamepad_scroll_accumulator = 0.0f;
 };

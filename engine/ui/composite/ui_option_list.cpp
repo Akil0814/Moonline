@@ -21,7 +21,10 @@ UiOptionList::UiOptionList(Vector2 position, Vector2 size, int order)
 
 void UiOptionList::on_input(const InputSnapshot& input)
 {
-    UiScrollPanel::on_input(input);
+    if (ui_mouse_input_allowed(input))
+    {
+        UiScrollPanel::on_input(input);
+    }
 
     if (!_enabled || !ui_mouse_input_allowed(input))
     {
@@ -58,7 +61,7 @@ void UiOptionList::on_input(const InputSnapshot& input)
 
 void UiOptionList::on_input_event(const InputEvent& event)
 {
-    if (event.type == InputEventType::MouseWheel)
+    if (event.type == InputEventType::MouseWheel && event.device == InputDevice::Mouse)
     {
         UiScrollPanel::on_input_event(event);
     }
@@ -270,7 +273,17 @@ bool UiOptionList::handle_focused_input_event(const InputEvent& event)
 
     if (event.type == InputEventType::MouseWheel)
     {
-        UiScrollPanel::on_input_event(event);
+        if (event.device == InputDevice::Gamepad)
+        {
+            scroll_by({
+                -static_cast<float>(event.wheel_x) * scroll_step().x,
+                -static_cast<float>(event.wheel_y) * scroll_step().y
+            });
+        }
+        else
+        {
+            UiScrollPanel::on_input_event(event);
+        }
         return true;
     }
 

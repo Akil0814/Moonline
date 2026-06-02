@@ -17,7 +17,7 @@ UiMenuList::UiMenuList(Vector2 position, Vector2 size, int order)
 
 void UiMenuList::on_input_event(const InputEvent& event)
 {
-    if (event.type == InputEventType::MouseWheel)
+    if (event.type == InputEventType::MouseWheel && event.device == InputDevice::Mouse)
     {
         UiScrollPanel::on_input_event(event);
     }
@@ -312,7 +312,17 @@ bool UiMenuList::handle_focused_input_event(const InputEvent& event)
 
     if (event.type == InputEventType::MouseWheel)
     {
-        UiScrollPanel::on_input_event(event);
+        if (event.device == InputDevice::Gamepad)
+        {
+            scroll_by({
+                -static_cast<float>(event.wheel_x) * scroll_step().x,
+                -static_cast<float>(event.wheel_y) * scroll_step().y
+            });
+        }
+        else
+        {
+            UiScrollPanel::on_input_event(event);
+        }
         return true;
     }
 

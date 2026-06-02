@@ -120,6 +120,8 @@ int  Application::run(int argc, char** argv)
 			_input_system.process_event(_event);
 		}
 
+		_input_system.end_frame();
+
 		SceneManager::instance()->on_input(
 			_input_system.snapshot(),
 			_input_system.events()
