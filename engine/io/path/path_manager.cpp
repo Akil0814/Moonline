@@ -158,22 +158,34 @@ std::optional<std::filesystem::path> PathManager::find_project_root(const std::f
         if (!std::filesystem::is_directory(current))
             current = current.parent_path();
 
+        std::optional<std::filesystem::path> magic_root;
         for (int depth = 0; depth < MAX_SEARCH_DEPTH; ++depth)
         {
-            const std::filesystem::path assets_magic_file_path = current / "assets" / ".moonline_root";
             const std::filesystem::path assets_dir_path = current / "assets";
+            const std::filesystem::path assets_magic_file_path = assets_dir_path / ".moonline_root";
+            const std::filesystem::path assets_structure_path = assets_dir_path / "assets_structure.json";
 
-            const bool has_assets_magic_file = std::filesystem::exists(assets_magic_file_path);
             const bool assets_is_dir = std::filesystem::is_directory(assets_dir_path);
+            const bool has_assets_magic_file = std::filesystem::exists(assets_magic_file_path);
+            const bool has_assets_structure = std::filesystem::exists(assets_structure_path);
 
-            if (has_assets_magic_file && assets_is_dir)
+            // Prefer a directory that contains a real assets_structure.json (source project root).
+            if (assets_is_dir && has_assets_structure)
                 return current;
 
+            // Remember a candidate root identified by the magic file, but keep looking upward
+            // in case we started from a build/output folder that also copied the magic file.
+            if (assets_is_dir && has_assets_magic_file && !magic_root.has_value())
+                magic_root = current;
+
             if (current == current.root_path())
-                return std::nullopt;
+                break;
 
             current = current.parent_path();
         }
+
+        if (magic_root.has_value())
+            return magic_root;
     }
     catch (const std::filesystem::filesystem_error&)
     {
