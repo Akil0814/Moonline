@@ -28,17 +28,11 @@ public:
 	bool register_effect(
 		const std::vector<EffectBuildRequest>& requests,
 		const AnimationManager& resource_manager
-	) {
-		return true;
-	};
+	);
 
-	bool has_effect(const std::string_view& key) const {
-		return true;
-	};
+	bool has_effect(const std::string_view& key) const;
 
-	std::unique_ptr<Effect> create_effect(const std::string_view& key) const {
-		return nullptr;
-	};
+	std::unique_ptr<Effect> create_effect(const std::string_view& key) const;
 
 
 private:

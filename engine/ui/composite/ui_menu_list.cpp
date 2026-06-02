@@ -71,7 +71,8 @@ bool UiMenuList::set_item_enabled(int index, bool enabled)
     }
 
     _items[static_cast<size_t>(index)]._enabled = enabled;
-    rebuild_items();
+    refresh_items();
+    sync_selection_index();
     return true;
 }
 
@@ -83,14 +84,16 @@ bool UiMenuList::set_item_text(int index, const std::string& text)
     }
 
     _items[static_cast<size_t>(index)]._text = text;
-    rebuild_items();
+    refresh_item(static_cast<size_t>(index));
+    sync_selection_state();
     return true;
 }
 
 void UiMenuList::set_item_size(const Vector2& item_size)
 {
     _item_size = item_size;
-    rebuild_items();
+    refresh_items();
+    sync_selection_index();
 }
 
 const Vector2& UiMenuList::item_size() const
@@ -101,7 +104,8 @@ const Vector2& UiMenuList::item_size() const
 void UiMenuList::set_font_key(const std::string& font_key)
 {
     _font_key = font_key;
-    rebuild_items();
+    refresh_items();
+    sync_selection_index();
 }
 
 const std::string& UiMenuList::font_key() const
@@ -112,7 +116,8 @@ const std::string& UiMenuList::font_key() const
 void UiMenuList::set_text_color(SDL_Color color)
 {
     _text_color = color;
-    rebuild_items();
+    refresh_items();
+    sync_selection_index();
 }
 
 SDL_Color UiMenuList::text_color() const
@@ -123,7 +128,8 @@ SDL_Color UiMenuList::text_color() const
 void UiMenuList::set_button_style(const ButtonStyle& button_style)
 {
     _button_style = button_style;
-    rebuild_items();
+    refresh_items();
+    sync_selection_index();
 }
 
 const ButtonStyle& UiMenuList::button_style() const
@@ -171,30 +177,75 @@ void UiMenuList::rebuild_items()
 {
     clear_children();
     _buttons.clear();
-    set_scroll_step({ _item_size.x + spacing(), _item_size.y + spacing() });
+    apply_layout_metrics();
 
-    for (const UiMenuListItem& item : _items)
+    for (size_t index = 0; index < _items.size(); ++index)
     {
         std::shared_ptr<UiTextButton> button = std::make_shared<UiTextButton>(
             Vector2::zero(),
             _item_size
         );
-        button->set_text(item._text);
-        button->set_font_key(_font_key);
-        button->set_text_color(_text_color);
-        button->set_enabled(is_enabled() && item._enabled);
-        UiStyle::apply_button(*button, _button_style);
         button->set_on_click([this, raw_button = button.get()]()
             {
                 handle_item_click(raw_button);
             });
-
-        UiLayoutChildOptions options;
-        options._fill_cross_axis = true;
-        add_child(button, options);
+        add_child(button);
         _buttons.push_back(button);
     }
 
+    refresh_items();
+    sync_selection_index();
+}
+
+void UiMenuList::apply_layout_metrics()
+{
+    set_scroll_step({ _item_size.x + spacing(), _item_size.y + spacing() });
+}
+
+void UiMenuList::refresh_items()
+{
+    if (_buttons.size() != _items.size())
+    {
+        rebuild_items();
+        return;
+    }
+
+    apply_layout_metrics();
+    for (size_t index = 0; index < _buttons.size(); ++index)
+    {
+        refresh_item(index);
+    }
+
+    sync_selection_state();
+}
+
+void UiMenuList::refresh_item(size_t index)
+{
+    if (index >= _buttons.size() || index >= _items.size())
+    {
+        return;
+    }
+
+    std::shared_ptr<UiTextButton>& button = _buttons[index];
+    if (!button)
+    {
+        return;
+    }
+
+    const UiMenuListItem& item = _items[index];
+    button->set_size(_item_size);
+    button->set_text(item._text);
+    button->set_font_key(_font_key);
+    button->set_text_color(_text_color);
+    UiStyle::apply_button(*button, _button_style);
+
+    UiLayoutChildOptions options;
+    options._fill_cross_axis = true;
+    set_child_options(button.get(), options);
+}
+
+void UiMenuList::sync_selection_index()
+{
     if (_items.empty())
     {
         set_selected_index(-1);
@@ -280,5 +331,6 @@ void UiMenuList::apply_theme(const UiTheme& theme)
     UiPanel::apply_theme(theme);
     _text_color = theme._default_label._text_color;
     _button_style = theme._primary_button;
-    rebuild_items();
+    refresh_items();
+    sync_selection_index();
 }
