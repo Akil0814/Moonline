@@ -14,6 +14,7 @@ UiOptionList::UiOptionList(Vector2 position, Vector2 size, int order)
 {
     set_panel_theme_role(UiPanelThemeRole::List);
     set_direction(UiLayoutDirection::Vertical);
+    set_anchor(UiLayoutAnchor::TopCenter);
     set_allow_horizontal_scroll(false);
     set_allow_vertical_scroll(true);
     set_clamp_scroll(true);
@@ -72,6 +73,7 @@ void UiOptionList::reset()
     UiScrollPanel::reset();
     set_panel_theme_role(UiPanelThemeRole::List);
     set_direction(UiLayoutDirection::Vertical);
+    set_anchor(UiLayoutAnchor::TopCenter);
     set_allow_horizontal_scroll(false);
     set_allow_vertical_scroll(true);
     set_clamp_scroll(true);

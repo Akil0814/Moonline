@@ -52,6 +52,7 @@ void UiDialog::reset()
     set_cross_align(UiLayoutAlign::Center);
     set_spacing(14.0f);
     set_padding({ 28.0f, 24.0f, 28.0f, 24.0f });
+    set_transition_duration(0.12);
     set_transition_enabled(false);
     set_open(false);
     _suppress_input_until_next_update = false;
