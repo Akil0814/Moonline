@@ -48,35 +48,7 @@
                      "start"
                  ],
     "effects":  [
-                    "shiki_effects_02",
-                    "shiki_effects_03",
-                    "shiki_effects_05",
-                    "shiki_effects_07",
-                    "shiki_effects_08",
-                    "shiki_effects_09",
-                    "shiki_effects_36",
-                    "shiki_effects_37",
-                    "shiki_effects_38",
-                    "shiki_effects_40",
-                    "shiki_effects_41",
-                    "shiki_effects_43",
-                    "shiki_effects_44",
-                    "shiki_effects_45",
-                    "shiki_effects_46",
-                    "shiki_effects_48",
-                    "shiki_effects_49",
-                    "shiki_effects_50",
-                    "shiki_effects_52",
-                    "shiki_effects_53",
-                    "shiki_effects_54",
-                    "shiki_effects_55",
-                    "shiki_effects_59",
-                    "shiki_effects_60",
-                    "shiki_effects_62",
-                    "shiki_effects_65",
-                    "shiki_effects_66",
-                    "shiki_effects_69",
-                    "shiki_effects_70"
+
                 ],
     "animations":  {
                        "Idle":  {
@@ -174,93 +146,6 @@
                                  },
                        "Start":  {
                                      "path":  "animation/reaction/start"
-                                 },
-                       "EffectShikiEffects02":  {
-                                                    "path":  "animation/effects/shiki_effects_02"
-                                                },
-                       "EffectShikiEffects03":  {
-                                                    "path":  "animation/effects/shiki_effects_03"
-                                                },
-                       "EffectShikiEffects05":  {
-                                                    "path":  "animation/effects/shiki_effects_05"
-                                                },
-                       "EffectShikiEffects07":  {
-                                                    "path":  "animation/effects/shiki_effects_07"
-                                                },
-                       "EffectShikiEffects08":  {
-                                                    "path":  "animation/effects/shiki_effects_08"
-                                                },
-                       "EffectShikiEffects09":  {
-                                                    "path":  "animation/effects/shiki_effects_09"
-                                                },
-                       "EffectShikiEffects36":  {
-                                                    "path":  "animation/effects/shiki_effects_36"
-                                                },
-                       "EffectShikiEffects37":  {
-                                                    "path":  "animation/effects/shiki_effects_37"
-                                                },
-                       "EffectShikiEffects38":  {
-                                                    "path":  "animation/effects/shiki_effects_38"
-                                                },
-                       "EffectShikiEffects40":  {
-                                                    "path":  "animation/effects/shiki_effects_40"
-                                                },
-                       "EffectShikiEffects41":  {
-                                                    "path":  "animation/effects/shiki_effects_41"
-                                                },
-                       "EffectShikiEffects43":  {
-                                                    "path":  "animation/effects/shiki_effects_43"
-                                                },
-                       "EffectShikiEffects44":  {
-                                                    "path":  "animation/effects/shiki_effects_44"
-                                                },
-                       "EffectShikiEffects45":  {
-                                                    "path":  "animation/effects/shiki_effects_45"
-                                                },
-                       "EffectShikiEffects46":  {
-                                                    "path":  "animation/effects/shiki_effects_46"
-                                                },
-                       "EffectShikiEffects48":  {
-                                                    "path":  "animation/effects/shiki_effects_48"
-                                                },
-                       "EffectShikiEffects49":  {
-                                                    "path":  "animation/effects/shiki_effects_49"
-                                                },
-                       "EffectShikiEffects50":  {
-                                                    "path":  "animation/effects/shiki_effects_50"
-                                                },
-                       "EffectShikiEffects52":  {
-                                                    "path":  "animation/effects/shiki_effects_52"
-                                                },
-                       "EffectShikiEffects53":  {
-                                                    "path":  "animation/effects/shiki_effects_53"
-                                                },
-                       "EffectShikiEffects54":  {
-                                                    "path":  "animation/effects/shiki_effects_54"
-                                                },
-                       "EffectShikiEffects55":  {
-                                                    "path":  "animation/effects/shiki_effects_55"
-                                                },
-                       "EffectShikiEffects59":  {
-                                                    "path":  "animation/effects/shiki_effects_59"
-                                                },
-                       "EffectShikiEffects60":  {
-                                                    "path":  "animation/effects/shiki_effects_60"
-                                                },
-                       "EffectShikiEffects62":  {
-                                                    "path":  "animation/effects/shiki_effects_62"
-                                                },
-                       "EffectShikiEffects65":  {
-                                                    "path":  "animation/effects/shiki_effects_65"
-                                                },
-                       "EffectShikiEffects66":  {
-                                                    "path":  "animation/effects/shiki_effects_66"
-                                                },
-                       "EffectShikiEffects69":  {
-                                                    "path":  "animation/effects/shiki_effects_69"
-                                                },
-                       "EffectShikiEffects70":  {
-                                                    "path":  "animation/effects/shiki_effects_70"
-                                                }
+                                 }
                    }
 }

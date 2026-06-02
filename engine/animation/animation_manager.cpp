@@ -63,9 +63,7 @@ bool AnimationManager::register_animations(
 	return true;
 }
 
-const AnimationDefinition* AnimationManager::find_definition(
-	const std::string_view& key
-) const
+const AnimationDefinition* AnimationManager::find_definition(const std::string_view& key) const
 {
 	std::unordered_map<std::string, AnimationDefinition>::const_iterator iterator =
 		_definitions.find(std::string(key));
@@ -75,9 +73,7 @@ const AnimationDefinition* AnimationManager::find_definition(
 	return &iterator->second;
 }
 
-std::unique_ptr<Animation> AnimationManager::create_animation(
-	const std::string_view& key
-) const
+std::unique_ptr<Animation> AnimationManager::create_animation(const std::string_view& key) const
 {
 	const AnimationDefinition* definition = find_definition(key);
 	if (!definition)
