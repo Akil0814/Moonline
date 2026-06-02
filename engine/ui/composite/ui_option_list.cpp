@@ -370,24 +370,6 @@ void UiOptionList::refresh_row(size_t index)
     set_child_options(row._panel.get(), row_options);
 }
 
-void UiOptionList::sync_selection_index()
-{
-    if (_items.empty())
-    {
-        set_selected_index(-1);
-        set_scroll_offset(Vector2::zero());
-        return;
-    }
-
-    if (selected_index() < 0 || selected_index() >= static_cast<int>(_items.size()))
-    {
-        set_selected_index(0);
-        return;
-    }
-
-    set_selected_index(selected_index());
-}
-
 void UiOptionList::sync_selection_state()
 {
     for (size_t index = 0; index < _rows.size(); ++index)

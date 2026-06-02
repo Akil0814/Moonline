@@ -65,6 +65,9 @@ public:
     [[nodiscard]] const GameObject* game_object() const override;
 
 private:
+    void refresh_tabs();
+    void refresh_tab(size_t index);
+    void sync_selection_index();
     void rebuild_tabs();
     void sync_button_state();
     void handle_group_selection_changed(int index, UiSelectableButton* button);

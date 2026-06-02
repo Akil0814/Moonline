@@ -58,7 +58,6 @@ private:
     void apply_layout_metrics();
     void refresh_items();
     void refresh_item(size_t index);
-    void sync_selection_index();
     void rebuild_items();
     void sync_selection_state() override;
     void handle_item_click(UiTextButton* button);

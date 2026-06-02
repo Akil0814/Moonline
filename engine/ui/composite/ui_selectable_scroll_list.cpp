@@ -150,6 +150,24 @@ bool UiSelectableScrollList::handle_navigation_input_event(const InputEvent& eve
     }
 }
 
+void UiSelectableScrollList::sync_selection_index()
+{
+    if (selectable_item_count() == 0)
+    {
+        set_selected_index(-1);
+        set_scroll_offset(Vector2::zero());
+        return;
+    }
+
+    if (_selected_index < 0 || _selected_index >= static_cast<int>(selectable_item_count()))
+    {
+        set_selected_index(0);
+        return;
+    }
+
+    set_selected_index(_selected_index);
+}
+
 void UiSelectableScrollList::sync_selection_view()
 {
     const GameObject* target = selected_item_view_target();

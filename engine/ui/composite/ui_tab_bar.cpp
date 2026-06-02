@@ -109,7 +109,8 @@ const UiTabBarItem* UiTabBar::selected_tab() const
 void UiTabBar::set_tab_size(const Vector2& tab_size)
 {
     _tab_size = tab_size;
-    rebuild_tabs();
+    refresh_tabs();
+    sync_selection_index();
 }
 
 const Vector2& UiTabBar::tab_size() const
@@ -120,7 +121,8 @@ const Vector2& UiTabBar::tab_size() const
 void UiTabBar::set_font_key(const std::string& font_key)
 {
     _font_key = font_key;
-    rebuild_tabs();
+    refresh_tabs();
+    sync_selection_index();
 }
 
 const std::string& UiTabBar::font_key() const
@@ -131,7 +133,8 @@ const std::string& UiTabBar::font_key() const
 void UiTabBar::set_button_theme_role(UiButtonThemeRole button_theme_role)
 {
     _button_theme_role = button_theme_role;
-    rebuild_tabs();
+    refresh_tabs();
+    sync_selection_index();
 }
 
 UiButtonThemeRole UiTabBar::button_theme_role() const
@@ -143,7 +146,8 @@ void UiTabBar::set_button_style(const ButtonStyle& button_style)
 {
     _button_style = button_style;
     _has_button_style_override = true;
-    rebuild_tabs();
+    refresh_tabs();
+    sync_selection_index();
 }
 
 const ButtonStyle& UiTabBar::button_style() const
@@ -155,7 +159,8 @@ void UiTabBar::clear_button_style_override()
 {
     _button_style = ButtonStyle{};
     _has_button_style_override = false;
-    rebuild_tabs();
+    refresh_tabs();
+    sync_selection_index();
 }
 
 bool UiTabBar::has_button_style_override() const
@@ -228,42 +233,85 @@ const GameObject* UiTabBar::game_object() const
 
 void UiTabBar::rebuild_tabs()
 {
-    const int previous_selected_index = selected_index();
-
     clear_children();
     _buttons.clear();
     _button_group.clear_buttons();
 
-    for (const UiTabBarItem& item : _items)
+    for (size_t index = 0; index < _items.size(); ++index)
     {
         std::shared_ptr<UiSelectableButton> button = std::make_shared<UiSelectableButton>(
             Vector2::zero(),
             _tab_size
         );
-        button->set_text(item._text);
-        button->set_font_key(_font_key);
-        button->set_button_theme_role(_button_theme_role);
-        button->set_enabled(_enabled && item._enabled);
-        if (_has_button_style_override)
-        {
-            UiStyle::apply_button(*button, _button_style);
-        }
-
-        UiLayoutChildOptions options;
-        options._use_size_override = true;
-        options._size_override = _tab_size;
-        add_child(button, options);
+        add_child(button);
         _button_group.add_button(button);
         _buttons.push_back(std::move(button));
     }
 
-    if (_items.empty())
+    refresh_tabs();
+    sync_selection_index();
+}
+
+void UiTabBar::refresh_tabs()
+{
+    if (_buttons.size() != _items.size())
+    {
+        rebuild_tabs();
+        return;
+    }
+
+    for (size_t index = 0; index < _buttons.size(); ++index)
+    {
+        refresh_tab(index);
+    }
+
+    sync_button_state();
+}
+
+void UiTabBar::refresh_tab(size_t index)
+{
+    if (index >= _buttons.size() || index >= _items.size())
     {
         return;
     }
 
-    const int selection_seed = previous_selected_index >= 0
-        ? previous_selected_index
+    const std::shared_ptr<UiSelectableButton>& button = _buttons[index];
+    if (!button)
+    {
+        return;
+    }
+
+    const UiTabBarItem& item = _items[index];
+    button->set_size(_tab_size);
+    button->set_text(item._text);
+    button->set_font_key(_font_key);
+    button->set_button_theme_role(_button_theme_role);
+    if (_has_button_style_override)
+    {
+        UiStyle::apply_button(*button, _button_style);
+    }
+    else
+    {
+        button->use_theme_appearance();
+    }
+
+    UiLayoutChildOptions options;
+    options._use_size_override = true;
+    options._size_override = _tab_size;
+    set_child_options(button.get(), options);
+}
+
+void UiTabBar::sync_selection_index()
+{
+    if (_items.empty())
+    {
+        _button_group.set_selected_index(-1, false);
+        sync_button_state();
+        return;
+    }
+
+    const int selection_seed = selected_index() >= 0
+        ? selected_index()
         : 0;
     const int resolved_index = ui_selectable_index_utils::resolve_index(
         selection_seed,

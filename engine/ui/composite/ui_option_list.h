@@ -112,7 +112,6 @@ private:
     void apply_layout_metrics();
     void refresh_rows();
     void refresh_row(size_t index);
-    void sync_selection_index();
     void rebuild_rows();
     void sync_selection_state() override;
     void emit_value_changed(int index);
