@@ -1,5 +1,6 @@
 #include "ui_screen.h"
 
+#include "../ui_settings.h"
 #include "../ui_mouse_utils.h"
 
 #include <algorithm>
@@ -29,7 +30,24 @@ void UiScreen::on_update(double delta)
         return;
     }
 
-    if (_transition_enabled && _transition.is_playing())
+    if (!is_transition_enabled() && _transition.is_playing())
+    {
+        if (_is_open)
+        {
+            _transition.jump_to_shown();
+        }
+        else
+        {
+            _transition.jump_to_hidden();
+            set_visible(false);
+            set_active(false);
+            _is_closing = false;
+        }
+
+        apply_transition_state();
+    }
+
+    if (is_transition_enabled() && _transition.is_playing())
     {
         _transition.update(delta);
         apply_transition_state();
@@ -174,7 +192,7 @@ void UiScreen::open()
     _is_closing = false;
     set_visible(true);
     set_active(true);
-    if (_transition_enabled)
+    if (is_transition_enabled())
     {
         _transition.play_forward();
         apply_transition_state();
@@ -195,7 +213,7 @@ void UiScreen::open()
 
 void UiScreen::close()
 {
-    if (_transition_enabled)
+    if (is_transition_enabled())
     {
         _is_open = false;
         _is_closing = true;
@@ -271,7 +289,7 @@ void UiScreen::set_transition_enabled(bool enabled)
 
 bool UiScreen::is_transition_enabled() const
 {
-    return _transition_enabled;
+    return _transition_enabled && UiSettings::are_animations_enabled();
 }
 
 void UiScreen::configure_transition(

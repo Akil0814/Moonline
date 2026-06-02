@@ -25,5 +25,5 @@ public:
 private:
 	EffectId _id;
 	double _angle_degrees = 0.0;
-	Animation* _animation = nullptr;
+	std::unique_ptr<Animation> _animation;
 };
