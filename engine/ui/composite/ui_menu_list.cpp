@@ -1,5 +1,6 @@
 #include "ui_menu_list.h"
 
+#include "../widgets/ui_button_state_utils.h"
 #include "../style/ui_theme.h"
 
 #include <utility>
@@ -38,8 +39,7 @@ void UiMenuList::clear_items()
     _items.clear();
     _buttons.clear();
     clear_children();
-    set_scroll_offset(Vector2::zero());
-    set_selected_index(-1);
+    reset_selection_state();
 }
 
 void UiMenuList::set_items(const std::vector<UiMenuListItem>& items)
@@ -246,19 +246,16 @@ void UiMenuList::refresh_item(size_t index)
 
 void UiMenuList::sync_selection_state()
 {
-    for (size_t index = 0; index < _buttons.size(); ++index)
-    {
-        std::shared_ptr<UiTextButton>& button = _buttons[index];
-        if (!button)
+    ui_sync_selectable_button_state(
+        _buttons,
+        selected_index(),
+        is_enabled(),
+        is_focused(),
+        [this](int index)
         {
-            continue;
+            return _items[static_cast<size_t>(index)]._enabled;
         }
-
-        const bool enabled = is_enabled() && _items[index]._enabled;
-        button->set_enabled(enabled);
-        const bool focused = static_cast<int>(index) == selected_index();
-        button->set_focused(is_focused() && enabled && focused);
-    }
+    );
 }
 
 void UiMenuList::handle_item_click(UiTextButton* button)

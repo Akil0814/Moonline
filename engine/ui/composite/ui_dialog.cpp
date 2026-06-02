@@ -57,55 +57,20 @@ void UiDialog::reset()
     set_open(false);
     _suppress_input_until_next_update = false;
 
-    if (_title_label)
-    {
-        _title_label->reset();
-        _title_label->set_font_key("ui.default");
-        _title_label->set_auto_size(true);
-        _title_label->set_horizontal_align(TextHorizontalAlign::Center);
-        _title_label->set_vertical_align(TextVerticalAlign::Center);
-        _title_label->set_label_theme_role(UiLabelThemeRole::Title);
-    }
-
-    if (_message_label)
-    {
-        _message_label->reset();
-        _message_label->set_font_key("ui.default");
-        _message_label->set_auto_size(false);
-        _message_label->set_size({ 420.0f, 88.0f });
-        _message_label->set_wrap_width(420);
-        _message_label->set_horizontal_align(TextHorizontalAlign::Center);
-        _message_label->set_vertical_align(TextVerticalAlign::Center);
-        _message_label->set_label_theme_role(UiLabelThemeRole::Subtitle);
-    }
-
-    if (_action_list)
-    {
-        _action_list->reset();
-        _action_list->set_size({ 360.0f, 110.0f });
-        _action_list->set_anchor(UiLayoutAnchor::Center);
-        _action_list->set_cross_align(UiLayoutAlign::Center);
-        _action_list->set_spacing(10.0f);
-        _action_list->set_padding({ 0.0f, 0.0f, 0.0f, 0.0f });
-        _action_list->set_item_size({ 300.0f, 50.0f });
-        _action_list->set_font_key("ui.default");
-        _action_list->set_panel_theme_role(UiPanelThemeRole::List);
-        _action_list->set_on_selection_changed(
-            [this](int index, const std::string& id, const std::string& text)
-            {
-                handle_action(index, id, text);
-            }
-        );
-    }
-
-    rebuild();
+    ensure_controls();
+    configure_controls();
+    rebuild_layout();
+    refresh_content();
     set_transition_enabled(true);
 }
 
 void UiDialog::set_title(const std::string& title)
 {
     _title = title;
-    rebuild();
+    if (_title_label)
+    {
+        _title_label->set_text(_title);
+    }
 }
 
 const std::string& UiDialog::title() const
@@ -116,7 +81,10 @@ const std::string& UiDialog::title() const
 void UiDialog::set_message(const std::string& message)
 {
     _message = message;
-    rebuild();
+    if (_message_label)
+    {
+        _message_label->set_text(_message);
+    }
 }
 
 const std::string& UiDialog::message() const
@@ -127,7 +95,7 @@ const std::string& UiDialog::message() const
 void UiDialog::set_actions(const std::vector<UiDialogAction>& actions)
 {
     _actions = actions;
-    rebuild();
+    refresh_action_items();
 }
 
 void UiDialog::set_cancel_action_id(const std::string& cancel_action_id)
@@ -172,37 +140,57 @@ void UiDialog::ensure_controls()
     {
         _action_list = std::make_shared<UiMenuList>();
     }
-
 }
 
-void UiDialog::rebuild()
+void UiDialog::configure_controls()
 {
-    clear_children();
-    clear_focusable_controls();
-    ensure_controls();
-
     if (_title_label)
     {
-        _title_label->set_text(_title);
+        _title_label->reset();
+        _title_label->set_font_key("ui.default");
+        _title_label->set_auto_size(true);
+        _title_label->set_horizontal_align(TextHorizontalAlign::Center);
+        _title_label->set_vertical_align(TextVerticalAlign::Center);
+        _title_label->set_label_theme_role(UiLabelThemeRole::Title);
     }
 
     if (_message_label)
     {
-        _message_label->set_text(_message);
+        _message_label->reset();
+        _message_label->set_font_key("ui.default");
+        _message_label->set_auto_size(false);
+        _message_label->set_size({ 420.0f, 88.0f });
+        _message_label->set_wrap_width(420);
+        _message_label->set_horizontal_align(TextHorizontalAlign::Center);
+        _message_label->set_vertical_align(TextVerticalAlign::Center);
+        _message_label->set_label_theme_role(UiLabelThemeRole::Subtitle);
     }
 
     if (_action_list)
     {
-        std::vector<UiMenuListItem> items;
-        items.reserve(_actions.size());
-        for (const UiDialogAction& action : _actions)
-        {
-            items.push_back({ action._id, action._text, true });
-        }
-
-        _action_list->set_items(items);
-        _action_list->set_selected_index(0);
+        _action_list->reset();
+        _action_list->set_size({ 360.0f, 110.0f });
+        _action_list->set_anchor(UiLayoutAnchor::Center);
+        _action_list->set_cross_align(UiLayoutAlign::Center);
+        _action_list->set_spacing(10.0f);
+        _action_list->set_padding({ 0.0f, 0.0f, 0.0f, 0.0f });
+        _action_list->set_item_size({ 300.0f, 50.0f });
+        _action_list->set_font_key("ui.default");
+        _action_list->set_panel_theme_role(UiPanelThemeRole::List);
+        _action_list->set_on_selection_changed(
+            [this](int index, const std::string& id, const std::string& text)
+            {
+                handle_action(index, id, text);
+            }
+        );
     }
+}
+
+void UiDialog::rebuild_layout()
+{
+    clear_children();
+    clear_focusable_controls();
+    ensure_controls();
 
     UiLayoutChildOptions centered_options;
     centered_options._use_custom_cross_align = true;
@@ -220,6 +208,39 @@ void UiDialog::rebuild()
         register_focusable_control(_action_list);
         set_focused_control(0);
     }
+}
+
+void UiDialog::refresh_content()
+{
+    if (_title_label)
+    {
+        _title_label->set_text(_title);
+    }
+
+    if (_message_label)
+    {
+        _message_label->set_text(_message);
+    }
+
+    refresh_action_items();
+}
+
+void UiDialog::refresh_action_items()
+{
+    if (!_action_list)
+    {
+        return;
+    }
+
+    std::vector<UiMenuListItem> items;
+    items.reserve(_actions.size());
+    for (const UiDialogAction& action : _actions)
+    {
+        items.push_back({ action._id, action._text, true });
+    }
+
+    _action_list->set_items(items);
+    _action_list->set_selected_index(_actions.empty() ? -1 : 0);
 }
 
 void UiDialog::handle_action(

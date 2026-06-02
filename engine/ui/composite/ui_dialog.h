@@ -45,7 +45,10 @@ public:
 
 private:
     void ensure_controls();
-    void rebuild();
+    void configure_controls();
+    void rebuild_layout();
+    void refresh_content();
+    void refresh_action_items();
     void handle_action(
         int index,
         const std::string& id,

@@ -123,17 +123,13 @@ void UiButton::on_input(const InputSnapshot& input)
 {
     if (!_enabled)
     {
-        _is_pressing = false;
-        _was_mouse_down = false;
-        _status = Status::Idle;
+        reset_interaction_state();
         return;
     }
 
     if (!ui_mouse_input_allowed(input))
     {
-        _is_pressing = false;
-        _was_mouse_down = false;
-        _status = Status::Idle;
+        reset_interaction_state();
         return;
     }
 
@@ -141,12 +137,9 @@ void UiButton::on_input(const InputSnapshot& input)
     const int mouse_x = mouse_state._position.x;
     const int mouse_y = mouse_state._position.y;
 
-    if (ui_left_mouse_pressed(mouse_state, _was_mouse_down))
+    if (ui_left_mouse_pressed_in_rect(mouse_state, _was_mouse_down, rect()))
     {
-        if (contains_point(mouse_x, mouse_y))
-        {
-            begin_press();
-        }
+        begin_press();
     }
 
     if (ui_left_mouse_released(mouse_state, _was_mouse_down) && _is_pressing)
@@ -158,15 +151,13 @@ void UiButton::on_input(const InputSnapshot& input)
         update_hover_status(mouse_x, mouse_y);
     }
 
-    _was_mouse_down = mouse_state._left_button_down;
+    ui_sync_mouse_press_state(_was_mouse_down, mouse_state);
 }
 
 void UiButton::reset()
 {
     UiControl::reset();
-    _status = Status::Idle;
-    _is_pressing = false;
-    _was_mouse_down = false;
+    reset_interaction_state();
     _click_count = 0;
     _appearance_mode = AppearanceMode::Theme;
     mark_theme_dirty();
@@ -202,12 +193,9 @@ bool UiButton::contains_point(int x, int y) const
     return ui_contains_point(rect(), x, y);
 }
 
-bool UiButton::update_hover_status(int x, int y)
+void UiButton::update_hover_status(int x, int y)
 {
-    const Status new_status = contains_point(x, y) ? Status::Hovered : Status::Idle;
-    const bool changed = _status != new_status;
-    _status = new_status;
-    return changed || new_status == Status::Hovered;
+    _status = contains_point(x, y) ? Status::Hovered : Status::Idle;
 }
 
 void UiButton::begin_press()
@@ -225,12 +213,7 @@ void UiButton::finish_press(int x, int y)
     const bool hovered = contains_point(x, y);
     if (hovered)
     {
-        ++_click_count;
-        on_activated();
-        if (_on_click)
-        {
-            _on_click();
-        }
+        dispatch_activation();
     }
 
     _status = hovered ? Status::Hovered : Status::Idle;
@@ -348,9 +331,7 @@ void UiButton::set_enabled(bool enabled)
     UiControl::set_enabled(enabled);
     if (!_enabled)
     {
-        _is_pressing = false;
-        _was_mouse_down = false;
-        _status = Status::Idle;
+        reset_interaction_state();
     }
 }
 
@@ -368,12 +349,7 @@ bool UiButton::handle_focused_input_event(const InputEvent& event)
 
     play_sound(_sound_effect_down);
     play_sound(_sound_effect_up);
-    ++_click_count;
-    on_activated();
-    if (_on_click)
-    {
-        _on_click();
-    }
+    dispatch_activation();
 
     return true;
 }
@@ -408,6 +384,23 @@ UiButton::Status UiButton::visual_status() const
     return _is_focused && _status == Status::Idle
         ? Status::Hovered
         : _status;
+}
+
+void UiButton::reset_interaction_state()
+{
+    _status = Status::Idle;
+    _is_pressing = false;
+    ui_reset_mouse_press_state(_was_mouse_down);
+}
+
+void UiButton::dispatch_activation()
+{
+    ++_click_count;
+    on_activated();
+    if (_on_click)
+    {
+        _on_click();
+    }
 }
 
 void UiButton::apply_theme(const UiTheme& theme)

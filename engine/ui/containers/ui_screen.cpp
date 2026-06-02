@@ -86,7 +86,7 @@ void UiScreen::on_input(const InputSnapshot& input)
 
     if (!ui_mouse_input_allowed(input))
     {
-        _was_mouse_down = false;
+        ui_reset_mouse_press_state(_was_mouse_down);
         UiPanel::on_input(input);
         return;
     }
@@ -95,30 +95,34 @@ void UiScreen::on_input(const InputSnapshot& input)
 
     if (ui_left_mouse_pressed(mouse_state, _was_mouse_down))
     {
-        for (int index = static_cast<int>(_focusable_controls.size()) - 1; index >= 0; --index)
+        const int focused_index = ui_find_hit_index_reverse(
+            _focusable_controls.size(),
+            mouse_state._position,
+            [this](size_t index) -> const SDL_Rect*
+            {
+                std::shared_ptr<UiFocusable> control = _focusable_controls[index].lock();
+                if (!control || !control->is_enabled())
+                {
+                    return nullptr;
+                }
+
+                const GameObject* object = control->game_object();
+                if (!object)
+                {
+                    return nullptr;
+                }
+
+                return &object->rect();
+            }
+        );
+        if (focused_index >= 0)
         {
-            std::shared_ptr<UiFocusable> control = _focusable_controls[static_cast<size_t>(index)].lock();
-            if (!control || !control->is_enabled())
-            {
-                continue;
-            }
-
-            const GameObject* object = control->game_object();
-            if (!object)
-            {
-                continue;
-            }
-
-            if (ui_contains_point(object->rect(), mouse_state._position))
-            {
-                _focused_control_index = index;
-                apply_control_focus();
-                break;
-            }
+            _focused_control_index = focused_index;
+            apply_control_focus();
         }
     }
 
-    _was_mouse_down = mouse_state._left_button_down;
+    ui_sync_mouse_press_state(_was_mouse_down, mouse_state);
     UiPanel::on_input(input);
 }
 
@@ -166,7 +170,7 @@ void UiScreen::reset()
     _is_closing = false;
     _input_enabled = true;
     _transition_enabled = false;
-    _was_mouse_down = false;
+    ui_reset_mouse_press_state(_was_mouse_down);
     _focused_control_index = -1;
     _focusable_controls.clear();
     UiTransitionState shown_state;
@@ -334,11 +338,9 @@ void UiScreen::register_focusable_control(const std::shared_ptr<UiFocusable>& co
     }
 
     _focusable_controls.push_back(control);
-    cleanup_focusable_controls();
-
-    if (_focused_control_index < 0)
+    if (prepare_focusable_controls() && _focused_control_index < 0)
     {
-        _focused_control_index = 0;
+        _focused_control_index = normalized_focus_index(0);
     }
 
     apply_control_focus();
@@ -361,67 +363,25 @@ void UiScreen::clear_focusable_controls()
 
 void UiScreen::focus_next_control()
 {
-    cleanup_focusable_controls();
-    if (_focusable_controls.empty())
-    {
-        return;
-    }
-
-    if (_focused_control_index < 0)
-    {
-        _focused_control_index = 0;
-    }
-    else
-    {
-        _focused_control_index = (_focused_control_index + 1)
-            % static_cast<int>(_focusable_controls.size());
-    }
-
+    step_focus(1);
     apply_control_focus();
 }
 
 void UiScreen::focus_previous_control()
 {
-    cleanup_focusable_controls();
-    if (_focusable_controls.empty())
-    {
-        return;
-    }
-
-    if (_focused_control_index < 0)
-    {
-        _focused_control_index = 0;
-    }
-    else
-    {
-        _focused_control_index -= 1;
-        if (_focused_control_index < 0)
-        {
-            _focused_control_index = static_cast<int>(_focusable_controls.size()) - 1;
-        }
-    }
-
+    step_focus(-1);
     apply_control_focus();
 }
 
 void UiScreen::set_focused_control(int index)
 {
-    cleanup_focusable_controls();
-    if (_focusable_controls.empty())
+    if (!prepare_focusable_controls())
     {
         _focused_control_index = -1;
         return;
     }
 
-    if (index < 0)
-    {
-        _focused_control_index = -1;
-    }
-    else
-    {
-        const int max_index = static_cast<int>(_focusable_controls.size()) - 1;
-        _focused_control_index = std::min(index, max_index);
-    }
+    _focused_control_index = normalized_focus_index(index);
 
     apply_control_focus();
 }
@@ -435,6 +395,39 @@ void UiScreen::apply_transition_state()
 {
     set_transform(_transition.current_state()._transform);
     set_background_alpha(_transition.current_state()._background_alpha);
+}
+
+bool UiScreen::prepare_focusable_controls()
+{
+    cleanup_focusable_controls();
+    return !_focusable_controls.empty();
+}
+
+int UiScreen::normalized_focus_index(int index) const
+{
+    if (_focusable_controls.empty() || index < 0)
+    {
+        return -1;
+    }
+
+    return std::min(index, static_cast<int>(_focusable_controls.size()) - 1);
+}
+
+void UiScreen::step_focus(int direction)
+{
+    if (!prepare_focusable_controls())
+    {
+        return;
+    }
+
+    if (_focused_control_index < 0)
+    {
+        _focused_control_index = normalized_focus_index(0);
+        return;
+    }
+
+    const int control_count = static_cast<int>(_focusable_controls.size());
+    _focused_control_index = (_focused_control_index + direction + control_count) % control_count;
 }
 
 void UiScreen::cleanup_focusable_controls()
@@ -484,12 +477,13 @@ void UiScreen::apply_control_focus()
 
 std::shared_ptr<UiFocusable> UiScreen::focused_control() const
 {
-    if (_focused_control_index < 0 || _focused_control_index >= static_cast<int>(_focusable_controls.size()))
+    const int index = normalized_focus_index(_focused_control_index);
+    if (index < 0)
     {
         return nullptr;
     }
 
-    return _focusable_controls[static_cast<size_t>(_focused_control_index)].lock();
+    return _focusable_controls[static_cast<size_t>(index)].lock();
 }
 
 bool UiScreen::is_focus_navigation_event(const InputEvent& event) const

@@ -48,6 +48,9 @@ public:
 
 private:
     void apply_transition_state();
+    [[nodiscard]] bool prepare_focusable_controls();
+    [[nodiscard]] int normalized_focus_index(int index) const;
+    void step_focus(int direction);
     void cleanup_focusable_controls();
     void apply_control_focus();
     [[nodiscard]] std::shared_ptr<UiFocusable> focused_control() const;

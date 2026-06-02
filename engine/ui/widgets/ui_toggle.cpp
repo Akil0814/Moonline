@@ -1,5 +1,6 @@
 #include "ui_toggle.h"
 
+#include "ui_embedded_label_utils.h"
 #include "../ui_mouse_utils.h"
 #include "../style/ui_theme.h"
 #include "../style/ui_style.h"
@@ -85,36 +86,37 @@ void UiToggle::on_input(const InputSnapshot& input)
 {
     if (!_enabled || !ui_mouse_input_allowed(input))
     {
-        _was_mouse_down = false;
+        ui_reset_mouse_press_state(_was_mouse_down);
         return;
     }
 
     const UiMouseState mouse_state = ui_current_mouse_state();
 
-    if (ui_left_mouse_released(mouse_state, _was_mouse_down) && ui_contains_point(rect(), mouse_state._position))
+    if (ui_left_mouse_released_in_rect(mouse_state, _was_mouse_down, rect()))
     {
         toggle();
     }
 
-    _was_mouse_down = mouse_state._left_button_down;
+    ui_sync_mouse_press_state(_was_mouse_down, mouse_state);
 }
 
 void UiToggle::reset()
 {
     UiControl::reset();
-    _label.reset();
-    _label.set_font_key(_font_key);
-    _label.set_auto_size(false);
-    _label.set_horizontal_align(TextHorizontalAlign::Left);
-    _label.set_vertical_align(TextVerticalAlign::Center);
-    _label.set_text_color(_text_color);
-
-    _value_label.reset();
-    _value_label.set_font_key(_font_key);
-    _value_label.set_auto_size(false);
-    _value_label.set_horizontal_align(TextHorizontalAlign::Right);
-    _value_label.set_vertical_align(TextVerticalAlign::Center);
-    _value_label.set_text_color(_text_color);
+    ui_reset_embedded_label(
+        _label,
+        _font_key,
+        _text_color,
+        TextHorizontalAlign::Left,
+        TextVerticalAlign::Center
+    );
+    ui_reset_embedded_label(
+        _value_label,
+        _font_key,
+        _text_color,
+        TextHorizontalAlign::Right,
+        TextVerticalAlign::Center
+    );
 
     _on_changed = nullptr;
     _label_text.clear();
@@ -126,7 +128,7 @@ void UiToggle::reset()
     _focused_background_color = SDL_Color{ 52, 78, 116, 235 };
     _border_color = SDL_Color{ 112, 140, 180, 255 };
     _value = false;
-    _was_mouse_down = false;
+    ui_reset_mouse_press_state(_was_mouse_down);
 
     sync_labels();
     mark_theme_dirty();
@@ -284,29 +286,34 @@ void UiToggle::set_value_internal(bool value, bool notify)
 void UiToggle::sync_labels()
 {
     const SDL_Rect toggle_rect = rect();
-    _label.set_font_key(_font_key);
-    _label.set_text_color(_text_color);
-    _label.set_world_position({
-        position().x + 18.0f + static_cast<float>(std::max(12, toggle_rect.h - 20)),
-        position().y
-    });
-    _label.set_size({
-        std::max(0.0f, size().x * 0.46f),
-        size().y
-    });
-    _label.set_text(_label_text);
-
-    _value_label.set_font_key(_font_key);
-    _value_label.set_text_color(_text_color);
-    _value_label.set_world_position({
-        position().x + size().x * 0.48f,
-        position().y
-    });
-    _value_label.set_size({
-        std::max(0.0f, size().x * 0.44f - 12.0f),
-        size().y
-    });
-    _value_label.set_text(display_text());
+    ui_sync_embedded_label(
+        _label,
+        _font_key,
+        _text_color,
+        {
+            position().x + 18.0f + static_cast<float>(std::max(12, toggle_rect.h - 20)),
+            position().y
+        },
+        {
+            std::max(0.0f, size().x * 0.46f),
+            size().y
+        },
+        _label_text
+    );
+    ui_sync_embedded_label(
+        _value_label,
+        _font_key,
+        _text_color,
+        {
+            position().x + size().x * 0.48f,
+            position().y
+        },
+        {
+            std::max(0.0f, size().x * 0.44f - 12.0f),
+            size().y
+        },
+        display_text()
+    );
 }
 
 void UiToggle::apply_theme(const UiTheme& theme)

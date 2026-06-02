@@ -67,8 +67,7 @@ void UiScrollBar::on_input(const InputSnapshot& input)
 {
     if (!_target || !should_draw() || !ui_mouse_input_allowed(input))
     {
-        _is_dragging = false;
-        _was_mouse_down = false;
+        ui_reset_mouse_drag_state(_is_dragging, _was_mouse_down);
         return;
     }
 
@@ -79,30 +78,22 @@ void UiScrollBar::on_input(const InputSnapshot& input)
     const SDL_Rect current_track = track_rect();
     const SDL_Rect current_thumb = thumb_rect();
 
-    if (ui_left_mouse_pressed(mouse_state, _was_mouse_down))
+    if (ui_begin_mouse_drag(_is_dragging, mouse_state, _was_mouse_down, current_thumb))
     {
-        if (ui_contains_point(current_thumb, mouse_state._position))
-        {
-            _is_dragging = true;
-            _drag_offset = _orientation == ScrollBarOrientation::Vertical
-                ? static_cast<float>(mouse_y - current_thumb.y)
-                : static_cast<float>(mouse_x - current_thumb.x);
-        }
-        else if (ui_contains_point(current_track, mouse_state._position))
-        {
-            update_target_from_point(mouse_x, mouse_y);
-        }
+        _drag_offset = _orientation == ScrollBarOrientation::Vertical
+            ? static_cast<float>(mouse_y - current_thumb.y)
+            : static_cast<float>(mouse_x - current_thumb.x);
     }
-    else if (mouse_state._left_button_down && _is_dragging)
+    else if (ui_left_mouse_pressed_in_rect(mouse_state, _was_mouse_down, current_track))
     {
         update_target_from_point(mouse_x, mouse_y);
     }
-    else if (!mouse_state._left_button_down)
+    else if (ui_drag_in_progress(mouse_state, _is_dragging))
     {
-        _is_dragging = false;
+        update_target_from_point(mouse_x, mouse_y);
     }
 
-    _was_mouse_down = mouse_state._left_button_down;
+    ui_sync_mouse_drag_state(_is_dragging, _was_mouse_down, mouse_state);
 }
 
 void UiScrollBar::reset()
@@ -118,8 +109,7 @@ void UiScrollBar::reset()
     _auto_follow_target = true;
     _draw_track = true;
     _auto_hide = true;
-    _is_dragging = false;
-    _was_mouse_down = false;
+    ui_reset_mouse_drag_state(_is_dragging, _was_mouse_down);
     _orientation = ScrollBarOrientation::Vertical;
     mark_theme_dirty();
 }

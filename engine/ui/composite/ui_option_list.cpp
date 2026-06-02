@@ -24,7 +24,7 @@ void UiOptionList::on_input(const InputSnapshot& input)
 
     if (!is_enabled() || !ui_mouse_input_allowed(input))
     {
-        _was_mouse_down = false;
+        ui_reset_mouse_press_state(_was_mouse_down);
         return;
     }
 
@@ -32,22 +32,26 @@ void UiOptionList::on_input(const InputSnapshot& input)
 
     if (ui_left_mouse_released(mouse_state, _was_mouse_down))
     {
-        for (size_t index = 0; index < _rows.size(); ++index)
-        {
-            if (!_rows[index]._panel)
+        const int row_index = ui_find_hit_index(
+            _rows.size(),
+            mouse_state._position,
+            [this](size_t index) -> const SDL_Rect*
             {
-                continue;
-            }
+                if (!_rows[index]._panel)
+                {
+                    return nullptr;
+                }
 
-            if (ui_contains_point(_rows[index]._panel->rect(), mouse_state._position))
-            {
-                set_selected_index(static_cast<int>(index));
-                break;
+                return &_rows[index]._panel->rect();
             }
+        );
+        if (row_index >= 0)
+        {
+            set_selected_index(row_index);
         }
     }
 
-    _was_mouse_down = mouse_state._left_button_down;
+    ui_sync_mouse_press_state(_was_mouse_down, mouse_state);
 }
 
 void UiOptionList::reset()
@@ -59,7 +63,7 @@ void UiOptionList::reset()
     _font_key = "ui.default";
     _style = UiOptionListStyle{};
     _on_value_changed = nullptr;
-    _was_mouse_down = false;
+    ui_reset_mouse_press_state(_was_mouse_down);
     clear_children();
 }
 
@@ -81,8 +85,7 @@ void UiOptionList::clear_items()
     _items.clear();
     _rows.clear();
     clear_children();
-    set_scroll_offset(Vector2::zero());
-    set_selected_index(-1);
+    reset_selection_state();
 }
 
 size_t UiOptionList::item_count() const

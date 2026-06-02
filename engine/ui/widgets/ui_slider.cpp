@@ -1,5 +1,6 @@
 #include "ui_slider.h"
 
+#include "ui_embedded_label_utils.h"
 #include "../ui_mouse_utils.h"
 #include "../style/ui_theme.h"
 #include "../style/ui_style.h"
@@ -87,8 +88,7 @@ void UiSlider::on_input(const InputSnapshot& input)
 {
     if (!_enabled || !ui_mouse_input_allowed(input))
     {
-        _is_dragging = false;
-        _was_mouse_down = false;
+        ui_reset_mouse_drag_state(_is_dragging, _was_mouse_down);
         return;
     }
 
@@ -96,21 +96,16 @@ void UiSlider::on_input(const InputSnapshot& input)
     const int mouse_x = mouse_state._position.x;
     const int mouse_y = mouse_state._position.y;
 
-    if (ui_left_mouse_pressed(mouse_state, _was_mouse_down) && ui_contains_point(rect(), mouse_state._position))
-    {
-        _is_dragging = true;
-        update_value_from_point(mouse_x, mouse_y, true);
-    }
-    else if (mouse_state._left_button_down && _is_dragging)
+    if (ui_begin_mouse_drag(_is_dragging, mouse_state, _was_mouse_down, rect()))
     {
         update_value_from_point(mouse_x, mouse_y, true);
     }
-    else if (!mouse_state._left_button_down)
+    else if (ui_drag_in_progress(mouse_state, _is_dragging))
     {
-        _is_dragging = false;
+        update_value_from_point(mouse_x, mouse_y, true);
     }
 
-    _was_mouse_down = mouse_state._left_button_down;
+    ui_sync_mouse_drag_state(_is_dragging, _was_mouse_down, mouse_state);
 }
 
 void UiSlider::reset()
@@ -122,20 +117,20 @@ void UiSlider::reset()
     _bar.set_padding(4);
     _bar.set_draw_border(true);
 
-    _value_label.reset();
-    _value_label.set_font_key(_font_key);
-    _value_label.set_text_color(_text_color);
-    _value_label.set_horizontal_align(TextHorizontalAlign::Right);
-    _value_label.set_vertical_align(TextVerticalAlign::Center);
-    _value_label.set_auto_size(false);
+    ui_reset_embedded_label(
+        _value_label,
+        _font_key,
+        _text_color,
+        TextHorizontalAlign::Right,
+        TextVerticalAlign::Center
+    );
 
     _on_value_changed = nullptr;
     _value_suffix.clear();
     _step = 1.0f;
     _thumb_size = 16.0f;
     _value_precision = 0;
-    _is_dragging = false;
-    _was_mouse_down = false;
+    ui_reset_mouse_drag_state(_is_dragging, _was_mouse_down);
     _show_value_text = false;
     _orientation = UiSliderOrientation::Horizontal;
     _thumb_color = SDL_Color{ 232, 240, 250, 255 };
@@ -282,8 +277,7 @@ void UiSlider::set_enabled(bool enabled)
     UiControl::set_enabled(enabled);
     if (!_enabled)
     {
-        _is_dragging = false;
-        _was_mouse_down = false;
+        ui_reset_mouse_drag_state(_is_dragging, _was_mouse_down);
     }
 }
 
@@ -340,11 +334,14 @@ void UiSlider::sync_value_label()
         stream << _value_suffix;
     }
 
-    _value_label.set_font_key(_font_key);
-    _value_label.set_text_color(_text_color);
-    _value_label.set_text(stream.str());
-    _value_label.set_world_position(position());
-    _value_label.set_size(size());
+    ui_sync_embedded_label(
+        _value_label,
+        _font_key,
+        _text_color,
+        position(),
+        size(),
+        stream.str()
+    );
 }
 
 void UiSlider::set_value_internal(float value, bool notify)

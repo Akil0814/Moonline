@@ -1,6 +1,7 @@
 #include "ui_tab_bar.h"
 
 #include "../base/ui_selectable_index_utils.h"
+#include "../widgets/ui_button_state_utils.h"
 
 UiTabBar::UiTabBar(Vector2 position, Vector2 size, int order)
     : UiPanel(position, size, order)
@@ -327,19 +328,16 @@ void UiTabBar::sync_selection_index()
 
 void UiTabBar::sync_button_state()
 {
-    const int current_selected_index = selected_index();
-    for (int index = 0; index < static_cast<int>(_buttons.size()); ++index)
-    {
-        const std::shared_ptr<UiSelectableButton>& button = _buttons[static_cast<size_t>(index)];
-        if (!button)
+    ui_sync_selectable_button_state(
+        _buttons,
+        selected_index(),
+        _enabled,
+        _is_focused,
+        [this](int index)
         {
-            continue;
+            return _items[static_cast<size_t>(index)]._enabled;
         }
-
-        const bool enabled = _enabled && _items[static_cast<size_t>(index)]._enabled;
-        button->set_enabled(enabled);
-        button->set_focused(enabled && _is_focused && index == current_selected_index);
-    }
+    );
 }
 
 void UiTabBar::handle_group_selection_changed(int index, UiSelectableButton* button)

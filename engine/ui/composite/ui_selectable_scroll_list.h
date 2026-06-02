@@ -30,6 +30,7 @@ public:
 
 protected:
     [[nodiscard]] bool handle_navigation_input_event(const InputEvent& event);
+    void reset_selection_state();
     void sync_selection_index();
     void sync_selection_view();
 

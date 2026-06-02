@@ -150,12 +150,17 @@ bool UiSelectableScrollList::handle_navigation_input_event(const InputEvent& eve
     }
 }
 
+void UiSelectableScrollList::reset_selection_state()
+{
+    set_scroll_offset(Vector2::zero());
+    set_selected_index(-1);
+}
+
 void UiSelectableScrollList::sync_selection_index()
 {
     if (selectable_item_count() == 0)
     {
-        set_selected_index(-1);
-        set_scroll_offset(Vector2::zero());
+        reset_selection_state();
         return;
     }
 

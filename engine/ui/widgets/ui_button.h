@@ -83,7 +83,7 @@ public:
 protected:
     [[nodiscard]] SDL_Rect message_rect() const;
     [[nodiscard]] bool contains_point(int x, int y) const;
-    bool update_hover_status(int x, int y);
+    void update_hover_status(int x, int y);
     void begin_press();
     void finish_press(int x, int y);
     void play_sound(Mix_Chunk* sound_effect) const;
@@ -93,6 +93,8 @@ protected:
     void apply_theme(const UiTheme& theme) override;
 
 private:
+    void reset_interaction_state();
+    void dispatch_activation();
     void set_state_colors_internal(
         SDL_Color color_idle,
         SDL_Color color_hovered,

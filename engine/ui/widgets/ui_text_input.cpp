@@ -104,18 +104,18 @@ void UiTextInput::on_input(const InputSnapshot& input)
 {
     if (!_enabled || !ui_mouse_input_allowed(input))
     {
-        _was_mouse_down = false;
+        ui_reset_mouse_press_state(_was_mouse_down);
         return;
     }
 
     const UiMouseState mouse_state = ui_current_mouse_state();
 
-    if (ui_left_mouse_released(mouse_state, _was_mouse_down) && ui_contains_point(rect(), mouse_state._position))
+    if (ui_left_mouse_released_in_rect(mouse_state, _was_mouse_down, rect()))
     {
         update_caret_from_mouse(mouse_state._position.x);
     }
 
-    _was_mouse_down = mouse_state._left_button_down;
+    ui_sync_mouse_press_state(_was_mouse_down, mouse_state);
 }
 
 void UiTextInput::reset()
@@ -143,7 +143,7 @@ void UiTextInput::reset()
     _password_mode = false;
     _show_caret = false;
     _dirty = true;
-    _was_mouse_down = false;
+    ui_reset_mouse_press_state(_was_mouse_down);
     mark_theme_dirty();
 }
 
