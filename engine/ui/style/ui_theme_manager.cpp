@@ -4,10 +4,34 @@
 
 #include <algorithm>
 
+namespace
+{
+    bool& ui_theme_manager_alive_flag()
+    {
+        static bool alive = false;
+        return alive;
+    }
+}
+
 UiThemeManager& UiThemeManager::instance()
 {
     static UiThemeManager instance;
     return instance;
+}
+
+UiThemeManager::UiThemeManager()
+{
+    ui_theme_manager_alive_flag() = true;
+}
+
+UiThemeManager::~UiThemeManager()
+{
+    ui_theme_manager_alive_flag() = false;
+}
+
+bool UiThemeManager::is_alive()
+{
+    return ui_theme_manager_alive_flag();
 }
 
 const UiTheme& UiThemeManager::current_theme() const

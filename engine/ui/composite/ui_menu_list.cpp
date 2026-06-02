@@ -198,6 +198,7 @@ void UiMenuList::rebuild_items()
 {
     clear_children();
     _buttons.clear();
+    set_scroll_step({ _item_size.x + spacing(), _item_size.y + spacing() });
 
     for (size_t index = 0; index < _items.size(); ++index)
     {

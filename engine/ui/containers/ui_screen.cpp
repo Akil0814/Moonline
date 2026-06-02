@@ -1,5 +1,7 @@
 #include "ui_screen.h"
 
+#include "../ui_mouse_utils.h"
+
 #include <algorithm>
 
 UiScreen::UiScreen(Vector2 position, Vector2 size, int order)
@@ -64,9 +66,17 @@ void UiScreen::on_input(const InputSnapshot& input)
 
     cleanup_focusable_controls();
 
-    int mouse_x = 0;
-    int mouse_y = 0;
-    const Uint32 mouse_state = SDL_GetMouseState(&mouse_x, &mouse_y);
+    if (!ui_mouse_input_allowed(input))
+    {
+        _was_mouse_down = false;
+        UiPanel::on_input(input);
+        return;
+    }
+
+    const SDL_Point mouse_position = ui_logical_mouse_position();
+    const int mouse_x = mouse_position.x;
+    const int mouse_y = mouse_position.y;
+    const Uint32 mouse_state = SDL_GetMouseState(nullptr, nullptr);
     const bool mouse_down = (mouse_state & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;
 
     if (mouse_down && !_was_mouse_down)
@@ -137,6 +147,8 @@ void UiScreen::reset()
 {
     UiPanel::reset();
     set_panel_theme_role(UiPanelThemeRole::Screen);
+    clear_children();
+    set_transform(UiLayoutTransform{});
     _is_open = true;
     _is_closing = false;
     _input_enabled = true;
@@ -148,6 +160,8 @@ void UiScreen::reset()
     shown_state._transform = transform();
     shown_state._background_alpha = background_alpha();
     UiTransitionState hidden_state = shown_state;
+    hidden_state._transform.translation.y += 24.0f;
+    hidden_state._transform.scale = { 0.96f, 0.96f };
     hidden_state._background_alpha = 0;
     _transition.set_hidden_state(hidden_state);
     _transition.set_shown_state(shown_state);

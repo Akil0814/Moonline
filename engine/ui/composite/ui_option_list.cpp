@@ -1,5 +1,6 @@
 #include "ui_option_list.h"
 
+#include "../ui_mouse_utils.h"
 #include "../style/ui_theme.h"
 
 #include <SDL.h>
@@ -22,15 +23,16 @@ void UiOptionList::on_input(const InputSnapshot& input)
 {
     UiScrollPanel::on_input(input);
 
-    if (!_enabled)
+    if (!_enabled || !ui_mouse_input_allowed(input))
     {
         _was_mouse_down = false;
         return;
     }
 
-    int mouse_x = 0;
-    int mouse_y = 0;
-    const Uint32 mouse_state = SDL_GetMouseState(&mouse_x, &mouse_y);
+    const SDL_Point mouse_position = ui_logical_mouse_position();
+    const int mouse_x = mouse_position.x;
+    const int mouse_y = mouse_position.y;
+    const Uint32 mouse_state = SDL_GetMouseState(nullptr, nullptr);
     const bool mouse_down = (mouse_state & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;
 
     if (!mouse_down && _was_mouse_down)
@@ -328,6 +330,7 @@ void UiOptionList::rebuild_rows()
         _style._panel_padding,
         _style._panel_padding
     });
+    set_scroll_step({ _style._row_size.x, _style._row_size.y + _style._row_spacing });
 
     for (size_t index = 0; index < _items.size(); ++index)
     {
@@ -335,12 +338,14 @@ void UiOptionList::rebuild_rows()
         RowWidgets row;
 
         row._panel = std::make_shared<UiPanel>(Vector2::zero(), _style._row_size);
+        row._panel->set_use_theme(false);
         row._panel->set_direction(UiLayoutDirection::Horizontal);
         row._panel->set_cross_align(UiLayoutAlign::Center);
         row._panel->set_spacing(16.0f);
         row._panel->set_padding({ 18.0f, 12.0f, 18.0f, 12.0f });
 
         row._label = std::make_shared<UiLabel>();
+        row._label->set_use_theme(false);
         row._label->set_font_key(_font_key);
         row._label->set_text(item._label);
         row._label->set_auto_size(false);

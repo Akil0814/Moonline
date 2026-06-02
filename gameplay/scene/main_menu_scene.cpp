@@ -123,7 +123,6 @@ void MainMenuScene::reset()
                 handle_quit_dialog_action(id, text);
             }
         );
-        _quit_dialog->hide_dialog();
     }
 
     if (_footer_label)

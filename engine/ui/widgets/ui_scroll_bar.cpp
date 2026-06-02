@@ -1,5 +1,6 @@
 #include "ui_scroll_bar.h"
 
+#include "../ui_mouse_utils.h"
 #include "../style/ui_theme.h"
 #include "../style/ui_style.h"
 
@@ -64,18 +65,17 @@ void UiScrollBar::on_render(SDL_Renderer* renderer)
 
 void UiScrollBar::on_input(const InputSnapshot& input)
 {
-    (void)input;
-
-    if (!_target || !should_draw())
+    if (!_target || !should_draw() || !ui_mouse_input_allowed(input))
     {
         _is_dragging = false;
         _was_mouse_down = false;
         return;
     }
 
-    int mouse_x = 0;
-    int mouse_y = 0;
-    const Uint32 mouse_state = SDL_GetMouseState(&mouse_x, &mouse_y);
+    const SDL_Point mouse_position = ui_logical_mouse_position();
+    const int mouse_x = mouse_position.x;
+    const int mouse_y = mouse_position.y;
+    const Uint32 mouse_state = SDL_GetMouseState(nullptr, nullptr);
     const bool mouse_down = (mouse_state & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;
 
     const SDL_Rect current_track = track_rect();

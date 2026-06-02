@@ -11,6 +11,7 @@ struct InputSnapshot
     const InputState& state;
     InputContext context = InputContext::Gameplay;
     InputDevice device = InputDevice::Unknown;
+    bool device_switched_this_frame = false;
 };
 
 class InputSystem
@@ -27,11 +28,13 @@ public:
 private:
     void translate_event(const SDL_Event& event);
     void apply_event(const InputEvent& event);
-    void update_current_device(const SDL_Event& event);
+    InputDevice detect_event_device(const SDL_Event& event) const;
+    bool is_keyboard_or_mouse(InputDevice device) const;
 
 private:
     InputState _state;
     std::vector<InputEvent> _events;
     InputContext _context = InputContext::Gameplay;
     InputDevice _current_device = InputDevice::Unknown;
+    bool _device_switched_this_frame = false;
 };

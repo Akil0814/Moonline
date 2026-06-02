@@ -1,5 +1,6 @@
 #include "ui_slider.h"
 
+#include "../ui_mouse_utils.h"
 #include "../style/ui_theme.h"
 #include "../style/ui_style.h"
 
@@ -14,6 +15,18 @@ UiSlider::UiSlider(Vector2 position, Vector2 size, int order)
     : UiControl(position, size, order), _value_label(Vector2::zero(), Vector2::zero(), order + 1)
 {
     reset();
+}
+
+void UiSlider::set_world_position(const Vector2& position)
+{
+    GameObject::set_world_position(position);
+    sync_value_label();
+}
+
+void UiSlider::set_size(const Vector2& size)
+{
+    GameObject::set_size(size);
+    sync_value_label();
 }
 
 void UiSlider::on_update(double delta)
@@ -72,18 +85,17 @@ void UiSlider::on_render(SDL_Renderer* renderer)
 
 void UiSlider::on_input(const InputSnapshot& input)
 {
-    (void)input;
-
-    if (!_enabled)
+    if (!_enabled || !ui_mouse_input_allowed(input))
     {
         _is_dragging = false;
         _was_mouse_down = false;
         return;
     }
 
-    int mouse_x = 0;
-    int mouse_y = 0;
-    const Uint32 mouse_state = SDL_GetMouseState(&mouse_x, &mouse_y);
+    const SDL_Point mouse_position = ui_logical_mouse_position();
+    const int mouse_x = mouse_position.x;
+    const int mouse_y = mouse_position.y;
+    const Uint32 mouse_state = SDL_GetMouseState(nullptr, nullptr);
     const bool mouse_down = (mouse_state & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;
 
     if (mouse_down && !_was_mouse_down && contains_point(mouse_x, mouse_y))

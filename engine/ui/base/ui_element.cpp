@@ -12,7 +12,10 @@ UiElement::UiElement(Vector2 position, Vector2 size, int order)
 
 UiElement::~UiElement()
 {
-    UiThemeManager::instance().unregister_element(this);
+    if (UiThemeManager::is_alive())
+    {
+        UiThemeManager::instance().unregister_element(this);
+    }
 }
 
 void UiElement::reset()

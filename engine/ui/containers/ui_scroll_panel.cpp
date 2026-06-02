@@ -1,5 +1,7 @@
 #include "ui_scroll_panel.h"
 
+#include "../ui_mouse_utils.h"
+
 #include <algorithm>
 
 UiScrollPanel::UiScrollPanel(Vector2 position, Vector2 size, int order)
@@ -19,9 +21,9 @@ void UiScrollPanel::on_input_event(const InputEvent& event)
 {
     if (event.type == InputEventType::MouseWheel)
     {
-        int mouse_x = 0;
-        int mouse_y = 0;
-        SDL_GetMouseState(&mouse_x, &mouse_y);
+        const SDL_Point mouse_position = ui_logical_mouse_position();
+        const int mouse_x = mouse_position.x;
+        const int mouse_y = mouse_position.y;
         if (contains_point(mouse_x, mouse_y))
         {
             scroll_by({

@@ -10,6 +10,7 @@ class UiThemeManager
 {
 public:
     static UiThemeManager& instance();
+    static bool is_alive();
 
     [[nodiscard]] const UiTheme& current_theme() const;
     void set_theme(const UiTheme& theme);
@@ -19,7 +20,8 @@ public:
     void unregister_element(UiElement* element);
 
 private:
-    UiThemeManager() = default;
+    UiThemeManager();
+    ~UiThemeManager();
     void mark_registered_elements_dirty();
 
 private:

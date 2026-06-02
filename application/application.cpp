@@ -74,8 +74,6 @@ Application:: ~Application()
 
 bool Application::init(int argc, char** argv)
 {
-	//-----------------------------testing-----------------
-
 	init_assert(argc > 0 && argv && argv[0], "Application start path error");
 	init_assert(
 		ResourceBootstrapper::instance()->bootstrap(argv[0], _renderer),
@@ -91,112 +89,7 @@ bool Application::init(int argc, char** argv)
 		),
 		"Default UI font load error"
 	);
-
-	//-----------------------------testing-----------------
-	SurfaceLoader surface_loader;
-	SurfaceLoadRequest preload_surface_request;
-	preload_surface_request._asset_key = "preload.Akil";
-	preload_surface_request._frame_path = PathManager::instance()->preload_file("Akil.png");
-	preload_surface_request._frame_index = 0;
-
-	SurfaceLoadResult preload_surface_result =
-		surface_loader.load_surface(preload_surface_request);
-	init_assert(preload_surface_result._success, "Preload surface load error");
-
-	TextureLoader texture_loader;
-	TextureLoadResult preload_texture_result =
-		texture_loader.load_texture(_renderer, preload_surface_result);
-	init_assert(preload_texture_result._success, "Preload texture load error");
-
-
-	UiFadeImage image(preload_texture_result._texture.get(), { 530,270 }, { 250,250 });
-
-	UiProgressBar load_bar({ 1000.0f, 680.0f }, { 200.0f, 5.0f });
-
-	image.configure_playback(UiFadeImageMode::FadeInOut, 2, 1, 1);
-	image.play();
-
-
-	std::atomic<int> progress_count = 0;
-	std::atomic<bool> loading_finished = false;
-
-	/*
-	relaxed
-    只关心 atomic 变量本身
-    适合 progress 这种显示用数字
-
-	release
-    后台线程写完数据后，用它发布完成信号
-
-	acquire
-    主线程读取完成信号，用它确认之前的数据可见
-
-	seq_cst
-    默认最安全，先用它也完全可以
-	*/
-
-	auto loading_function = [&]()
-		{
-			for (int i = 1; i <= 20; ++i)
-			{
-				//std::cout << "loading...\n";
-
-				std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
-				progress_count.store(i*5, std::memory_order_relaxed);
-			}
-
-			loading_finished.store(true, std::memory_order_release);
-		};
-
-	std::thread loading_thread(loading_function);
-	Time::instance()->reset();
-
-	//
-	Uint64 last_counter = SDL_GetPerformanceCounter();
-	const Uint64 counter_freq = SDL_GetPerformanceFrequency();
-	std::srand(static_cast<unsigned>(std::time(nullptr)));
-
-	while (!loading_finished.load(std::memory_order_acquire))
-	{
-		SDL_Event event;
-		while (SDL_PollEvent(&event))
-		{
-			if (event.type == SDL_QUIT)
-			{
-				loading_finished.store(true, std::memory_order_release);
-			}
-		}
-
-		Uint64 current_counter = SDL_GetPerformanceCounter();//实现动态延时
-		double delta = (double)(current_counter - last_counter) / counter_freq;
-		last_counter = current_counter;
-		Time::instance()->begin_frame(delta);
-
-		if (delta * 1000 < 1000.0 / FPS)
-			SDL_Delay((Uint32)(1000.0 / FPS - delta * 1000));
-
-		image.on_update(Time::instance()->delta());
-
-		float progress = progress_count.load(std::memory_order_relaxed) / 100.0f;
-		load_bar.set_progress(progress);
-
-		SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 0);
-		SDL_RenderClear(_renderer);
-
-		//test
-		load_bar.on_render(_renderer);
-		image.on_render(_renderer);
-
-		SDL_RenderPresent(_renderer);
-	}
-
-	std::cout << "good" << std::endl;
-	//----------------------testing------------------------
-
-	if (loading_thread.joinable())
-		loading_thread.join();
-
+   
 	_input_system.set_context(InputContext::UI);
 	SceneManager::instance()->switch_to<MainMenuScene>();
 

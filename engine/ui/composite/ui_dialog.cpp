@@ -41,7 +41,7 @@ void UiDialog::reset()
     set_cross_align(UiLayoutAlign::Center);
     set_spacing(14.0f);
     set_padding({ 28.0f, 24.0f, 28.0f, 24.0f });
-    set_transition_enabled(true);
+    set_transition_enabled(false);
     set_open(false);
 
     if (_title_label)
@@ -69,7 +69,11 @@ void UiDialog::reset()
     if (_action_list)
     {
         _action_list->reset();
-        _action_list->set_size({ 360.0f, 120.0f });
+        _action_list->set_size({ 360.0f, 110.0f });
+        _action_list->set_anchor(UiLayoutAnchor::Center);
+        _action_list->set_cross_align(UiLayoutAlign::Center);
+        _action_list->set_spacing(10.0f);
+        _action_list->set_padding({ 0.0f, 0.0f, 0.0f, 0.0f });
         _action_list->set_item_size({ 300.0f, 50.0f });
         _action_list->set_font_key("ui.default");
         _action_list->set_panel_theme_role(UiPanelThemeRole::List);
@@ -89,6 +93,7 @@ void UiDialog::reset()
     }
 
     rebuild();
+    set_transition_enabled(true);
 }
 
 void UiDialog::set_title(const std::string& title)

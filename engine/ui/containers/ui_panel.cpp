@@ -51,23 +51,6 @@ void UiPanel::on_render(SDL_Renderer* renderer)
             SDL_SetRenderDrawColor(renderer, old_r, old_g, old_b, old_a);
         }
 
-        if (_draw_border)
-        {
-            Uint8 old_r = 0;
-            Uint8 old_g = 0;
-            Uint8 old_b = 0;
-            Uint8 old_a = 0;
-            SDL_GetRenderDrawColor(renderer, &old_r, &old_g, &old_b, &old_a);
-            SDL_SetRenderDrawColor(
-                renderer,
-                _border_color.r,
-                _border_color.g,
-                _border_color.b,
-                _border_color.a
-            );
-            SDL_RenderDrawRect(renderer, &object_rect);
-            SDL_SetRenderDrawColor(renderer, old_r, old_g, old_b, old_a);
-        }
     }
 
     SDL_Rect previous_clip_rect{};
@@ -94,6 +77,24 @@ void UiPanel::on_render(SDL_Renderer* renderer)
         {
             SDL_RenderSetClipRect(renderer, nullptr);
         }
+    }
+
+    if (_draw_border && object_rect.w > 0 && object_rect.h > 0)
+    {
+        Uint8 old_r = 0;
+        Uint8 old_g = 0;
+        Uint8 old_b = 0;
+        Uint8 old_a = 0;
+        SDL_GetRenderDrawColor(renderer, &old_r, &old_g, &old_b, &old_a);
+        SDL_SetRenderDrawColor(
+            renderer,
+            _border_color.r,
+            _border_color.g,
+            _border_color.b,
+            _border_color.a
+        );
+        SDL_RenderDrawRect(renderer, &object_rect);
+        SDL_SetRenderDrawColor(renderer, old_r, old_g, old_b, old_a);
     }
 }
 

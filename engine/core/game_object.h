@@ -37,7 +37,7 @@ public:
     void destroy() { _destroyed = true; }
     bool is_destroyed() const { return _destroyed; }
 
-    void set_world_position(const Vector2& position)
+    virtual void set_world_position(const Vector2& position)
     {
         _world_pos = position;
         sync_rect();
@@ -56,7 +56,7 @@ public:
     }
 
     const Vector2& size() const { return _size; }
-    void set_size(const Vector2& size)
+    virtual void set_size(const Vector2& size)
     {
         _size = size;
         sync_rect();

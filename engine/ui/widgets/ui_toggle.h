@@ -13,6 +13,8 @@ class UiToggle : public UiControl
 public:
     explicit UiToggle(Vector2 position = Vector2::zero(), Vector2 size = Vector2::zero(), int order = 0);
 
+    void set_world_position(const Vector2& position) override;
+    void set_size(const Vector2& size) override;
     void on_update(double delta) override;
     void on_render(SDL_Renderer* renderer) override;
     void on_input(const InputSnapshot& input) override;
