@@ -1,5 +1,7 @@
 #include "ui_selectable_scroll_list.h"
 
+#include "../base/ui_selectable_index_utils.h"
+
 #include <algorithm>
 
 UiSelectableScrollList::UiSelectableScrollList(Vector2 position, Vector2 size, int order)
@@ -50,7 +52,14 @@ void UiSelectableScrollList::set_selected_index(int index)
     }
 
     const int clamped_index = std::clamp(index, 0, static_cast<int>(item_count) - 1);
-    _selected_index = resolve_selectable_index(clamped_index);
+    _selected_index = ui_selectable_index_utils::resolve_index(
+        clamped_index,
+        item_count,
+        [this](int selectable_index)
+        {
+            return selectable_item_enabled(selectable_index);
+        }
+    );
     sync_selection_state();
     sync_selection_view();
 }
@@ -150,26 +159,4 @@ void UiSelectableScrollList::sync_selection_view()
     }
 
     ensure_child_visible(target, { 0.0f, _selection_view_padding });
-}
-
-int UiSelectableScrollList::resolve_selectable_index(int index) const
-{
-    const size_t item_count = selectable_item_count();
-    if (item_count == 0)
-    {
-        return -1;
-    }
-
-    int clamped_index = std::clamp(index, 0, static_cast<int>(item_count) - 1);
-    const int start_index = clamped_index;
-    while (!selectable_item_enabled(clamped_index))
-    {
-        clamped_index = (clamped_index + 1) % static_cast<int>(item_count);
-        if (clamped_index == start_index)
-        {
-            return -1;
-        }
-    }
-
-    return clamped_index;
 }

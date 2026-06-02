@@ -80,7 +80,6 @@ private:
     void erase_right();
     void update_caret_from_mouse(int mouse_x);
     [[nodiscard]] int caret_pixel_x() const;
-    [[nodiscard]] bool contains_point(int x, int y) const;
     void apply_theme(const UiTheme& theme) override;
 
 private:

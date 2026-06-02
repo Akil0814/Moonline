@@ -33,7 +33,6 @@ protected:
     void sync_selection_view();
 
 private:
-    [[nodiscard]] int resolve_selectable_index(int index) const;
     [[nodiscard]] virtual size_t selectable_item_count() const = 0;
     [[nodiscard]] virtual bool selectable_item_enabled(int index) const = 0;
     [[nodiscard]] virtual const GameObject* selected_item_view_target() const = 0;

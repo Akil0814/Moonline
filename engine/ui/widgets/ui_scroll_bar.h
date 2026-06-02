@@ -56,7 +56,6 @@ private:
     [[nodiscard]] SDL_Rect track_rect() const;
     [[nodiscard]] SDL_Rect thumb_rect() const;
     [[nodiscard]] bool should_draw() const;
-    [[nodiscard]] bool contains_point(const SDL_Rect& target_rect, int x, int y) const;
     void update_target_from_point(int x, int y);
     void apply_theme(const UiTheme& theme) override;
 

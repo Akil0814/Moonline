@@ -137,13 +137,11 @@ void UiButton::on_input(const InputSnapshot& input)
         return;
     }
 
-    const SDL_Point mouse_position = ui_logical_mouse_position();
-    const int mouse_x = mouse_position.x;
-    const int mouse_y = mouse_position.y;
-    const Uint32 mouse_state = SDL_GetMouseState(nullptr, nullptr);
-    const bool mouse_down = (mouse_state & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;
+    const UiMouseState mouse_state = ui_current_mouse_state();
+    const int mouse_x = mouse_state._position.x;
+    const int mouse_y = mouse_state._position.y;
 
-    if (mouse_down && !_was_mouse_down)
+    if (ui_left_mouse_pressed(mouse_state, _was_mouse_down))
     {
         if (contains_point(mouse_x, mouse_y))
         {
@@ -151,7 +149,7 @@ void UiButton::on_input(const InputSnapshot& input)
         }
     }
 
-    if (!mouse_down && _was_mouse_down && _is_pressing)
+    if (ui_left_mouse_released(mouse_state, _was_mouse_down) && _is_pressing)
     {
         finish_press(mouse_x, mouse_y);
     }
@@ -160,7 +158,7 @@ void UiButton::on_input(const InputSnapshot& input)
         update_hover_status(mouse_x, mouse_y);
     }
 
-    _was_mouse_down = mouse_down;
+    _was_mouse_down = mouse_state._left_button_down;
 }
 
 void UiButton::reset()
@@ -201,9 +199,7 @@ SDL_Rect UiButton::message_rect() const
 
 bool UiButton::contains_point(int x, int y) const
 {
-    const SDL_Point cursor = { x, y };
-    const SDL_Rect& button_rect = rect();
-    return SDL_PointInRect(&cursor, &button_rect) == SDL_TRUE;
+    return ui_contains_point(rect(), x, y);
 }
 
 bool UiButton::update_hover_status(int x, int y)

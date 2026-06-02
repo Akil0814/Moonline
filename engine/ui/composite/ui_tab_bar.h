@@ -66,7 +66,7 @@ public:
 
 private:
     void rebuild_tabs();
-    void sync_button_focus();
+    void sync_button_state();
     void handle_group_selection_changed(int index, UiSelectableButton* button);
     void emit_selection_changed();
 
@@ -81,7 +81,6 @@ private:
     ButtonStyle _button_style;
     UiButtonThemeRole _button_theme_role = UiButtonThemeRole::Primary;
 
-    int _selected_index = -1;
     bool _enabled = true;
     bool _is_focused = false;
     bool _has_button_style_override = false;

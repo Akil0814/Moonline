@@ -21,10 +21,8 @@ void UiScrollPanel::on_input_event(const InputEvent& event)
 {
     if (event.type == InputEventType::MouseWheel)
     {
-        const SDL_Point mouse_position = ui_logical_mouse_position();
-        const int mouse_x = mouse_position.x;
-        const int mouse_y = mouse_position.y;
-        if (contains_point(mouse_x, mouse_y))
+        const UiMouseState mouse_state = ui_current_mouse_state();
+        if (ui_contains_point(rect(), mouse_state._position))
         {
             scroll_by({
                 -static_cast<float>(event.wheel_x) * _scroll_step.x,
@@ -235,10 +233,4 @@ void UiScrollPanel::clamp_scroll_offset()
     const Vector2 max_scroll = max_scroll_offset();
     _scroll_offset.x = std::clamp(_scroll_offset.x, 0.0f, max_scroll.x);
     _scroll_offset.y = std::clamp(_scroll_offset.y, 0.0f, max_scroll.y);
-}
-
-bool UiScrollPanel::contains_point(int x, int y) const
-{
-    const SDL_Point point{ x, y };
-    return SDL_PointInRect(&point, &rect()) == SDL_TRUE;
 }

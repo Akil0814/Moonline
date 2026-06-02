@@ -23,7 +23,7 @@ public:
 
     [[nodiscard]] size_t button_count() const;
 
-    void set_selected_index(int index);
+    void set_selected_index(int index, bool notify = true);
     [[nodiscard]] int selected_index() const;
     [[nodiscard]] std::shared_ptr<UiSelectableButton> selected_button() const;
 

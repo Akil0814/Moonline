@@ -108,18 +108,14 @@ void UiTextInput::on_input(const InputSnapshot& input)
         return;
     }
 
-    const SDL_Point mouse_position = ui_logical_mouse_position();
-    const int mouse_x = mouse_position.x;
-    const int mouse_y = mouse_position.y;
-    const Uint32 mouse_state = SDL_GetMouseState(nullptr, nullptr);
-    const bool mouse_down = (mouse_state & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;
+    const UiMouseState mouse_state = ui_current_mouse_state();
 
-    if (!mouse_down && _was_mouse_down && contains_point(mouse_x, mouse_y))
+    if (ui_left_mouse_released(mouse_state, _was_mouse_down) && ui_contains_point(rect(), mouse_state._position))
     {
-        update_caret_from_mouse(mouse_x);
+        update_caret_from_mouse(mouse_state._position.x);
     }
 
-    _was_mouse_down = mouse_down;
+    _was_mouse_down = mouse_state._left_button_down;
 }
 
 void UiTextInput::reset()
@@ -577,12 +573,6 @@ int UiTextInput::caret_pixel_x() const
     int prefix_width = 0;
     TTF_SizeUTF8(resolved_font, prefix.c_str(), &prefix_width, nullptr);
     return rect().x + _padding + prefix_width;
-}
-
-bool UiTextInput::contains_point(int x, int y) const
-{
-    const SDL_Point point{ x, y };
-    return SDL_PointInRect(&point, &rect()) == SDL_TRUE;
 }
 
 void UiTextInput::apply_theme(const UiTheme& theme)

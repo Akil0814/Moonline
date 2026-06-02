@@ -66,7 +66,7 @@ size_t UiButtonGroup::button_count() const
     return _buttons.size();
 }
 
-void UiButtonGroup::set_selected_index(int index)
+void UiButtonGroup::set_selected_index(int index, bool notify)
 {
     cleanup_buttons();
 
@@ -109,7 +109,7 @@ void UiButtonGroup::set_selected_index(int index)
 
     _is_syncing_selection = false;
 
-    if (_on_selection_changed)
+    if (notify && _on_selection_changed)
     {
         _on_selection_changed(_selected_index, selected_button().get());
     }

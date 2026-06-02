@@ -72,39 +72,37 @@ void UiScrollBar::on_input(const InputSnapshot& input)
         return;
     }
 
-    const SDL_Point mouse_position = ui_logical_mouse_position();
-    const int mouse_x = mouse_position.x;
-    const int mouse_y = mouse_position.y;
-    const Uint32 mouse_state = SDL_GetMouseState(nullptr, nullptr);
-    const bool mouse_down = (mouse_state & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;
+    const UiMouseState mouse_state = ui_current_mouse_state();
+    const int mouse_x = mouse_state._position.x;
+    const int mouse_y = mouse_state._position.y;
 
     const SDL_Rect current_track = track_rect();
     const SDL_Rect current_thumb = thumb_rect();
 
-    if (mouse_down && !_was_mouse_down)
+    if (ui_left_mouse_pressed(mouse_state, _was_mouse_down))
     {
-        if (contains_point(current_thumb, mouse_x, mouse_y))
+        if (ui_contains_point(current_thumb, mouse_state._position))
         {
             _is_dragging = true;
             _drag_offset = _orientation == ScrollBarOrientation::Vertical
                 ? static_cast<float>(mouse_y - current_thumb.y)
                 : static_cast<float>(mouse_x - current_thumb.x);
         }
-        else if (contains_point(current_track, mouse_x, mouse_y))
+        else if (ui_contains_point(current_track, mouse_state._position))
         {
             update_target_from_point(mouse_x, mouse_y);
         }
     }
-    else if (mouse_down && _is_dragging)
+    else if (mouse_state._left_button_down && _is_dragging)
     {
         update_target_from_point(mouse_x, mouse_y);
     }
-    else if (!mouse_down)
+    else if (!mouse_state._left_button_down)
     {
         _is_dragging = false;
     }
 
-    _was_mouse_down = mouse_down;
+    _was_mouse_down = mouse_state._left_button_down;
 }
 
 void UiScrollBar::reset()
@@ -332,12 +330,6 @@ bool UiScrollBar::should_draw() const
     }
 
     return !_auto_hide || content_size.x > view_size.x;
-}
-
-bool UiScrollBar::contains_point(const SDL_Rect& target_rect, int x, int y) const
-{
-    const SDL_Point point{ x, y };
-    return SDL_PointInRect(&point, &target_rect) == SDL_TRUE;
 }
 
 void UiScrollBar::update_target_from_point(int x, int y)

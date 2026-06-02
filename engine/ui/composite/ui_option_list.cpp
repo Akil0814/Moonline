@@ -28,15 +28,10 @@ void UiOptionList::on_input(const InputSnapshot& input)
         return;
     }
 
-    const SDL_Point mouse_position = ui_logical_mouse_position();
-    const int mouse_x = mouse_position.x;
-    const int mouse_y = mouse_position.y;
-    const Uint32 mouse_state = SDL_GetMouseState(nullptr, nullptr);
-    const bool mouse_down = (mouse_state & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;
+    const UiMouseState mouse_state = ui_current_mouse_state();
 
-    if (!mouse_down && _was_mouse_down)
+    if (ui_left_mouse_released(mouse_state, _was_mouse_down))
     {
-        const SDL_Point point{ mouse_x, mouse_y };
         for (size_t index = 0; index < _rows.size(); ++index)
         {
             if (!_rows[index]._panel)
@@ -44,7 +39,7 @@ void UiOptionList::on_input(const InputSnapshot& input)
                 continue;
             }
 
-            if (SDL_PointInRect(&point, &_rows[index]._panel->rect()) == SDL_TRUE)
+            if (ui_contains_point(_rows[index]._panel->rect(), mouse_state._position))
             {
                 set_selected_index(static_cast<int>(index));
                 break;
@@ -52,7 +47,7 @@ void UiOptionList::on_input(const InputSnapshot& input)
         }
     }
 
-    _was_mouse_down = mouse_down;
+    _was_mouse_down = mouse_state._left_button_down;
 }
 
 void UiOptionList::reset()
@@ -113,7 +108,8 @@ bool UiOptionList::set_item_enabled(int index, bool enabled)
     }
 
     _items[static_cast<size_t>(index)]._enabled = enabled;
-    rebuild_rows();
+    refresh_rows();
+    sync_selection_index();
     return true;
 }
 
@@ -131,8 +127,9 @@ bool UiOptionList::set_item_toggle_value(int index, bool value)
     }
 
     item._toggle._value = value;
+    refresh_row(static_cast<size_t>(index));
+    sync_selection_state();
     emit_value_changed(index);
-    rebuild_rows();
     return true;
 }
 
@@ -150,15 +147,17 @@ bool UiOptionList::set_item_slider_value(int index, float value)
     }
 
     item._slider._value = std::clamp(value, item._slider._min_value, item._slider._max_value);
+    refresh_row(static_cast<size_t>(index));
+    sync_selection_state();
     emit_value_changed(index);
-    rebuild_rows();
     return true;
 }
 
 void UiOptionList::set_font_key(const std::string& font_key)
 {
     _font_key = font_key;
-    rebuild_rows();
+    refresh_rows();
+    sync_selection_index();
 }
 
 const std::string& UiOptionList::font_key() const
@@ -169,7 +168,8 @@ const std::string& UiOptionList::font_key() const
 void UiOptionList::set_style(const UiOptionListStyle& style)
 {
     _style = style;
-    rebuild_rows();
+    refresh_rows();
+    sync_selection_index();
 }
 
 const UiOptionListStyle& UiOptionList::style() const
@@ -220,14 +220,7 @@ void UiOptionList::rebuild_rows()
     clear_children();
     _rows.clear();
 
-    set_spacing(_style._row_spacing);
-    set_padding({
-        _style._panel_padding,
-        _style._panel_padding,
-        _style._panel_padding,
-        _style._panel_padding
-    });
-    set_scroll_step({ _style._row_size.x, _style._row_size.y + _style._row_spacing });
+    apply_layout_metrics();
 
     for (size_t index = 0; index < _items.size(); ++index)
     {
@@ -235,39 +228,12 @@ void UiOptionList::rebuild_rows()
         RowWidgets row;
 
         row._panel = std::make_shared<UiPanel>(Vector2::zero(), _style._row_size);
-        row._panel->set_use_theme(false);
-        row._panel->set_direction(UiLayoutDirection::Horizontal);
-        row._panel->set_cross_align(UiLayoutAlign::Center);
-        row._panel->set_spacing(16.0f);
-        row._panel->set_padding({ 18.0f, 12.0f, 18.0f, 12.0f });
-
         row._label = std::make_shared<UiLabel>();
-        row._label->set_use_theme(false);
-        row._label->set_font_key(_font_key);
-        row._label->set_text(item._label);
-        row._label->set_auto_size(false);
-        row._label->set_size({ _style._row_size.x * 0.46f, _style._row_size.y - 24.0f });
-        row._label->set_horizontal_align(TextHorizontalAlign::Left);
-        row._label->set_vertical_align(TextVerticalAlign::Center);
-
-        UiLayoutChildOptions label_options;
-        label_options._use_size_override = true;
-        label_options._size_override = row._label->size();
-        label_options._fill_cross_axis = true;
-        row._panel->add_child(row._label, label_options);
+        row._panel->add_child(row._label);
 
         if (item._control_type == UiOptionControlType::Slider)
         {
             std::shared_ptr<UiSlider> slider = std::make_shared<UiSlider>(Vector2::zero(), _style._control_size);
-            slider->set_font_key(_font_key);
-            slider->set_range(item._slider._min_value, item._slider._max_value);
-            slider->set_value(item._slider._value);
-            slider->set_step(item._slider._step);
-            slider->set_value_precision(item._slider._display_precision);
-            slider->set_value_suffix(item._slider._suffix);
-            slider->set_show_value_text(true);
-            slider->set_enabled(is_enabled() && item._enabled);
-            UiStyle::apply_slider(*slider, _style._slider_style);
             slider->set_on_value_changed(
                 [this, item_index = static_cast<int>(index)](float value)
                 {
@@ -278,15 +244,11 @@ void UiOptionList::rebuild_rows()
             );
             row._control_object = slider;
             row._control = slider;
+            row._slider = slider;
         }
         else
         {
             std::shared_ptr<UiToggle> toggle = std::make_shared<UiToggle>(Vector2::zero(), _style._control_size);
-            toggle->set_font_key(_font_key);
-            toggle->set_state_texts(item._toggle._off_text, item._toggle._on_text);
-            toggle->set_value(item._toggle._value);
-            toggle->set_enabled(is_enabled() && item._enabled);
-            UiStyle::apply_toggle(*toggle, _style._toggle_style);
             toggle->set_on_changed(
                 [this, item_index = static_cast<int>(index)](bool value)
                 {
@@ -297,23 +259,119 @@ void UiOptionList::rebuild_rows()
             );
             row._control_object = toggle;
             row._control = toggle;
+            row._toggle = toggle;
         }
 
-        UiLayoutChildOptions control_options;
-        control_options._use_size_override = true;
-        control_options._size_override = _style._control_size;
-        control_options._use_custom_cross_align = true;
-        control_options._cross_align = UiLayoutAlign::Center;
-        row._panel->add_child(row._control_object, control_options);
-
-        UiLayoutChildOptions row_options;
-        row_options._use_size_override = true;
-        row_options._size_override = _style._row_size;
-        add_child(row._panel, row_options);
+        row._panel->add_child(row._control_object);
+        add_child(row._panel);
 
         _rows.push_back(std::move(row));
     }
 
+    refresh_rows();
+    sync_selection_index();
+}
+
+void UiOptionList::apply_layout_metrics()
+{
+    set_spacing(_style._row_spacing);
+    set_padding({
+        _style._panel_padding,
+        _style._panel_padding,
+        _style._panel_padding,
+        _style._panel_padding
+    });
+    set_scroll_step({ _style._row_size.x, _style._row_size.y + _style._row_spacing });
+}
+
+void UiOptionList::refresh_rows()
+{
+    if (_rows.size() != _items.size())
+    {
+        rebuild_rows();
+        return;
+    }
+
+    apply_layout_metrics();
+    for (size_t index = 0; index < _rows.size(); ++index)
+    {
+        refresh_row(index);
+    }
+
+    sync_selection_state();
+}
+
+void UiOptionList::refresh_row(size_t index)
+{
+    if (index >= _rows.size() || index >= _items.size())
+    {
+        return;
+    }
+
+    RowWidgets& row = _rows[index];
+    const UiOptionListItem& item = _items[index];
+    if (!row._panel || !row._label || !row._control_object || !row._control)
+    {
+        return;
+    }
+
+    row._panel->set_use_theme(false);
+    row._panel->set_size(_style._row_size);
+    row._panel->set_direction(UiLayoutDirection::Horizontal);
+    row._panel->set_cross_align(UiLayoutAlign::Center);
+    row._panel->set_spacing(16.0f);
+    row._panel->set_padding({ 18.0f, 12.0f, 18.0f, 12.0f });
+
+    row._label->set_use_theme(false);
+    row._label->set_font_key(_font_key);
+    row._label->set_text(item._label);
+    row._label->set_auto_size(false);
+    row._label->set_size({ _style._row_size.x * 0.46f, _style._row_size.y - 24.0f });
+    row._label->set_horizontal_align(TextHorizontalAlign::Left);
+    row._label->set_vertical_align(TextVerticalAlign::Center);
+
+    UiLayoutChildOptions label_options;
+    label_options._use_size_override = true;
+    label_options._size_override = row._label->size();
+    label_options._fill_cross_axis = true;
+    row._panel->set_child_options(row._label.get(), label_options);
+
+    if (row._slider)
+    {
+        row._slider->set_size(_style._control_size);
+        row._slider->set_font_key(_font_key);
+        row._slider->set_range(item._slider._min_value, item._slider._max_value);
+        row._slider->set_value(item._slider._value);
+        row._slider->set_step(item._slider._step);
+        row._slider->set_value_precision(item._slider._display_precision);
+        row._slider->set_value_suffix(item._slider._suffix);
+        row._slider->set_show_value_text(true);
+        UiStyle::apply_slider(*row._slider, _style._slider_style);
+    }
+    else if (row._toggle)
+    {
+        row._toggle->set_size(_style._control_size);
+        row._toggle->set_font_key(_font_key);
+        row._toggle->set_state_texts(item._toggle._off_text, item._toggle._on_text);
+        row._toggle->set_value(item._toggle._value);
+        UiStyle::apply_toggle(*row._toggle, _style._toggle_style);
+    }
+
+    UiLayoutChildOptions control_options;
+    control_options._use_size_override = true;
+    control_options._size_override = _style._control_size;
+    control_options._use_custom_cross_align = true;
+    control_options._cross_align = UiLayoutAlign::Center;
+    row._panel->set_child_options(row._control_object.get(), control_options);
+
+    UiLayoutChildOptions row_options;
+    row_options._use_size_override = true;
+    row_options._size_override = _style._row_size;
+    set_child_options(row._panel.get(), row_options);
+}
+
+void UiOptionList::sync_selection_index()
+{
     if (_items.empty())
     {
         set_selected_index(-1);
@@ -423,5 +481,6 @@ void UiOptionList::apply_theme(const UiTheme& theme)
     _style._disabled_text_color = theme._muted_label._text_color;
     _style._toggle_style = theme._toggle;
     _style._slider_style = theme._slider;
-    rebuild_rows();
+    refresh_rows();
+    sync_selection_index();
 }

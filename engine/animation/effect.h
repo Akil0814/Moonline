@@ -17,7 +17,7 @@ public:
 
 	std::unique_ptr<Effect> clone() const;
 
-	void set_angle(const Vector2& target_position, double angle_degrees);
+	void set_angle(double angle_degrees);
 
 private:
 	std::string _effect_key;

@@ -37,7 +37,6 @@ public:
 
 private:
     void clamp_scroll_offset();
-    [[nodiscard]] bool contains_point(int x, int y) const;
 
 private:
     Vector2 _scroll_offset{ 0.0f, 0.0f };

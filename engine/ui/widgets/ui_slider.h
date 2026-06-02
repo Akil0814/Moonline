@@ -74,7 +74,6 @@ private:
     [[nodiscard]] float snapped_value(float value) const;
     [[nodiscard]] SDL_Rect track_rect() const;
     [[nodiscard]] SDL_Rect thumb_rect() const;
-    [[nodiscard]] bool contains_point(int x, int y) const;
     void update_value_from_point(int x, int y, bool notify);
     void apply_theme(const UiTheme& theme) override;
 

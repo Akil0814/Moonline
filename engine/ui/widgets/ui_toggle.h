@@ -53,7 +53,6 @@ private:
     void toggle();
     void set_value_internal(bool value, bool notify);
     void sync_labels();
-    [[nodiscard]] bool contains_point(int x, int y) const;
     void apply_theme(const UiTheme& theme) override;
 
 private:

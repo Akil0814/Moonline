@@ -4,12 +4,8 @@
 
 #include <SDL.h>
 
-inline SDL_Point ui_logical_mouse_position()
+inline SDL_Point ui_logical_mouse_position_from_window_position(int window_x, int window_y)
 {
-    int window_x = 0;
-    int window_y = 0;
-    SDL_GetMouseState(&window_x, &window_y);
-
     SDL_Window* mouse_window = SDL_GetMouseFocus();
     if (!mouse_window)
     {
@@ -63,6 +59,51 @@ inline SDL_Point ui_logical_mouse_position()
 
     return { static_cast<int>(logical_x), static_cast<int>(logical_y) };
 #endif
+}
+
+inline SDL_Point ui_logical_mouse_position()
+{
+    int window_x = 0;
+    int window_y = 0;
+    SDL_GetMouseState(&window_x, &window_y);
+    return ui_logical_mouse_position_from_window_position(window_x, window_y);
+}
+
+struct UiMouseState
+{
+    SDL_Point _position{ 0, 0 };
+    bool _left_button_down = false;
+};
+
+inline UiMouseState ui_current_mouse_state()
+{
+    int window_x = 0;
+    int window_y = 0;
+    const Uint32 mouse_buttons = SDL_GetMouseState(&window_x, &window_y);
+    return {
+        ui_logical_mouse_position_from_window_position(window_x, window_y),
+        (mouse_buttons & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0
+    };
+}
+
+inline bool ui_left_mouse_pressed(const UiMouseState& mouse_state, bool was_mouse_down)
+{
+    return mouse_state._left_button_down && !was_mouse_down;
+}
+
+inline bool ui_left_mouse_released(const UiMouseState& mouse_state, bool was_mouse_down)
+{
+    return !mouse_state._left_button_down && was_mouse_down;
+}
+
+inline bool ui_contains_point(const SDL_Rect& rect, const SDL_Point& point)
+{
+    return SDL_PointInRect(&point, &rect) == SDL_TRUE;
+}
+
+inline bool ui_contains_point(const SDL_Rect& rect, int x, int y)
+{
+    return ui_contains_point(rect, SDL_Point{ x, y });
 }
 
 inline bool ui_mouse_input_allowed(const InputSnapshot& input)

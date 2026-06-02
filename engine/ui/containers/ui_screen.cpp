@@ -91,15 +91,10 @@ void UiScreen::on_input(const InputSnapshot& input)
         return;
     }
 
-    const SDL_Point mouse_position = ui_logical_mouse_position();
-    const int mouse_x = mouse_position.x;
-    const int mouse_y = mouse_position.y;
-    const Uint32 mouse_state = SDL_GetMouseState(nullptr, nullptr);
-    const bool mouse_down = (mouse_state & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;
+    const UiMouseState mouse_state = ui_current_mouse_state();
 
-    if (mouse_down && !_was_mouse_down)
+    if (ui_left_mouse_pressed(mouse_state, _was_mouse_down))
     {
-        const SDL_Point mouse_point{ mouse_x, mouse_y };
         for (int index = static_cast<int>(_focusable_controls.size()) - 1; index >= 0; --index)
         {
             std::shared_ptr<UiFocusable> control = _focusable_controls[static_cast<size_t>(index)].lock();
@@ -114,7 +109,7 @@ void UiScreen::on_input(const InputSnapshot& input)
                 continue;
             }
 
-            if (SDL_PointInRect(&mouse_point, &object->rect()) == SDL_TRUE)
+            if (ui_contains_point(object->rect(), mouse_state._position))
             {
                 _focused_control_index = index;
                 apply_control_focus();
@@ -123,7 +118,7 @@ void UiScreen::on_input(const InputSnapshot& input)
         }
     }
 
-    _was_mouse_down = mouse_down;
+    _was_mouse_down = mouse_state._left_button_down;
     UiPanel::on_input(input);
 }
 

@@ -19,3 +19,9 @@ struct AnimationBuildRequest
 	bool _loop = true;
 	size_t _segment_index = 0;
 };
+
+struct EffectBuildRequest
+{
+	std::string _effect_key;
+	std::string _animation_key;
+};

@@ -89,18 +89,14 @@ void UiToggle::on_input(const InputSnapshot& input)
         return;
     }
 
-    const SDL_Point mouse_position = ui_logical_mouse_position();
-    const int mouse_x = mouse_position.x;
-    const int mouse_y = mouse_position.y;
-    const Uint32 mouse_state = SDL_GetMouseState(nullptr, nullptr);
-    const bool mouse_down = (mouse_state & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;
+    const UiMouseState mouse_state = ui_current_mouse_state();
 
-    if (!mouse_down && _was_mouse_down && contains_point(mouse_x, mouse_y))
+    if (ui_left_mouse_released(mouse_state, _was_mouse_down) && ui_contains_point(rect(), mouse_state._position))
     {
         toggle();
     }
 
-    _was_mouse_down = mouse_down;
+    _was_mouse_down = mouse_state._left_button_down;
 }
 
 void UiToggle::reset()
@@ -311,12 +307,6 @@ void UiToggle::sync_labels()
         size().y
     });
     _value_label.set_text(display_text());
-}
-
-bool UiToggle::contains_point(int x, int y) const
-{
-    const SDL_Point point{ x, y };
-    return SDL_PointInRect(&point, &rect()) == SDL_TRUE;
 }
 
 void UiToggle::apply_theme(const UiTheme& theme)

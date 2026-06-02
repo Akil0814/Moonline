@@ -1,6 +1,6 @@
 #include "ui_tab_bar.h"
 
-#include <algorithm>
+#include "../base/ui_selectable_index_utils.h"
 
 UiTabBar::UiTabBar(Vector2 position, Vector2 size, int order)
     : UiPanel(position, size, order)
@@ -34,7 +34,6 @@ void UiTabBar::reset()
     _font_key = "ui.default";
     _button_style = ButtonStyle{};
     _button_theme_role = UiButtonThemeRole::Primary;
-    _selected_index = -1;
     _enabled = true;
     _is_focused = false;
     _has_button_style_override = false;
@@ -62,7 +61,6 @@ void UiTabBar::clear_tabs()
 {
     _items.clear();
     _buttons.clear();
-    _selected_index = -1;
     _button_group.clear_buttons();
     clear_children();
 }
@@ -74,30 +72,38 @@ size_t UiTabBar::tab_count() const
 
 int UiTabBar::selected_index() const
 {
-    return _selected_index;
+    return _button_group.selected_index();
 }
 
 void UiTabBar::set_selected_index(int index)
 {
     if (_items.empty())
     {
-        _selected_index = -1;
-        sync_button_focus();
+        _button_group.set_selected_index(-1);
+        sync_button_state();
         return;
     }
 
-    const int clamped_index = std::clamp(index, 0, static_cast<int>(_items.size()) - 1);
-    _button_group.set_selected_index(clamped_index);
+    const int resolved_index = ui_selectable_index_utils::resolve_index(
+        index,
+        _items.size(),
+        [this](int item_index)
+        {
+            return _items[static_cast<size_t>(item_index)]._enabled;
+        }
+    );
+    _button_group.set_selected_index(resolved_index);
 }
 
 const UiTabBarItem* UiTabBar::selected_tab() const
 {
-    if (_selected_index < 0 || _selected_index >= static_cast<int>(_items.size()))
+    const int index = selected_index();
+    if (index < 0 || index >= static_cast<int>(_items.size()))
     {
         return nullptr;
     }
 
-    return &_items[static_cast<size_t>(_selected_index)];
+    return &_items[static_cast<size_t>(index)];
 }
 
 void UiTabBar::set_tab_size(const Vector2& tab_size)
@@ -165,7 +171,7 @@ void UiTabBar::set_on_selection_changed(UiTabBarSelectionChangedCallback on_sele
 void UiTabBar::set_enabled(bool enabled)
 {
     _enabled = enabled;
-    sync_button_focus();
+    sync_button_state();
 }
 
 bool UiTabBar::is_enabled() const
@@ -176,7 +182,7 @@ bool UiTabBar::is_enabled() const
 void UiTabBar::set_focused(bool focused)
 {
     _is_focused = focused;
-    sync_button_focus();
+    sync_button_state();
 }
 
 bool UiTabBar::is_focused() const
@@ -194,11 +200,11 @@ bool UiTabBar::handle_focused_input_event(const InputEvent& event)
     switch (event.action)
     {
     case InputAction::Left:
-        set_selected_index(_selected_index - 1);
+        set_selected_index(selected_index() - 1);
         return true;
 
     case InputAction::Right:
-        set_selected_index(_selected_index + 1);
+        set_selected_index(selected_index() + 1);
         return true;
 
     case InputAction::Confirm:
@@ -222,6 +228,8 @@ const GameObject* UiTabBar::game_object() const
 
 void UiTabBar::rebuild_tabs()
 {
+    const int previous_selected_index = selected_index();
+
     clear_children();
     _buttons.clear();
     _button_group.clear_buttons();
@@ -251,21 +259,27 @@ void UiTabBar::rebuild_tabs()
 
     if (_items.empty())
     {
-        _selected_index = -1;
         return;
     }
 
-    if (_selected_index < 0 || _selected_index >= static_cast<int>(_items.size()))
-    {
-        _selected_index = 0;
-    }
-
-    _button_group.set_selected_index(_selected_index);
-    sync_button_focus();
+    const int selection_seed = previous_selected_index >= 0
+        ? previous_selected_index
+        : 0;
+    const int resolved_index = ui_selectable_index_utils::resolve_index(
+        selection_seed,
+        _items.size(),
+        [this](int item_index)
+        {
+            return _items[static_cast<size_t>(item_index)]._enabled;
+        }
+    );
+    _button_group.set_selected_index(resolved_index, false);
+    sync_button_state();
 }
 
-void UiTabBar::sync_button_focus()
+void UiTabBar::sync_button_state()
 {
+    const int current_selected_index = selected_index();
     for (int index = 0; index < static_cast<int>(_buttons.size()); ++index)
     {
         const std::shared_ptr<UiSelectableButton>& button = _buttons[static_cast<size_t>(index)];
@@ -276,15 +290,15 @@ void UiTabBar::sync_button_focus()
 
         const bool enabled = _enabled && _items[static_cast<size_t>(index)]._enabled;
         button->set_enabled(enabled);
-        button->set_focused(enabled && _is_focused && index == _selected_index);
+        button->set_focused(enabled && _is_focused && index == current_selected_index);
     }
 }
 
 void UiTabBar::handle_group_selection_changed(int index, UiSelectableButton* button)
 {
     (void)button;
-    _selected_index = index;
-    sync_button_focus();
+    (void)index;
+    sync_button_state();
     emit_selection_changed();
 }
 
@@ -301,5 +315,5 @@ void UiTabBar::emit_selection_changed()
         return;
     }
 
-    _on_selection_changed(_selected_index, item->_id, item->_text);
+    _on_selection_changed(selected_index(), item->_id, item->_text);
 }

@@ -92,27 +92,25 @@ void UiSlider::on_input(const InputSnapshot& input)
         return;
     }
 
-    const SDL_Point mouse_position = ui_logical_mouse_position();
-    const int mouse_x = mouse_position.x;
-    const int mouse_y = mouse_position.y;
-    const Uint32 mouse_state = SDL_GetMouseState(nullptr, nullptr);
-    const bool mouse_down = (mouse_state & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;
+    const UiMouseState mouse_state = ui_current_mouse_state();
+    const int mouse_x = mouse_state._position.x;
+    const int mouse_y = mouse_state._position.y;
 
-    if (mouse_down && !_was_mouse_down && contains_point(mouse_x, mouse_y))
+    if (ui_left_mouse_pressed(mouse_state, _was_mouse_down) && ui_contains_point(rect(), mouse_state._position))
     {
         _is_dragging = true;
         update_value_from_point(mouse_x, mouse_y, true);
     }
-    else if (mouse_down && _is_dragging)
+    else if (mouse_state._left_button_down && _is_dragging)
     {
         update_value_from_point(mouse_x, mouse_y, true);
     }
-    else if (!mouse_down)
+    else if (!mouse_state._left_button_down)
     {
         _is_dragging = false;
     }
 
-    _was_mouse_down = mouse_down;
+    _was_mouse_down = mouse_state._left_button_down;
 }
 
 void UiSlider::reset()
@@ -418,12 +416,6 @@ SDL_Rect UiSlider::thumb_rect() const
     }
 
     return thumb;
-}
-
-bool UiSlider::contains_point(int x, int y) const
-{
-    const SDL_Point point{ x, y };
-    return SDL_PointInRect(&point, &rect()) == SDL_TRUE;
 }
 
 void UiSlider::update_value_from_point(int x, int y, bool notify)
