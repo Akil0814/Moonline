@@ -4,7 +4,7 @@ void UiStyle::apply_button(UiButton& button, const ButtonStyle& style)
 {
     if (style._use_state_textures)
     {
-        button.set_theme_state_textures(
+        button.set_themed_state_textures(
             style._idle_texture,
             style._hovered_texture,
             style._pushed_texture
@@ -13,7 +13,7 @@ void UiStyle::apply_button(UiButton& button, const ButtonStyle& style)
     }
 
     button.clear_state_textures();
-    button.set_theme_state_colors(
+    button.set_themed_state_colors(
         style._idle_color,
         style._hovered_color,
         style._pushed_color,
@@ -40,7 +40,7 @@ void UiStyle::apply_panel(UiPanel& panel, const PanelStyle& style)
     panel.set_draw_border(style._draw_border);
 }
 
-void UiStyle::apply_bar(Bar& bar, const BarStyle& style)
+void UiStyle::apply_bar(UiBar& bar, const BarStyle& style)
 {
     bar.set_background_color(style._background_color);
     bar.set_fill_color(style._fill_color);

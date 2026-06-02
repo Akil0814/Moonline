@@ -17,7 +17,7 @@ struct UiMenuListItem
     bool _enabled = true;
 };
 
-using UiMenuSelectCallback = std::function<void(
+using UiMenuSelectionChangedCallback = std::function<void(
     int index,
     const std::string& id,
     const std::string& text
@@ -55,7 +55,7 @@ public:
     void set_button_style(const ButtonStyle& button_style);
     [[nodiscard]] const ButtonStyle& button_style() const;
 
-    void set_on_select(UiMenuSelectCallback on_select);
+    void set_on_selection_changed(UiMenuSelectionChangedCallback on_selection_changed);
     void set_enabled(bool enabled) override;
     [[nodiscard]] bool is_enabled() const override;
     void set_focused(bool focused) override;
@@ -79,7 +79,7 @@ private:
     SDL_Color _text_color{ 255, 255, 255, 255 };
     ButtonStyle _button_style;
 
-    UiMenuSelectCallback _on_select;
+    UiMenuSelectionChangedCallback _on_selection_changed;
 
     int _selected_index = -1;
     bool _enabled = true;

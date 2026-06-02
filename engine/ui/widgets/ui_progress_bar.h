@@ -1,6 +1,6 @@
 #pragma once
 #include <SDL.h>
-#include "../bar.h"
+#include "../ui_bar.h"
 #include "../style/ui_theme_roles.h"
 #include "../base/ui_element.h"
 
@@ -19,13 +19,13 @@ public:
     void set_bar_theme_role(UiBarThemeRole bar_theme_role);
     [[nodiscard]] UiBarThemeRole bar_theme_role() const;
 
-    Bar& bar();
-    const Bar& bar() const;
+    UiBar& bar();
+    const UiBar& bar() const;
 
 private:
     void apply_theme(const UiTheme& theme) override;
 
 private:
-    Bar _bar;
+    UiBar _bar;
     UiBarThemeRole _bar_theme_role = UiBarThemeRole::Progress;
 };

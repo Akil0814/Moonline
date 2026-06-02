@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../bar.h"
+#include "../ui_bar.h"
 #include "../base/ui_control.h"
 #include "ui_label.h"
 
@@ -38,9 +38,9 @@ public:
     void set_orientation(UiSliderOrientation orientation);
     [[nodiscard]] UiSliderOrientation orientation() const;
 
-    void set_bar_style(const Bar& style_source);
-    Bar& bar();
-    [[nodiscard]] const Bar& bar() const;
+    void copy_bar_appearance_from(const UiBar& style_source);
+    UiBar& bar();
+    [[nodiscard]] const UiBar& bar() const;
 
     void set_thumb_color(SDL_Color color);
     [[nodiscard]] SDL_Color thumb_color() const;
@@ -78,7 +78,7 @@ private:
     void apply_theme(const UiTheme& theme) override;
 
 private:
-    Bar _bar;
+    UiBar _bar;
     UiLabel _value_label;
 
     UiSliderValueChangedCallback _on_value_changed;

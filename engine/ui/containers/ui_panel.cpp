@@ -5,7 +5,7 @@
 #include "../style/ui_style.h"
 
 UiPanel::UiPanel(Vector2 position, Vector2 size, int order)
-    : UILayout(position, size, order)
+    : UiLayout(position, size, order)
 {
 }
 
@@ -82,7 +82,7 @@ void UiPanel::on_render(SDL_Renderer* renderer)
         SDL_RenderSetClipRect(renderer, &object_rect);
     }
 
-    UILayout::on_render(renderer);
+    UiLayout::on_render(renderer);
 
     if (_clip_children)
     {
@@ -99,7 +99,7 @@ void UiPanel::on_render(SDL_Renderer* renderer)
 
 void UiPanel::reset()
 {
-    UILayout::reset();
+    UiLayout::reset();
     _background_texture = nullptr;
     _background_texture_key.clear();
     _background_color = SDL_Color{ 24, 24, 32, 220 };

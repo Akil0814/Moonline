@@ -2,19 +2,24 @@
 #include "../core/game_object.h"
 #include "../tools/timer.h"
 
-enum class FadeMode
+enum class UiFadeImageMode
 {
     FadeIn,
     FadeOut,
     FadeInOut
 };
 
-class FadeImage : public GameObject
+class UiFadeImage : public GameObject
 {
 public:
-    FadeImage(SDL_Texture* texture, Vector2 pos, Vector2 size);
+    UiFadeImage(SDL_Texture* texture, Vector2 pos, Vector2 size);
 
-    void set_play(FadeMode mode,double hold_time, float fade_in_duration, float fade_out_duration);
+    void configure_playback(
+        UiFadeImageMode mode,
+        double hold_time,
+        float fade_in_duration,
+        float fade_out_duration
+    );
     void play();
 
     void on_update(double delta)override;
@@ -38,7 +43,7 @@ private:
     };
 
 private:
-    FadeMode _mode = FadeMode::FadeIn;
+    UiFadeImageMode _mode = UiFadeImageMode::FadeIn;
     FadeState _state = FadeState::Idle;
 
     Timer _timer;

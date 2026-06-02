@@ -404,36 +404,6 @@ int UiScreen::focused_control_index() const
     return _focused_control_index;
 }
 
-void UiScreen::register_focusable_button(const std::shared_ptr<UiButton>& button)
-{
-    register_focusable_control(button);
-}
-
-void UiScreen::clear_focusable_buttons()
-{
-    clear_focusable_controls();
-}
-
-void UiScreen::focus_next_button()
-{
-    focus_next_control();
-}
-
-void UiScreen::focus_previous_button()
-{
-    focus_previous_control();
-}
-
-void UiScreen::set_focused_button(int index)
-{
-    set_focused_control(index);
-}
-
-int UiScreen::focused_button_index() const
-{
-    return focused_control_index();
-}
-
 void UiScreen::apply_transition_state()
 {
     set_transform(_transition.current_state()._transform);
@@ -507,7 +477,7 @@ bool UiScreen::is_focus_navigation_event(const InputEvent& event) const
         return true;
     }
 
-    if (direction() == LayoutDirection::Horizontal)
+    if (direction() == UiLayoutDirection::Horizontal)
     {
         return event.action == InputAction::Left || event.action == InputAction::Right;
     }

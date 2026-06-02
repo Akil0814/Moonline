@@ -41,12 +41,12 @@ UiBarThemeRole UiProgressBar::bar_theme_role() const
     return _bar_theme_role;
 }
 
-Bar& UiProgressBar::bar()
+UiBar& UiProgressBar::bar()
 {
     return _bar;
 }
 
-const Bar& UiProgressBar::bar() const
+const UiBar& UiProgressBar::bar() const
 {
     return _bar;
 }

@@ -15,7 +15,7 @@ enum class UiEasing
 
 struct UiTransitionState
 {
-    UILayoutTransform _transform;
+    UiLayoutTransform _transform;
     Uint8 _background_alpha = 255;
 };
 

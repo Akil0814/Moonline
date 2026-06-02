@@ -9,7 +9,7 @@ UiMenuList::UiMenuList(Vector2 position, Vector2 size, int order)
     : UiScrollPanel(position, size, order)
 {
     set_panel_theme_role(UiPanelThemeRole::List);
-    set_direction(LayoutDirection::Vertical);
+    set_direction(UiLayoutDirection::Vertical);
     set_allow_horizontal_scroll(false);
     set_allow_vertical_scroll(true);
     set_clamp_scroll(true);
@@ -27,7 +27,7 @@ void UiMenuList::reset()
 {
     UiScrollPanel::reset();
     set_panel_theme_role(UiPanelThemeRole::List);
-    set_direction(LayoutDirection::Vertical);
+    set_direction(UiLayoutDirection::Vertical);
     set_allow_horizontal_scroll(false);
     set_allow_vertical_scroll(true);
     set_clamp_scroll(true);
@@ -37,7 +37,7 @@ void UiMenuList::reset()
     _font_key = "ui.default";
     _text_color = SDL_Color{ 255, 255, 255, 255 };
     _button_style = ButtonStyle{};
-    _on_select = nullptr;
+    _on_selection_changed = nullptr;
     _selected_index = -1;
     _enabled = true;
     _is_focused = false;
@@ -189,9 +189,9 @@ const ButtonStyle& UiMenuList::button_style() const
     return _button_style;
 }
 
-void UiMenuList::set_on_select(UiMenuSelectCallback on_select)
+void UiMenuList::set_on_selection_changed(UiMenuSelectionChangedCallback on_selection_changed)
 {
-    _on_select = std::move(on_select);
+    _on_selection_changed = std::move(on_selection_changed);
 }
 
 void UiMenuList::rebuild_items()
@@ -217,7 +217,7 @@ void UiMenuList::rebuild_items()
                 handle_item_click(raw_button);
             });
 
-        LayoutChildOptions options;
+        UiLayoutChildOptions options;
         options._fill_cross_axis = true;
         add_child(button, options);
         _buttons.push_back(button);
@@ -271,10 +271,10 @@ void UiMenuList::handle_item_click(UiTextButton* button)
 
         set_selected_index(static_cast<int>(index));
 
-        if (_on_select)
+        if (_on_selection_changed)
         {
             const UiMenuListItem& item = _items[index];
-            _on_select(static_cast<int>(index), item._id, item._text);
+            _on_selection_changed(static_cast<int>(index), item._id, item._text);
         }
         return;
     }
@@ -338,9 +338,9 @@ bool UiMenuList::handle_focused_input_event(const InputEvent& event)
             return true;
         }
 
-        if (_on_select)
+        if (_on_selection_changed)
         {
-            _on_select(_selected_index, item->_id, item->_text);
+            _on_selection_changed(_selected_index, item->_id, item->_text);
         }
         return true;
     }

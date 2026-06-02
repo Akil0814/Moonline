@@ -86,7 +86,7 @@ UI 系统最底层仍然建立在 [game_object.h](/G:/Coding/Projects/Moonline/e
 
 ## 3. 主要容器
 
-### 3.1 `UILayout`
+### 3.1 `UiLayout`
 
 [ui_layout.h](/G:/Coding/Projects/Moonline/engine/ui/ui_layout.h)
 
@@ -111,7 +111,7 @@ UI 系统最底层仍然建立在 [game_object.h](/G:/Coding/Projects/Moonline/e
 
 [ui_panel.h](/G:/Coding/Projects/Moonline/engine/ui/containers/ui_panel.h)
 
-`UiPanel` 在 `UILayout` 上再补：
+`UiPanel` 在 `UiLayout` 上再补：
 
 - 背景色
 - 边框
@@ -180,14 +180,14 @@ UI 系统最底层仍然建立在 [game_object.h](/G:/Coding/Projects/Moonline/e
 - [ui_label.h](/G:/Coding/Projects/Moonline/engine/ui/widgets/ui_label.h)
 - [ui_image_view.h](/G:/Coding/Projects/Moonline/engine/ui/widgets/ui_image_view.h)
 - [ui_progress_bar.h](/G:/Coding/Projects/Moonline/engine/ui/widgets/ui_progress_bar.h)
-- [bar.h](/G:/Coding/Projects/Moonline/engine/ui/bar.h)
+- [ui_bar.h](/G:/Coding/Projects/Moonline/engine/ui/ui_bar.h)
 
 职责分别是：
 
 - `UiLabel`：文本、字体、颜色、换行、padding、对齐
 - `UiImageView`：贴图显示、裁剪、缩放模式、tint、alpha
-- `Bar`：纯数值条渲染逻辑
-- `UiProgressBar`：把 `Bar` 包装成可挂进 scene 的 UI 元素
+- `UiBar`：纯数值条渲染逻辑
+- `UiProgressBar`：把 `UiBar` 包装成可挂进 scene 的 UI 元素
 
 `UiLabel` 现在有 `UiLabelThemeRole`：
 
@@ -430,12 +430,12 @@ element->set_use_theme(false);
 
 这轮重构之后，推荐把 UI 类型统一看成这几档：
 
-- 页面与容器：`UiScreen / UiPanel / UiScrollPanel / UiGridLayout / UILayout`
+- 页面与容器：`UiScreen / UiPanel / UiScrollPanel / UiGridLayout / UiLayout`
 - 展示控件：`UiLabel / UiImageView / UiProgressBar`
 - 交互控件：`UiButton / UiTextButton / UiSlider / UiToggle / UiTextInput`
 - 复合控件：`UiMenuList / UiOptionList / UiDialog`
 
-`Bar` 保持不带 `Ui` 前缀，因为它现在是纯渲染逻辑对象，不是直接挂场景的 UI 元素。
+`UiBar` 现在也纳入统一 UI 命名，但职责仍然保持为纯数值条渲染逻辑对象，不直接挂场景。
 
 ## 11. 当前还没完全解决的点
 

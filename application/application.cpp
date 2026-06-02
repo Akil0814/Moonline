@@ -1,7 +1,7 @@
 #include "application.h"
 
 #include "../engine/ui/widgets/ui_progress_bar.h"//test
-#include "../engine/ui/fade_image.h"//test
+#include "../engine/ui/ui_fade_image.h"//test
 
 #include "../engine/core/time.h"
 #include "../engine/core/scene/scene_manager.h"
@@ -109,11 +109,11 @@ bool Application::init(int argc, char** argv)
 	init_assert(preload_texture_result._success, "Preload texture load error");
 
 
-	FadeImage image(preload_texture_result._texture.get(), { 530,270 }, { 250,250 });
+	UiFadeImage image(preload_texture_result._texture.get(), { 530,270 }, { 250,250 });
 
 	UiProgressBar load_bar({ 1000.0f, 680.0f }, { 200.0f, 5.0f });
 
-	image.set_play(FadeMode::FadeInOut, 2, 1, 1);
+	image.configure_playback(UiFadeImageMode::FadeInOut, 2, 1, 1);
 	image.play();
 
 

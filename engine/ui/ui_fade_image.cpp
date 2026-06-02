@@ -1,6 +1,6 @@
-#include "fade_image.h"
+#include "ui_fade_image.h"
 
-FadeImage::FadeImage(SDL_Texture* texture, Vector2 pos, Vector2 size)
+UiFadeImage::UiFadeImage(SDL_Texture* texture, Vector2 pos, Vector2 size)
 	:GameObject(DepthLayer::UI),_texture(texture)
 {
 	GameObject::set_world_position(pos);
@@ -10,7 +10,12 @@ FadeImage::FadeImage(SDL_Texture* texture, Vector2 pos, Vector2 size)
         SDL_SetTextureBlendMode(_texture, SDL_BLENDMODE_BLEND);
 }
 
-void FadeImage::set_play(FadeMode mode, double hold_time, float fade_in_duration, float fade_out_duration)
+void UiFadeImage::configure_playback(
+    UiFadeImageMode mode,
+    double hold_time,
+    float fade_in_duration,
+    float fade_out_duration
+)
 {
 	_mode = mode;
 
@@ -22,11 +27,11 @@ void FadeImage::set_play(FadeMode mode, double hold_time, float fade_in_duration
     _timer.set_on_timeout([this] {
         switch (_mode)
         {
-        case FadeMode::FadeIn:
+        case UiFadeImageMode::FadeIn:
             _state = FadeState::Finished;
             break;
-        case FadeMode::FadeOut:
-        case FadeMode::FadeInOut:
+        case UiFadeImageMode::FadeOut:
+        case UiFadeImageMode::FadeInOut:
             _elapsed = 0.0;
             _state = FadeState::FadingOut;
                 break;
@@ -39,19 +44,19 @@ void FadeImage::set_play(FadeMode mode, double hold_time, float fade_in_duration
     _fade_out_duration = fade_out_duration;
 }
 
-void FadeImage::play()
+void UiFadeImage::play()
 {
     _elapsed = 0.0;
 
     switch (_mode)
     {
-    case FadeMode::FadeIn:
-    case FadeMode::FadeInOut:
+    case UiFadeImageMode::FadeIn:
+    case UiFadeImageMode::FadeInOut:
         _alpha = 0;
         _state = FadeState::FadingIn;
         break;
 
-    case FadeMode::FadeOut:
+    case UiFadeImageMode::FadeOut:
         _alpha = 255;
         start_hold();
         break;
@@ -61,7 +66,7 @@ void FadeImage::play()
     }
 }
 
-void FadeImage::on_update(double delta)
+void UiFadeImage::on_update(double delta)
 {
     if (_state == FadeState::Idle)
         return;
@@ -88,7 +93,7 @@ void FadeImage::on_update(double delta)
         GameObject::destroy();
 }
 
-void FadeImage::on_render(SDL_Renderer* renderer)
+void UiFadeImage::on_render(SDL_Renderer* renderer)
 {
     if (!_texture || !renderer)
         return;
@@ -99,7 +104,7 @@ void FadeImage::on_render(SDL_Renderer* renderer)
     SDL_SetTextureAlphaMod(_texture, 255);
 }
 
-void FadeImage::update_fade_in(double delta)
+void UiFadeImage::update_fade_in(double delta)
 {
     _elapsed += delta;
 
@@ -114,7 +119,7 @@ void FadeImage::update_fade_in(double delta)
     }
 }
 
-void FadeImage::update_fade_out(double delta)
+void UiFadeImage::update_fade_out(double delta)
 {
     _elapsed += delta;
 
@@ -128,7 +133,7 @@ void FadeImage::update_fade_out(double delta)
     }
 }
 
-double FadeImage::ratio(double value, double max_value) const
+double UiFadeImage::ratio(double value, double max_value) const
 {
     if (max_value <= 0.0)
         return 1.0;
@@ -144,17 +149,17 @@ double FadeImage::ratio(double value, double max_value) const
     return t;
 }
 
-void FadeImage::start_hold()
+void UiFadeImage::start_hold()
 {
     if (_hold_time <= 0.0)
     {
         switch (_mode)
         {
-        case FadeMode::FadeIn:
+        case UiFadeImageMode::FadeIn:
             _state = FadeState::Finished;
             break;
-        case FadeMode::FadeOut:
-        case FadeMode::FadeInOut:
+        case UiFadeImageMode::FadeOut:
+        case UiFadeImageMode::FadeInOut:
             _elapsed = 0.0;
             _state = FadeState::FadingOut;
             break;

@@ -46,9 +46,9 @@ void MainMenuScene::reset()
         _screen->reset();
         _screen->set_world_position({ 0.0f, 0.0f });
         _screen->set_size({ 1280.0f, 720.0f });
-        _screen->set_direction(LayoutDirection::Vertical);
-        _screen->set_anchor(LayoutAnchor::Center);
-        _screen->set_cross_align(LayoutAlign::Center);
+        _screen->set_direction(UiLayoutDirection::Vertical);
+        _screen->set_anchor(UiLayoutAnchor::Center);
+        _screen->set_cross_align(UiLayoutAlign::Center);
         _screen->set_spacing(18.0f);
         _screen->set_padding({ 120.0f, 96.0f, 120.0f, 96.0f });
         _screen->set_transition_enabled(true);
@@ -85,14 +85,14 @@ void MainMenuScene::reset()
     {
         _menu_list->reset();
         _menu_list->set_size({ 420.0f, 280.0f });
-        _menu_list->set_anchor(LayoutAnchor::TopCenter);
-        _menu_list->set_cross_align(LayoutAlign::Center);
+        _menu_list->set_anchor(UiLayoutAnchor::TopCenter);
+        _menu_list->set_cross_align(UiLayoutAlign::Center);
         _menu_list->set_spacing(14.0f);
         _menu_list->set_padding({ 12.0f, 12.0f, 12.0f, 12.0f });
         _menu_list->set_item_size({ 360.0f, 60.0f });
         _menu_list->set_font_key("ui.default");
         _menu_list->set_panel_theme_role(UiPanelThemeRole::List);
-        _menu_list->set_on_select(
+        _menu_list->set_on_selection_changed(
             [this](int index, const std::string& id, const std::string& text)
             {
                 select_menu_item(index, id, text);
@@ -143,17 +143,17 @@ void MainMenuScene::reset()
     {
         _screen->clear_focusable_controls();
 
-        LayoutChildOptions title_options;
+        UiLayoutChildOptions title_options;
         title_options._use_custom_cross_align = true;
-        title_options._cross_align = LayoutAlign::Center;
+        title_options._cross_align = UiLayoutAlign::Center;
 
-        LayoutChildOptions subtitle_options = title_options;
+        UiLayoutChildOptions subtitle_options = title_options;
 
-        LayoutChildOptions menu_options = title_options;
+        UiLayoutChildOptions menu_options = title_options;
         menu_options._margin.top = 16.0f;
         menu_options._margin.bottom = 12.0f;
 
-        LayoutChildOptions footer_options = title_options;
+        UiLayoutChildOptions footer_options = title_options;
         footer_options._margin.top = 10.0f;
 
         _screen->add_child(_title_label, title_options);

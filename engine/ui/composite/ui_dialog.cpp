@@ -37,8 +37,8 @@ void UiDialog::reset()
     UiScreen::reset();
     set_panel_theme_role(UiPanelThemeRole::Dialog);
     set_size({ 520.0f, 320.0f });
-    set_anchor(LayoutAnchor::Center);
-    set_cross_align(LayoutAlign::Center);
+    set_anchor(UiLayoutAnchor::Center);
+    set_cross_align(UiLayoutAlign::Center);
     set_spacing(14.0f);
     set_padding({ 28.0f, 24.0f, 28.0f, 24.0f });
     set_transition_enabled(true);
@@ -73,7 +73,7 @@ void UiDialog::reset()
         _action_list->set_item_size({ 300.0f, 50.0f });
         _action_list->set_font_key("ui.default");
         _action_list->set_panel_theme_role(UiPanelThemeRole::List);
-        _action_list->set_on_select(
+        _action_list->set_on_selection_changed(
             [this](int index, const std::string& id, const std::string& text)
             {
                 handle_action(index, id, text);
@@ -196,11 +196,11 @@ void UiDialog::rebuild()
         _action_list->set_selected_index(0);
     }
 
-    LayoutChildOptions centered_options;
+    UiLayoutChildOptions centered_options;
     centered_options._use_custom_cross_align = true;
-    centered_options._cross_align = LayoutAlign::Center;
+    centered_options._cross_align = UiLayoutAlign::Center;
 
-    LayoutChildOptions message_options = centered_options;
+    UiLayoutChildOptions message_options = centered_options;
     message_options._margin.top = 6.0f;
     message_options._margin.bottom = 8.0f;
 

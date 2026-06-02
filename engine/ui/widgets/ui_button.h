@@ -45,24 +45,24 @@ public:
     void reset() override;
 
     void set_message_texture(SDL_Texture* new_texture_message);
-    void set_state_colors(
+    void set_local_state_colors(
         SDL_Color color_idle,
         SDL_Color color_hovered,
         SDL_Color color_pushed,
         SDL_Color color_frame
     );
-    void set_state_textures(
+    void set_local_state_textures(
         SDL_Texture* texture_idle,
         SDL_Texture* texture_hovered,
         SDL_Texture* texture_pushed
     );
-    void set_theme_state_colors(
+    void set_themed_state_colors(
         SDL_Color color_idle,
         SDL_Color color_hovered,
         SDL_Color color_pushed,
         SDL_Color color_frame
     );
-    void set_theme_state_textures(
+    void set_themed_state_textures(
         SDL_Texture* texture_idle,
         SDL_Texture* texture_hovered,
         SDL_Texture* texture_pushed
@@ -77,7 +77,6 @@ public:
     void reset_click_count();
     void set_on_click(std::function<void()> func);
     [[nodiscard]] Status status() const;
-    [[nodiscard]] Status get_status() const;
     void set_button_theme_role(UiButtonThemeRole button_theme_role);
     [[nodiscard]] UiButtonThemeRole button_theme_role() const;
 

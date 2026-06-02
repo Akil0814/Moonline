@@ -10,11 +10,11 @@ enum class BarFillDirection
     BottomToTop
 };
 
-class Bar
+class UiBar
 {
 public:
-    Bar() = default;
-    ~Bar() = default;
+    UiBar() = default;
+    ~UiBar() = default;
 
     void reset();
 

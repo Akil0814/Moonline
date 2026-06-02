@@ -64,7 +64,7 @@ float UiGridLayout::vertical_spacing() const
     return _vertical_spacing;
 }
 
-void UiGridLayout::set_padding(const LayoutPadding& padding)
+void UiGridLayout::set_padding(const UiLayoutPadding& padding)
 {
     _padding.left = std::max(0.0f, padding.left);
     _padding.top = std::max(0.0f, padding.top);
@@ -73,24 +73,24 @@ void UiGridLayout::set_padding(const LayoutPadding& padding)
     mark_dirty();
 }
 
-const LayoutPadding& UiGridLayout::padding() const
+const UiLayoutPadding& UiGridLayout::padding() const
 {
     return _padding;
 }
 
-void UiGridLayout::set_cell_align(LayoutAlign horizontal_align, LayoutAlign vertical_align)
+void UiGridLayout::set_cell_align(UiLayoutAlign horizontal_align, UiLayoutAlign vertical_align)
 {
     _horizontal_align = horizontal_align;
     _vertical_align = vertical_align;
     mark_dirty();
 }
 
-LayoutAlign UiGridLayout::horizontal_align() const
+UiLayoutAlign UiGridLayout::horizontal_align() const
 {
     return _horizontal_align;
 }
 
-LayoutAlign UiGridLayout::vertical_align() const
+UiLayoutAlign UiGridLayout::vertical_align() const
 {
     return _vertical_align;
 }
@@ -162,12 +162,12 @@ void UiGridLayout::on_input_event(const InputEvent& event)
 void UiGridLayout::reset()
 {
     UiElement::reset();
-    _padding = LayoutPadding{};
+    _padding = UiLayoutPadding{};
     _horizontal_spacing = 0.0f;
     _vertical_spacing = 0.0f;
     _column_count = 1;
-    _horizontal_align = LayoutAlign::Start;
-    _vertical_align = LayoutAlign::Start;
+    _horizontal_align = UiLayoutAlign::Start;
+    _vertical_align = UiLayoutAlign::Start;
     _layout_dirty = true;
 
     for (const std::shared_ptr<GameObject>& child : _children)
@@ -241,15 +241,15 @@ void UiGridLayout::apply_layout()
     _layout_dirty = false;
 }
 
-float UiGridLayout::aligned_offset(float cell_extent, float child_extent, LayoutAlign align) const
+float UiGridLayout::aligned_offset(float cell_extent, float child_extent, UiLayoutAlign align) const
 {
     switch (align)
     {
-    case LayoutAlign::Start:
+    case UiLayoutAlign::Start:
         return 0.0f;
-    case LayoutAlign::Center:
+    case UiLayoutAlign::Center:
         return (cell_extent - child_extent) * 0.5f;
-    case LayoutAlign::End:
+    case UiLayoutAlign::End:
         return cell_extent - child_extent;
     }
 

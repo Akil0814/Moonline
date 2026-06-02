@@ -6,7 +6,7 @@
 #include <memory>
 #include <vector>
 
-enum class LayoutAnchor
+enum class UiLayoutAnchor
 {
     TopLeft,
     TopCenter,
@@ -19,20 +19,20 @@ enum class LayoutAnchor
     BottomRight
 };
 
-enum class LayoutDirection
+enum class UiLayoutDirection
 {
     Horizontal,
     Vertical
 };
 
-enum class LayoutAlign
+enum class UiLayoutAlign
 {
     Start,
     Center,
     End
 };
 
-struct LayoutPadding
+struct UiLayoutPadding
 {
     float left = 0.0f;
     float top = 0.0f;
@@ -40,7 +40,7 @@ struct LayoutPadding
     float bottom = 0.0f;
 };
 
-struct LayoutMargin
+struct UiLayoutMargin
 {
     float left = 0.0f;
     float top = 0.0f;
@@ -48,10 +48,10 @@ struct LayoutMargin
     float bottom = 0.0f;
 };
 
-struct LayoutChildOptions
+struct UiLayoutChildOptions
 {
-    LayoutMargin _margin;
-    LayoutAlign _cross_align = LayoutAlign::Start;
+    UiLayoutMargin _margin;
+    UiLayoutAlign _cross_align = UiLayoutAlign::Start;
     Vector2 _size_override{ 0.0f, 0.0f };
 
     bool _use_custom_cross_align = false;
@@ -59,26 +59,26 @@ struct LayoutChildOptions
     bool _use_size_override = false;
 };
 
-struct UILayoutTransform
+struct UiLayoutTransform
 {
     Vector2 translation{ 0.0f, 0.0f };
     Vector2 scale{ 1.0f, 1.0f };
 };
 
-class UILayout : public UiElement
+class UiLayout : public UiElement
 {
 public:
-    explicit UILayout(Vector2 position = Vector2::zero(), Vector2 size = Vector2::zero(), int order = 0);
+    explicit UiLayout(Vector2 position = Vector2::zero(), Vector2 size = Vector2::zero(), int order = 0);
 
     void set_world_position(const Vector2& position);
     void set_size(const Vector2& size);
 
     void add_child(const std::shared_ptr<GameObject>& child);
-    void add_child(const std::shared_ptr<GameObject>& child, const LayoutChildOptions& options);
+    void add_child(const std::shared_ptr<GameObject>& child, const UiLayoutChildOptions& options);
     bool remove_child(const GameObject* child);
     void clear_children();
-    bool set_child_options(const GameObject* child, const LayoutChildOptions& options);
-    bool try_get_child_options(const GameObject* child, LayoutChildOptions& out_options) const;
+    bool set_child_options(const GameObject* child, const UiLayoutChildOptions& options);
+    bool try_get_child_options(const GameObject* child, UiLayoutChildOptions& out_options) const;
 
     [[nodiscard]] size_t child_count() const;
 
@@ -86,20 +86,20 @@ public:
     [[nodiscard]] float spacing() const;
 
     void set_padding(float left, float top, float right, float bottom);
-    void set_padding(const LayoutPadding& padding);
-    [[nodiscard]] const LayoutPadding& padding() const;
+    void set_padding(const UiLayoutPadding& padding);
+    [[nodiscard]] const UiLayoutPadding& padding() const;
 
-    void set_anchor(LayoutAnchor anchor);
-    [[nodiscard]] LayoutAnchor anchor() const;
+    void set_anchor(UiLayoutAnchor anchor);
+    [[nodiscard]] UiLayoutAnchor anchor() const;
 
-    void set_direction(LayoutDirection direction);
-    [[nodiscard]] LayoutDirection direction() const;
+    void set_direction(UiLayoutDirection direction);
+    [[nodiscard]] UiLayoutDirection direction() const;
 
-    void set_cross_align(LayoutAlign align);
-    [[nodiscard]] LayoutAlign cross_align() const;
+    void set_cross_align(UiLayoutAlign align);
+    [[nodiscard]] UiLayoutAlign cross_align() const;
 
-    void set_transform(const UILayoutTransform& transform);
-    [[nodiscard]] const UILayoutTransform& transform() const;
+    void set_transform(const UiLayoutTransform& transform);
+    [[nodiscard]] const UiLayoutTransform& transform() const;
 
     void set_transform_translation(const Vector2& translation);
     [[nodiscard]] const Vector2& transform_translation() const;
@@ -133,7 +133,7 @@ private:
         Vector2 _base_size{ 0.0f, 0.0f };
         Vector2 _applied_size{ -1.0f, -1.0f };
         Vector2 _local_position{ 0.0f, 0.0f };
-        LayoutChildOptions _options;
+        UiLayoutChildOptions _options;
     };
 
 private:
@@ -156,7 +156,7 @@ private:
     [[nodiscard]] float cross_axis_offset(
         float content_extent,
         float child_extent,
-        LayoutAlign align
+        UiLayoutAlign align
     ) const;
     void apply_theme(const UiTheme& theme) override;
 
@@ -164,11 +164,11 @@ private:
     std::vector<LayoutChild> _children;
 
     float _spacing = 0.0f;
-    LayoutPadding _padding;
-    LayoutAnchor _anchor = LayoutAnchor::TopLeft;
-    LayoutDirection _direction = LayoutDirection::Vertical;
-    LayoutAlign _cross_align = LayoutAlign::Start;
-    UILayoutTransform _transform;
+    UiLayoutPadding _padding;
+    UiLayoutAnchor _anchor = UiLayoutAnchor::TopLeft;
+    UiLayoutDirection _direction = UiLayoutDirection::Vertical;
+    UiLayoutAlign _cross_align = UiLayoutAlign::Start;
+    UiLayoutTransform _transform;
     Vector2 _content_offset{ 0.0f, 0.0f };
 
     bool _auto_width = false;

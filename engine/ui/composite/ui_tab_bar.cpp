@@ -19,9 +19,9 @@ UiTabBar::UiTabBar(Vector2 position, Vector2 size, int order)
 void UiTabBar::reset()
 {
     UiPanel::reset();
-    set_direction(LayoutDirection::Horizontal);
-    set_anchor(LayoutAnchor::TopLeft);
-    set_cross_align(LayoutAlign::Center);
+    set_direction(UiLayoutDirection::Horizontal);
+    set_anchor(UiLayoutAnchor::TopLeft);
+    set_cross_align(UiLayoutAlign::Center);
     set_spacing(12.0f);
     set_padding({ 8.0f, 8.0f, 8.0f, 8.0f });
     set_draw_background(false);
@@ -241,7 +241,7 @@ void UiTabBar::rebuild_tabs()
             UiStyle::apply_button(*button, _button_style);
         }
 
-        LayoutChildOptions options;
+        UiLayoutChildOptions options;
         options._use_size_override = true;
         options._size_override = _tab_size;
         add_child(button, options);

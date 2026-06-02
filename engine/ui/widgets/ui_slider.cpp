@@ -182,18 +182,18 @@ UiSliderOrientation UiSlider::orientation() const
     return _orientation;
 }
 
-void UiSlider::set_bar_style(const Bar& style_source)
+void UiSlider::copy_bar_appearance_from(const UiBar& style_source)
 {
     _bar = style_source;
     sync_value_label();
 }
 
-Bar& UiSlider::bar()
+UiBar& UiSlider::bar()
 {
     return _bar;
 }
 
-const Bar& UiSlider::bar() const
+const UiBar& UiSlider::bar() const
 {
     return _bar;
 }

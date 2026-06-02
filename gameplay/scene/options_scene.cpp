@@ -52,9 +52,9 @@ void OptionsScene::reset()
         _screen->reset();
         _screen->set_world_position({ 0.0f, 0.0f });
         _screen->set_size({ 1280.0f, 720.0f });
-        _screen->set_direction(LayoutDirection::Vertical);
-        _screen->set_anchor(LayoutAnchor::Center);
-        _screen->set_cross_align(LayoutAlign::Center);
+        _screen->set_direction(UiLayoutDirection::Vertical);
+        _screen->set_anchor(UiLayoutAnchor::Center);
+        _screen->set_cross_align(UiLayoutAlign::Center);
         _screen->set_spacing(16.0f);
         _screen->set_padding({ 110.0f, 88.0f, 110.0f, 88.0f });
         _screen->set_transition_enabled(true);
@@ -130,15 +130,15 @@ void OptionsScene::reset()
     {
         _screen->clear_focusable_controls();
 
-        LayoutChildOptions centered_options;
+        UiLayoutChildOptions centered_options;
         centered_options._use_custom_cross_align = true;
-        centered_options._cross_align = LayoutAlign::Center;
+        centered_options._cross_align = UiLayoutAlign::Center;
 
-        LayoutChildOptions list_options = centered_options;
+        UiLayoutChildOptions list_options = centered_options;
         list_options._margin.top = 16.0f;
         list_options._margin.bottom = 12.0f;
 
-        LayoutChildOptions footer_options = centered_options;
+        UiLayoutChildOptions footer_options = centered_options;
         footer_options._margin.top = 8.0f;
 
         _screen->add_child(_title_label, centered_options);
@@ -208,7 +208,7 @@ void OptionsScene::rebuild_options()
     };
 
     _option_list->set_items(items);
-    _option_list->set_selected_row_index(0);
+    _option_list->set_selected_index(0);
 }
 
 void OptionsScene::on_option_value_changed(

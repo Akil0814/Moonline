@@ -84,8 +84,8 @@ public:
     void clear_items();
 
     [[nodiscard]] size_t item_count() const;
-    [[nodiscard]] int selected_row_index() const;
-    void set_selected_row_index(int index);
+    [[nodiscard]] int selected_index() const;
+    void set_selected_index(int index);
     [[nodiscard]] const UiOptionListItem* selected_item() const;
 
     bool set_item_enabled(int index, bool enabled);
@@ -134,7 +134,7 @@ private:
     UiOptionListStyle _style;
     UiOptionValueChangedCallback _on_value_changed;
 
-    int _selected_row_index = -1;
+    int _selected_index = -1;
     bool _enabled = true;
     bool _is_focused = false;
     bool _was_mouse_down = false;

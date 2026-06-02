@@ -26,7 +26,7 @@ UiButton::UiButton(Vector2 position, Vector2 size, SDL_Texture* texture_message,
     SDL_Color color_idle, SDL_Color color_hovered, SDL_Color color_pushed, SDL_Color color_frame, int order)
     : UiButton(position, size, texture_message, sound_effect_down, sound_effect_up, order)
 {
-    set_state_colors(color_idle, color_hovered, color_pushed, color_frame);
+    set_local_state_colors(color_idle, color_hovered, color_pushed, color_frame);
 }
 
 UiButton::UiButton(Vector2 position, Vector2 size, SDL_Texture* texture_message,
@@ -248,17 +248,12 @@ UiButton::Status UiButton::status() const
     return _status;
 }
 
-UiButton::Status UiButton::get_status() const
-{
-    return status();
-}
-
 void UiButton::set_message_texture(SDL_Texture* new_texture_message)
 {
     _texture_message = new_texture_message;
 }
 
-void UiButton::set_state_colors(
+void UiButton::set_local_state_colors(
     SDL_Color color_idle,
     SDL_Color color_hovered,
     SDL_Color color_pushed,
@@ -274,7 +269,7 @@ void UiButton::set_state_colors(
     );
 }
 
-void UiButton::set_state_textures(
+void UiButton::set_local_state_textures(
     SDL_Texture* texture_idle,
     SDL_Texture* texture_hovered,
     SDL_Texture* texture_pushed
@@ -288,7 +283,7 @@ void UiButton::set_state_textures(
     );
 }
 
-void UiButton::set_theme_state_colors(
+void UiButton::set_themed_state_colors(
     SDL_Color color_idle,
     SDL_Color color_hovered,
     SDL_Color color_pushed,
@@ -304,7 +299,7 @@ void UiButton::set_theme_state_colors(
     );
 }
 
-void UiButton::set_theme_state_textures(
+void UiButton::set_themed_state_textures(
     SDL_Texture* texture_idle,
     SDL_Texture* texture_hovered,
     SDL_Texture* texture_pushed

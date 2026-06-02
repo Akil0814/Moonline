@@ -23,12 +23,12 @@ public:
     [[nodiscard]] float horizontal_spacing() const;
     [[nodiscard]] float vertical_spacing() const;
 
-    void set_padding(const LayoutPadding& padding);
-    [[nodiscard]] const LayoutPadding& padding() const;
+    void set_padding(const UiLayoutPadding& padding);
+    [[nodiscard]] const UiLayoutPadding& padding() const;
 
-    void set_cell_align(LayoutAlign horizontal_align, LayoutAlign vertical_align);
-    [[nodiscard]] LayoutAlign horizontal_align() const;
-    [[nodiscard]] LayoutAlign vertical_align() const;
+    void set_cell_align(UiLayoutAlign horizontal_align, UiLayoutAlign vertical_align);
+    [[nodiscard]] UiLayoutAlign horizontal_align() const;
+    [[nodiscard]] UiLayoutAlign vertical_align() const;
 
     void on_update(double delta) override;
     void on_render(SDL_Renderer* renderer) override;
@@ -41,12 +41,12 @@ public:
 private:
     void mark_dirty();
     void apply_layout();
-    [[nodiscard]] float aligned_offset(float cell_extent, float child_extent, LayoutAlign align) const;
+    [[nodiscard]] float aligned_offset(float cell_extent, float child_extent, UiLayoutAlign align) const;
     void apply_theme(const UiTheme& theme) override;
 
 private:
     std::vector<std::shared_ptr<GameObject>> _children;
-    LayoutPadding _padding;
+    UiLayoutPadding _padding;
 
     float _horizontal_spacing = 0.0f;
     float _vertical_spacing = 0.0f;
@@ -55,6 +55,6 @@ private:
 
     bool _layout_dirty = true;
 
-    LayoutAlign _horizontal_align = LayoutAlign::Start;
-    LayoutAlign _vertical_align = LayoutAlign::Start;
+    UiLayoutAlign _horizontal_align = UiLayoutAlign::Start;
+    UiLayoutAlign _vertical_align = UiLayoutAlign::Start;
 };

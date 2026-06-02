@@ -52,9 +52,9 @@ void UiFormsDemoScene::reset()
         _screen->reset();
         _screen->set_world_position({ 0.0f, 0.0f });
         _screen->set_size({ 1280.0f, 720.0f });
-        _screen->set_direction(LayoutDirection::Vertical);
-        _screen->set_anchor(LayoutAnchor::Center);
-        _screen->set_cross_align(LayoutAlign::Center);
+        _screen->set_direction(UiLayoutDirection::Vertical);
+        _screen->set_anchor(UiLayoutAnchor::Center);
+        _screen->set_cross_align(UiLayoutAlign::Center);
         _screen->set_spacing(20.0f);
         _screen->set_padding({ 92.0f, 84.0f, 92.0f, 84.0f });
         _screen->set_transition_enabled(true);
@@ -107,7 +107,7 @@ void UiFormsDemoScene::reset()
         _form_grid->set_column_count(2);
         _form_grid->set_cell_spacing(20.0f, 16.0f);
         _form_grid->set_padding({ 24.0f, 24.0f, 24.0f, 24.0f });
-        _form_grid->set_cell_align(LayoutAlign::Start, LayoutAlign::Center);
+        _form_grid->set_cell_align(UiLayoutAlign::Start, UiLayoutAlign::Center);
     }
 
     rebuild_form();
@@ -116,11 +116,11 @@ void UiFormsDemoScene::reset()
     {
         _screen->clear_focusable_controls();
 
-        LayoutChildOptions centered_options;
+        UiLayoutChildOptions centered_options;
         centered_options._use_custom_cross_align = true;
-        centered_options._cross_align = LayoutAlign::Center;
+        centered_options._cross_align = UiLayoutAlign::Center;
 
-        LayoutChildOptions grid_options = centered_options;
+        UiLayoutChildOptions grid_options = centered_options;
         grid_options._margin.top = 18.0f;
         grid_options._margin.bottom = 12.0f;
 

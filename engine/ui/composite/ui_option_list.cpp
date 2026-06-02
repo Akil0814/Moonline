@@ -12,7 +12,7 @@ UiOptionList::UiOptionList(Vector2 position, Vector2 size, int order)
     : UiScrollPanel(position, size, order)
 {
     set_panel_theme_role(UiPanelThemeRole::List);
-    set_direction(LayoutDirection::Vertical);
+    set_direction(UiLayoutDirection::Vertical);
     set_allow_horizontal_scroll(false);
     set_allow_vertical_scroll(true);
     set_clamp_scroll(true);
@@ -45,7 +45,7 @@ void UiOptionList::on_input(const InputSnapshot& input)
 
             if (SDL_PointInRect(&point, &_rows[index]._panel->rect()) == SDL_TRUE)
             {
-                set_selected_row_index(static_cast<int>(index));
+                set_selected_index(static_cast<int>(index));
                 break;
             }
         }
@@ -66,7 +66,7 @@ void UiOptionList::reset()
 {
     UiScrollPanel::reset();
     set_panel_theme_role(UiPanelThemeRole::List);
-    set_direction(LayoutDirection::Vertical);
+    set_direction(UiLayoutDirection::Vertical);
     set_allow_horizontal_scroll(false);
     set_allow_vertical_scroll(true);
     set_clamp_scroll(true);
@@ -75,7 +75,7 @@ void UiOptionList::reset()
     _font_key = "ui.default";
     _style = UiOptionListStyle{};
     _on_value_changed = nullptr;
-    _selected_row_index = -1;
+    _selected_index = -1;
     _enabled = true;
     _is_focused = false;
     _was_mouse_down = false;
@@ -99,7 +99,7 @@ void UiOptionList::clear_items()
 {
     _items.clear();
     _rows.clear();
-    _selected_row_index = -1;
+    _selected_index = -1;
     clear_children();
     set_scroll_offset(Vector2::zero());
 }
@@ -109,16 +109,16 @@ size_t UiOptionList::item_count() const
     return _items.size();
 }
 
-int UiOptionList::selected_row_index() const
+int UiOptionList::selected_index() const
 {
-    return _selected_row_index;
+    return _selected_index;
 }
 
-void UiOptionList::set_selected_row_index(int index)
+void UiOptionList::set_selected_index(int index)
 {
     if (_items.empty())
     {
-        _selected_row_index = -1;
+        _selected_index = -1;
         sync_row_visuals();
         sync_row_focus();
         return;
@@ -131,31 +131,31 @@ void UiOptionList::set_selected_row_index(int index)
         clamped_index = (clamped_index + 1) % static_cast<int>(_items.size());
         if (clamped_index == start_index)
         {
-            _selected_row_index = -1;
+            _selected_index = -1;
             sync_row_visuals();
             sync_row_focus();
             return;
         }
     }
 
-    _selected_row_index = clamped_index;
+    _selected_index = clamped_index;
     sync_row_visuals();
     sync_row_focus();
 
-    if (_selected_row_index >= 0 && _selected_row_index < static_cast<int>(_rows.size()))
+    if (_selected_index >= 0 && _selected_index < static_cast<int>(_rows.size()))
     {
-        ensure_child_visible(_rows[static_cast<size_t>(_selected_row_index)]._panel.get());
+        ensure_child_visible(_rows[static_cast<size_t>(_selected_index)]._panel.get());
     }
 }
 
 const UiOptionListItem* UiOptionList::selected_item() const
 {
-    if (_selected_row_index < 0 || _selected_row_index >= static_cast<int>(_items.size()))
+    if (_selected_index < 0 || _selected_index >= static_cast<int>(_items.size()))
     {
         return nullptr;
     }
 
-    return &_items[static_cast<size_t>(_selected_row_index)];
+    return &_items[static_cast<size_t>(_selected_index)];
 }
 
 bool UiOptionList::set_item_enabled(int index, bool enabled)
@@ -280,19 +280,19 @@ bool UiOptionList::handle_focused_input_event(const InputEvent& event)
     switch (event.action)
     {
     case InputAction::Up:
-        set_selected_row_index(_selected_row_index - 1);
+        set_selected_index(_selected_index - 1);
         return true;
 
     case InputAction::Down:
-        set_selected_row_index(_selected_row_index + 1);
+        set_selected_index(_selected_index + 1);
         return true;
 
     case InputAction::Left:
     case InputAction::Right:
     case InputAction::Confirm:
-        if (_selected_row_index >= 0 && _selected_row_index < static_cast<int>(_rows.size()))
+        if (_selected_index >= 0 && _selected_index < static_cast<int>(_rows.size()))
         {
-            RowWidgets& row = _rows[static_cast<size_t>(_selected_row_index)];
+            RowWidgets& row = _rows[static_cast<size_t>(_selected_index)];
             if (row._control && row._control->handle_focused_input_event(event))
             {
                 sync_row_visuals();
@@ -335,8 +335,8 @@ void UiOptionList::rebuild_rows()
         RowWidgets row;
 
         row._panel = std::make_shared<UiPanel>(Vector2::zero(), _style._row_size);
-        row._panel->set_direction(LayoutDirection::Horizontal);
-        row._panel->set_cross_align(LayoutAlign::Center);
+        row._panel->set_direction(UiLayoutDirection::Horizontal);
+        row._panel->set_cross_align(UiLayoutAlign::Center);
         row._panel->set_spacing(16.0f);
         row._panel->set_padding({ 18.0f, 12.0f, 18.0f, 12.0f });
 
@@ -348,7 +348,7 @@ void UiOptionList::rebuild_rows()
         row._label->set_horizontal_align(TextHorizontalAlign::Left);
         row._label->set_vertical_align(TextVerticalAlign::Center);
 
-        LayoutChildOptions label_options;
+        UiLayoutChildOptions label_options;
         label_options._use_size_override = true;
         label_options._size_override = row._label->size();
         label_options._fill_cross_axis = true;
@@ -398,15 +398,15 @@ void UiOptionList::rebuild_rows()
             row._control = toggle;
         }
 
-        LayoutChildOptions control_options;
+        UiLayoutChildOptions control_options;
         control_options._use_size_override = true;
         control_options._size_override = _style._control_size;
         control_options._use_custom_cross_align = true;
-        control_options._cross_align = LayoutAlign::Center;
+        control_options._cross_align = UiLayoutAlign::Center;
 
         row._panel->add_child(row._control_object, control_options);
 
-        LayoutChildOptions row_options;
+        UiLayoutChildOptions row_options;
         row_options._use_size_override = true;
         row_options._size_override = _style._row_size;
         add_child(row._panel, row_options);
@@ -416,17 +416,17 @@ void UiOptionList::rebuild_rows()
 
     if (_items.empty())
     {
-        _selected_row_index = -1;
+        _selected_index = -1;
         set_scroll_offset(Vector2::zero());
         return;
     }
 
-    if (_selected_row_index < 0 || _selected_row_index >= static_cast<int>(_items.size()))
+    if (_selected_index < 0 || _selected_index >= static_cast<int>(_items.size()))
     {
-        _selected_row_index = 0;
+        _selected_index = 0;
     }
 
-    set_selected_row_index(_selected_row_index);
+    set_selected_index(_selected_index);
 }
 
 void UiOptionList::apply_theme(const UiTheme& theme)
@@ -453,7 +453,7 @@ void UiOptionList::sync_row_visuals()
         }
 
         const UiOptionListItem& item = _items[index];
-        const bool is_selected = static_cast<int>(index) == _selected_row_index;
+        const bool is_selected = static_cast<int>(index) == _selected_index;
         const bool is_enabled = _enabled && item._enabled;
 
         PanelStyle panel_style;
@@ -487,7 +487,7 @@ void UiOptionList::sync_row_focus()
             continue;
         }
 
-        const bool is_selected = static_cast<int>(index) == _selected_row_index;
+        const bool is_selected = static_cast<int>(index) == _selected_index;
         const bool is_enabled = _enabled && _items[index]._enabled;
         _rows[index]._control->set_enabled(is_enabled);
         _rows[index]._control->set_focused(is_enabled && _is_focused && is_selected);
@@ -516,7 +516,7 @@ void UiOptionList::handle_row_click(UiFocusable* control)
     {
         if (_rows[index]._control.get() == control)
         {
-            set_selected_row_index(static_cast<int>(index));
+            set_selected_index(static_cast<int>(index));
             return;
         }
     }

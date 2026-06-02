@@ -9,7 +9,7 @@
 
 struct UiTheme;
 
-class UiPanel : public UILayout
+class UiPanel : public UiLayout
 {
 public:
     explicit UiPanel(Vector2 position = Vector2::zero(), Vector2 size = Vector2::zero(), int order = 0);

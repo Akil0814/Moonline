@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../bar.h"
+#include "../ui_bar.h"
 #include "../widgets/ui_button.h"
 #include "../containers/ui_panel.h"
 #include "../widgets/ui_label.h"
@@ -99,7 +99,7 @@ public:
     static void apply_button(UiButton& button, const ButtonStyle& style);
     static void apply_label(UiLabel& label, const LabelStyle& style);
     static void apply_panel(UiPanel& panel, const PanelStyle& style);
-    static void apply_bar(Bar& bar, const BarStyle& style);
+    static void apply_bar(UiBar& bar, const BarStyle& style);
     static void apply_scroll_bar(UiScrollBar& scroll_bar, const ScrollBarStyle& style);
     static void apply_slider(UiSlider& slider, const SliderStyle& style);
     static void apply_toggle(UiToggle& toggle, const ToggleStyle& style);
