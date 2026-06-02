@@ -26,6 +26,7 @@ class UiDialog : public UiScreen
 public:
     explicit UiDialog(Vector2 position = Vector2::zero(), Vector2 size = Vector2::zero(), int order = 0);
 
+    void on_update(double delta) override;
     void on_input_event(const InputEvent& event) override;
     void reset() override;
 
@@ -64,4 +65,5 @@ private:
     std::shared_ptr<UiLabel> _message_label;
     std::shared_ptr<UiMenuList> _action_list;
     std::shared_ptr<UiScrollBar> _action_scroll_bar;
+    bool _suppress_input_until_next_update = false;
 };

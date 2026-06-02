@@ -48,5 +48,6 @@ private:
     std::vector<SDL_GameController*> _controllers;
 
     bool _active = { true };
+    bool _has_shutdown = false;
 
 };

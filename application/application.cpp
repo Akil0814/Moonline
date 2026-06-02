@@ -151,7 +151,16 @@ int  Application::run(int argc, char** argv)
 
 void Application::shutdown()
 {
+    if (_has_shutdown)
+    {
+        return;
+    }
+
+    _has_shutdown = true;
+
 	close_all_controllers();
+	SceneManager::instance()->shutdown();
+	ResourceManager::instance()->clear();
 }
 
 void Application::open_connected_controllers()

@@ -10,8 +10,19 @@ UiDialog::UiDialog(Vector2 position, Vector2 size, int order)
     reset();
 }
 
+void UiDialog::on_update(double delta)
+{
+    UiScreen::on_update(delta);
+    _suppress_input_until_next_update = false;
+}
+
 void UiDialog::on_input_event(const InputEvent& event)
 {
+    if (_suppress_input_until_next_update)
+    {
+        return;
+    }
+
     if (event.type == InputEventType::Pressed && event.action == InputAction::Cancel)
     {
         for (const UiDialogAction& action : _actions)
@@ -43,6 +54,7 @@ void UiDialog::reset()
     set_padding({ 28.0f, 24.0f, 28.0f, 24.0f });
     set_transition_enabled(false);
     set_open(false);
+    _suppress_input_until_next_update = false;
 
     if (_title_label)
     {
@@ -141,6 +153,7 @@ void UiDialog::set_on_action(UiDialogActionCallback on_action)
 
 void UiDialog::show_dialog()
 {
+    _suppress_input_until_next_update = true;
     open();
 }
 

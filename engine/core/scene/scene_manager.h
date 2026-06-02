@@ -25,6 +25,7 @@ public:
 		const std::vector<InputEvent>& events
 	);
 
+	void shutdown();
 	template<typename T, typename... Args>
 	void switch_to(Args&&... args);
 
