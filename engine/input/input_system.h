@@ -3,6 +3,10 @@
 #include "input_state.h"
 #include "input_types.h"
 
+#include "translator/gamepad_input_translator.h"
+#include "translator/keyboard_mouse_input_translator.h"
+#include "translator/input_translator.h"
+
 #include <SDL.h>
 #include <vector>
 
@@ -28,6 +32,7 @@ public:
 
 private:
     void translate_event(const SDL_Event& event);
+    const InputTranslator* select_translator(InputDevice device) const;
     void apply_event(const InputEvent& event);
     void append_event(const InputEvent& event);
     InputDevice detect_event_device(const SDL_Event& event) const;
@@ -42,6 +47,8 @@ private:
     InputContext _context = InputContext::Gameplay;
     InputDevice _current_device = InputDevice::Unknown;
     bool _device_switched_this_frame = false;
+    KeyboardMouseInputTranslator _keyboard_mouse_translator;
+    GamepadInputTranslator _gamepad_translator;
     float _left_stick_x = 0.0f;
     float _left_stick_y = 0.0f;
     float _gamepad_scroll_accumulator = 0.0f;

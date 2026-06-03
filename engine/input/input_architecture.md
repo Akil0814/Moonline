@@ -47,11 +47,26 @@
 
 ## 3. `InputTranslator`：把 SDL 事件翻译成项目事件
 
-`InputTranslator` 是一个 `Singleton`，只做一件事：
+`InputTranslator` 现在是一个虚基类，对外只定义一件事：
 
 - `translate_event(const SDL_Event&) -> std::vector<InputEvent>`
 
-也就是说，它不保存帧状态，不负责分发，只负责“翻译”。
+当前有两个具体实现：
+
+- `KeyboardMouseInputTranslator`
+- `GamepadInputTranslator`
+
+而“当前该用哪个 translator”这件事不再放在 `InputTranslator` 内部，而是交给 `InputSystem` 根据当前输入设备模式自动选择：
+
+- 当前设备是 `Keyboard` 或 `Mouse` 时，走 `KeyboardMouseInputTranslator`
+- 当前设备是 `Gamepad` 时，走 `GamepadInputTranslator`
+- `SDL_QUIT` 这类全局事件由 `InputSystem` 自己直接补成统一 `InputEvent`
+
+这样职责会更清楚：
+
+- `InputTranslator` 只描述翻译接口
+- 各个具体 translator 只实现设备自己的翻译规则
+- `InputSystem` 负责输入模式判断和 translator 路由
 
 ### 当前映射规则
 
@@ -104,11 +119,14 @@
 - 一个 SDL 事件可以翻译成多个 `InputEvent`。
 - 例如手柄 `A` 会同时发出 `Confirm` 和 `Jump`。
 
-#### 文本与退出
+#### 文本输入
 
 - `SDL_TEXTINPUT` -> `TextInput`
 - `SDL_TEXTEDITING` -> `TextEditing`
-- `SDL_QUIT` -> `InputAction::Exit` + `Pressed`
+
+退出事件现在不由具体 translator 处理，而是由 `InputSystem` 直接把 `SDL_QUIT` 补成：
+
+- `InputAction::Exit` + `Pressed`
 
 ## 4. `InputSystem`：真正的帧级输入管理器
 
@@ -463,4 +481,3 @@
 2. 给手柄左摇杆增加方向动作或导航动作翻译，而不只生成滚轮。
 3. 把按键映射从硬编码 `switch` 提取成可配置绑定。
 4. 如果 UI 统一化程度还要提高，可以考虑把鼠标位置/点击语义进一步纳入输入系统，而不是分散在 UI 鼠标工具中。
-

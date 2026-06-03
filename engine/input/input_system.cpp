@@ -1,5 +1,4 @@
 #include "input_system.h"
-#include "input_translator.h"
 
 #include <algorithm>
 #include <cmath>
@@ -81,12 +80,39 @@ InputContext InputSystem::context() const
 
 void InputSystem::translate_event(const SDL_Event& event)
 {
-    std::vector<InputEvent> input_events = InputTranslator::instance()->translate_event(event);
+    if (event.type == SDL_QUIT)
+    {
+        append_event({ InputAction::Exit, InputEventType::Pressed, InputDevice::Unknown });
+        return;
+    }
+
+    const InputTranslator* translator = select_translator(_current_device);
+    if (!translator)
+    {
+        return;
+    }
+
+    std::vector<InputEvent> input_events = translator->translate_event(event);
 
     for (const InputEvent& input_event : input_events)
     {
         append_event(input_event);
     }
+}
+
+const InputTranslator* InputSystem::select_translator(InputDevice device) const
+{
+    if (device == InputDevice::Gamepad)
+    {
+        return &_gamepad_translator;
+    }
+
+    if (is_keyboard_or_mouse(device))
+    {
+        return &_keyboard_mouse_translator;
+    }
+
+    return nullptr;
 }
 
 void InputSystem::apply_event(const InputEvent& event)
