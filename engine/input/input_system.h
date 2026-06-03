@@ -2,6 +2,8 @@
 
 #include "input_state.h"
 #include "input_types.h"
+#include "input_device_tracker.h"
+#include "ui_gamepad_scroll_synthesizer.h"
 
 #include "translator/gamepad_input_translator.h"
 #include "translator/keyboard_mouse_input_translator.h"
@@ -35,21 +37,14 @@ private:
     const InputTranslator* select_translator(InputDevice device) const;
     void apply_event(const InputEvent& event);
     void append_event(const InputEvent& event);
-    InputDevice detect_event_device(const SDL_Event& event) const;
-    bool is_keyboard_or_mouse(InputDevice device) const;
-    void update_controller_axis_state(const SDL_Event& event);
-    void emit_ui_gamepad_scroll();
-    void reset_gamepad_scroll_state();
+    void append_synthesized_event();
 
 private:
     InputState _state;
     std::vector<InputEvent> _events;
     InputContext _context = InputContext::Gameplay;
-    InputDevice _current_device = InputDevice::Unknown;
-    bool _device_switched_this_frame = false;
+    InputDeviceTracker _device_tracker;
+    UiGamepadScrollSynthesizer _ui_gamepad_scroll_synthesizer;
     KeyboardMouseInputTranslator _keyboard_mouse_translator;
     GamepadInputTranslator _gamepad_translator;
-    float _left_stick_x = 0.0f;
-    float _left_stick_y = 0.0f;
-    float _gamepad_scroll_accumulator = 0.0f;
 };

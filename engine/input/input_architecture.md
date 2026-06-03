@@ -130,11 +130,12 @@
 
 ## 4. `InputSystem`：真正的帧级输入管理器
 
-`InputSystem` 是 `engine/input` 的核心协调层。它把三个事情串起来：
+`InputSystem` 仍然是 `engine/input` 的核心协调层，但现在它更偏向门面和调度层。它把这几件事串起来：
 
 1. 帧生命周期管理
 2. SDL 事件处理
 3. 当前帧快照与事件列表输出
+4. 把输入职责委派给更小的 helper
 
 它内部主要维护这些成员：
 
@@ -144,14 +145,12 @@
   - 当前帧收集到的 `InputEvent` 列表。
 - `_context`
   - 当前输入上下文。
-- `_current_device`
-  - 当前活跃设备。
-- `_device_switched_this_frame`
-  - 本帧是否刚切换设备。
-- `_left_stick_x / _left_stick_y`
-  - 手柄左摇杆轴值缓存。
-- `_gamepad_scroll_accumulator`
-  - 把摇杆连续输入累积成离散滚轮步进时使用。
+- `_device_tracker`
+  - `InputDeviceTracker`，负责当前设备识别、切换和切换结果。
+- `_ui_gamepad_scroll_synthesizer`
+  - `UiGamepadScrollSynthesizer`，负责把手柄左摇杆合成为 UI 滚轮事件。
+- `_keyboard_mouse_translator / _gamepad_translator`
+  - 设备对应的 translator 实例。
 
 ### 4.1 帧开始：`begin_frame()`
 
@@ -171,13 +170,11 @@
 
 每拿到一个 `SDL_Event`，`InputSystem` 会做这些事：
 
-1. `update_controller_axis_state(event)`
-   - 如果是 `SDL_CONTROLLERAXISMOTION`，先缓存左摇杆的 X/Y。
-2. `detect_event_device(event)`
-   - 判断这次事件来自键盘、鼠标还是手柄。
-3. 维护 `_current_device`
-   - 第一次输入会直接确定当前设备。
-   - 键鼠和手柄切换时会清理部分状态，避免旧设备残留状态污染新设备。
+1. `_ui_gamepad_scroll_synthesizer.process_event(event)`
+   - 如果是 `SDL_CONTROLLERAXISMOTION`，先更新左摇杆轴缓存。
+2. `_device_tracker.process_event(event)`
+   - 判断事件来自哪种设备，并计算这次切换应该带来的后果。
+3. 如果切换结果要求清理状态或重置手柄滚动状态，`InputSystem` 会执行这些重置。
 4. `translate_event(event)`
    - 交给 `InputTranslator` 做 SDL -> `InputEvent` 翻译。
 5. `append_event(event)`
@@ -189,6 +186,8 @@
 - 一份适合逐次处理的 `std::vector<InputEvent>`
 
 ### 4.3 设备切换策略
+
+这块现在主要由 `InputDeviceTracker` 负责。
 
 当前设备切换逻辑比较明确：
 
@@ -212,9 +211,9 @@
 
 `end_frame()` 目前只做一件事：
 
-- `emit_ui_gamepad_scroll()`
+- `append_synthesized_event()`
 
-这部分是当前实现里最“带业务语义”的地方之一。
+它会向 `UiGamepadScrollSynthesizer` 请求一个补出来的 UI 滚轮事件，再把这个事件追加回统一输入流。
 
 ### 5.1 它什么时候生效
 
@@ -248,8 +247,8 @@
 
 现在它只做两件事：
 
-- 在 `process_event()` 里缓存轴值
-- 在 `end_frame()` 且 `UI` 上下文下，把它转成滚轮事件
+- 在 `process_event()` 里通过 `UiGamepadScrollSynthesizer` 缓存轴值
+- 在 `end_frame()` 且 `UI` 上下文下，通过 `UiGamepadScrollSynthesizer` 把它转成滚轮事件
 
 也就是说：
 
@@ -463,7 +462,9 @@
 
 - `input_types.h` 定义统一输入语义
 - `InputTranslator` 负责 SDL 事件到项目事件的翻译
-- `InputSystem` 负责帧生命周期、设备切换、状态缓存、事件收集
+- `InputSystem` 负责帧生命周期、调度 helper、状态缓存、事件收集
+- `InputDeviceTracker` 负责输入设备识别与切换状态
+- `UiGamepadScrollSynthesizer` 负责左摇杆到 UI 滚轮事件的合成
 - `Application` 在主循环里驱动输入采集
 - `Scene` 再把“状态快照 + 离散事件”双通道分发给对象和 UI
 

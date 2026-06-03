@@ -103,7 +103,7 @@ private:
 
     SDL_Rect _obj_rect{ 0 };
 
-    DepthLayer _depth_layer = DepthLayer::Object;
+    DepthLayer _depth_layer = DepthLayer::Item;
     int _order_in_layer = 0;
 
     bool _destroyed = false;

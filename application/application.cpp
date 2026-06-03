@@ -1,8 +1,5 @@
 #include "application.h"
 
-#include "../engine/ui/widgets/ui_progress_bar.h"//test
-#include "../engine/ui/ui_fade_image.h"//test
-
 #include "../engine/core/time.h"
 #include "../engine/core/scene/scene_manager.h"
 
@@ -91,7 +88,6 @@ bool Application::init(int argc, char** argv)
 	);
    
 	_input_system.set_context(InputContext::UI);
-	SceneManager::instance()->switch_to<MainMenuScene>();
 
     return true;
 }

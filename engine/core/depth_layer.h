@@ -4,9 +4,10 @@ enum class DepthLayer
 {
     Background,
     Terrain,
-    Object,
+    EffectBack,
+    Item,
     Character,
-    Effect,
-    UI,
+    EffectFront,
+    Foreground,
     Count
 };

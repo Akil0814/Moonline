@@ -2,7 +2,7 @@
 #include "animation_manager.h"
 
 Effect::Effect(std::string effect_key, std::string animation_key, std::unique_ptr<Animation> animation) 
-    :GameObject(DepthLayer::Effect),_effect_key(effect_key), _animation_key(animation_key), _animation(std::move(animation))
+    :GameObject(DepthLayer::EffectFront),_effect_key(effect_key), _animation_key(animation_key), _animation(std::move(animation))
 {}
 
 void Effect::on_render(SDL_Renderer* renderer)
