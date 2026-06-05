@@ -1,13 +1,13 @@
 #pragma once
 
-#include "../ui_bar.h"
+/*#include "../ui_bar.h"
 #include "../widgets/ui_button.h"
 #include "../containers/ui_panel.h"
 #include "../widgets/ui_label.h"
 #include "../widgets/ui_text_input.h"
 #include "../widgets/ui_slider.h"
 #include "../widgets/ui_scroll_bar.h"
-#include "../widgets/ui_toggle.h"
+#include "../widgets/ui_toggle.h"*/
 
 #include <SDL.h>
 
@@ -96,12 +96,12 @@ struct TextInputStyle
 class UiStyle
 {
 public:
-    static void apply_button(UiButton& button, const ButtonStyle& style);
+/*    static void apply_button(UiButton& button, const ButtonStyle& style);
     static void apply_label(UiLabel& label, const LabelStyle& style);
     static void apply_panel(UiPanel& panel, const PanelStyle& style);
     static void apply_bar(UiBar& bar, const BarStyle& style);
     static void apply_scroll_bar(UiScrollBar& scroll_bar, const ScrollBarStyle& style);
     static void apply_slider(UiSlider& slider, const SliderStyle& style);
     static void apply_toggle(UiToggle& toggle, const ToggleStyle& style);
-    static void apply_text_input(UiTextInput& text_input, const TextInputStyle& style);
+    static void apply_text_input(UiTextInput& text_input, const TextInputStyle& style);*/
 };

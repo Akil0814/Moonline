@@ -1,7 +1,10 @@
 #pragma once
 #include <SDL.h>
 #include <algorithm>
-#include "../tools/vector2.h"
+#include "geometry/vector2.h"
+#include "geometry/rect.h"
+
+#include "render/render_command.h"
 #include "depth_layer.h"
 #include "../input/input_system.h"
 
@@ -18,11 +21,8 @@ public:
     GameObject(GameObject&&) = default;
     GameObject& operator=(GameObject&&) = default;
 
-    virtual void on_update(double delta) {}
-    virtual void on_render(SDL_Renderer* renderer) {}
-
-    virtual void on_input(const InputSnapshot& input) {}
-    virtual void on_input_event(const InputEvent& event) {}
+    virtual void update(double delta) {}
+    void submit_render_commands(std::vector<RenderCommand>& out_commands) const;
 
     virtual void reset()
     {
@@ -89,19 +89,19 @@ public:
 private:
     void sync_rect()
     {
-        _obj_rect.x = static_cast<int>(_world_pos.x);
-        _obj_rect.y = static_cast<int>(_world_pos.y);
+        _obj_rect._x = static_cast<int>(_world_pos.x);
+        _obj_rect._y = static_cast<int>(_world_pos.y);
 
         const int width = static_cast<int>(_size.x);
         const int height = static_cast<int>(_size.y);
-        _obj_rect.w = width > 0 ? width : 0;
-        _obj_rect.h = height > 0 ? height : 0;
+        _obj_rect._w = width > 0 ? width : 0;
+        _obj_rect._h = height > 0 ? height : 0;
     }
 
     Vector2 _world_pos{ 0 , 0 };
     Vector2 _size { 0 , 0 };
 
-    SDL_Rect _obj_rect{ 0 };
+    Rect _obj_rect{ 0 };
 
     DepthLayer _depth_layer = DepthLayer::Item;
     int _order_in_layer = 0;

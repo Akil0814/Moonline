@@ -2,7 +2,6 @@
 
 #include "animation.h"
 #include "../core/game_object.h"
-#include "../tools/vector2.h"
 
 #include <memory>
 

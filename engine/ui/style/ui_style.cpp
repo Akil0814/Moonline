@@ -1,6 +1,6 @@
 #include "ui_style.h"
 
-void UiStyle::apply_button(UiButton& button, const ButtonStyle& style)
+/*void UiStyle::apply_button(UiButton& button, const ButtonStyle& style)
 {
     if (style._use_state_textures)
     {
@@ -87,4 +87,4 @@ void UiStyle::apply_text_input(UiTextInput& text_input, const TextInputStyle& st
     text_input.set_focused_border_color(style._focused_border_color);
     text_input.set_caret_color(style._caret_color);
     text_input.set_padding(style._padding);
-}
+}*/
