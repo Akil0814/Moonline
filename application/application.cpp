@@ -72,6 +72,7 @@ Application:: ~Application()
 bool Application::init(int argc, char** argv)
 {
 	init_assert(argc > 0 && argv && argv[0], "Application start path error");
+	//tmp
 	init_assert(
 		ResourceBootstrapper::instance()->bootstrap(argv[0], _renderer),
 		"Resource bootstrap error"

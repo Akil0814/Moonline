@@ -23,15 +23,10 @@ public:
     GameObject(GameObject&&) = default;
     GameObject& operator=(GameObject&&) = default;
 
-    virtual void update(double delta) { (void)delta; }
-
     virtual void submit_render_commands(std::vector<RenderCommand>& out_commands) const
     {
         (void)out_commands;
     }
-
-    virtual void on_input(const InputSnapshot& input) { (void)input; }
-    virtual void on_input_event(const InputEvent& event) { (void)event; }
 
     virtual void reset()
     {

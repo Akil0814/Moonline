@@ -6,9 +6,9 @@
 #include <memory>
 #include <vector>
 
-#include "../depth_layer.h"
-#include "../game_object.h"
-#include "../render/sdl_render_command_executor.h"
+#include "../core/depth_layer.h"
+#include "../core/game_object.h"
+#include "../core/render/sdl_render_command_executor.h"
 
 class Scene
 {
@@ -58,24 +58,6 @@ public:
 				render_commands.clear();
 				obj->submit_render_commands(render_commands);
 				execute_render_commands(renderer, render_commands);
-			}
-		}
-	}
-
-	virtual void submit_render_commands(std::vector<RenderCommand>& out_commands) const
-	{
-		for (const auto& layer : _object_layers)
-		{
-			const std::vector<std::shared_ptr<GameObject>> objects = layer;
-			for (const std::shared_ptr<GameObject>& obj : objects)
-			{
-				if (!obj || obj->is_destroyed())
-					continue;
-
-				if (!obj->is_visible())
-					continue;
-
-				obj->submit_render_commands(out_commands);
 			}
 		}
 	}

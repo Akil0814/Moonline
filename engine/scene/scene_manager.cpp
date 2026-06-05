@@ -21,12 +21,6 @@ void SceneManager::on_render(SDL_Renderer* renderer)
         _current_scene->on_render(renderer);
 }
 
-void SceneManager::submit_render_commands(std::vector<RenderCommand>& out_commands) const
-{
-    if (_current_scene)
-        _current_scene->submit_render_commands(out_commands);
-}
-
 void SceneManager::on_input(
     const InputSnapshot& input,
     const std::vector<InputEvent>& events
