@@ -1,5 +1,21 @@
 #include "animation.h"
 
+namespace
+{
+	SDL_Rect to_sdl_rect(const Rect& rect)
+	{
+		SDL_Rect sdl_rect{};
+		sdl_rect.x = static_cast<int>(rect.x());
+		sdl_rect.y = static_cast<int>(rect.y());
+
+		const int width = static_cast<int>(rect.width());
+		const int height = static_cast<int>(rect.height());
+		sdl_rect.w = width > 0 ? width : 0;
+		sdl_rect.h = height > 0 ? height : 0;
+		return sdl_rect;
+	}
+}
+
 Animation::Animation()
 {
 	_timer.set_one_shot(false);
@@ -28,31 +44,50 @@ Animation::Animation()
 		});
 }
 
-void Animation::render(SDL_Renderer* renderer, const SDL_Rect& target_rect, double angle_degrees) const
+void Animation::render(SDL_Renderer* renderer, const Rect& target_rect, double angle_degrees) const
 {
 	const FrameInfo* frame_info = current_frame();
 	if (!frame_info || !frame_info->_texture)
 		return;
 
-	SDL_Rect destination_rect = target_rect;
+	SDL_Rect destination_rect = to_sdl_rect(target_rect);
 	SDL_Point center_point{ destination_rect.w / 2, destination_rect.h / 2 };
 	SDL_RenderCopyEx(renderer, frame_info->_texture, nullptr, &destination_rect, angle_degrees, &center_point, SDL_FLIP_NONE);
 }
 
-void Animation::render(SDL_Renderer* renderer, const SDL_Point& target_position, double angle_degrees) const
+void Animation::render(SDL_Renderer* renderer, const Vector2& target_position, double angle_degrees) const
 {
 	const FrameInfo* frame_info = current_frame();
 	if (!frame_info || !frame_info->_texture)
 		return;
 
 	SDL_Rect destination_rect{};
-	destination_rect.x = target_position.x;
-	destination_rect.y = target_position.y;
+	destination_rect.x = static_cast<int>(target_position.x);
+	destination_rect.y = static_cast<int>(target_position.y);
 	destination_rect.w = frame_info->_width;
 	destination_rect.h = frame_info->_height;
 
 	SDL_Point center_point{ frame_info->_width / 2, frame_info->_height / 2 };
 	SDL_RenderCopyEx(renderer, frame_info->_texture, nullptr, &destination_rect, angle_degrees, &center_point, SDL_FLIP_NONE);
+}
+
+bool Animation::build_render_command(
+	const Rect& target_rect,
+	double angle_degrees,
+	RenderCommand& out_command
+) const
+{
+	const FrameInfo* frame_info = current_frame();
+	if (!frame_info || !frame_info->_texture)
+		return false;
+
+	out_command._texture = frame_info->_texture;
+	out_command._world_rect = target_rect;
+	out_command._use_src_rect = false;
+	out_command._rotation_degrees = angle_degrees;
+	out_command._rotation_origin = Vector2(0.5f, 0.5f);
+	out_command._flip = SpriteFlip::None;
+	return true;
 }
 
 void Animation::update(double delta_seconds)

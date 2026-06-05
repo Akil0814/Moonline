@@ -1,15 +1,15 @@
 #pragma once
-#include<SDL.h>
-#include <vector>
-#include <type_traits> 
-#include <utility>
 
-#include"scene.h"
+#include <SDL.h>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
+#include "scene.h"
 #include "../../tools/singleton.h"
 #include "scene_factory.h"
 
-
-class SceneManager :public Singleton<SceneManager>
+class SceneManager : public Singleton<SceneManager>
 {
 	friend class Singleton<SceneManager>;
 
@@ -20,17 +20,16 @@ private:
 public:
 	void on_update(double delta);
 	void on_render(SDL_Renderer* renderer);
+	void submit_render_commands(std::vector<RenderCommand>& out_commands) const;
 	void on_input(
 		const InputSnapshot& input,
 		const std::vector<InputEvent>& events
 	);
 
 	void shutdown();
+
 	template<typename T, typename... Args>
 	void switch_to(Args&&... args);
-
-	//template<typename T, typename... Args>
-	//void recreate_scene_and_switch(Args&&... args);
 
 	void reset_current_scene();
 
@@ -45,11 +44,6 @@ private:
 	SceneFactory _scene_factory;
 };
 
-
-// switch_to reuses the cached scene instance of the same type if it already exists.
-// It does not guarantee reconstruction, so new arguments may not trigger a reload.
-// To refresh state, prefer reset_scene<T>() or reset_current_scene().
-// To rerun construction, destroy the cached scene first and then switch to it again.
 template<typename T, typename... Args>
 void SceneManager::switch_to(Args&&... args)
 {
@@ -68,7 +62,7 @@ void SceneManager::switch_to(Args&&... args)
 }
 
 template<typename T>
-bool  SceneManager::destroy_scene()
+bool SceneManager::destroy_scene()
 {
 	static_assert(std::is_base_of_v<Scene, T>, "T must derive from Scene");
 
@@ -86,9 +80,8 @@ bool  SceneManager::destroy_scene()
 	return _scene_factory.destroy_scene<T>();
 }
 
-
 template<typename T>
-bool  SceneManager::reset_scene()
+bool SceneManager::reset_scene()
 {
 	static_assert(std::is_base_of_v<Scene, T>, "T must derive from Scene");
 
@@ -100,4 +93,3 @@ bool  SceneManager::reset_scene()
 	target_scene->reset();
 	return true;
 }
-

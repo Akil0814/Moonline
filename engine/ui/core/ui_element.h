@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../tools/vector2.h"
+#include "../../core/geometry/vector2.h"
 
 #include <SDL.h>
 

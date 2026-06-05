@@ -2,12 +2,22 @@
 #include "animation_manager.h"
 
 Effect::Effect(std::string effect_key, std::string animation_key, std::unique_ptr<Animation> animation) 
-    :GameObject(DepthLayer::EffectFront),_effect_key(effect_key), _animation_key(animation_key), _animation(std::move(animation))
+    : GameObject(DepthLayer::EffectFront), _effect_key(effect_key), _animation_key(animation_key), _animation(std::move(animation))
 {}
 
 void Effect::on_render(SDL_Renderer* renderer)
 {
-	_animation->render(renderer,GameObject::rect(),_angle_degrees);
+	_animation->render(renderer, GameObject::rect(), _angle_degrees);
+}
+
+void Effect::submit_render_commands(std::vector<RenderCommand>& out_commands) const
+{
+	if (!_animation)
+		return;
+
+	RenderCommand render_command = make_render_command();
+	if (_animation->build_render_command(world_rect(), _angle_degrees, render_command))
+		out_commands.push_back(render_command);
 }
 
 void Effect::on_update(double delta)
@@ -19,9 +29,9 @@ void Effect::on_update(double delta)
 
 std::unique_ptr<Effect> Effect::clone() const
 {
-    auto animation = AnimationManager::instance()->create_animation(_animation_key);
+    std::unique_ptr<Animation> animation = AnimationManager::instance()->create_animation(_animation_key);
 
-    auto effect = std::make_unique<Effect>(
+    std::unique_ptr<Effect> effect = std::make_unique<Effect>(
         _effect_key,
         _animation_key,
         std::move(animation)
