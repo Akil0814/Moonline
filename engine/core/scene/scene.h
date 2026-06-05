@@ -8,6 +8,7 @@
 
 #include "../depth_layer.h"
 #include "../game_object.h"
+#include "../render/sdl_render_command_executor.h"
 
 class Scene
 {
@@ -31,10 +32,7 @@ public:
 				if (!obj->is_active())
 					continue;
 
-				if (_paused && !obj->will_update_when_paused())
-					continue;
-
-				obj->on_update(obj->scaled_delta(delta));
+				obj->update(obj->scaled_delta(delta));
 			}
 		}
 
@@ -43,6 +41,9 @@ public:
 
 	virtual void on_render(SDL_Renderer* renderer)
 	{
+		std::vector<RenderCommand> render_commands;
+		render_commands.reserve(1);
+
 		for (auto& layer : _object_layers)
 		{
 			const std::vector<std::shared_ptr<GameObject>> objects = layer;
@@ -54,7 +55,9 @@ public:
 				if (!obj->is_visible())
 					continue;
 
-				obj->on_render(renderer);
+				render_commands.clear();
+				obj->submit_render_commands(render_commands);
+				execute_render_commands(renderer, render_commands);
 			}
 		}
 	}
@@ -91,9 +94,6 @@ public:
 					continue;
 
 				if (!obj->is_active())
-					continue;
-
-				if (_paused && !obj->will_input_when_paused())
 					continue;
 
 				obj->on_input(input);

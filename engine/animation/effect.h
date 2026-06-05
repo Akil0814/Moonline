@@ -11,9 +11,8 @@ public:
 	Effect(std::string effect_key, std::string animation_key, std::unique_ptr<Animation> animation);
 	~Effect() override = default;
 
-	void on_render(SDL_Renderer* renderer) override;
 	void submit_render_commands(std::vector<RenderCommand>& out_commands) const override;
-	void on_update(double delta) override;
+	void update(double delta) override;
 
 	std::unique_ptr<Effect> clone() const;
 

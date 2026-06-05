@@ -5,8 +5,6 @@
 #include "../resources/atlas/atlas.h"
 #include "../tools/timer.h"
 
-#include <SDL.h>
-
 #include <functional>
 
 class Animation
@@ -17,9 +15,7 @@ public:
 	Animation();
 	virtual ~Animation() = default;
 
-	virtual void render(SDL_Renderer* renderer, const Rect& target_rect, double angle_degrees) const;
-	virtual void render(SDL_Renderer* renderer, const Vector2& target_position, double angle_degrees) const;
-	virtual void update(double delta_seconds);
+	void update(double delta_seconds);
 
 	[[nodiscard]] bool build_render_command(
 		const Rect& target_rect,
