@@ -1,6 +1,6 @@
 #pragma once
 
-#include "input_snapshot.h"
+#include "../input_snapshot.h"
 
 class InputSnapshotReceiver
 {

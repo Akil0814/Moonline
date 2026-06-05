@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "scene.h"
-#include "../../tools/singleton.h"
+#include "../tools/singleton.h"
 #include "scene_factory.h"
 
 class SceneManager : public Singleton<SceneManager>
@@ -20,7 +20,6 @@ private:
 public:
 	void on_update(double delta);
 	void on_render(SDL_Renderer* renderer);
-	void submit_render_commands(std::vector<RenderCommand>& out_commands) const;
 	void on_input(
 		const InputSnapshot& input,
 		const std::vector<InputEvent>& events

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../engine/core/scene/scene.h"
+#include "../../engine/scene/scene.h"
 
 class TestScene final : public Scene
 {

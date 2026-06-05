@@ -1,7 +1,7 @@
 #include "application.h"
 
 #include "../engine/core/time.h"
-#include "../engine/core/scene/scene_manager.h"
+#include "../engine/scene/scene_manager.h"
 
 #include "../engine/io/path/path_manager.h"
 #include "../engine/resources/resource_manager.h"

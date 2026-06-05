@@ -8,7 +8,10 @@
 
 #include "../core/depth_layer.h"
 #include "../core/game_object.h"
+#include "../core/interface/updatable.h"
 #include "../core/render/sdl_render_command_executor.h"
+#include "../input/contracts/input_event_receiver.h"
+#include "../input/contracts/input_snapshot_receiver.h"
 
 class Scene
 {
@@ -32,7 +35,11 @@ public:
 				if (!obj->is_active())
 					continue;
 
-				obj->update(obj->scaled_delta(delta));
+				Updatable* updatable = dynamic_cast<Updatable*>(obj.get());
+				if (!updatable)
+					continue;
+
+				updatable->update(obj->scaled_delta(delta));
 			}
 		}
 
@@ -42,7 +49,7 @@ public:
 	virtual void on_render(SDL_Renderer* renderer)
 	{
 		std::vector<RenderCommand> render_commands;
-		render_commands.reserve(1);
+		render_commands.reserve(512);
 
 		for (auto& layer : _object_layers)
 		{
@@ -55,11 +62,11 @@ public:
 				if (!obj->is_visible())
 					continue;
 
-				render_commands.clear();
 				obj->submit_render_commands(render_commands);
-				execute_render_commands(renderer, render_commands);
 			}
+			execute_render_commands(renderer, render_commands);
 		}
+
 	}
 
 	virtual void on_input(
@@ -78,10 +85,45 @@ public:
 				if (!obj->is_active())
 					continue;
 
-				obj->on_input(input);
+				if (_paused)
+					continue;
 
-				for (const InputEvent& input_event : events)
-					obj->on_input_event(input_event);
+				InputSnapshotReceiver* snapshot_receiver =
+					dynamic_cast<InputSnapshotReceiver*>(obj.get());
+				if (snapshot_receiver)
+					snapshot_receiver->on_input_snapshot(input);
+			}
+		}
+
+		for (const InputEvent& input_event : events)
+		{
+			bool consumed = false;
+
+			for (auto& layer : _object_layers)
+			{
+				const std::vector<std::shared_ptr<GameObject>> objects = layer;
+				for (const std::shared_ptr<GameObject>& obj : objects)
+				{
+					if (!obj || obj->is_destroyed())
+						continue;
+
+					if (!obj->is_active())
+						continue;
+
+					InputEventReceiver* event_receiver =
+						dynamic_cast<InputEventReceiver*>(obj.get());
+					if (!event_receiver)
+						continue;
+
+					if (event_receiver->on_input_event(input_event))
+					{
+						consumed = true;
+						break;
+					}
+				}
+
+				if (consumed)
+					break;
 			}
 		}
 	}

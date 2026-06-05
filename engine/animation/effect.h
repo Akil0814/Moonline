@@ -2,10 +2,11 @@
 
 #include "animation.h"
 #include "../core/game_object.h"
+#include "../core/interface/updatable.h"
 
 #include <memory>
 
-class Effect : public GameObject
+class Effect : public GameObject, public Updatable
 {
 public:
 	Effect(std::string effect_key, std::string animation_key, std::unique_ptr<Animation> animation);
