@@ -3,13 +3,10 @@
 #include "../engine/core/time.h"
 #include "../engine/scene/scene_manager.h"
 
-#include "../engine/io/path/path_manager.h"
 #include "../engine/resources/resource_manager.h"
 #include "../engine/resources/resource_bootstrapper.h"
-#include "../engine/resources/texture/surface_loader.h"
-#include "../engine/resources/texture/texture_loader.h"
 
-#include "../gameplay/scene/main_menu_scene.h"
+#include "../gameplay/scene/loading_scene.h"
 
 #include <iostream>
 #include <thread>
@@ -70,25 +67,12 @@ Application:: ~Application()
 }
 
 bool Application::init(int argc, char** argv)
-{
-	init_assert(argc > 0 && argv && argv[0], "Application start path error");
-	//tmp
-	init_assert(
-		ResourceBootstrapper::instance()->bootstrap(argv[0], _renderer),
-		"Resource bootstrap error"
-	);
-
-	ResourceManager* resource_manager = ResourceManager::instance();
-	init_assert(
-		resource_manager->load_font(
-			"ui.default",
-			PathManager::instance()->fonts() / "IPix.ttf",
-			24
-		),
-		"Default UI font load error"
-	);
-   
+{  
 	_input_system.set_context(InputContext::UI);
+
+	ResourceBootstrapper::instance()->bootstrap(_renderer);
+
+	SceneManager::instance()->switch_to<LoadingScene>();
 
     return true;
 }

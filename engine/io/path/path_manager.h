@@ -9,8 +9,7 @@ class PathManager : public Singleton<PathManager>
     friend Singleton<PathManager>;
 
 public:
-    bool init(const std::filesystem::path& start_path);
-    bool is_initialized() const;
+    bool init();
     bool ensure_runtime_dirs() const;
 
     const std::filesystem::path& root() const;
@@ -32,7 +31,6 @@ public:
     std::filesystem::path resolve_project_path(const std::filesystem::path& path) const;
     std::filesystem::path resolve_asset_path(const std::filesystem::path& path) const;
     std::filesystem::path resolve_config_path(const std::filesystem::path& path) const;
-    std::filesystem::path preload_file(const std::filesystem::path& file_name) const;
 
 private:
     PathManager() = default;

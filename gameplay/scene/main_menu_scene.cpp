@@ -9,11 +9,12 @@ void TestScene::on_enter()
 
 void TestScene::on_update(double delta)
 {
-
+	Scene::on_update(delta);
 }
 
 void TestScene::on_render(SDL_Renderer* renderer)
 {
+	Scene::on_render(renderer);
 	//---------------test--------------------
 	//---------------test--------------------
 }

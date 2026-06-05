@@ -20,3 +20,10 @@ ResourceBootstrapper
                 -> AtlasLoader::load(...)
             -> 组装 Animation
         -> AnimationManager 保存 Animation
+
+
+PathManager      管路径在哪里
+FileManager      管文件怎么读写
+JsonLoader       管 JSON 怎么解析
+ResourceManager  管资源怎么加载和缓存
+ConfigManager    管配置数据怎么组织

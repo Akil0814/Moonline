@@ -2,20 +2,16 @@
 
 #include <string>
 
-bool PathManager::init(const std::filesystem::path& start_path)
+bool PathManager::init()
 {
-    std::optional<std::filesystem::path> root_path = find_project_root(start_path);
+    std::optional<std::filesystem::path> root_path =
+        find_project_root(std::filesystem::current_path());
 
     if (!root_path.has_value())
         return false;
 
     _root = root_path.value();
     return true;
-}
-
-bool PathManager::is_initialized() const
-{
-    return !_root.empty();
 }
 
 bool PathManager::ensure_runtime_dirs() const
@@ -120,20 +116,6 @@ std::filesystem::path PathManager::resolve_config_path(const std::filesystem::pa
         return resolve_asset_path(path);
 
     return (configs() / path).lexically_normal();
-}
-
-std::filesystem::path PathManager::preload_file(const std::filesystem::path& file_name) const
-{
-    if (file_name.is_absolute())
-        return file_name.lexically_normal();
-
-    if (path_starts_with(file_name, "assets"))
-        return resolve_project_path(file_name);
-
-    if (path_starts_with(file_name, "preload"))
-        return resolve_asset_path(file_name);
-
-    return (preload() / file_name).lexically_normal();
 }
 
 bool PathManager::path_starts_with(

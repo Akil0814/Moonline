@@ -21,6 +21,8 @@ class ResourceManager : public Singleton<ResourceManager>
 public:
 	ResourceManager();
 
+	bool init();
+
 	bool load_atlas(SDL_Renderer* renderer, const AtlasLoadRequest& request);
 	bool load_atlases(
 		SDL_Renderer* renderer,

@@ -5,6 +5,11 @@ ResourceManager::ResourceManager()
 {
 }
 
+bool ResourceManager::init()
+{
+	return true;
+}
+
 bool ResourceManager::load_atlas(
 	SDL_Renderer* renderer,
 	const AtlasLoadRequest& request

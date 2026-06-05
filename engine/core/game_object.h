@@ -73,14 +73,6 @@ public:
     [[nodiscard]] double time_scale() const noexcept { return _time_scale; }
     [[nodiscard]] double scaled_delta(double parent_delta) const noexcept { return parent_delta * _time_scale; }
 
-protected:
-    [[nodiscard]] RenderCommand make_render_command() const
-    {
-        RenderCommand command;
-        command._world_rect = render_rect();
-        return command;
-    }
-
 private:
     Rect _world_rect{};
 

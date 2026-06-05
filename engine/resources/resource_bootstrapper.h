@@ -14,7 +14,7 @@ class ResourceBootstrapper : public Singleton<ResourceBootstrapper>
 {
     friend Singleton<ResourceBootstrapper>;
 public:
-    bool bootstrap(const std::filesystem::path& start_path, SDL_Renderer* renderer);
+    bool bootstrap(SDL_Renderer* renderer);
     bool load_prload_resource();
     bool load_assets();
 
