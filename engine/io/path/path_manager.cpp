@@ -1,5 +1,6 @@
 #include "path_manager.h"
 
+#include <iostream>
 #include <string>
 
 bool PathManager::init()
@@ -11,6 +12,9 @@ bool PathManager::init()
         return false;
 
     _root = root_path.value();
+    if (!validate_core_asset_dirs())
+        return false;
+
     return true;
 }
 
@@ -25,6 +29,33 @@ bool PathManager::ensure_runtime_dirs() const
     }
     catch (const std::filesystem::filesystem_error&)
     {
+        return false;
+    }
+}
+
+bool PathManager::validate_core_asset_dirs() const
+{
+    const auto validate_dir = [](const std::filesystem::path& dir_path, const char* dir_name)
+    {
+        if (std::filesystem::is_directory(dir_path))
+            return true;
+
+        std::cout << "Path manager init failed: required asset directory does not exist: "
+            << dir_name << " -> " << dir_path << std::endl;
+        return false;
+    };
+
+    try
+    {
+        return validate_dir(audio(), "audio")
+            && validate_dir(textures(), "textures")
+            && validate_dir(fonts(), "fonts")
+            && validate_dir(configs(), "configs");
+    }
+    catch (const std::filesystem::filesystem_error&)
+    {
+        std::cout << "Path manager init failed: filesystem error while validating asset directories."
+            << std::endl;
         return false;
     }
 }

@@ -35,6 +35,8 @@ public:
 private:
     PathManager() = default;
 
+    bool validate_core_asset_dirs() const;
+
     bool path_starts_with(
         const std::filesystem::path& path,
         const std::string& first_part
