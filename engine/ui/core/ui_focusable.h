@@ -1,5 +1,6 @@
 #pragma once
-#include "../../core/interface/ input_event_receiver.h"
+
+#include "../../input/contracts/input_event_receiver.h"
 
 class UiFocusable : public InputEventReceiver
 {

@@ -1,4 +1,6 @@
-#include "../../input/input_system.h"
+#pragma once
+
+#include "../input_types.h"
 
 class InputEventReceiver
 {

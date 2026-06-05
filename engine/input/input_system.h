@@ -1,5 +1,6 @@
 #pragma once
 
+#include "input_snapshot.h"
 #include "input_state.h"
 #include "input_types.h"
 #include "input_device_tracker.h"
@@ -11,14 +12,6 @@
 
 #include <SDL.h>
 #include <vector>
-
-struct InputSnapshot
-{
-    const InputState& state;
-    InputContext context = InputContext::Gameplay;
-    InputDevice device = InputDevice::Unknown;
-    bool device_switched_this_frame = false;
-};
 
 class InputSystem
 {
