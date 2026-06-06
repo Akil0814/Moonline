@@ -44,13 +44,17 @@ public:
 			}
 		}
 
+		
+
 		remove_destroyed_objects();
 	}
 
 	virtual void on_render(SDL_Renderer* renderer)
 	{
 		std::vector<RenderCommand> render_commands;
+		std::vector<UiRenderCommand> ui_render_commands;
 		render_commands.reserve(512);
+		ui_render_commands.reserve(512);
 
 		for (const auto& layer : _object_layers)
 		{
@@ -66,6 +70,16 @@ public:
 
 			execute_render_commands(renderer, render_commands);
 		}
+
+		for (const auto& ui_set : _ui_roots)
+		{
+			if (!ui_set || ui_set->is_destroyed() || !ui_set->is_visible())
+				continue;
+
+			ui_set->submit_ui_render_commands(ui_render_commands);
+		}
+
+		execute_render_commands(renderer, ui_render_commands);
 	}
 
 	virtual void on_input(
