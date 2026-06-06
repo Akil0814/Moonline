@@ -13,6 +13,14 @@ enum class SpriteFlip
     Both
 };
 
+enum class UiRenderCommandType
+{
+    Texture,
+    FillRect,
+    DrawRect,
+    DrawLine
+};
+
 struct RenderCommand
 {
     SDL_Texture* texture = nullptr;
@@ -40,11 +48,18 @@ struct RenderCommand
 
 struct UiRenderCommand
 {
+    UiRenderCommandType type = UiRenderCommandType::Texture;
+
     SDL_Texture* texture = nullptr;
 
     // Destination rectangle in screen/UI space.
-    // This is should affected by the world camera.
+    // This is not affected by the world camera.
     Rect screen_rect{};
+
+    SDL_Color color{ 255, 255, 255, 255 };
+
+    Vector2 line_start{};
+    Vector2 line_end{};
 
     Uint8 alpha = 255;
 
@@ -63,3 +78,55 @@ struct UiRenderCommand
 
     SpriteFlip flip = SpriteFlip::None;
 };
+
+[[nodiscard]] inline UiRenderCommand make_ui_texture_command(
+    SDL_Texture* texture,
+    const Rect& screen_rect,
+    Uint8 alpha = 255
+) noexcept
+{
+    UiRenderCommand command;
+    command.type = UiRenderCommandType::Texture;
+    command.texture = texture;
+    command.screen_rect = screen_rect;
+    command.alpha = alpha;
+    return command;
+}
+
+[[nodiscard]] inline UiRenderCommand make_ui_fill_rect_command(
+    const Rect& screen_rect,
+    SDL_Color color
+) noexcept
+{
+    UiRenderCommand command;
+    command.type = UiRenderCommandType::FillRect;
+    command.screen_rect = screen_rect;
+    command.color = color;
+    return command;
+}
+
+[[nodiscard]] inline UiRenderCommand make_ui_draw_rect_command(
+    const Rect& screen_rect,
+    SDL_Color color
+) noexcept
+{
+    UiRenderCommand command;
+    command.type = UiRenderCommandType::DrawRect;
+    command.screen_rect = screen_rect;
+    command.color = color;
+    return command;
+}
+
+[[nodiscard]] inline UiRenderCommand make_ui_draw_line_command(
+    const Vector2& line_start,
+    const Vector2& line_end,
+    SDL_Color color
+) noexcept
+{
+    UiRenderCommand command;
+    command.type = UiRenderCommandType::DrawLine;
+    command.line_start = line_start;
+    command.line_end = line_end;
+    command.color = color;
+    return command;
+}
