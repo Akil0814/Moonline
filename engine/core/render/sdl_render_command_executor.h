@@ -95,7 +95,7 @@ inline void execute_render_command(SDL_Renderer* renderer, const UiRenderCommand
     SDL_Rect previous_clip_rect{};
     const bool had_clip_rect = SDL_RenderIsClipEnabled(renderer) == SDL_TRUE;
     if (had_clip_rect)
-        SDL_GetRenderClipRect(renderer, &previous_clip_rect);
+        SDL_RenderGetClipRect(renderer, &previous_clip_rect);
 
     if (render_command.use_clip_rect)
     {
