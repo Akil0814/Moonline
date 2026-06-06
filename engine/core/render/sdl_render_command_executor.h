@@ -92,6 +92,21 @@ inline void execute_render_command(SDL_Renderer* renderer, const UiRenderCommand
     if (!renderer)
         return;
 
+    SDL_Rect previous_clip_rect{};
+    const bool had_clip_rect = SDL_RenderIsClipEnabled(renderer) == SDL_TRUE;
+    if (had_clip_rect)
+        SDL_GetRenderClipRect(renderer, &previous_clip_rect);
+
+    if (render_command.use_clip_rect)
+    {
+        const SDL_Rect clip_rect = to_sdl_rect(render_command.clip_rect);
+        SDL_RenderSetClipRect(renderer, &clip_rect);
+    }
+    else if (had_clip_rect)
+    {
+        SDL_RenderSetClipRect(renderer, nullptr);
+    }
+
     switch (render_command.type)
     {
     case UiRenderCommandType::Texture:
@@ -112,7 +127,7 @@ inline void execute_render_command(SDL_Renderer* renderer, const UiRenderCommand
     case UiRenderCommandType::DrawRect:
     {
         if (render_command.screen_rect.is_empty())
-            return;
+            break;
 
         SDL_Rect rect = to_sdl_rect(render_command.screen_rect);
 
@@ -163,6 +178,11 @@ inline void execute_render_command(SDL_Renderer* renderer, const UiRenderCommand
         break;
     }
     }
+
+    if (had_clip_rect)
+        SDL_RenderSetClipRect(renderer, &previous_clip_rect);
+    else
+        SDL_RenderSetClipRect(renderer, nullptr);
 }
 
 inline void execute_render_commands(
