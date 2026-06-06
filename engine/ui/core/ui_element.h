@@ -12,6 +12,8 @@ struct UiRenderCommand;
 class UiElement : public SceneObject
 {
 public:
+
+    // Higher UI order values are rendered on top and receive input first.
     explicit UiElement(
         const Rect& rect = Rect::zero(),
         int order = 0

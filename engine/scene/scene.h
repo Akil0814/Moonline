@@ -39,7 +39,7 @@ public:
 
 	void pause() { _paused = true; }
 	void resume() { _paused = false; }
-	[[nodiscard]] bool is_paused() const;
+	[[nodiscard]] bool is_paused()const { return _paused; }
 
 	template <typename T, typename... Args>
 	T* create_and_add_object(Args&&... args)
@@ -91,7 +91,6 @@ protected:
 
 private:
 	void remove_destroyed_objects();
-	void remove_destroyed_dispatch_entries();
 	void add_game_object(std::unique_ptr<GameObject> object);
 	void add_ui_root(std::unique_ptr<UiElement> object);
 

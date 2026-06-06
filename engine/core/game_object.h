@@ -12,6 +12,7 @@ struct RenderCommand;
 class GameObject : public SceneObject
 {
 public:
+    // Higher depth layers and order values are rendered closer to the viewer.
     explicit GameObject(DepthLayer layer, int order = 0) noexcept
         : _depth_layer(layer), _order_in_layer(order) {}
 
