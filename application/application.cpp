@@ -81,13 +81,17 @@ int  Application::run(int argc, char** argv)
 {
 	(void)argc;
 	(void)argv;
+
+	std::srand(static_cast<unsigned>(std::time(nullptr)));
+
 	Uint64 last_counter = SDL_GetPerformanceCounter();
 	const Uint64 counter_freq = SDL_GetPerformanceFrequency();
-	std::srand(static_cast<unsigned>(std::time(nullptr)));
+
+	Time::instance()->reset();
+
 
 	_counter_freq = SDL_GetPerformanceFrequency();
 	_last_counter = SDL_GetPerformanceCounter();
-	Time::instance()->reset();
 
 
 	while (_active)
@@ -119,7 +123,7 @@ int  Application::run(int argc, char** argv)
 
 		SceneManager::instance()->on_update(Time::instance()->delta());
 
-		SDL_SetRenderDrawColor(_renderer, 0,0,0,0);
+		SDL_SetRenderDrawColor(_renderer, 0,0,0,255);
 		SDL_RenderClear(_renderer);
 
 		SceneManager::instance()->on_render(_renderer);

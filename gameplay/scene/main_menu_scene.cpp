@@ -21,7 +21,7 @@ void TestScene::on_render(SDL_Renderer* renderer)
 
 void TestScene::on_input(const InputSnapshot& input, const std::vector<InputEvent>& events)
 {
-
+	Scene::on_input(input, events);
 }
 
 

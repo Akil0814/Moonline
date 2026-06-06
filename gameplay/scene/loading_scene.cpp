@@ -12,18 +12,19 @@ void LoadingScene::on_enter()
 
 void LoadingScene::on_update(double delta)
 {
-
+	Scene::on_update(delta);
 }
 
 void LoadingScene::on_render(SDL_Renderer* renderer)
 {
+	Scene::on_render(renderer);
 	//---------------test--------------------
 	//---------------test--------------------
 }
 
 void LoadingScene::on_input(const InputSnapshot& input, const std::vector<InputEvent>& events)
 {
-
+	Scene::on_input(input, events);
 }
 
 
