@@ -1,9 +1,12 @@
 #pragma once
 
 #include <SDL.h>
+
 #include <algorithm>
 #include <array>
 #include <memory>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "../core/depth_layer.h"
@@ -12,6 +15,7 @@
 #include "../core/render/sdl_render_command_executor.h"
 #include "../input/contracts/input_event_receiver.h"
 #include "../input/contracts/input_snapshot_receiver.h"
+#include "../ui/core/ui_element.h"
 
 class Scene
 {
@@ -21,18 +25,15 @@ public:
 
 	virtual void on_enter() = 0;
 	virtual void on_exit() = 0;
+	virtual void reset() = 0;
 
 	virtual void on_update(double delta)
 	{
-		for (auto& layer : _object_layers)
+		for (const std::vector<std::unique_ptr<GameObject>>& layer : _object_layers)
 		{
-			const std::vector<std::shared_ptr<GameObject>> objects = layer;
-			for (const std::shared_ptr<GameObject>& obj : objects)
+			for (const std::unique_ptr<GameObject>& obj : layer)
 			{
-				if (!obj || obj->is_destroyed())
-					continue;
-
-				if (!obj->is_active())
+				if (!obj || obj->is_destroyed() || !obj->is_active())
 					continue;
 
 				Updatable* updatable = dynamic_cast<Updatable*>(obj.get());
@@ -51,22 +52,20 @@ public:
 		std::vector<RenderCommand> render_commands;
 		render_commands.reserve(512);
 
-		for (auto& layer : _object_layers)
+		for (const auto& layer : _object_layers)
 		{
-			const std::vector<std::shared_ptr<GameObject>> objects = layer;
-			for (const std::shared_ptr<GameObject>& obj : objects)
-			{
-				if (!obj || obj->is_destroyed())
-					continue;
+			render_commands.clear();
 
-				if (!obj->is_visible())
+			for (const std::unique_ptr<GameObject>& obj : layer)
+			{
+				if (!obj || obj->is_destroyed() || !obj->is_visible())
 					continue;
 
 				obj->submit_render_commands(render_commands);
 			}
+
 			execute_render_commands(renderer, render_commands);
 		}
-
 	}
 
 	virtual void on_input(
@@ -76,8 +75,8 @@ public:
 	{
 		for (auto& layer : _object_layers)
 		{
-			const std::vector<std::shared_ptr<GameObject>> objects = layer;
-			for (const std::shared_ptr<GameObject>& obj : objects)
+			const std::vector<std::unique_ptr<GameObject>> objects = layer;
+			for (const std::unique_ptr<GameObject>& obj : objects)
 			{
 				if (!obj || obj->is_destroyed())
 					continue;
@@ -101,8 +100,8 @@ public:
 
 			for (auto& layer : _object_layers)
 			{
-				const std::vector<std::shared_ptr<GameObject>> objects = layer;
-				for (const std::shared_ptr<GameObject>& obj : objects)
+				const std::vector<std::unique_ptr<GameObject>> objects = layer;
+				for (const std::unique_ptr<GameObject>& obj : objects)
 				{
 					if (!obj || obj->is_destroyed())
 						continue;
@@ -128,9 +127,8 @@ public:
 		}
 	}
 
-	virtual void reset() = 0;
 
-	void add_object(std::shared_ptr<GameObject> obj)
+	void add_object(std::unique_ptr<GameObject> obj)
 	{
 		if (!obj)
 			return;
@@ -167,8 +165,8 @@ protected:
 	{
 		for (auto& layer : _object_layers)
 		{
-			const std::vector<std::shared_ptr<GameObject>> objects = layer;
-			for (const std::shared_ptr<GameObject>& obj : objects)
+			const std::vector<std::unique_ptr<GameObject>> objects = layer;
+			for (const std::unique_ptr<GameObject>& obj : objects)
 			{
 				if (obj)
 					obj->reset();
@@ -191,11 +189,38 @@ protected:
 		}
 	}
 
+
+
 protected:
 	bool _paused = false;
 
-	std::array<
-		std::vector<std::shared_ptr<GameObject>>,
-		static_cast<size_t>(DepthLayer::Count)
-	> _object_layers;
+
+private:
+	struct UpdatableEntry
+	{
+		GameObject* object = nullptr;
+		Updatable* updatable = nullptr;
+	};
+
+	struct InputSnapshotReceiverEntry
+	{
+		GameObject* object = nullptr;
+		InputSnapshotReceiver* receiver = nullptr;
+	};
+
+	struct InputEventReceiverEntry
+	{
+		GameObject* object = nullptr;
+		InputEventReceiver* receiver = nullptr;
+	};
+
+private:
+
+	std::array<std::vector<std::unique_ptr<GameObject>>,
+		static_cast<size_t>(DepthLayer::Count)> _object_layers;
+	std::vector<std::unique_ptr<UiElement>> _ui_roots;
+
+	std::vector<UpdatableEntry> _updatables;
+	std::vector<InputSnapshotReceiverEntry> _snapshot_receivers;
+	std::vector<InputEventReceiverEntry> _event_receivers;
 };

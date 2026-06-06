@@ -21,6 +21,8 @@ struct RenderCommand
     // This will be transformed by the camera before rendering.
     Rect world_rect{};
 
+    Uint8 alpha = 255;
+
     // Source rectangle in texture space.
     // Defines which part of the texture or sprite sheet should be drawn.
     bool use_src_rect = false;
@@ -36,13 +38,15 @@ struct RenderCommand
     SpriteFlip flip = SpriteFlip::None;
 };
 
-struct UIRenderCommand
+struct UiRenderCommand
 {
     SDL_Texture* texture = nullptr;
 
     // Destination rectangle in screen/UI space.
     // This is not affected by the world camera.
     Rect screen_rect{};
+
+    Uint8 alpha = 255;
 
     // Source rectangle in texture space.
     // Defines which part of the texture or sprite sheet should be drawn.
