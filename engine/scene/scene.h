@@ -2,7 +2,6 @@
 
 #include <SDL.h>
 
-#include <algorithm>
 #include <array>
 #include <memory>
 #include <type_traits>
@@ -68,17 +67,17 @@ public:
 			return nullptr;
 
 		T* raw_object = object.get();
-
-		register_scene_object_interfaces(raw_object);
+		bool added = false;
 
 		if constexpr (std::is_base_of_v<GameObject, T>)
-		{
-			add_game_object(std::move(object));
-		}
+			added = add_game_object(std::move(object));
 		else if constexpr (std::is_base_of_v<UiElement, T>)
-		{
-			add_ui_root(std::move(object));
-		}
+			added = add_ui_root(std::move(object));
+
+		if (!added)
+			return nullptr;
+
+		register_scene_object_interfaces(raw_object);
 
 		return raw_object;
 	}
@@ -91,8 +90,8 @@ protected:
 
 private:
 	void remove_destroyed_objects();
-	void add_game_object(std::unique_ptr<GameObject> object);
-	void add_ui_root(std::unique_ptr<UiElement> object);
+	bool add_game_object(std::unique_ptr<GameObject> object);
+	bool add_ui_root(std::unique_ptr<UiElement> object);
 
 	struct UpdatableEntry
 	{
