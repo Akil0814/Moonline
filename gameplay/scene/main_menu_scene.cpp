@@ -27,12 +27,10 @@ void TestScene::on_input(const InputSnapshot& input, const std::vector<InputEven
 
 void TestScene::on_exit()
 {
-	clear_objects();
 	_paused = false;
 }
 
 void TestScene::reset()
 {
-	clear_objects();
 	_paused = false;
 }

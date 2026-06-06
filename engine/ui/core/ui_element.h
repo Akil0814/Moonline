@@ -56,6 +56,10 @@ public:
     void set_use_theme(bool use_theme) noexcept { _use_theme = use_theme; }
     [[nodiscard]] bool uses_theme() const noexcept { return _use_theme; }
 
+    [[nodiscard]] bool update_when_paused() const override{ return true;}
+
+    [[nodiscard]] bool receive_input_when_paused() const override{ return true;}
+
 protected:
     virtual void apply_theme(const UiTheme& theme) { (void)theme; }
 

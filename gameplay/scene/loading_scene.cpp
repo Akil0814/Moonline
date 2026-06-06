@@ -29,12 +29,10 @@ void LoadingScene::on_input(const InputSnapshot& input, const std::vector<InputE
 
 void LoadingScene::on_exit()
 {
-	clear_objects();
 	_paused = false;
 }
 
 void LoadingScene::reset()
 {
-	clear_objects();
 	_paused = false;
 }

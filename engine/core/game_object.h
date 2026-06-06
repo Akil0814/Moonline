@@ -52,11 +52,21 @@ public:
     [[nodiscard]] double time_scale() const noexcept { return _time_scale; }
     [[nodiscard]] double scaled_delta(double parent_delta) const noexcept { return parent_delta * _time_scale; }
 
+
+    [[nodiscard]] bool update_when_paused() const override { return _update_when_paused; }
+    [[nodiscard]] bool receive_input_when_paused() const override{    return _receive_input_when_paused;}
+
+    void set_update_when_paused(bool enabled) {    _update_when_paused = enabled;}
+    void set_receive_input_when_paused(bool enabled) { _receive_input_when_paused = enabled;}
+
 private:
     Rect _world_rect{};
 
     DepthLayer _depth_layer = DepthLayer::Item;
     int _order_in_layer = 0;
+
+    bool _update_when_paused = false;
+    bool _receive_input_when_paused = false;
 
     double _time_scale = 1.0;
 };

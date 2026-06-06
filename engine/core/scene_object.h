@@ -27,6 +27,9 @@ public:
     void set_active(bool active) noexcept { _active = active; }
     [[nodiscard]] bool is_active() const noexcept { return _active; }
 
+    [[nodiscard]] virtual bool update_when_paused() const { return false; }
+    [[nodiscard]] virtual bool receive_input_when_paused() const { return false; }
+
 private:
     bool _destroyed = false;
     bool _visible = true;

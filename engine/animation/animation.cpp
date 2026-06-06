@@ -39,7 +39,7 @@ bool Animation::build_render_command(
 		return false;
 
 	out_command.texture = frame_info->_texture;
-	out_command.world_rect = target_rect;
+	out_command.command_rect = target_rect;
 	out_command.use_src_rect = false;
 	out_command.rotation_degrees = angle_degrees;
 	out_command.rotation_origin = Vector2(0.5f, 0.5f);

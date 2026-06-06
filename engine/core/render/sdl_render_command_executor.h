@@ -77,7 +77,7 @@ inline void execute_render_command(SDL_Renderer* renderer, const RenderCommand& 
     execute_textured_render_command(
         renderer,
         render_command.texture,
-        render_command.world_rect,
+        render_command.command_rect,
         render_command.alpha,
         render_command.use_src_rect,
         render_command.src_rect,
