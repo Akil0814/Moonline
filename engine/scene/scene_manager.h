@@ -3,6 +3,7 @@
 #include <SDL.h>
 
 #include <functional>
+#include <stdexcept>
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
@@ -38,10 +39,10 @@ public:
     SceneManager& operator=(SceneManager&&) = delete;
 
     template <typename T>
-    bool register_scene(SceneId scene_id);
+    void register_scene(SceneKey scene_key);
 
-    bool start(
-        SceneId first_scene,
+    void start(
+        SceneKey first_scene,
         const ScenePayload& payload = ScenePayload{}
     );
 
@@ -63,14 +64,14 @@ private:
     void notify_quit_requested();
     void process_pending_request();
 
-    bool switch_to_registered_scene(
-        SceneId target,
+    void switch_to_registered_scene(
+        SceneKey target,
         const ScenePayload& payload,
         SceneReloadMode reload_mode
     );
 
-    bool switch_to_scene(
-        SceneId target,
+    void switch_to_scene(
+        SceneKey target,
         Scene* next_scene,
         const ScenePayload& payload,
         SceneReloadMode reload_mode
@@ -81,31 +82,31 @@ private:
 
 private:
     Scene* _current_scene = nullptr;
-    SceneId _current_scene_id = SceneId::None;
+    SceneKey _current_scene_key = SceneKeys::Invalid;
 
     SceneFactory _scene_factory;
-    std::unordered_map<SceneId, SceneProvider> _scene_providers;
+    std::unordered_map<SceneKey, SceneProvider> _scene_providers;
 
     SceneRequest _pending_request{};
     bool _has_pending_request = false;
 };
 
 template <typename T>
-bool SceneManager::register_scene(SceneId scene_id)
+void SceneManager::register_scene(SceneKey scene_key)
 {
     static_assert(
         std::is_base_of_v<Scene, T>,
         "T must derive from Scene."
     );
 
-    if (scene_id == SceneId::None)
-        return false;
+    if (scene_key == SceneKeys::Invalid)
+        throw std::logic_error("SceneManager::register_scene received SceneKeys::Invalid.");
 
-    if (_scene_providers.find(scene_id) != _scene_providers.end())
-        return false;
+    if (_scene_providers.find(scene_key) != _scene_providers.end())
+        throw std::logic_error("SceneManager::register_scene received a duplicate SceneKey.");
 
     _scene_providers.emplace(
-        scene_id,
+        scene_key,
         [this](SceneReloadMode reload_mode) -> Scene*
         {
             T* existing_scene = _scene_factory.try_find_scene<T>();
@@ -124,7 +125,7 @@ bool SceneManager::register_scene(SceneId scene_id)
                         detach_from_scene(_current_scene);
                         _current_scene->on_exit();
                         _current_scene = nullptr;
-                        _current_scene_id = SceneId::None;
+                        _current_scene_key = SceneKeys::Invalid;
                     }
                     else
                     {
@@ -138,6 +139,4 @@ bool SceneManager::register_scene(SceneId scene_id)
             return _scene_factory.get_scene<T>();
         }
     );
-
-    return true;
 }

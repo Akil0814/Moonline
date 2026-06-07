@@ -1,4 +1,5 @@
 #include "application.h"
+#include "scene_keys.h"
 #include "scene_registry.h"
 
 #include "../engine/core/time.h"
@@ -76,10 +77,9 @@ bool Application::init(int argc, char** argv)
 	SceneManager* scene_manager = SceneManager::instance();
 	scene_manager->attach(this);
 
-	if (!register_all_scenes(*scene_manager))
-		return false;
+	register_all_scenes(*scene_manager);
 
-	scene_manager->start(SceneId::StartupLoading);
+	scene_manager->start(AppSceneKeys::StartupLoading);
 
     return true;
 }

@@ -203,7 +203,7 @@ void Scene::notify_scene_request(const SceneRequest& request)
 	);
 }
 void Scene::request_scene_switch(
-	SceneId target,
+	SceneKey target,
 	const ScenePayload& payload,
 	SceneReloadMode reload_mode
 )

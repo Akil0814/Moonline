@@ -1,5 +1,6 @@
 #pragma once
 
+#include "scene_key.h"
 #include "scene_payload.h"
 
 enum class SceneRequestType
@@ -7,14 +8,6 @@ enum class SceneRequestType
     None,
     Switch,
     Quit
-};
-
-enum class SceneId
-{
-    None,
-    StartupLoading,
-    MainMenu,
-    Game
 };
 
 enum class SceneReloadMode
@@ -27,7 +20,7 @@ enum class SceneReloadMode
 struct SceneRequest
 {
     SceneRequestType type = SceneRequestType::None;
-    SceneId target = SceneId::None;
+    SceneKey target = SceneKeys::Invalid;
     SceneReloadMode reload_mode = SceneReloadMode::None;
 
     ScenePayload payload{};

@@ -1,19 +1,21 @@
 #include "scene_manager.h"
 
+#include <stdexcept>
+
 SceneManager::~SceneManager()
 {
     shutdown();
 }
 
-bool SceneManager::start(
-    SceneId first_scene,
+void SceneManager::start(
+    SceneKey first_scene,
     const ScenePayload& payload
 )
 {
     if (_current_scene)
-        return false;
+        throw std::logic_error("SceneManager::start called while a scene is already active.");
 
-    return switch_to_registered_scene(
+    switch_to_registered_scene(
         first_scene,
         payload,
         SceneReloadMode::None
@@ -91,23 +93,23 @@ void SceneManager::process_pending_request()
     }
 }
 
-bool SceneManager::switch_to_registered_scene(
-    SceneId target,
+void SceneManager::switch_to_registered_scene(
+    SceneKey target,
     const ScenePayload& payload,
     SceneReloadMode reload_mode
 )
 {
-    if (target == SceneId::None)
-        return false;
+    if (target == SceneKeys::Invalid)
+        throw std::logic_error("SceneManager::switch_to_registered_scene received SceneKeys::Invalid.");
 
     const auto iter = _scene_providers.find(target);
 
     if (iter == _scene_providers.end())
-        return false;
+        throw std::logic_error("SceneManager::switch_to_registered_scene received an unregistered SceneKey.");
 
     Scene* next_scene = iter->second(reload_mode);
 
-    return switch_to_scene(
+    switch_to_scene(
         target,
         next_scene,
         payload,
@@ -115,20 +117,20 @@ bool SceneManager::switch_to_registered_scene(
     );
 }
 
-bool SceneManager::switch_to_scene(
-    SceneId target,
+void SceneManager::switch_to_scene(
+    SceneKey target,
     Scene* next_scene,
     const ScenePayload& payload,
     SceneReloadMode reload_mode
 )
 {
     if (!next_scene)
-        return false;
+        throw std::logic_error("SceneManager::switch_to_scene received a null scene from provider.");
 
     if (_current_scene == next_scene)
     {
         if (reload_mode == SceneReloadMode::None)
-            return true;
+            return;
 
         detach_from_scene(_current_scene);
         _current_scene->on_exit();
@@ -137,9 +139,9 @@ bool SceneManager::switch_to_scene(
             _current_scene->reset();
 
         attach_to_scene(_current_scene);
-        _current_scene_id = target;
+        _current_scene_key = target;
         _current_scene->on_enter(payload);
-        return true;
+        return;
     }
 
     if (_current_scene)
@@ -149,15 +151,13 @@ bool SceneManager::switch_to_scene(
     }
 
     _current_scene = next_scene;
-    _current_scene_id = target;
+    _current_scene_key = target;
 
     if (reload_mode == SceneReloadMode::Reset)
         _current_scene->reset();
 
     attach_to_scene(_current_scene);
     _current_scene->on_enter(payload);
-
-    return true;
 }
 
 void SceneManager::attach_to_scene(Scene* scene)
@@ -184,7 +184,7 @@ void SceneManager::shutdown()
         _current_scene->on_exit();
 
         _current_scene = nullptr;
-        _current_scene_id = SceneId::None;
+        _current_scene_key = SceneKeys::Invalid;
     }
 
     _scene_factory.destroy_all_scene();
