@@ -2,17 +2,18 @@
 #include <vector>
 #include <algorithm>
 
-class Observer
-{
-public:
-    virtual ~Observer() = default;
-};
-
 template<typename ObserverType>
 class Subject
 {
 public:
+    Subject() = default;
     virtual ~Subject() = default;
+
+    Subject(const Subject&) = delete;
+    Subject& operator=(const Subject&) = delete;
+
+    Subject(Subject&&) = delete;
+    Subject& operator=(Subject&&) = delete;
 
     void attach(ObserverType* observer)
     {
@@ -35,9 +36,16 @@ public:
     }
 
 protected:
-    const std::vector<ObserverType*>& observers() const
+    template<typename NotifyFunc>
+    void notify_observers(NotifyFunc&& notify_func)
     {
-        return _observers;
+        const auto observers_copy = _observers;
+
+        for (ObserverType* observer : observers_copy)
+        {
+            if (observer)
+                notify_func(*observer);
+        }
     }
 
 private:

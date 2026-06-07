@@ -8,8 +8,12 @@
 #include <utility>
 #include <vector>
 
+#include "scene_request.h"
+#include "scene_request_observer.h"
+
 #include "../core/depth_layer.h"
 #include "../core/game_object.h"
+#include "../core/event/subject.h"
 #include "../ui/core/ui_element.h"
 
 struct InputEvent;
@@ -19,14 +23,19 @@ struct InputSnapshotReceiver;
 struct InputEventReceiver;
 struct Updatable;
 
-
-class Scene
+class Scene : public Subject<SceneRequestObserver>
 {
 public:
 	Scene() = default;
 	virtual ~Scene() = default;
 
-	virtual void on_enter() = 0;
+	Scene(const Scene&) = delete;
+	Scene& operator=(const Scene&) = delete;
+
+	Scene(Scene&&) = delete;
+	Scene& operator=(Scene&&) = delete;
+
+	virtual void on_enter(const ScenePayload& payload) = 0;
 	virtual void on_exit() = 0;
 	virtual void reset() = 0;
 
@@ -82,13 +91,20 @@ public:
 		return raw_object;
 	}
 
-private:
-	void register_scene_object_interfaces(SceneObject* object);
+protected:
+	void notify_scene_request(const SceneRequest& request);
+	void request_scene_switch(
+		SceneId target,
+		const ScenePayload& payload = {},
+		SceneReloadMode reload_mode = SceneReloadMode::None
+	);
+	void request_quit();
 
 protected:
 	bool _paused = false;
 
 private:
+	void register_scene_object_interfaces(SceneObject* object);
 	void remove_destroyed_objects();
 	bool add_game_object(std::unique_ptr<GameObject> object);
 	bool add_ui_root(std::unique_ptr<UiElement> object);

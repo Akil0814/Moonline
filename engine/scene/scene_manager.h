@@ -1,94 +1,143 @@
 #pragma once
 
 #include <SDL.h>
+
+#include <functional>
 #include <type_traits>
-#include <utility>
+#include <unordered_map>
 #include <vector>
 
 #include "scene.h"
-#include "../tools/singleton.h"
 #include "scene_factory.h"
+#include "scene_manager_observer.h"
+#include "scene_request.h"
+#include "scene_request_observer.h"
 
-class SceneManager : public Singleton<SceneManager>
+#include "../core/event/subject.h"
+#include "../tools/singleton.h"
+
+struct InputSnapshot;
+struct InputEvent;
+
+class SceneManager
+    : public Singleton<SceneManager>
+    , public Subject<SceneManagerObserver>
+    , public SceneRequestObserver
 {
-	friend class Singleton<SceneManager>;
+    friend class Singleton<SceneManager>;
 
 private:
-	SceneManager() = default;
-	~SceneManager();
+    SceneManager() = default;
+    ~SceneManager();
 
 public:
-	void on_update(double delta);
-	void on_render(SDL_Renderer* renderer);
-	void on_input(
-		const InputSnapshot& input,
-		const std::vector<InputEvent>& events
-	);
+    SceneManager(const SceneManager&) = delete;
+    SceneManager& operator=(const SceneManager&) = delete;
 
-	void shutdown();
+    SceneManager(SceneManager&&) = delete;
+    SceneManager& operator=(SceneManager&&) = delete;
 
-	template<typename T, typename... Args>
-	void switch_to(Args&&... args);
+    template <typename T>
+    bool register_scene(SceneId scene_id);
 
-	void reset_current_scene();
+    bool start(
+        SceneId first_scene,
+        const ScenePayload& payload = ScenePayload{}
+    );
 
-	template<typename T>
-	bool destroy_scene();
+    void on_input(
+        const InputSnapshot& input,
+        const std::vector<InputEvent>& events
+    );
 
-	template<typename T>
-	bool reset_scene();
+    void on_update(double delta);
+    void on_render(SDL_Renderer* renderer);
+
+    void on_scene_request(const SceneRequest& request) override;
+
+    void shutdown();
 
 private:
-	Scene* _current_scene = nullptr;
-	SceneFactory _scene_factory;
+    using SceneProvider = std::function<Scene*(SceneReloadMode reload_mode)>;
+
+    void notify_quit_requested();
+    void process_pending_request();
+
+    bool switch_to_registered_scene(
+        SceneId target,
+        const ScenePayload& payload,
+        SceneReloadMode reload_mode
+    );
+
+    bool switch_to_scene(
+        SceneId target,
+        Scene* next_scene,
+        const ScenePayload& payload,
+        SceneReloadMode reload_mode
+    );
+
+    void attach_to_scene(Scene* scene);
+    void detach_from_scene(Scene* scene);
+
+private:
+    Scene* _current_scene = nullptr;
+    SceneId _current_scene_id = SceneId::None;
+
+    SceneFactory _scene_factory;
+    std::unordered_map<SceneId, SceneProvider> _scene_providers;
+
+    SceneRequest _pending_request{};
+    bool _has_pending_request = false;
 };
 
-template<typename T, typename... Args>
-void SceneManager::switch_to(Args&&... args)
+template <typename T>
+bool SceneManager::register_scene(SceneId scene_id)
 {
-	static_assert(std::is_base_of_v<Scene, T>, "T must derive from Scene");
+    static_assert(
+        std::is_base_of_v<Scene, T>,
+        "T must derive from Scene."
+    );
 
-	T* next_scene = _scene_factory.get_scene<T>(std::forward<Args>(args)...);
+    if (scene_id == SceneId::None)
+        return false;
 
-	if (!next_scene || _current_scene == next_scene)
-		return;
+    if (_scene_providers.find(scene_id) != _scene_providers.end())
+        return false;
 
-	if (_current_scene)
-		_current_scene->on_exit();
+    _scene_providers.emplace(
+        scene_id,
+        [this](SceneReloadMode reload_mode) -> Scene*
+        {
+            T* existing_scene = _scene_factory.try_find_scene<T>();
 
-	_current_scene = next_scene;
-	_current_scene->on_enter();
-}
+            if (reload_mode == SceneReloadMode::Reset)
+            {
+                if (existing_scene && existing_scene != _current_scene)
+                    existing_scene->reset();
+            }
+            else if (reload_mode == SceneReloadMode::Recreate)
+            {
+                if (existing_scene)
+                {
+                    if (_current_scene == existing_scene)
+                    {
+                        detach_from_scene(_current_scene);
+                        _current_scene->on_exit();
+                        _current_scene = nullptr;
+                        _current_scene_id = SceneId::None;
+                    }
+                    else
+                    {
+                        detach_from_scene(existing_scene);
+                    }
 
-template<typename T>
-bool SceneManager::destroy_scene()
-{
-	static_assert(std::is_base_of_v<Scene, T>, "T must derive from Scene");
+                    _scene_factory.destroy_scene<T>();
+                }
+            }
 
-	T* target_scene = _scene_factory.try_find_scene<T>();
+            return _scene_factory.get_scene<T>();
+        }
+    );
 
-	if (!target_scene)
-		return false;
-
-	if (_current_scene == target_scene)
-	{
-		_current_scene->on_exit();
-		_current_scene = nullptr;
-	}
-
-	return _scene_factory.destroy_scene<T>();
-}
-
-template<typename T>
-bool SceneManager::reset_scene()
-{
-	static_assert(std::is_base_of_v<Scene, T>, "T must derive from Scene");
-
-	T* target_scene = _scene_factory.try_find_scene<T>();
-
-	if (!target_scene)
-		return false;
-
-	target_scene->reset();
-	return true;
+    return true;
 }

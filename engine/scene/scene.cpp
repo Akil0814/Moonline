@@ -68,6 +68,7 @@ void insert_input_event_entry_sorted(std::vector<Entry>& entries, Entry entry)
 
 
 }
+
 void Scene::on_input(const InputSnapshot& input,const std::vector<InputEvent>& events)
 {
 	for (const InputSnapshotReceiverEntry& entry : _snapshot_receivers)
@@ -190,6 +191,38 @@ void Scene::remove_destroyed_objects()
 		{
 			return !object || object->is_destroyed();
 		});
+}
+
+void Scene::notify_scene_request(const SceneRequest& request)
+{
+	notify_observers(
+		[&](SceneRequestObserver& observer)
+		{
+			observer.on_scene_request(request);
+		}
+	);
+}
+void Scene::request_scene_switch(
+	SceneId target,
+	const ScenePayload& payload,
+	SceneReloadMode reload_mode
+)
+{
+	SceneRequest request;
+	request.type = SceneRequestType::Switch;
+	request.target = target;
+	request.payload = payload;
+	request.reload_mode = reload_mode;
+
+	notify_scene_request(request);
+}
+
+void Scene::request_quit()
+{
+	SceneRequest request;
+	request.type = SceneRequestType::Quit;
+
+	notify_scene_request(request);
 }
 
 bool Scene::add_game_object(std::unique_ptr<GameObject> object)

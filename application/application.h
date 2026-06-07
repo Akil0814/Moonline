@@ -1,11 +1,14 @@
 #pragma once
+#include "../engine/scene/scene_manager_observer.h"
 #include "../engine/tools/singleton.h"
 #include "../engine/input/input_system.h"
 
 #include <SDL.h>
 #include <vector>
 
-class Application: public Singleton<Application>
+class Application
+    : public Singleton<Application>
+    , public SceneManagerObserver
 {
     friend Singleton<Application>;
 public:
@@ -15,6 +18,7 @@ public:
     bool init(int argc, char** argv);
     int run(int argc, char** argv);
     void shutdown();
+    void on_scene_manager_quit_requested() override;
 
 
     void init_assert(bool flag, const char* err_msg)

@@ -27,3 +27,10 @@ FileManager      管文件怎么读写
 JsonLoader       管 JSON 怎么解析
 ResourceManager  管资源怎么加载和缓存
 ConfigManager    管配置数据怎么组织
+
+
+ExitButton / ConfirmDialog
+    -> 通知当前 Scene：用户确认退出
+        -> Scene::request_quit()
+            -> SceneManager 收到 SceneRequestType::Quit
+                -> Application 停止主循环

@@ -72,7 +72,8 @@ bool Application::init(int argc, char** argv)
 
 	ResourceBootstrapper::instance()->bootstrap(_renderer);
 
-	SceneManager::instance()->switch_to<LoadingScene>();
+	SceneManager::instance()->attach(this);
+	SceneManager::instance()->start(SceneId::StartupLoading);
 
     return true;
 }
@@ -146,8 +147,14 @@ void Application::shutdown()
     _has_shutdown = true;
 
 	close_all_controllers();
+	SceneManager::instance()->detach(this);
 	SceneManager::instance()->shutdown();
 	ResourceManager::instance()->clear();
+}
+
+void Application::on_scene_manager_quit_requested()
+{
+	_active = false;
 }
 
 void Application::open_connected_controllers()

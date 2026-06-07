@@ -2,7 +2,7 @@
 
 #include "../../engine/resources/resource_manager.h"
 
-void TestScene::on_enter()
+void TestScene::on_enter(const ScenePayload& payload)
 {
 	_paused = false;
 }

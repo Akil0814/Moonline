@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-void LoadingScene::on_enter()
+void LoadingScene::on_enter(const ScenePayload& payload)
 {
 	_paused = false;
 	std::cout << "loading scene" << std::endl;
