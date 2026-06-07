@@ -3,7 +3,6 @@
 #include "scene_registry.h"
 
 #include "../engine/core/time.h"
-#include "../engine/scene/scene_manager.h"
 
 #include "../engine/resources/resource_manager.h"
 #include "../engine/resources/resource_bootstrapper.h"
@@ -74,12 +73,11 @@ bool Application::init(int argc, char** argv)
 
 	ResourceBootstrapper::instance()->bootstrap(_renderer);
 
-	SceneManager* scene_manager = SceneManager::instance();
-	scene_manager->attach(this);
+	_scene_manager.attach(this);
 
-	register_all_scenes(*scene_manager);
+	register_all_scenes(_scene_manager);
 
-	scene_manager->start(AppSceneKeys::StartupLoading);
+	_scene_manager.start(AppSceneKeys::StartupLoading);
 
     return true;
 }
@@ -114,7 +112,7 @@ int  Application::run(int argc, char** argv)
 
 		_input_system.end_frame();
 
-		SceneManager::instance()->on_input(
+		_scene_manager.on_input(
 			_input_system.snapshot(),
 			_input_system.events()
 		);
@@ -128,12 +126,12 @@ int  Application::run(int argc, char** argv)
 			SDL_Delay((Uint32)(1000.0 / FPS - delta * 1000));
 		
 
-		SceneManager::instance()->on_update(Time::instance()->delta());
+		_scene_manager.on_update(Time::instance()->delta());
 
 		SDL_SetRenderDrawColor(_renderer, 0,0,0,255);
 		SDL_RenderClear(_renderer);
 
-		SceneManager::instance()->on_render(_renderer);
+		_scene_manager.on_render(_renderer);
 
 		SDL_RenderPresent(_renderer);
 	}
@@ -150,11 +148,11 @@ void Application::shutdown()
         return;
     }
 
-    _has_shutdown = true;
+	_has_shutdown = true;
 
 	close_all_controllers();
-	SceneManager::instance()->detach(this);
-	SceneManager::instance()->shutdown();
+	_scene_manager.detach(this);
+	_scene_manager.shutdown();
 	ResourceManager::instance()->clear();
 }
 

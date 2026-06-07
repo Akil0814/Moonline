@@ -15,23 +15,17 @@
 #include "scene_request_observer.h"
 
 #include "../core/event/subject.h"
-#include "../tools/singleton.h"
 
 struct InputSnapshot;
 struct InputEvent;
 
 class SceneManager
-    : public Singleton<SceneManager>
-    , public Subject<SceneManagerObserver>
+    : public Subject<SceneManagerObserver>
     , public SceneRequestObserver
 {
-    friend class Singleton<SceneManager>;
-
-private:
+public:
     SceneManager() = default;
     ~SceneManager();
-
-public:
     SceneManager(const SceneManager&) = delete;
     SceneManager& operator=(const SceneManager&) = delete;
 

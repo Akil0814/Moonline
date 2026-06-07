@@ -1,4 +1,5 @@
 #pragma once
+#include "../engine/scene/scene_manager.h"
 #include "../engine/scene/scene_manager_observer.h"
 #include "../engine/tools/singleton.h"
 #include "../engine/input/input_system.h"
@@ -50,6 +51,7 @@ private:
     SDL_Window* _window = nullptr;
     SDL_Renderer* _renderer = nullptr;
     std::vector<SDL_GameController*> _controllers;
+    SceneManager _scene_manager;
 
     bool _active = { true };
     bool _has_shutdown = false;
