@@ -1,4 +1,5 @@
 #include "application.h"
+#include "scene_registry.h"
 
 #include "../engine/core/time.h"
 #include "../engine/scene/scene_manager.h"
@@ -72,8 +73,13 @@ bool Application::init(int argc, char** argv)
 
 	ResourceBootstrapper::instance()->bootstrap(_renderer);
 
-	SceneManager::instance()->attach(this);
-	SceneManager::instance()->start(SceneId::StartupLoading);
+	SceneManager* scene_manager = SceneManager::instance();
+	scene_manager->attach(this);
+
+	if (!register_all_scenes(*scene_manager))
+		return false;
+
+	scene_manager->start(SceneId::StartupLoading);
 
     return true;
 }
