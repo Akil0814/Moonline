@@ -1,19 +1,10 @@
 #pragma once
-#include <string>
-#include <variant>
+#include <any>
 
-struct EmptyScenePayload
+using ScenePayload = std::any;
+
+template <typename T>
+const T& require_scene_payload(const ScenePayload& payload)
 {
-};
-
-struct GameplayEnterPayload
-{
-	int i = 0;
-};
-
-struct MainMenuEnterPayload
-{
-	std::string tmp = {};
-};
-
-using ScenePayload = std::variant<EmptyScenePayload,GameplayEnterPayload,MainMenuEnterPayload>;
+	return std::any_cast<const T&>(payload);
+}

@@ -10,7 +10,7 @@ bool register_all_scenes(SceneManager& scene_manager)
     bool success = true;
 
     success = scene_manager.register_scene<LoadingScene>(SceneId::StartupLoading) && success;
-    success = scene_manager.register_scene<TestScene>(SceneId::MainMenu) && success;
+    success = scene_manager.register_scene<MainMenuScene>(SceneId::MainMenu) && success;
 
     return success;
 }

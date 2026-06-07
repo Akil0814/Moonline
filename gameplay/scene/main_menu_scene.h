@@ -2,11 +2,11 @@
 
 #include "../../engine/scene/scene.h"
 
-class TestScene final : public Scene
+class MainMenuScene final : public Scene
 {
 public:
-	TestScene() = default;
-	~TestScene() override = default;
+	MainMenuScene() = default;
+	~MainMenuScene() override = default;
 
 	void on_update(double delta)override;
 	void on_render(SDL_Renderer* renderer)override;
