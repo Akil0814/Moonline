@@ -1,6 +1,6 @@
 #include "application.h"
-#include "scene_keys.h"
-#include "scene_registry.h"
+#include "scene/scene_keys.h"
+#include "scene/scene_registry.h"
 
 #include "../engine/core/time.h"
 

@@ -1,6 +1,6 @@
 #include "main_menu_scene.h"
 
-#include "../../application/scene_payloads.h"
+#include "../../application/scene/scene_payloads.h"
 #include "../../engine/resources/resource_manager.h"
 
 void MainMenuScene::on_enter(const ScenePayload& payload)
