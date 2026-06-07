@@ -89,6 +89,7 @@ private:
 
     SceneRequest _pending_request{};
     bool _has_pending_request = false;
+    bool _is_processing_request = false;
 };
 
 template <typename T>

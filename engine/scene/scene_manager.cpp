@@ -49,6 +49,21 @@ void SceneManager::on_render(SDL_Renderer* renderer)
 
 void SceneManager::on_scene_request(const SceneRequest& request)
 {
+    // Scene requests are only valid during normal input/update execution.
+    // They must not be emitted from on_enter(), on_exit(), on_render(), reset(),
+    // or destructors. Those phases are part of scene lifecycle management, not
+    // scene flow decision-making.
+
+    // A processing cycle may queue at most one scene request.
+    // Reentrant requests while dispatching are also treated as programmer errors.
+
+    if (_is_processing_request)
+        throw std::logic_error("SceneManager received a reentrant scene request while processing another request.");
+
+
+    if (_has_pending_request)
+        throw std::logic_error("SceneManager received multiple scene requests in a single processing cycle.");
+
     _pending_request = request;
     _has_pending_request = true;
 }
@@ -68,10 +83,28 @@ void SceneManager::process_pending_request()
     if (!_has_pending_request)
         return;
 
+    struct ProcessingRequestGuard
+    {
+        bool& flag;
+
+        explicit ProcessingRequestGuard(bool& processing_flag)
+            : flag(processing_flag)
+        {
+            flag = true;
+        }
+
+        ~ProcessingRequestGuard()
+        {
+            flag = false;
+        }
+    };
+
     const SceneRequest request = _pending_request;
 
     _pending_request = SceneRequest{};
     _has_pending_request = false;
+
+    ProcessingRequestGuard processing_guard(_is_processing_request);
 
     switch (request.type)
     {
@@ -192,4 +225,5 @@ void SceneManager::shutdown()
 
     _pending_request = SceneRequest{};
     _has_pending_request = false;
+    _is_processing_request = false;
 }
