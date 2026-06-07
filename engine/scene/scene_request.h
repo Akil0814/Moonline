@@ -12,7 +12,7 @@ enum class SceneRequestType
 
 enum class SceneReloadMode
 {
-    None,
+    Reuse,
     Reset,
     Recreate
 };
@@ -21,7 +21,7 @@ struct SceneRequest
 {
     SceneRequestType type = SceneRequestType::None;
     SceneKey target = SceneKeys::Invalid;
-    SceneReloadMode reload_mode = SceneReloadMode::None;
+    SceneReloadMode reload_mode = SceneReloadMode::Reuse;
 
     ScenePayload payload{};
 };

@@ -18,7 +18,7 @@ void SceneManager::start(
     switch_to_registered_scene(
         first_scene,
         payload,
-        SceneReloadMode::None
+        SceneReloadMode::Reuse
     );
 }
 
@@ -129,7 +129,7 @@ void SceneManager::switch_to_scene(
 
     if (_current_scene == next_scene)
     {
-        if (reload_mode == SceneReloadMode::None)
+        if (reload_mode == SceneReloadMode::Reuse)
             return;
 
         detach_from_scene(_current_scene);

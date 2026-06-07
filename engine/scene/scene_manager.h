@@ -111,12 +111,7 @@ void SceneManager::register_scene(SceneKey scene_key)
         {
             T* existing_scene = _scene_factory.try_find_scene<T>();
 
-            if (reload_mode == SceneReloadMode::Reset)
-            {
-                if (existing_scene && existing_scene != _current_scene)
-                    existing_scene->reset();
-            }
-            else if (reload_mode == SceneReloadMode::Recreate)
+            if (reload_mode == SceneReloadMode::Recreate)
             {
                 if (existing_scene)
                 {

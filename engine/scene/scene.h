@@ -96,7 +96,7 @@ protected:
 	void request_scene_switch(
 		SceneKey target,
 		const ScenePayload& payload = {},
-		SceneReloadMode reload_mode = SceneReloadMode::None
+		SceneReloadMode reload_mode = SceneReloadMode::Reuse
 	);
 	void request_quit();
 
