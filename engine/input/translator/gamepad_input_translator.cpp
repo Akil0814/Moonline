@@ -2,7 +2,15 @@
 
 #include <SDL.h>
 
-std::vector<RawInputEvent> GamepadInputTranslator::translate_event(const SDL_Event& event) const
+#include <algorithm>
+
+namespace
+{
+constexpr float k_trigger_pressed_threshold = 0.5f;
+constexpr float k_trigger_released_threshold = 0.4f;
+}
+
+std::vector<RawInputEvent> GamepadInputTranslator::translate_event(const SDL_Event& event)
 {
     std::vector<RawInputEvent> events;
 
@@ -18,36 +26,108 @@ std::vector<RawInputEvent> GamepadInputTranslator::translate_event(const SDL_Eve
         break;
 
     case SDL_CONTROLLERAXISMOTION:
-    {
-        RawInputEvent input_event;
-        input_event.type = RawInputEventType::AxisChanged;
-        input_event.device = InputDevice::Gamepad;
-        input_event.axis_value = static_cast<float>(event.caxis.value) / 32767.0f;
-
         switch (event.caxis.axis)
         {
         case SDL_CONTROLLER_AXIS_LEFTX:
-            input_event.axis = RawInputAxis::GamepadLeftX;
-            events.push_back(input_event);
+            append_axis_event(
+                events,
+                RawInputAxis::GamepadLeftX,
+                normalize_stick_axis(event.caxis.value)
+            );
             break;
 
         case SDL_CONTROLLER_AXIS_LEFTY:
-            input_event.axis = RawInputAxis::GamepadLeftY;
-            events.push_back(input_event);
+            append_axis_event(
+                events,
+                RawInputAxis::GamepadLeftY,
+                normalize_stick_axis(event.caxis.value)
+            );
             break;
+
+        case SDL_CONTROLLER_AXIS_RIGHTX:
+            append_axis_event(
+                events,
+                RawInputAxis::GamepadRightX,
+                normalize_stick_axis(event.caxis.value)
+            );
+            break;
+
+        case SDL_CONTROLLER_AXIS_RIGHTY:
+            append_axis_event(
+                events,
+                RawInputAxis::GamepadRightY,
+                normalize_stick_axis(event.caxis.value)
+            );
+            break;
+
+        case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
+        {
+            const float normalized_value = normalize_trigger_axis(event.caxis.value);
+            append_axis_event(events, RawInputAxis::GamepadLeftTrigger, normalized_value);
+
+            if (!_left_trigger_pressed && normalized_value >= k_trigger_pressed_threshold)
+            {
+                _left_trigger_pressed = true;
+                append_trigger_virtual_button_event(
+                    events,
+                    RawInputControl::GamepadLeftTriggerButton,
+                    true
+                );
+            }
+            else if (_left_trigger_pressed && normalized_value <= k_trigger_released_threshold)
+            {
+                _left_trigger_pressed = false;
+                append_trigger_virtual_button_event(
+                    events,
+                    RawInputControl::GamepadLeftTriggerButton,
+                    false
+                );
+            }
+            break;
+        }
+
+        case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
+        {
+            const float normalized_value = normalize_trigger_axis(event.caxis.value);
+            append_axis_event(events, RawInputAxis::GamepadRightTrigger, normalized_value);
+
+            if (!_right_trigger_pressed && normalized_value >= k_trigger_pressed_threshold)
+            {
+                _right_trigger_pressed = true;
+                append_trigger_virtual_button_event(
+                    events,
+                    RawInputControl::GamepadRightTriggerButton,
+                    true
+                );
+            }
+            else if (_right_trigger_pressed && normalized_value <= k_trigger_released_threshold)
+            {
+                _right_trigger_pressed = false;
+                append_trigger_virtual_button_event(
+                    events,
+                    RawInputControl::GamepadRightTriggerButton,
+                    false
+                );
+            }
+            break;
+        }
 
         default:
             break;
         }
-
         break;
-    }
 
     default:
         break;
     }
 
     return events;
+}
+
+void GamepadInputTranslator::reset()
+{
+    _left_trigger_pressed = false;
+    _right_trigger_pressed = false;
 }
 
 void GamepadInputTranslator::append_controller_button_events(
@@ -82,16 +162,86 @@ void GamepadInputTranslator::append_controller_button_events(
     case SDL_CONTROLLER_BUTTON_Y:
         append_event(events, RawInputControl::GamepadNorth, type, InputDevice::Gamepad);
         break;
+    case SDL_CONTROLLER_BUTTON_BACK:
+        append_event(events, RawInputControl::GamepadBack, type, InputDevice::Gamepad);
+        break;
+    case SDL_CONTROLLER_BUTTON_GUIDE:
+        append_event(events, RawInputControl::GamepadGuide, type, InputDevice::Gamepad);
+        break;
+    case SDL_CONTROLLER_BUTTON_START:
+        append_event(events, RawInputControl::GamepadStart, type, InputDevice::Gamepad);
+        break;
+    case SDL_CONTROLLER_BUTTON_LEFTSTICK:
+        append_event(events, RawInputControl::GamepadLeftStick, type, InputDevice::Gamepad);
+        break;
+    case SDL_CONTROLLER_BUTTON_RIGHTSTICK:
+        append_event(events, RawInputControl::GamepadRightStick, type, InputDevice::Gamepad);
+        break;
     case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:
         append_event(events, RawInputControl::GamepadLeftShoulder, type, InputDevice::Gamepad);
         break;
     case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:
         append_event(events, RawInputControl::GamepadRightShoulder, type, InputDevice::Gamepad);
         break;
-    case SDL_CONTROLLER_BUTTON_START:
-        append_event(events, RawInputControl::GamepadStart, type, InputDevice::Gamepad);
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+    case SDL_CONTROLLER_BUTTON_MISC1:
+        append_event(events, RawInputControl::GamepadMisc1, type, InputDevice::Gamepad);
         break;
+    case SDL_CONTROLLER_BUTTON_PADDLE1:
+        append_event(events, RawInputControl::GamepadPaddle1, type, InputDevice::Gamepad);
+        break;
+    case SDL_CONTROLLER_BUTTON_PADDLE2:
+        append_event(events, RawInputControl::GamepadPaddle2, type, InputDevice::Gamepad);
+        break;
+    case SDL_CONTROLLER_BUTTON_PADDLE3:
+        append_event(events, RawInputControl::GamepadPaddle3, type, InputDevice::Gamepad);
+        break;
+    case SDL_CONTROLLER_BUTTON_PADDLE4:
+        append_event(events, RawInputControl::GamepadPaddle4, type, InputDevice::Gamepad);
+        break;
+    case SDL_CONTROLLER_BUTTON_TOUCHPAD:
+        append_event(events, RawInputControl::GamepadTouchpad, type, InputDevice::Gamepad);
+        break;
+#endif
     default:
         break;
     }
+}
+
+void GamepadInputTranslator::append_axis_event(
+    std::vector<RawInputEvent>& events,
+    RawInputAxis axis,
+    float normalized_value
+) const
+{
+    RawInputEvent input_event;
+    input_event.type = RawInputEventType::AxisChanged;
+    input_event.device = InputDevice::Gamepad;
+    input_event.axis = axis;
+    input_event.axis_value = normalized_value;
+    events.push_back(input_event);
+}
+
+void GamepadInputTranslator::append_trigger_virtual_button_event(
+    std::vector<RawInputEvent>& events,
+    RawInputControl control,
+    bool pressed
+) const
+{
+    append_event(
+        events,
+        control,
+        pressed ? RawInputEventType::ControlPressed : RawInputEventType::ControlReleased,
+        InputDevice::Gamepad
+    );
+}
+
+float GamepadInputTranslator::normalize_stick_axis(Sint16 value) const
+{
+    return std::clamp(static_cast<float>(value) / 32767.0f, -1.0f, 1.0f);
+}
+
+float GamepadInputTranslator::normalize_trigger_axis(Sint16 value) const
+{
+    return std::clamp(static_cast<float>(value) / 32767.0f, 0.0f, 1.0f);
 }

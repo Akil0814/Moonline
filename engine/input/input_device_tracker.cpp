@@ -16,7 +16,13 @@ InputDeviceUpdateResult InputDeviceTracker::process_event(const SDL_Event& event
     InputDeviceUpdateResult result;
 
     const InputDevice event_device = detect_event_device(event);
+    result.event_device = event_device;
     if (event_device == InputDevice::Unknown)
+    {
+        return result;
+    }
+
+    if (event.type == SDL_MOUSEMOTION)
     {
         return result;
     }

@@ -9,7 +9,7 @@ class InputTranslator
 {
 public:
     virtual ~InputTranslator() = default;
-    virtual std::vector<RawInputEvent> translate_event(const SDL_Event& event) const = 0;
+    virtual std::vector<RawInputEvent> translate_event(const SDL_Event& event) = 0;
 
 protected:
     RawInputEventType input_event_type(bool pressed) const;

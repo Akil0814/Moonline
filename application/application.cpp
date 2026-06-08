@@ -69,6 +69,7 @@ Application:: ~Application()
 
 bool Application::init(int argc, char** argv)
 {  
+	_input_system.set_renderer(_renderer);
 	ResourceBootstrapper::instance()->bootstrap(_renderer);
 
 	_scene_manager.attach(this);

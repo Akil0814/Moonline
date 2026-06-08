@@ -12,5 +12,10 @@ void InputTranslator::append_event(
     InputDevice device
 ) const
 {
-    events.push_back({ control, RawInputAxis::None, type, device });
+    RawInputEvent event;
+    event.control = control;
+    event.axis = RawInputAxis::None;
+    event.type = type;
+    event.device = device;
+    events.push_back(event);
 }
