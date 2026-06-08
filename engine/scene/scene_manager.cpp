@@ -23,8 +23,8 @@ void SceneManager::start(
 }
 
 void SceneManager::on_input(
-    const InputSnapshot& input,
-    const std::vector<InputEvent>& events
+    const RawInputFrame& input,
+    const std::vector<RawInputEvent>& events
 )
 {
     if (_current_scene)

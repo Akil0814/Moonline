@@ -16,8 +16,8 @@
 
 #include "../core/event/subject.h"
 
-struct InputSnapshot;
-struct InputEvent;
+struct RawInputFrame;
+struct RawInputEvent;
 
 class SceneManager
     : public Subject<SceneManagerObserver>
@@ -41,8 +41,8 @@ public:
     );
 
     void on_input(
-        const InputSnapshot& input,
-        const std::vector<InputEvent>& events
+        const RawInputFrame& input,
+        const std::vector<RawInputEvent>& events
     );
 
     void on_update(double delta);

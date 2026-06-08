@@ -5,6 +5,12 @@ void InputDeviceTracker::begin_frame()
     _device_switched_this_frame = false;
 }
 
+void InputDeviceTracker::reset()
+{
+    _current_device = InputDevice::Unknown;
+    _device_switched_this_frame = false;
+}
+
 InputDeviceUpdateResult InputDeviceTracker::process_event(const SDL_Event& event)
 {
     InputDeviceUpdateResult result;

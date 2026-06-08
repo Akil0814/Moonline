@@ -1,14 +1,14 @@
 #include "scene.h"
 
+#include "scene_input_order.h"
+
 #include "../core/interface/updatable.h"
 #include "../core/render/sdl_render_command_executor.h"
 
-#include "../input/contracts/input_event_receiver.h"
-#include "../input/contracts/input_snapshot_receiver.h"
+#include "../input/contracts/raw_input_event_receiver.h"
+#include "../input/contracts/raw_input_frame_receiver.h"
 
 #include <algorithm>
-#include <functional>
-#include <tuple>
 
 namespace
 {
@@ -18,60 +18,11 @@ void erase_destroyed_entries(std::vector<Entry>& entries)
 	std::erase_if(entries, [](const Entry& entry)
 	{return !entry.object || entry.object->is_destroyed();});
 }
-
-[[nodiscard]] bool scene_object_input_event_less(
-	const SceneObject* lhs,const SceneObject* rhs
-) noexcept
-{
-	if (lhs == rhs)
-		return false;
-
-	const UiElement* lhs_ui = dynamic_cast<const UiElement*>(lhs);
-	const UiElement* rhs_ui = dynamic_cast<const UiElement*>(rhs);
-
-	if (lhs_ui && rhs_ui)
-		return lhs_ui->order() > rhs_ui->order();
-
-	const GameObject* lhs_game = dynamic_cast<const GameObject*>(lhs);
-	const GameObject* rhs_game = dynamic_cast<const GameObject*>(rhs);
-
-	if (lhs_game && rhs_game)
-	{
-		return std::make_tuple(
-			lhs_game->depth_layer(),
-			lhs_game->order_in_layer()
-		) > std::make_tuple(
-			rhs_game->depth_layer(),
-			rhs_game->order_in_layer()
-		);
-	}
-
-	if (lhs_ui && rhs_game)
-		return true;
-
-	if (lhs_game && rhs_ui)
-		return false;
-
-	return std::less<const SceneObject*>{}(lhs, rhs);
 }
 
-template <typename Entry>
-void insert_input_event_entry_sorted(std::vector<Entry>& entries, Entry entry)
+void Scene::on_input(const RawInputFrame& input,const std::vector<RawInputEvent>& events)
 {
-	auto iter = std::upper_bound(entries.begin(), entries.end(), entry,
-		[](const Entry& lhs, const Entry& rhs)
-		{	return scene_object_input_event_less(lhs.object, rhs.object);}
-	);
-
-	entries.insert(iter, entry);
-}
-
-
-}
-
-void Scene::on_input(const InputSnapshot& input,const std::vector<InputEvent>& events)
-{
-	for (const InputSnapshotReceiverEntry& entry : _snapshot_receivers)
+	for (const RawInputFrameReceiverEntry& entry : _frame_receivers)
 	{
 		SceneObject* object = entry.object;
 
@@ -81,12 +32,12 @@ void Scene::on_input(const InputSnapshot& input,const std::vector<InputEvent>& e
 		if (_paused && !object->receive_input_when_paused())
 			continue;
 
-		entry.receiver->on_input_snapshot(input);
+		entry.receiver->on_raw_input_frame(input);
 	}
 
-	for (const InputEvent& input_event : events)
+	for (const RawInputEvent& input_event : events)
 	{
-		for (const InputEventReceiverEntry& entry : _event_receivers)
+		for (const RawInputEventReceiverEntry& entry : _event_receivers)
 		{
 			SceneObject* object = entry.object;
 
@@ -96,7 +47,7 @@ void Scene::on_input(const InputSnapshot& input,const std::vector<InputEvent>& e
 			if (_paused && !object->receive_input_when_paused())
 				continue;
 
-			if (entry.receiver->on_input_event(input_event))
+			if (entry.receiver->on_raw_input_event(input_event))
 				break;
 		}
 	}
@@ -166,17 +117,24 @@ void Scene::register_scene_object_interfaces(SceneObject* object)
 	if (Updatable* updatable = dynamic_cast<Updatable*>(object))
 		_updatables.push_back(UpdatableEntry{ object,updatable });
 
-	if (InputSnapshotReceiver* receiver =dynamic_cast<InputSnapshotReceiver*>(object))
-		_snapshot_receivers.push_back(InputSnapshotReceiverEntry{ object,receiver });
+	if (RawInputFrameReceiver* receiver = dynamic_cast<RawInputFrameReceiver*>(object))
+		_frame_receivers.push_back(RawInputFrameReceiverEntry{ object,receiver });
 
-	if (InputEventReceiver* receiver =dynamic_cast<InputEventReceiver*>(object))
-		insert_input_event_entry_sorted(_event_receivers,InputEventReceiverEntry{object,receiver});
+	if (RawInputEventReceiver* receiver = dynamic_cast<RawInputEventReceiver*>(object))
+	{
+		scene_input_order::insert_receiver_entry_sorted(
+			_event_receivers,
+			RawInputEventReceiverEntry{ object,receiver }
+		);
+	}
+
+	on_scene_object_registered(*object);
 }
 
 void Scene::remove_destroyed_objects()
 {
 	erase_destroyed_entries(_updatables);
-	erase_destroyed_entries(_snapshot_receivers);
+	erase_destroyed_entries(_frame_receivers);
 	erase_destroyed_entries(_event_receivers);
 
 	for (auto& layer : _object_layers)
@@ -223,6 +181,11 @@ void Scene::request_quit()
 	request.type = SceneRequestType::Quit;
 
 	notify_scene_request(request);
+}
+
+void Scene::on_scene_object_registered(SceneObject& object)
+{
+	(void)object;
 }
 
 bool Scene::add_game_object(std::unique_ptr<GameObject> object)

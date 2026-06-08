@@ -14,13 +14,12 @@
 #include "../core/depth_layer.h"
 #include "../core/game_object.h"
 #include "../core/event/subject.h"
+#include "../input/raw_input_frame.h"
+#include "../input/raw_input_types.h"
 #include "../ui/core/ui_element.h"
 
-struct InputEvent;
-struct InputSnapshot;
-
-struct InputSnapshotReceiver;
-struct InputEventReceiver;
+struct RawInputFrameReceiver;
+struct RawInputEventReceiver;
 struct Updatable;
 
 class Scene : public Subject<SceneRequestObserver>
@@ -43,7 +42,7 @@ public:
 
 	virtual void on_render(SDL_Renderer* renderer);
 
-	virtual void on_input(const InputSnapshot& input,const std::vector<InputEvent>& events);
+	virtual void on_input(const RawInputFrame& input,const std::vector<RawInputEvent>& events);
 
 	void pause() { _paused = true; }
 	void resume() { _paused = false; }
@@ -99,6 +98,7 @@ protected:
 		SceneReloadMode reload_mode = SceneReloadMode::Reuse
 	);
 	void request_quit();
+	virtual void on_scene_object_registered(SceneObject& object);
 
 protected:
 	bool _paused = false;
@@ -115,16 +115,16 @@ private:
 		Updatable* updatable = nullptr;
 	};
 
-	struct InputSnapshotReceiverEntry
+	struct RawInputFrameReceiverEntry
 	{
 		SceneObject* object = nullptr;
-		InputSnapshotReceiver* receiver = nullptr;
+		RawInputFrameReceiver* receiver = nullptr;
 	};
 
-	struct InputEventReceiverEntry
+	struct RawInputEventReceiverEntry
 	{
 		SceneObject* object = nullptr;
-		InputEventReceiver* receiver = nullptr;
+		RawInputEventReceiver* receiver = nullptr;
 	};
 
 private:
@@ -134,6 +134,6 @@ private:
 	std::vector<std::unique_ptr<UiElement>> _ui_roots;
 
 	std::vector<UpdatableEntry> _updatables;
-	std::vector<InputSnapshotReceiverEntry> _snapshot_receivers;
-	std::vector<InputEventReceiverEntry> _event_receivers;
+	std::vector<RawInputFrameReceiverEntry> _frame_receivers;
+	std::vector<RawInputEventReceiverEntry> _event_receivers;
 };

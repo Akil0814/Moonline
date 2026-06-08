@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../engine/scene/scene.h"
+#include "../../application/scene/application_scene.h"
 
-class MainMenuScene final : public Scene
+class MainMenuScene final : public ApplicationScene
 {
 public:
 	MainMenuScene() = default;
@@ -10,7 +10,7 @@ public:
 
 	void on_update(double delta)override;
 	void on_render(SDL_Renderer* renderer)override;
-	void on_input(const InputSnapshot& input, const std::vector<InputEvent>& events)override;
+	void on_input(const RawInputFrame& input, const std::vector<RawInputEvent>& events)override;
 
 	void on_enter(const ScenePayload& payload) override;
 	void on_exit() override;

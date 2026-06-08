@@ -69,8 +69,6 @@ Application:: ~Application()
 
 bool Application::init(int argc, char** argv)
 {  
-	_input_system.set_context(InputContext::UI);
-
 	ResourceBootstrapper::instance()->bootstrap(_renderer);
 
 	_scene_manager.attach(this);
@@ -113,7 +111,7 @@ int  Application::run(int argc, char** argv)
 		_input_system.end_frame();
 
 		_scene_manager.on_input(
-			_input_system.snapshot(),
+			_input_system.frame(),
 			_input_system.events()
 		);
 

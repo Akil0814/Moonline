@@ -1,6 +1,6 @@
 #pragma once
 
-#include "input_types.h"
+#include "raw_input_types.h"
 
 #include <SDL.h>
 
@@ -18,6 +18,7 @@ public:
     InputDeviceUpdateResult process_event(const SDL_Event& event);
     InputDevice current_device() const;
     bool device_switched_this_frame() const;
+    void reset();
 
 private:
     InputDevice detect_event_device(const SDL_Event& event) const;

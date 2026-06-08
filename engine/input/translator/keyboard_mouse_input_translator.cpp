@@ -2,9 +2,9 @@
 
 #include <SDL.h>
 
-std::vector<InputEvent> KeyboardMouseInputTranslator::translate_event(const SDL_Event& event) const
+std::vector<RawInputEvent> KeyboardMouseInputTranslator::translate_event(const SDL_Event& event) const
 {
-    std::vector<InputEvent> events;
+    std::vector<RawInputEvent> events;
 
     switch (event.type)
     {
@@ -16,12 +16,12 @@ std::vector<InputEvent> KeyboardMouseInputTranslator::translate_event(const SDL_
             return events;
         }
 
-        const std::optional<InputAction> action = action_from_key(event.key.keysym.sym);
-        if (action)
+        const std::optional<RawInputControl> control = control_from_key(event.key.keysym.sym);
+        if (control)
         {
             append_event(
                 events,
-                *action,
+                *control,
                 input_event_type(event.type == SDL_KEYDOWN),
                 InputDevice::Keyboard
             );
@@ -33,12 +33,12 @@ std::vector<InputEvent> KeyboardMouseInputTranslator::translate_event(const SDL_
     case SDL_MOUSEBUTTONDOWN:
     case SDL_MOUSEBUTTONUP:
     {
-        const std::optional<InputAction> action = action_from_mouse_button(event.button.button);
-        if (action)
+        const std::optional<RawInputControl> control = control_from_mouse_button(event.button.button);
+        if (control)
         {
             append_event(
                 events,
-                *action,
+                *control,
                 input_event_type(event.type == SDL_MOUSEBUTTONDOWN),
                 InputDevice::Mouse
             );
@@ -49,8 +49,8 @@ std::vector<InputEvent> KeyboardMouseInputTranslator::translate_event(const SDL_
 
     case SDL_MOUSEWHEEL:
     {
-        InputEvent input_event;
-        input_event.type = InputEventType::MouseWheel;
+        RawInputEvent input_event;
+        input_event.type = RawInputEventType::MouseWheel;
         input_event.device = InputDevice::Mouse;
         input_event.wheel_x = event.wheel.x;
         input_event.wheel_y = event.wheel.y;
@@ -60,8 +60,8 @@ std::vector<InputEvent> KeyboardMouseInputTranslator::translate_event(const SDL_
 
     case SDL_TEXTINPUT:
     {
-        InputEvent input_event;
-        input_event.type = InputEventType::TextInput;
+        RawInputEvent input_event;
+        input_event.type = RawInputEventType::TextInput;
         input_event.device = InputDevice::Keyboard;
         input_event.text = event.text.text;
         events.push_back(input_event);
@@ -70,8 +70,8 @@ std::vector<InputEvent> KeyboardMouseInputTranslator::translate_event(const SDL_
 
     case SDL_TEXTEDITING:
     {
-        InputEvent input_event;
-        input_event.type = InputEventType::TextEditing;
+        RawInputEvent input_event;
+        input_event.type = RawInputEventType::TextEditing;
         input_event.device = InputDevice::Keyboard;
         input_event.text = event.edit.text;
         events.push_back(input_event);
@@ -85,63 +85,69 @@ std::vector<InputEvent> KeyboardMouseInputTranslator::translate_event(const SDL_
     return events;
 }
 
-std::optional<InputAction> KeyboardMouseInputTranslator::action_from_key(SDL_Keycode key) const
+std::optional<RawInputControl> KeyboardMouseInputTranslator::control_from_key(SDL_Keycode key) const
 {
     switch (key)
     {
     case SDLK_a:
-    case SDLK_LEFT:
-        return InputAction::Left;
+        return RawInputControl::KeyA;
     case SDLK_d:
-    case SDLK_RIGHT:
-        return InputAction::Right;
+        return RawInputControl::KeyD;
     case SDLK_w:
-    case SDLK_UP:
-        return InputAction::Up;
+        return RawInputControl::KeyW;
     case SDLK_s:
+        return RawInputControl::KeyS;
+    case SDLK_LEFT:
+        return RawInputControl::KeyLeft;
+    case SDLK_RIGHT:
+        return RawInputControl::KeyRight;
+    case SDLK_UP:
+        return RawInputControl::KeyUp;
     case SDLK_DOWN:
-        return InputAction::Down;
+        return RawInputControl::KeyDown;
     case SDLK_RETURN:
+        return RawInputControl::KeyEnter;
     case SDLK_KP_ENTER:
-        return InputAction::Confirm;
+        return RawInputControl::KeyNumpadEnter;
     case SDLK_ESCAPE:
-        return InputAction::Cancel;
+        return RawInputControl::KeyEscape;
     case SDLK_p:
-        return InputAction::Pause;
+        return RawInputControl::KeyP;
     case SDLK_SPACE:
-        return InputAction::Jump;
+        return RawInputControl::KeySpace;
     case SDLK_j:
-        return InputAction::Attack;
+        return RawInputControl::KeyJ;
     case SDLK_k:
-        return InputAction::Special;
+        return RawInputControl::KeyK;
     case SDLK_l:
-        return InputAction::Guard;
+        return RawInputControl::KeyL;
     case SDLK_LSHIFT:
+        return RawInputControl::KeyLeftShift;
     case SDLK_RSHIFT:
-        return InputAction::Dash;
+        return RawInputControl::KeyRightShift;
     case SDLK_BACKSPACE:
-        return InputAction::Backspace;
+        return RawInputControl::KeyBackspace;
     case SDLK_DELETE:
-        return InputAction::DeleteKey;
+        return RawInputControl::KeyDelete;
     case SDLK_HOME:
-        return InputAction::Home;
+        return RawInputControl::KeyHome;
     case SDLK_END:
-        return InputAction::End;
+        return RawInputControl::KeyEnd;
     case SDLK_TAB:
-        return InputAction::Tab;
+        return RawInputControl::KeyTab;
     default:
         return std::nullopt;
     }
 }
 
-std::optional<InputAction> KeyboardMouseInputTranslator::action_from_mouse_button(Uint8 button) const
+std::optional<RawInputControl> KeyboardMouseInputTranslator::control_from_mouse_button(Uint8 button) const
 {
     switch (button)
     {
     case SDL_BUTTON_LEFT:
-        return InputAction::Attack;
+        return RawInputControl::MouseLeft;
     case SDL_BUTTON_RIGHT:
-        return InputAction::Guard;
+        return RawInputControl::MouseRight;
     default:
         return std::nullopt;
     }
