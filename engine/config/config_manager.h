@@ -1,39 +1,38 @@
 #pragma once
 
+#include "../io/loaders/asset_config_types.h"
+#include "../resources/resource_types.h"
 #include <filesystem>
-#include <string>
-#include <string_view>
 #include <unordered_map>
+#include <vector>
 
-#include "config_value.h"
 #include "../tools/singleton.h"
 
-class ConfigManager: public Singleton<ConfigManager>
+class ConfigManager : public Singleton<ConfigManager>
 {
-    friend Singleton<ConfigManager>;
+	friend Singleton<ConfigManager>;
+
 public:
-    ConfigManager() = default;
-    ~ConfigManager() = default;
+	ConfigManager() = default;
+	~ConfigManager() = default;
 
-    bool load_default_config(const std::filesystem::path& path);
-    bool load_user_config(const std::filesystem::path& path);
-    bool save_user_config(const std::filesystem::path& path) const;
+	bool load_assets_structure(const std::filesystem::path& assets_structure_path);
+	bool load_character_resource_requests();
+	void clear();
 
-    [[nodiscard]] bool has(std::string_view key) const;
-
-    [[nodiscard]] bool get_bool(std::string_view key, bool default_value = false) const;
-    [[nodiscard]] int get_int(std::string_view key, int default_value = 0) const;
-    [[nodiscard]] float get_float(std::string_view key, float default_value = 0.0f) const;
-    [[nodiscard]] std::string get_string(
-        std::string_view key,
-        std::string_view default_value = ""
-    ) const;
-
-    void set_bool(std::string_view key, bool value);
-    void set_int(std::string_view key, int value);
-    void set_float(std::string_view key, float value);
-    void set_string(std::string_view key, std::string value);
+	const std::vector<AtlasLoadRequest>& atlas_load_requests() const;
+	const std::vector<AnimationBuildRequest>& animation_build_requests() const;
 
 private:
-    std::unordered_map<std::string, ConfigValue> _values;
+	bool load_character_resource_requests(
+		const std::filesystem::path& manifest_path,
+		const std::filesystem::path& layout_path
+	);
+
+private:
+	std::vector<AssetDirectoryEntry> _directories;
+	std::unordered_map<std::string, std::filesystem::path> _manifest_paths;
+	std::vector<AtlasLoadRequest> _atlas_load_requests;
+	std::vector<AnimationBuildRequest> _animation_build_requests;
+	bool _has_assets_structure = false;
 };

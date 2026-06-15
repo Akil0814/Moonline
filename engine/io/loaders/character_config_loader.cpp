@@ -81,13 +81,6 @@ bool CharacterConfigLoader::load(
 
 	std::filesystem::path texture_root =
 		PathManager::instance()->resolve_asset_path(resources.at("texture_root").get<std::string>());
-	if (!std::filesystem::is_directory(texture_root))
-	{
-		std::cout << "Load character config failed: texture root does not exist: "
-			<< texture_root << std::endl;
-		return false;
-	}
-
 	std::filesystem::path animation_config_path =
 		PathManager::instance()->resolve_config_path(resources.at("animation_config").get<std::string>());
 	if (!std::filesystem::is_regular_file(animation_config_path))

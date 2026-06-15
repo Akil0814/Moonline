@@ -1,24 +1,25 @@
 {
-  "textures": [
+  "textures_directories": [
     "character",
     "stage",
     "ui"
   ],
-
-  "i18n": [
+  "i18n_directories": [
     "en",
     "zh-cn",
     "ja"
   ],
-
-  "configs": [
+  "configs_directories": [
     "character",
     "enemy",
     "global",
     "scene"
   ],
-
-  "audio": [
+  "audio_directories": [
     "character"
-  ]
+  ],
+  "manifests": {
+    "characters": "configs/character/characters_manifest.json",
+    "character_animations": "configs/character/character_animation_layout.json"
+  }
 }

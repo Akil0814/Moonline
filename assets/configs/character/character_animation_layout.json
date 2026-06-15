@@ -1,0 +1,100 @@
+{
+  "animations": {
+    "Idle": {
+      "path": "animation/base/idle"
+    },
+    "IdleIntoLong": {
+      "path": "animation/base/idle_into_long"
+    },
+    "IdleLong": {
+      "path": "animation/base/idle_long"
+    },
+    "Strengthen": {
+      "path": "animation/base/strengthen"
+    },
+    "WalkEnter": {
+      "path": "animation/movement/walk/enter"
+    },
+    "WalkLoop": {
+      "path": "animation/movement/walk/loop"
+    },
+    "RunEnter": {
+      "path": "animation/movement/run/enter"
+    },
+    "RunLoop": {
+      "path": "animation/movement/run/loop"
+    },
+    "RunExit": {
+      "path": "animation/movement/run/exit"
+    },
+    "DashBack": {
+      "path": "animation/movement/dash/back"
+    },
+    "DashForward": {
+      "path": "animation/movement/dash/front"
+    },
+    "AirDashBack": {
+      "path": "animation/movement/dash/in_air_back"
+    },
+    "AirDashForward": {
+      "path": "animation/movement/dash/in_air_front"
+    },
+    "JumpStart": {
+      "path": "animation/movement/jump/start"
+    },
+    "JumpUp": {
+      "path": "animation/movement/jump/rise"
+    },
+    "JumpApex": {
+      "path": "animation/movement/jump/apex"
+    },
+    "JumpFall": {
+      "path": "animation/movement/jump/fall"
+    },
+    "JumpLand": {
+      "path": "animation/movement/jump/land"
+    },
+    "AttackNormal": {
+      "segment_path": "animation/attack/normal"
+    },
+    "AttackAir": {
+      "segment_path": "animation/attack/aerial"
+    },
+    "AttackRangedGround": {
+      "path": "animation/attack/ranged/ground"
+    },
+    "AttackRangedAir": {
+      "path": "animation/attack/ranged/air"
+    },
+    "AttackSpecial": {
+      "segment_path": "animation/attack/special/ex{segment}"
+    },
+    "GuardGround": {
+      "path": "animation/reaction/guard/ground"
+    },
+    "GuardAir": {
+      "path": "animation/reaction/guard/air"
+    },
+    "Hurt": {
+      "path": "animation/reaction/hurt"
+    },
+    "Knockdown": {
+      "path": "animation/reaction/knockdown"
+    },
+    "KnockdownAirEnter": {
+      "path": "animation/reaction/knockdown_air/enter"
+    },
+    "KnockdownAirLoop": {
+      "path": "animation/reaction/knockdown_air/loop"
+    },
+    "KnockdownAirLand": {
+      "path": "animation/reaction/knockdown_air/land"
+    },
+    "Getup": {
+      "path": "animation/reaction/getup"
+    },
+    "Start": {
+      "path": "animation/reaction/start"
+    }
+  }
+}

@@ -8,29 +8,29 @@ bool AtlasBuilder::build_atlas(
 	Atlas& atlas
 ) const
 {
-	if (request._atlas_key.empty())
+	if (request.atlas_key().empty())
 	{
 		std::cout << "Build atlas failed: atlas key is empty." << std::endl;
 		return false;
 	}
 
-	if (request._frame_count == 0)
+	if (request.frame_count() == 0)
 	{
 		std::cout << "Build atlas failed: frame count is zero: "
-			<< request._atlas_key << std::endl;
+			<< request.atlas_key() << std::endl;
 		return false;
 	}
 
-	if (texture_results.size() != request._frame_count)
+	if (texture_results.size() != request.frame_count())
 	{
 		std::cout << "Build atlas failed: texture count mismatch: "
-			<< request._atlas_key << ", expected " << request._frame_count
+			<< request.atlas_key() << ", expected " << request.frame_count()
 			<< ", actual " << texture_results.size() << std::endl;
 		return false;
 	}
 
 	atlas.clear();
-	atlas.set_name(request._atlas_key);
+	atlas.set_name(request.atlas_key());
 
 	for (size_t index = 0; index < texture_results.size(); ++index)
 	{
@@ -38,14 +38,14 @@ bool AtlasBuilder::build_atlas(
 		if (!texture_result._success || !texture_result._texture)
 		{
 			std::cout << "Build atlas failed: texture is invalid: "
-				<< request._atlas_key << ", frame " << index << std::endl;
+				<< request.atlas_key() << ", frame " << index << std::endl;
 			return false;
 		}
 
 		if (texture_result._frame_index != index)
 		{
 			std::cout << "Build atlas failed: frame index mismatch: "
-				<< request._atlas_key << ", expected " << index
+				<< request.atlas_key() << ", expected " << index
 				<< ", actual " << texture_result._frame_index << std::endl;
 			return false;
 		}

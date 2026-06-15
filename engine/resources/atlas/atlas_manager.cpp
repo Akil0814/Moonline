@@ -19,17 +19,17 @@ bool AtlasManager::load_atlas(SDL_Renderer* renderer, const AtlasLoadRequest& re
 	if (!renderer)
 	{
 		std::cout << "Load atlas failed: renderer is null: "
-			<< request._atlas_key << std::endl;
+			<< request.atlas_key() << std::endl;
 		return false;
 	}
 
-	if (request._atlas_key.empty())
+	if (request.atlas_key().empty())
 	{
 		std::cout << "Load atlas failed: atlas key is empty." << std::endl;
 		return false;
 	}
 
-	if (_atlas_pool.contains(request._atlas_key))
+	if (_atlas_pool.contains(request.atlas_key()))
 		return true;
 
 	std::vector<std::filesystem::path> frame_paths;
@@ -44,7 +44,7 @@ bool AtlasManager::load_atlas(SDL_Renderer* renderer, const AtlasLoadRequest& re
 	for (size_t index = 0; index < frame_paths.size(); ++index)
 	{
 		SurfaceLoadRequest surface_request;
-		surface_request._asset_key = request._atlas_key;
+		surface_request._asset_key = request.atlas_key();
 		surface_request._frame_path = frame_paths[index];
 		surface_request._frame_index = index;
 
@@ -60,14 +60,14 @@ bool AtlasManager::load_atlas(SDL_Renderer* renderer, const AtlasLoadRequest& re
 		texture_results.push_back(std::move(texture_result));
 	}
 
-	std::unique_ptr<Atlas> atlas = std::make_unique<Atlas>(request._atlas_key);
+	std::unique_ptr<Atlas> atlas = std::make_unique<Atlas>(request.atlas_key());
 	AtlasBuilder atlas_builder;
 	if (!atlas_builder.build_atlas(request, texture_results, *atlas))
 		return false;
 
 	for (size_t index = 0; index < texture_results.size(); ++index)
 	{
-		std::string texture_key = make_texture_key(request._atlas_key, index);
+		std::string texture_key = make_texture_key(request.atlas_key(), index);
 		if (!_texture_manager.store_texture(
 			texture_key,
 			std::move(texture_results[index]._texture)))
@@ -76,7 +76,7 @@ bool AtlasManager::load_atlas(SDL_Renderer* renderer, const AtlasLoadRequest& re
 		}
 	}
 
-	_atlas_pool.emplace(request._atlas_key, std::move(atlas));
+	_atlas_pool.emplace(request.atlas_key(), std::move(atlas));
 	return true;
 }
 
@@ -126,22 +126,22 @@ bool AtlasManager::collect_frame_paths(
 {
 	frame_paths.clear();
 
-	if (request._directory_path.empty())
+	if (request.directory_path().empty())
 	{
 		std::cout << "Collect frame paths failed: directory path is empty: "
-			<< request._atlas_key << std::endl;
+			<< request.atlas_key() << std::endl;
 		return false;
 	}
 
-	if (!std::filesystem::is_directory(request._directory_path))
+	if (!std::filesystem::is_directory(request.directory_path()))
 	{
 		std::cout << "Collect frame paths failed: directory does not exist: "
-			<< request._directory_path << std::endl;
+			<< request.directory_path() << std::endl;
 		return false;
 	}
 
 	for (const std::filesystem::directory_entry& entry :
-		std::filesystem::directory_iterator(request._directory_path))
+		std::filesystem::directory_iterator(request.directory_path()))
 	{
 		if (!entry.is_regular_file())
 			continue;
@@ -167,10 +167,10 @@ bool AtlasManager::collect_frame_paths(
 		}
 	);
 
-	if (frame_paths.size() != request._frame_count)
+	if (frame_paths.size() != request.frame_count())
 	{
 		std::cout << "Collect frame paths failed: frame count mismatch: "
-			<< request._atlas_key << ", expected " << request._frame_count
+			<< request.atlas_key() << ", expected " << request.frame_count()
 			<< ", actual " << frame_paths.size() << std::endl;
 		return false;
 	}
