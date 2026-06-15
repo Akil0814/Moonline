@@ -5,7 +5,6 @@
 #include "../engine/input/input_system.h"
 
 #include <SDL.h>
-#include <vector>
 
 class Application
     : public Singleton<Application>
@@ -31,12 +30,6 @@ public:
     }
 
 private:
-    void open_connected_controllers();
-    void open_controller(int joystick_index);
-    void close_controller(SDL_JoystickID joystick_id);
-    void close_all_controllers();
-    void handle_controller_device_event(const SDL_Event& event);
-
     const int _logical_width = 1280;
     const int _logical_height = 720;
 
@@ -50,7 +43,6 @@ private:
 
     SDL_Window* _window = nullptr;
     SDL_Renderer* _renderer = nullptr;
-    std::vector<SDL_GameController*> _controllers;
     SceneManager _scene_manager;
 
     bool _active = { true };

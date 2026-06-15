@@ -2,6 +2,7 @@
 
 #include "raw_input_frame.h"
 #include "input_device_tracker.h"
+#include "controller_manager.h"
 
 #include "translator/gamepad_input_translator.h"
 #include "translator/keyboard_mouse_input_translator.h"
@@ -13,6 +14,8 @@
 class InputSystem
 {
 public:
+    void initialize();
+    void shutdown();
     void begin_frame();
     void end_frame();
     void process_event(const SDL_Event& event);
@@ -34,6 +37,7 @@ private:
 private:
     RawInputState _state;
     std::vector<RawInputEvent> _events;
+    ControllerManager _controller_manager;
     InputDeviceTracker _device_tracker;
     SDL_Renderer* _renderer = nullptr;
     KeyboardMouseInputTranslator _keyboard_mouse_translator;

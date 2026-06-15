@@ -2,6 +2,16 @@
 
 #include <cmath>
 
+void InputSystem::initialize()
+{
+    _controller_manager.initialize();
+}
+
+void InputSystem::shutdown()
+{
+    _controller_manager.shutdown();
+}
+
 void InputSystem::begin_frame()
 {
     _state.begin_frame();
@@ -17,6 +27,8 @@ void InputSystem::end_frame()
 
 void InputSystem::process_event(const SDL_Event& event)
 {
+    _controller_manager.handle_event(event);
+
     if (should_clear_state_for_event(event))
     {
         _state.clear();
