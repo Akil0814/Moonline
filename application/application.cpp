@@ -7,7 +7,7 @@
 #include "../engine/resources/resource_manager.h"
 #include "../engine/resources/resource_bootstrapper.h"
 
-#include "../gameplay/scene/loading_scene.h"
+#include "../gameplay/scene/startup_loading_scene.h"
 
 #include <iostream>
 #include <thread>

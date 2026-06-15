@@ -4,6 +4,24 @@
 #include <filesystem>
 #include <string>
 
+struct TextureLoadRequest
+{
+	std::string key;
+	std::filesystem::path file_path;
+};
+
+struct SoundLoadRequest
+{
+	std::string key;
+	std::filesystem::path file_path;
+};
+
+struct MusicLoadRequest
+{
+	std::string key;
+	std::filesystem::path file_path;
+};
+
 struct AtlasLoadRequest
 {
 	std::string _atlas_key;

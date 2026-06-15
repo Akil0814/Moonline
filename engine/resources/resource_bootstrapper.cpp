@@ -121,6 +121,7 @@ bool ResourceBootstrapper::load_preload_textures(SDL_Renderer* renderer)
 		}
 
 		_preloaded_texture_keys.push_back(relative_path);
+		std::cout << relative_path << std::endl;
 	}
 
 	return true;

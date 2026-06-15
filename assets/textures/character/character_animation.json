@@ -96,5 +96,10 @@
                        "Start":  {
                                      "path":  "animation/reaction/start"
                                  }
-                   }
+                   },
+
+    "textures":
+    {
+        
+    }
 }
