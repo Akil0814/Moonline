@@ -1,5 +1,4 @@
 #pragma once
-#include "pipeline/file_manager.h"
 #include "../io/json/json_loader.h"
 
 #include "../tools/singleton.h"
@@ -7,24 +6,27 @@
 
 #include <SDL.h>
 
-#include<vector>
-#include <filesystem>
+#include <string>
+#include <string_view>
+#include <vector>
 
 class ResourceBootstrapper : public Singleton<ResourceBootstrapper>
 {
     friend Singleton<ResourceBootstrapper>;
 public:
     bool bootstrap(SDL_Renderer* renderer);
-    bool load_prload_resource();
-    bool load_assets();
+    const std::vector<Error>& get_error_list() const;
 
-    std::vector<Error> get_error_list();
+    SDL_Texture* get_preload_texture(std::string_view key);
 
 private:
-    FileManager _file_manager;
+    bool load_preload_manifest();
+    bool load_preload_textures(SDL_Renderer* renderer);
+
+private:
     JsonLoader _json_loader;
 
-    std::vector<std::filesystem::path> _all_file_path;
-
     std::vector<Error> _error_list;
+
+    std::vector<std::string> _preloaded_texture_keys;
 };

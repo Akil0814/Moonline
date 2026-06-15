@@ -1,12 +1,12 @@
-/*#include "ui_fade_image.h"
+#include "ui_fade_image.h"
 #include "../../core/render/render_command.h"
 
 #include <SDL.h>
 
-
 UiFadeImage::UiFadeImage(SDL_Texture* texture, Vector2 pos, Vector2 size,int order)
 	:UiElement(pos,size,order), _texture(texture)
 {
+    _timer.set_one_shot(true);
     if (_texture)
         SDL_SetTextureBlendMode(_texture, SDL_BLENDMODE_BLEND);
 }
@@ -14,8 +14,19 @@ UiFadeImage::UiFadeImage(SDL_Texture* texture, Vector2 pos, Vector2 size,int ord
 UiFadeImage::UiFadeImage(SDL_Texture* texture, Rect rect, int order)
     :UiElement(rect, order), _texture(texture)
 {
+    _timer.set_one_shot(true);
     if (_texture)
         SDL_SetTextureBlendMode(_texture, SDL_BLENDMODE_BLEND);
+}
+
+void UiFadeImage::reset() noexcept
+{
+    UiElement::reset();
+    _state = FadeState::Idle;
+    _elapsed = 0.0;
+    _alpha = 255;
+    _timer.restart();
+    _timer.pause();
 }
 
 
@@ -99,8 +110,18 @@ void UiFadeImage::update(double delta)
     }
 
     if (_state == FadeState::Finished)
+    {
+        if (_on_end)
+            _on_end();
         UiElement::destroy();
+    }
 }
+
+void  UiFadeImage::set_on_end(FadeImageOnEnd on_end)
+{
+    _on_end = on_end;
+}
+
 
 
 void UiFadeImage::submit_ui_render_commands(std::vector<UiRenderCommand>& out_commands) const
@@ -108,12 +129,7 @@ void UiFadeImage::submit_ui_render_commands(std::vector<UiRenderCommand>& out_co
     if (!_texture || !is_visible())
         return;
 
-    UiRenderCommand command;
-    command.texture = _texture;
-    command.screen_rect = screen_rect();
-    command.alpha = _alpha;
-
-    out_commands.push_back(command);
+    out_commands.push_back(make_ui_texture_command(_texture, screen_rect(), _alpha));
 }
 
 void UiFadeImage::update_fade_in(double delta)
@@ -183,4 +199,4 @@ void UiFadeImage::start_hold()
 
     _state = FadeState::Holding;
     _timer.restart();
-}*/
+}

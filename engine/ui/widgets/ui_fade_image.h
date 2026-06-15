@@ -1,5 +1,6 @@
-/*#pragma once
+#pragma once
 #include <cstdint>
+#include <functional>
 
 #include "../core/ui_element.h"
 #include "../../core/interface/updatable.h"
@@ -17,9 +18,12 @@ struct SDL_Texture;
 class UiFadeImage : public UiElement, public Updatable
 {
 public:
+    using FadeImageOnEnd = std::function<void()>;
+
     UiFadeImage(SDL_Texture* texture, Vector2 pos, Vector2 size, int order = 0);
     UiFadeImage(SDL_Texture* texture, Rect rect ,int order = 0);
 
+    void reset() noexcept override;
     void submit_ui_render_commands(std::vector<UiRenderCommand>& out_commands) const override;
 
     void configure_playback(
@@ -29,6 +33,8 @@ public:
     void play();
 
     void update(double delta)override;
+
+    void set_on_end(FadeImageOnEnd on_end);
 
 private:
     void update_fade_in(double delta);
@@ -51,6 +57,8 @@ private:
     UiFadeImageMode _mode = UiFadeImageMode::FadeIn;
     FadeState _state = FadeState::Idle;
 
+    FadeImageOnEnd _on_end;
+
     Timer _timer;
 
     SDL_Texture* _texture = nullptr;
@@ -62,4 +70,4 @@ private:
     double _fade_out_duration = 1.0;
 
     std::uint8_t _alpha = 255;
-};*/
+};
