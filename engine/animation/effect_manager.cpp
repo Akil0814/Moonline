@@ -36,8 +36,8 @@ bool EffectManager::register_effect(const EffectBuildRequest& request)
 
 
 	EffectDefinition definition;
-	definition._effect_key = request.effect_key;
-	definition._animation_key = request.animation_key;
+	definition.effect_key = request.effect_key;
+	definition.animation_key = request.animation_key;
 
 	_definitions[request.effect_key] = definition;
 	return true;
@@ -55,42 +55,47 @@ const EffectDefinition* EffectManager::find_definition(const std::string_view& k
 
 std::unique_ptr<Effect> EffectManager::create_effect(const EffectSpawnRequest& request) const
 {
-	const EffectDefinition* definition = find_definition(request._effect_key);
+	const EffectDefinition* definition = find_definition(request.effect_key);
 
 	if (!definition)
 	{
 		std::cout << "Create effect failed: definition does not exist: "
-			<< request._effect_key << std::endl;
+			<< request.effect_key << std::endl;
 		return nullptr;
 	}
 
 	std::unique_ptr<Animation> animation =
-		AnimationManager::instance()->create_animation(definition->_animation_key);
+		AnimationManager::instance()->create_animation(definition->animation_key);
 
 	if (!animation)
 	{
 		std::cout << "Create effect failed: animation creation failed: "
-			<< definition->_animation_key << std::endl;
+			<< definition->animation_key << std::endl;
 		return nullptr;
 	}
 
 	std::unique_ptr<Effect> effect = std::make_unique<Effect>(
-		definition->_effect_key,
-		definition->_animation_key,
+		definition->effect_key,
+		definition->animation_key,
 		std::move(animation)
 	);
 
-	effect->set_position(request._position);
+	effect->set_position(request.position);
 
-	if (request._size.has_value())
-		effect->set_size(*request._size);
-	else if (!definition->_default_size.is_zero())
-		effect->set_size(definition->_default_size);
+	if (request.size.has_value())
+		effect->set_size(*request.size);
+	else if (!definition->default_size.is_zero())
+		effect->set_size(definition->default_size);
 
-	if (request._angle_degrees.has_value())
-		effect->set_angle(*request._angle_degrees);
+	if (request.angle_degrees.has_value())
+		effect->set_angle(*request.angle_degrees);
 	else
-		effect->set_angle(definition->_angle_degrees);
+		effect->set_angle(definition->angle_degrees);
+
+	if (request.flip.has_value())
+		effect->set_flip(*request.flip);
+	else
+		effect->set_flip(SpriteFlip::None);
 
 	return effect;
 }

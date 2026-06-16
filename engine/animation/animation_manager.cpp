@@ -37,12 +37,12 @@ bool AnimationManager::register_animation(
 	}
 
 	AnimationDefinition definition;
-	definition._animation_key = request.animation_key;
-	definition._atlas_key = request.atlas_key;
-	definition._fps = request.fps;
-	definition._loop = request.loop;
-	definition._segment_index = request.segment_index;
-	definition._atlas = atlas;
+	definition.animation_key = request.animation_key;
+	definition.atlas_key = request.atlas_key;
+	definition.fps = request.fps;
+	definition.loop = request.loop;
+	definition.segment_index = request.segment_index;
+	definition.atlas = atlas;
 
 	_definitions[request.animation_key] = definition;
 	return true;
@@ -84,8 +84,8 @@ std::unique_ptr<Animation> AnimationManager::create_animation(const std::string_
 	}
 
 	std::unique_ptr<Animation> animation = std::make_unique<Animation>();
-	animation->set_atlas(definition->_atlas);
-	animation->set_loop(definition->_loop);
-	animation->set_interval_seconds(1.0 / definition->_fps);
+	animation->set_atlas(definition->atlas);
+	animation->set_loop(definition->loop);
+	animation->set_interval_seconds(1.0 / definition->fps);
 	return animation;
 }

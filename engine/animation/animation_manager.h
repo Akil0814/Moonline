@@ -14,12 +14,12 @@ class ResourceManager;
 
 struct AnimationDefinition
 {
-	std::string _animation_key;
-	std::string _atlas_key;
-	double _fps = 10.0;
-	bool _loop = true;
-	size_t _segment_index = 0;
-	const Atlas* _atlas = nullptr;
+	std::string animation_key;
+	std::string atlas_key;
+	double fps = 10.0;
+	bool loop = true;
+	size_t segment_index = 0;
+	const Atlas* atlas = nullptr;
 };
 
 class AnimationManager : public Singleton<AnimationManager>
