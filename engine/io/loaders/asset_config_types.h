@@ -66,3 +66,9 @@ struct AnimationConfig
 {
 	std::vector<AnimationClipConfig> _clips;
 };
+
+struct CharacterAnimationContentEntry
+{
+	CharacterConfig _character_config;
+	AnimationConfig _animation_config;
+};

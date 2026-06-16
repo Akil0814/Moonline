@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../io/loaders/asset_config_types.h"
-#include "../resources/resource_types.h"
 #include <filesystem>
 #include <unordered_map>
 #include <vector>
@@ -17,14 +16,15 @@ public:
 	~ConfigManager() = default;
 
 	bool load_assets_structure(const std::filesystem::path& assets_structure_path);
-	bool load_character_resource_requests();
+	bool load_character_animation_content();
 	void clear();
 
-	const std::vector<AtlasLoadRequest>& atlas_load_requests() const;
-	const std::vector<AnimationBuildRequest>& animation_build_requests() const;
+	const std::vector<AssetDirectoryEntry>& directories() const;
+	const std::unordered_map<std::string, std::filesystem::path>& manifest_paths() const;
+	const std::vector<CharacterAnimationContentEntry>& character_animation_entries() const;
 
 private:
-	bool load_character_resource_requests(
+	bool load_character_animation_content(
 		const std::filesystem::path& manifest_path,
 		const std::filesystem::path& layout_path
 	);
@@ -32,7 +32,6 @@ private:
 private:
 	std::vector<AssetDirectoryEntry> _directories;
 	std::unordered_map<std::string, std::filesystem::path> _manifest_paths;
-	std::vector<AtlasLoadRequest> _atlas_load_requests;
-	std::vector<AnimationBuildRequest> _animation_build_requests;
+	std::vector<CharacterAnimationContentEntry> _character_animation_entries;
 	bool _has_assets_structure = false;
 };

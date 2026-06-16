@@ -1,30 +1,48 @@
 #include "ui_fade_image.h"
-#include "../../core/render/render_command.h"
-
-#include <SDL.h>
 
 UiFadeImage::UiFadeImage(SDL_Texture* texture, Vector2 pos, Vector2 size,int order)
-	:UiElement(pos,size,order), _texture(texture)
+	: UiImage(texture, pos, size, order)
 {
     _timer.set_one_shot(true);
-    if (_texture)
-        SDL_SetTextureBlendMode(_texture, SDL_BLENDMODE_BLEND);
 }
 
 UiFadeImage::UiFadeImage(SDL_Texture* texture, Rect rect, int order)
-    :UiElement(rect, order), _texture(texture)
+    : UiImage(texture, rect, order)
 {
     _timer.set_one_shot(true);
-    if (_texture)
-        SDL_SetTextureBlendMode(_texture, SDL_BLENDMODE_BLEND);
+}
+
+UiFadeImage::UiFadeImage(
+    SDL_Texture* texture,
+    Vector2 center,
+    Vector2 image_size,
+    UiImageCenterTag tag,
+    int order
+)
+    : UiImage(texture, center, image_size, tag, order)
+{
+    _timer.set_one_shot(true);
+}
+
+UiFadeImage::UiFadeImage(
+    SDL_Texture* texture,
+    Vector2 center,
+    Vector2 source_size,
+    Vector2 render_size,
+    UiImageCenterTag tag,
+    int order
+)
+    : UiImage(texture, center, source_size, render_size, tag, order)
+{
+    _timer.set_one_shot(true);
 }
 
 void UiFadeImage::reset() noexcept
 {
-    UiElement::reset();
+    UiImage::reset();
     _state = FadeState::Idle;
     _elapsed = 0.0;
-    _alpha = 255;
+    set_alpha(255);
     _timer.restart();
     _timer.pause();
 }
@@ -72,12 +90,12 @@ void UiFadeImage::play()
     {
     case UiFadeImageMode::FadeIn:
     case UiFadeImageMode::FadeInOut:
-        _alpha = 0;
+        set_alpha(0);
         _state = FadeState::FadingIn;
         break;
 
     case UiFadeImageMode::FadeOut:
-        _alpha = 255;
+        set_alpha(255);
         start_hold();
         break;
 
@@ -113,7 +131,7 @@ void UiFadeImage::update(double delta)
     {
         if (_on_end)
             _on_end();
-        UiElement::destroy();
+        UiImage::destroy();
     }
 }
 
@@ -121,28 +139,17 @@ void  UiFadeImage::set_on_end(FadeImageOnEnd on_end)
 {
     _on_end = on_end;
 }
-
-
-
-void UiFadeImage::submit_ui_render_commands(std::vector<UiRenderCommand>& out_commands) const
-{
-    if (!_texture || !is_visible())
-        return;
-
-    out_commands.push_back(make_ui_texture_command(_texture, screen_rect(), _alpha));
-}
-
 void UiFadeImage::update_fade_in(double delta)
 {
     _elapsed += delta;
 
     double t = ratio(_elapsed, _fade_in_duration);
-    _alpha = static_cast<Uint8>(255.0 * t);
+    set_alpha(static_cast<std::uint8_t>(255.0 * t));
 
     if (t >= 1.0)
     {
         _elapsed = 0.0;
-        _alpha = 255;
+        set_alpha(255);
         start_hold();
     }
 }
@@ -152,11 +159,11 @@ void UiFadeImage::update_fade_out(double delta)
     _elapsed += delta;
 
     double t = ratio(_elapsed, _fade_out_duration);
-    _alpha = static_cast<Uint8>(255.0 * (1.0 - t));
+    set_alpha(static_cast<std::uint8_t>(255.0 * (1.0 - t)));
 
     if (t >= 1.0)
     {
-        _alpha = 0;
+        set_alpha(0);
         _state = FadeState::Finished;
     }
 }

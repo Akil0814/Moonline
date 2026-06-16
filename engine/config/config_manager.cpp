@@ -5,7 +5,6 @@
 #include "../io/loaders/character_animation_layout_loader.h"
 #include "../io/loaders/character_config_loader.h"
 #include "../io/loaders/character_manifest_loader.h"
-#include "../resources/pipeline/resource_request_builder.h"
 
 #include <iostream>
 #include <utility>
@@ -25,14 +24,13 @@ bool ConfigManager::load_assets_structure(const std::filesystem::path& assets_st
 	return true;
 }
 
-bool ConfigManager::load_character_resource_requests()
+bool ConfigManager::load_character_animation_content()
 {
-	_atlas_load_requests.clear();
-	_animation_build_requests.clear();
+	_character_animation_entries.clear();
 
 	if (!_has_assets_structure)
 	{
-		std::cout << "Load character resource requests failed: assets structure is not loaded."
+		std::cout << "Load character animation content failed: assets structure is not loaded."
 			<< std::endl;
 		return false;
 	}
@@ -41,7 +39,7 @@ bool ConfigManager::load_character_resource_requests()
 		_manifest_paths.find("characters");
 	if (manifest_iterator == _manifest_paths.end())
 	{
-		std::cout << "Load character resource requests failed: characters manifest is missing."
+		std::cout << "Load character animation content failed: characters manifest is missing."
 			<< std::endl;
 		return false;
 	}
@@ -50,12 +48,12 @@ bool ConfigManager::load_character_resource_requests()
 		_manifest_paths.find("character_animations");
 	if (layout_iterator == _manifest_paths.end())
 	{
-		std::cout << "Load character resource requests failed: character animation layout is missing."
+		std::cout << "Load character animation content failed: character animation layout is missing."
 			<< std::endl;
 		return false;
 	}
 
-	return load_character_resource_requests(
+	return load_character_animation_content(
 		manifest_iterator->second,
 		layout_iterator->second
 	);
@@ -65,22 +63,26 @@ void ConfigManager::clear()
 {
 	_directories.clear();
 	_manifest_paths.clear();
-	_atlas_load_requests.clear();
-	_animation_build_requests.clear();
+	_character_animation_entries.clear();
 	_has_assets_structure = false;
 }
 
-const std::vector<AtlasLoadRequest>& ConfigManager::atlas_load_requests() const
+const std::vector<AssetDirectoryEntry>& ConfigManager::directories() const
 {
-	return _atlas_load_requests;
+	return _directories;
 }
 
-const std::vector<AnimationBuildRequest>& ConfigManager::animation_build_requests() const
+const std::unordered_map<std::string, std::filesystem::path>& ConfigManager::manifest_paths() const
 {
-	return _animation_build_requests;
+	return _manifest_paths;
 }
 
-bool ConfigManager::load_character_resource_requests(
+const std::vector<CharacterAnimationContentEntry>& ConfigManager::character_animation_entries() const
+{
+	return _character_animation_entries;
+}
+
+bool ConfigManager::load_character_animation_content(
 	const std::filesystem::path& manifest_path,
 	const std::filesystem::path& layout_path
 )
@@ -97,7 +99,6 @@ bool ConfigManager::load_character_resource_requests(
 
 	CharacterConfigLoader character_config_loader;
 	AnimationConfigLoader animation_config_loader;
-	ResourceRequestBuilder request_builder;
 
 	for (const CharacterManifestEntry& character_entry : character_manifest._characters)
 	{
@@ -114,14 +115,10 @@ bool ConfigManager::load_character_resource_requests(
 			return false;
 		}
 
-		if (!request_builder.append_character_animation_requests(
-			character_config,
-			animation_config,
-			_atlas_load_requests,
-			_animation_build_requests))
-		{
-			return false;
-		}
+		_character_animation_entries.push_back(CharacterAnimationContentEntry{
+			std::move(character_config),
+			std::move(animation_config)
+			});
 	}
 
 	return true;

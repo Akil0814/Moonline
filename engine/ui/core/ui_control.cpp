@@ -1,11 +1,11 @@
-/*#include "ui_control.h"
+#include "ui_control.h"
 
 UiControl::UiControl(Vector2 position, Vector2 size, int order)
     : UiElement(position, size, order)
 {
 }
 
-void UiControl::reset()
+void UiControl::reset() noexcept
 {
     UiElement::reset();
     _enabled = true;
@@ -34,4 +34,4 @@ void UiControl::set_focused(bool focused)
 bool UiControl::is_focused() const
 {
     return _is_focused;
-}*/
+}

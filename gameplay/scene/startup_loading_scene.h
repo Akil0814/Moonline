@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../application/scene/application_scene.h"
+#include "../../engine/loading/game_content_loader.h"
 #include "../../engine/ui/widgets/ui_fade_image.h"
 
 class StartupLoadingScene final : public ApplicationScene
@@ -19,5 +20,6 @@ public:
 
 private:
 	UiFadeImage* akil_icon = nullptr;
-
+	GameContentLoader _content_loader;
+	bool _has_logged_load_failure = false;
 };

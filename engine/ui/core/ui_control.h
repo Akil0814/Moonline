@@ -1,4 +1,4 @@
-/*#pragma once
+#pragma once
 
 #include "ui_element.h"
 #include "ui_focusable.h"
@@ -19,4 +19,4 @@ public:
 protected:
     bool _enabled = true;
     bool _is_focused = false;
-};*/
+};

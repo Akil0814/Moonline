@@ -21,6 +21,7 @@ public:
 
     bool init(int argc, char** argv);
     int run(int argc, char** argv);
+    SDL_Renderer* renderer() const { return _renderer; }
 
 private:
     bool init_runtime(const RuntimeSettings& settings);
@@ -29,7 +30,6 @@ private:
     void shutdown();
 
     void on_scene_manager_quit_requested() override;
-    SDL_Renderer* renderer() const { return _renderer; }
 
 
     void init_assert(bool flag, const char* err_msg)

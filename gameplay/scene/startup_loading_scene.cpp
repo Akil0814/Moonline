@@ -1,5 +1,7 @@
 #include "startup_loading_scene.h"
 
+#include "../../application/application.h"
+#include "../../application/scene/scene_keys.h"
 #include "../../engine/bootstrap/bootstrapper.h"
 
 #include <iostream>
@@ -8,6 +10,7 @@ void StartupLoadingScene::on_enter(const ScenePayload& payload)
 {
 	(void)payload;
 	_paused = false;
+	_has_logged_load_failure = false;
 	std::cout << "loading scene" << std::endl;
 
 	SDL_Texture* akil_tex = Bootstrapper::instance()->get_preload_texture("Akil.png");
@@ -16,11 +19,27 @@ void StartupLoadingScene::on_enter(const ScenePayload& payload)
 
 	akil_icon->configure_playback(UiFadeImageMode::FadeInOut, 2, 2, 2);
 	akil_icon->play();
+
+	_content_loader.start(Application::instance()->renderer());
 }
 
 void StartupLoadingScene::on_update(double delta)
 {
 	Scene::on_update(delta);
+
+	_content_loader.update();
+
+	if (_content_loader.is_finished())
+	{
+		request_scene_switch(AppSceneKeys::MainMenu);
+		return;
+	}
+
+	if (_content_loader.has_failed() && !_has_logged_load_failure)
+	{
+		_has_logged_load_failure = true;
+		std::cout << _content_loader.error_message() << std::endl;
+	}
 }
 
 void StartupLoadingScene::on_render(SDL_Renderer* renderer)
@@ -39,9 +58,12 @@ void StartupLoadingScene::on_input(const RawInputFrame& input, const std::vector
 void StartupLoadingScene::on_exit()
 {
 	_paused = false;
+	_content_loader.reset();
 }
 
 void StartupLoadingScene::reset()
 {
 	_paused = false;
+	_has_logged_load_failure = false;
+	_content_loader.reset();
 }

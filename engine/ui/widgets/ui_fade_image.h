@@ -1,8 +1,7 @@
 #pragma once
-#include <cstdint>
 #include <functional>
 
-#include "../core/ui_element.h"
+#include "ui_image.h"
 #include "../../core/interface/updatable.h"
 #include "../../tools/timer.h"
 
@@ -15,16 +14,30 @@ enum class UiFadeImageMode
 
 struct SDL_Texture;
 
-class UiFadeImage : public UiElement, public Updatable
+class UiFadeImage : public UiImage, public Updatable
 {
 public:
     using FadeImageOnEnd = std::function<void()>;
 
     UiFadeImage(SDL_Texture* texture, Vector2 pos, Vector2 size, int order = 0);
     UiFadeImage(SDL_Texture* texture, Rect rect ,int order = 0);
+    UiFadeImage(
+        SDL_Texture* texture,
+        Vector2 center,
+        Vector2 image_size,
+        UiImageCenterTag,
+        int order = 0
+    );
+    UiFadeImage(
+        SDL_Texture* texture,
+        Vector2 center,
+        Vector2 source_size,
+        Vector2 render_size,
+        UiImageCenterTag,
+        int order = 0
+    );
 
     void reset() noexcept override;
-    void submit_ui_render_commands(std::vector<UiRenderCommand>& out_commands) const override;
 
     void configure_playback(
         UiFadeImageMode mode,double hold_time,
@@ -61,13 +74,9 @@ private:
 
     Timer _timer;
 
-    SDL_Texture* _texture = nullptr;
-
     double _elapsed = 0.0;
     double _hold_time = 0.0;
 
     double _fade_in_duration = 1.0;
     double _fade_out_duration = 1.0;
-
-    std::uint8_t _alpha = 255;
 };
