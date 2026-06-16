@@ -12,8 +12,6 @@
 
 void GameContentLoader::reset()
 {
-	ConfigManager::instance()->clear();
-
 	_renderer = nullptr;
 	_load_plan.clear();
 	_error_message.clear();
@@ -34,13 +32,15 @@ bool GameContentLoader::start(SDL_Renderer* renderer)
 	_renderer = renderer;
 	_state = GameContentLoaderState::PreparingRequests;
 
+	//确保路径合理
 	PathManager* path_manager = PathManager::instance();
-	if (!path_manager->init())
+	if (!path_manager->is_initialized())
 	{
-		fail("GameContentLoader start failed: path manager init failed.");
+		fail("GameContentLoader start failed: path manager is not init.");
 		return false;
 	}
 
+	//载入配置
 	ConfigManager* config_manager = ConfigManager::instance();
 	const std::filesystem::path assets_structure_path = path_manager->assets_structure();
 	if (!config_manager->load_assets_structure(assets_structure_path))
@@ -132,6 +132,5 @@ void GameContentLoader::fail(std::string message)
 {
 	_error_message = std::move(message);
 	_state = GameContentLoaderState::Failed;
-	_progress = 0.0f;
 	std::cout << _error_message << std::endl;
 }

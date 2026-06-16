@@ -16,19 +16,19 @@ bool EffectManager::register_effect(const std::vector<EffectBuildRequest>& reque
 
 bool EffectManager::register_effect(const EffectBuildRequest& request)
 {
-	if (request._effect_key.empty())
+	if (request.effect_key.empty())
 	{
 		std::cout << "Register effect failed: effect key is empty." << std::endl;
 		return false;
 	}
 
-	if (request._animation_key.empty())
+	if (request.animation_key.empty())
 	{
 		std::cout << "Register effect failed: animation key is empty." << std::endl;
 		return false;
 	}
 
-	if (! AnimationManager::instance()->find_definition(request._animation_key))
+	if (!AnimationManager::instance()->find_definition(request.animation_key))
 	{
 		std::cout << "Register effect failed: can't find animation definition." << std::endl;
 		return false;
@@ -36,10 +36,10 @@ bool EffectManager::register_effect(const EffectBuildRequest& request)
 
 
 	EffectDefinition definition;
-	definition._effect_key = request._effect_key;
-	definition._animation_key = request._animation_key;
+	definition._effect_key = request.effect_key;
+	definition._animation_key = request.animation_key;
 
-	_definitions[request._effect_key] = definition;
+	_definitions[request.effect_key] = definition;
 	return true;
 };
 

@@ -47,18 +47,17 @@ bool ResourceRequestBuilder::append_character_animation_requests(
 		if (clip_config._is_segment)
 			animation_key += "." + std::to_string(clip_config._segment_index);
 
-		AtlasLoadRequest atlas_request(
-			animation_key,
-			std::move(directory_path),
-			clip_config._frame_count
-		);
+		AtlasLoadRequest atlas_request;
+		atlas_request.atlas_key = animation_key;
+		atlas_request.directory_path = std::move(directory_path);
+		atlas_request.frame_count = clip_config._frame_count;
 
 		AnimationBuildRequest animation_request;
-		animation_request._animation_key = animation_key;
-		animation_request._atlas_key = atlas_request.atlas_key();
-		animation_request._fps = clip_config._fps;
-		animation_request._loop = clip_config._loop;
-		animation_request._segment_index = clip_config._segment_index;
+		animation_request.animation_key = animation_key;
+		animation_request.atlas_key = atlas_request.atlas_key;
+		animation_request.fps = clip_config._fps;
+		animation_request.loop = clip_config._loop;
+		animation_request.segment_index = clip_config._segment_index;
 
 		atlas_load_requests.push_back(std::move(atlas_request));
 		animation_build_requests.push_back(std::move(animation_request));

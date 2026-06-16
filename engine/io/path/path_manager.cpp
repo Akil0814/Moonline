@@ -15,6 +15,8 @@ bool PathManager::init()
     if (!validate_core_asset_dirs())
         return false;
 
+    _is_init = true;
+
     return true;
 }
 

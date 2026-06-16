@@ -9,42 +9,42 @@ bool AnimationManager::register_animation(
 	const Atlas* atlas
 )
 {
-	if (request._animation_key.empty())
+	if (request.animation_key.empty())
 	{
 		std::cout << "Register animation failed: animation key is empty." << std::endl;
 		return false;
 	}
 
-	if (request._atlas_key.empty())
+	if (request.atlas_key.empty())
 	{
 		std::cout << "Register animation failed: atlas key is empty: "
-			<< request._animation_key << std::endl;
+			<< request.animation_key << std::endl;
 		return false;
 	}
 
 	if (!atlas)
 	{
 		std::cout << "Register animation failed: atlas is null: "
-			<< request._animation_key << std::endl;
+			<< request.animation_key << std::endl;
 		return false;
 	}
 
-	if (request._fps <= 0.0)
+	if (request.fps <= 0.0)
 	{
 		std::cout << "Register animation failed: fps is invalid: "
-			<< request._animation_key << std::endl;
+			<< request.animation_key << std::endl;
 		return false;
 	}
 
 	AnimationDefinition definition;
-	definition._animation_key = request._animation_key;
-	definition._atlas_key = request._atlas_key;
-	definition._fps = request._fps;
-	definition._loop = request._loop;
-	definition._segment_index = request._segment_index;
+	definition._animation_key = request.animation_key;
+	definition._atlas_key = request.atlas_key;
+	definition._fps = request.fps;
+	definition._loop = request.loop;
+	definition._segment_index = request.segment_index;
 	definition._atlas = atlas;
 
-	_definitions[request._animation_key] = definition;
+	_definitions[request.animation_key] = definition;
 	return true;
 }
 
@@ -55,7 +55,7 @@ bool AnimationManager::register_animations(
 {
 	for (const AnimationBuildRequest& request : requests)
 	{
-		const Atlas* atlas = resource_manager.find_atlas(request._atlas_key);
+		const Atlas* atlas = resource_manager.find_atlas(request.atlas_key);
 		if (!register_animation(request, atlas))
 			return false;
 	}
@@ -89,4 +89,3 @@ std::unique_ptr<Animation> AnimationManager::create_animation(const std::string_
 	animation->set_interval_seconds(1.0 / definition->_fps);
 	return animation;
 }
-

@@ -1,14 +1,12 @@
 {
   "default_language": "en",
-  "languages": {
-    "en": {
-      "file": "en.json"
-    },
-    "zh_cn": {
-      "file": "zh_cn.json"
-    },
-    "ja": {
-      "file": "ja.json"
-    }
-  }
+  "languages": [
+    "en",
+    "zh_cn",
+    "ja"
+  ],
+  "file":[
+    "base.json"
+
+  ]
 }

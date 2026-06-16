@@ -32,6 +32,8 @@ public:
     std::filesystem::path resolve_asset_path(const std::filesystem::path& path) const;
     std::filesystem::path resolve_config_path(const std::filesystem::path& path) const;
 
+    bool is_initialized() const { return _is_init; };
+
 private:
     PathManager() = default;
 
@@ -45,4 +47,5 @@ private:
 
 private:
     std::filesystem::path _root;
+    bool _is_init = false;
 };

@@ -1,0 +1,8 @@
+{
+  "menuScene": {
+    "start": "Start",
+    "settings": "Settings",
+    "exit": "Exit",
+    "about": "About"
+  }
+}

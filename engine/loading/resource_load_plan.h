@@ -39,7 +39,7 @@ public:
 		return _atlas_requests.empty() && _animation_build_requests.empty();
 	}
 
-	[[nodiscard]] size_t total_request_count() const
+	[[nodiscard]] std::size_t total_request_count() const
 	{
 		return _atlas_requests.size() + _animation_build_requests.size();
 	}

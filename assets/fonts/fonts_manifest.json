@@ -1,0 +1,79 @@
+{
+  "fonts": [
+    {
+      "key": "ui.latin.12",
+      "file": "fusion-pixel-10px-proportional-latin.ttf",
+      "size": 12
+    },
+    {
+      "key": "ui.latin.16",
+      "file": "fusion-pixel-10px-proportional-latin.ttf",
+      "size": 16
+    },
+    {
+      "key": "ui.latin.24",
+      "file": "fusion-pixel-10px-proportional-latin.ttf",
+      "size": 24
+    },
+    {
+      "key": "ui.zh_hans.12",
+      "file": "fusion-pixel-10px-proportional-zh_hans.ttf",
+      "size": 12
+    },
+    {
+      "key": "ui.zh_hans.16",
+      "file": "fusion-pixel-10px-proportional-zh_hans.ttf",
+      "size": 16
+    },
+    {
+      "key": "ui.zh_hans.24",
+      "file": "fusion-pixel-10px-proportional-zh_hans.ttf",
+      "size": 24
+    },
+    {
+      "key": "ui.zh_hant.12",
+      "file": "fusion-pixel-10px-proportional-zh_hant.ttf",
+      "size": 12
+    },
+    {
+      "key": "ui.zh_hant.16",
+      "file": "fusion-pixel-10px-proportional-zh_hant.ttf",
+      "size": 16
+    },
+    {
+      "key": "ui.zh_hant.24",
+      "file": "fusion-pixel-10px-proportional-zh_hant.ttf",
+      "size": 24
+    },
+    {
+      "key": "ui.ja.12",
+      "file": "fusion-pixel-10px-proportional-ja.ttf",
+      "size": 12
+    },
+    {
+      "key": "ui.ja.16",
+      "file": "fusion-pixel-10px-proportional-ja.ttf",
+      "size": 16
+    },
+    {
+      "key": "ui.ja.24",
+      "file": "fusion-pixel-10px-proportional-ja.ttf",
+      "size": 24
+    },
+    {
+      "key": "ui.ko.12",
+      "file": "fusion-pixel-10px-proportional-ko.ttf",
+      "size": 12
+    },
+    {
+      "key": "ui.ko.16",
+      "file": "fusion-pixel-10px-proportional-ko.ttf",
+      "size": 16
+    },
+    {
+      "key": "ui.ko.24",
+      "file": "fusion-pixel-10px-proportional-ko.ttf",
+      "size": 24
+    }
+  ]
+}
