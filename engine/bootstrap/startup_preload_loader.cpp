@@ -12,6 +12,7 @@ void StartupPreloadLoader::set_manifest_path(const std::filesystem::path& preloa
     _manifest_path = preload_manifest_path;
     _manifest_loader.reset();
     _preloaded_texture_keys.clear();
+    _is_loaded = false;
 }
 
 void StartupPreloadLoader::reset()
@@ -19,10 +20,14 @@ void StartupPreloadLoader::reset()
     _manifest_path.clear();
     _manifest_loader.reset();
     _preloaded_texture_keys.clear();
+    _is_loaded = false;
 }
 
 bool StartupPreloadLoader::load(SDL_Renderer* renderer)
 {
+    if (_is_loaded)
+        return true;
+
     if (!renderer)
     {
         std::cout << "Bootstrapper phase2 failed: renderer is null." << std::endl;
@@ -39,7 +44,11 @@ bool StartupPreloadLoader::load(SDL_Renderer* renderer)
     if (!load_manifest())
         return false;
 
-    return load_textures(renderer);
+    if (!load_textures(renderer))
+        return false;
+
+    _is_loaded = true;
+    return true;
 }
 
 SDL_Texture* StartupPreloadLoader::get_texture(std::string_view key) const

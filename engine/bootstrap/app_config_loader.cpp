@@ -78,13 +78,29 @@ AppConfigLoader::Result AppConfigLoader::load(const std::filesystem::path& app_c
 
     const json* startup_node = nullptr;
     std::filesystem::path preload_manifest_relative = DEFAULT_PRELOAD_MANIFEST_PATH;
-    if (loader.get_object("startup", startup_node))
+    const json& root = loader.root();
+    if (root.contains("startup"))
     {
-        preload_manifest_relative = loader.get_or(
-            *startup_node,
-            "preload_manifest",
-            preload_manifest_relative
-        );
+        if (!loader.get_object("startup", startup_node))
+        {
+            append_bootstrap_error(result.error, "App config startup must be an object.");
+            return result;
+        }
+
+        if (startup_node->contains("preload_manifest"))
+        {
+            const json& preload_manifest_node = startup_node->at("preload_manifest");
+            if (!preload_manifest_node.is_string())
+            {
+                append_bootstrap_error(
+                    result.error,
+                    "App config startup.preload_manifest must be a string."
+                );
+                return result;
+            }
+
+            preload_manifest_relative = preload_manifest_node.get<std::string>();
+        }
     }
 
     result.preload_manifest_path =

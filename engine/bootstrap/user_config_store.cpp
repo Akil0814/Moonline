@@ -125,7 +125,7 @@ UserConfigStore::Result UserConfigStore::load_or_create(
     std::string user_config_error;
     if (!apply_overrides(user_config_path, merged_settings, user_config_error))
     {
-        append_bootstrap_error(result.error, user_config_error);
+        append_bootstrap_error(result.warning, user_config_error);
         result.rebuilt_user_config = true;
 
         if (!write_user_config(user_config_path, default_settings, result.error))

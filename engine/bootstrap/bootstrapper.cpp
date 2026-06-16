@@ -52,9 +52,9 @@ StartupParseResult Bootstrapper::parse_runtime_settings(int argc, char** argv)
         return result;
     }
 
-    if (!user_config_result.error.empty())
+    if (!user_config_result.warning.empty())
     {
-        result.error = user_config_result.error;
+        result.warning = user_config_result.warning;
     }
 
     result.runtime_settings = user_config_result.runtime_settings;

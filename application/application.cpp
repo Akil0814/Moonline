@@ -8,6 +8,7 @@
 
 #include <cstdlib>
 #include <ctime>
+#include <iostream>
 
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
@@ -38,6 +39,11 @@ bool Application::init(int argc, char** argv)
 	{
 		startup_fail(parse_result.error);
 		return false;
+	}
+
+	if (!parse_result.warning.empty())
+	{
+		std::cout << "Startup warning: " << parse_result.warning << std::endl;
 	}
 
 	if (!init_runtime(parse_result.runtime_settings))

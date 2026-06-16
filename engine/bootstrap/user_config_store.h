@@ -14,6 +14,7 @@ public:
         bool success = false;
         RuntimeSettings runtime_settings;
         std::string error;
+        std::string warning;
         bool rebuilt_user_config = false;
 
         explicit operator bool() const { return success; }
