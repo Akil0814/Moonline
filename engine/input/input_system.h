@@ -14,7 +14,7 @@
 class InputSystem
 {
 public:
-    void initialize();
+    void init();
     void shutdown();
     void begin_frame();
     void end_frame();

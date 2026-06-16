@@ -1,7 +1,6 @@
 #include "startup_loading_scene.h"
 
-#include "../../engine/resources/resource_manager.h"
-#include "../../engine/resources/resource_bootstrapper.h"
+#include "../../engine/bootstrap/bootstrapper.h"
 
 #include <iostream>
 
@@ -11,7 +10,7 @@ void StartupLoadingScene::on_enter(const ScenePayload& payload)
 	_paused = false;
 	std::cout << "loading scene" << std::endl;
 
-	SDL_Texture* akil_tex = ResourceBootstrapper::instance()->get_preload_texture("Akil.png");
+	SDL_Texture* akil_tex = Bootstrapper::instance()->get_preload_texture("Akil.png");
 
 	akil_icon = Scene::create_and_add_object<UiFadeImage>(akil_tex, Rect{ 600,300,200,200 });
 

@@ -3,7 +3,8 @@
 
 int main(int argc, char** argv)
 {
-	Application::instance()->init(argc, argv);
+	if (!Application::instance()->init(argc, argv))
+		return -1;
 
 	return Application::instance()->run(argc,argv);
 }

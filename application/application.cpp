@@ -2,12 +2,9 @@
 #include "scene/scene_keys.h"
 #include "scene/scene_registry.h"
 
+#include "../engine/bootstrap/bootstrapper.h"
 #include "../engine/core/time.h"
-
 #include "../engine/resources/resource_manager.h"
-#include "../engine/resources/resource_bootstrapper.h"
-
-#include "../gameplay/scene/startup_loading_scene.h"
 
 #include <cstdlib>
 #include <ctime>
@@ -17,39 +14,7 @@
 #include <SDL_image.h>
 
 
-Application:: Application()
-{
-	init_assert(!SDL_Init(SDL_INIT_EVERYTHING), "SDL2 Error");
-
-	int img_flags = IMG_INIT_JPG | IMG_INIT_PNG;
-	init_assert((IMG_Init(img_flags) & img_flags) == img_flags, "SDL_image Error");
-
-	int mix_flags = MIX_INIT_MP3;
-	init_assert((Mix_Init(mix_flags) & mix_flags) == mix_flags, "SDL_mixer Error");
-
-	init_assert(!TTF_Init(), "SDL_ttf Error");
-	init_assert(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) == 0, "Mix_OpenAudio Error");
-
-	SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
-
-	_window = SDL_CreateWindow("Moonline", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, _logical_width, _logical_height, SDL_WINDOW_SHOWN);
-	init_assert(_window, "SDL_CreateWindow Error");
-
-	if (SDL_SetWindowFullscreen(_window, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)
-	{
-		SDL_Log("Failed to enter fullscreen: %s", SDL_GetError());
-		SDL_ClearError();
-
-		//fallback
-		SDL_SetWindowSize(_window, _logical_width, _logical_height);
-		SDL_SetWindowPosition(_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-	}
-
-	_renderer = SDL_CreateRenderer(_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);//硬件加速 垂直同步 目标纹理
-	init_assert(_renderer, "SDL_CreateRenderer Error");
-
-	init_assert(SDL_RenderSetLogicalSize(_renderer, _logical_width, _logical_height) == 0, "SDL_RenderSetLogicalSize Error");
-}
+Application::Application() = default;
 
 Application:: ~Application()
 {
@@ -57,6 +22,7 @@ Application:: ~Application()
 	SDL_DestroyRenderer(_renderer);
 	SDL_DestroyWindow(_window);
 
+	Mix_CloseAudio();
 	TTF_Quit();
 	Mix_Quit();
 	IMG_Quit();
@@ -64,21 +30,92 @@ Application:: ~Application()
 }
 
 bool Application::init(int argc, char** argv)
-{  
-	(void)argc;
-	(void)argv;
+{
+	const StartupParseResult parse_result =
+		Bootstrapper::instance()->parse_runtime_settings(argc, argv);
 
-	_input_system.initialize();
+	if (!parse_result.success)
+	{
+		startup_fail(parse_result.error);
+		return false;
+	}
+
+	if (!init_runtime(parse_result.runtime_settings))
+	{
+		startup_fail("Application runtime initialization failed.");
+		return false;
+	}
+
+	_input_system.init();
 	_input_system.set_renderer(_renderer);
-	ResourceBootstrapper::instance()->bootstrap(_renderer);
 
+	if (!Bootstrapper::instance()->preload_startup_resources(_renderer))
+	{
+		startup_fail("Startup resource preload failed.");
+		return false;
+	}
+
+	enter_startup_scene();
+
+	return true;
+}
+
+bool Application::init_runtime(const RuntimeSettings& settings)
+{
+	init_assert(!SDL_Init(SDL_INIT_EVERYTHING), "SDL2 Error");
+
+	const int img_flags = IMG_INIT_JPG | IMG_INIT_PNG;
+	init_assert((IMG_Init(img_flags) & img_flags) == img_flags, "SDL_image Error");
+
+	const int mix_flags = MIX_INIT_MP3;
+	init_assert((Mix_Init(mix_flags) & mix_flags) == mix_flags, "SDL_mixer Error");
+
+	init_assert(!TTF_Init(), "SDL_ttf Error");
+	init_assert(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) == 0, "Mix_OpenAudio Error");
+
+	SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
+
+	_window = SDL_CreateWindow(
+		settings.window_title.c_str(),
+		SDL_WINDOWPOS_CENTERED,
+		SDL_WINDOWPOS_CENTERED,
+		settings.window_width,
+		settings.window_height,
+		SDL_WINDOW_SHOWN);
+	init_assert(_window, "SDL_CreateWindow Error");
+
+	if (settings.fullscreen
+		&& SDL_SetWindowFullscreen(_window, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)
+	{
+		SDL_Log("Failed to enter fullscreen: %s", SDL_GetError());
+		SDL_ClearError();
+
+		SDL_SetWindowSize(_window, settings.window_width, settings.window_height);
+		SDL_SetWindowPosition(_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+	}
+
+	Uint32 renderer_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE;
+	if (settings.vsync)
+		renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
+
+	_renderer = SDL_CreateRenderer(_window, -1, renderer_flags);
+	init_assert(_renderer, "SDL_CreateRenderer Error");
+
+	init_assert(
+		SDL_RenderSetLogicalSize(_renderer, _logical_width, _logical_height) == 0,
+		"SDL_RenderSetLogicalSize Error");
+
+	FPS = settings.target_fps;
+	return true;
+}
+
+void Application::enter_startup_scene()
+{
 	_scene_manager.attach(this);
 
 	register_all_scenes(_scene_manager);
 
 	_scene_manager.start(AppSceneKeys::StartupLoading);
-
-    return true;
 }
 
 int  Application::run(int argc, char** argv)

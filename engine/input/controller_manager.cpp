@@ -7,7 +7,7 @@ ControllerManager::~ControllerManager()
     shutdown();
 }
 
-void ControllerManager::initialize()
+void ControllerManager::init()
 {
     if (_is_initialized)
     {

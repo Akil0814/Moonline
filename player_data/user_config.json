@@ -1,0 +1,11 @@
+{
+  "render": {
+    "fps": 60.0,
+    "vsync": true
+  },
+  "window": {
+    "fullscreen": false,
+    "height": 720,
+    "width": 1280
+  }
+}

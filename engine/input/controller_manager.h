@@ -16,7 +16,7 @@ public:
     ControllerManager(ControllerManager&&) = delete;
     ControllerManager& operator=(ControllerManager&&) = delete;
 
-    void initialize();
+    void init();
     void shutdown();
     void handle_event(const SDL_Event& event);
 

@@ -2,9 +2,9 @@
 
 #include <cmath>
 
-void InputSystem::initialize()
+void InputSystem::init()
 {
-    _controller_manager.initialize();
+    _controller_manager.init();
 }
 
 void InputSystem::shutdown()

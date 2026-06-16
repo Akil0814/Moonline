@@ -6,6 +6,10 @@
 
 #include <SDL.h>
 
+#include <string>
+
+struct RuntimeSettings;
+
 class Application
     : public Singleton<Application>
     , public SceneManagerObserver
@@ -17,8 +21,15 @@ public:
 
     bool init(int argc, char** argv);
     int run(int argc, char** argv);
+
+private:
+    bool init_runtime(const RuntimeSettings& settings);
+    void enter_startup_scene();
+
     void shutdown();
+
     void on_scene_manager_quit_requested() override;
+    SDL_Renderer* renderer() const { return _renderer; }
 
 
     void init_assert(bool flag, const char* err_msg)
@@ -26,6 +37,15 @@ public:
         if (flag)
             return;
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Game Start Error", err_msg, _window);
+        exit(-1);
+    }
+    void startup_fail(const std::string& err_msg)
+    {
+        SDL_ShowSimpleMessageBox(
+            SDL_MESSAGEBOX_ERROR,
+            "Game Start Error",
+            err_msg.c_str(),
+            _window);
         exit(-1);
     }
 
@@ -39,10 +59,10 @@ private:
     Uint64 _counter_freq = 0;
 
     SDL_Event _event;
-    InputSystem _input_system;
-
     SDL_Window* _window = nullptr;
     SDL_Renderer* _renderer = nullptr;
+
+    InputSystem _input_system;
     SceneManager _scene_manager;
 
     bool _active = { true };

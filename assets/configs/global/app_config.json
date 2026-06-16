@@ -1,0 +1,15 @@
+{
+  "window": {
+    "title": "Moonline",
+    "default_width": 1280,
+    "default_height": 720,
+    "fullscreen": false
+  },
+  "render": {
+    "default_fps": 60,
+    "vsync": true
+  },
+  "startup": {
+    "preload_manifest": "preload/preload_manifest.json"
+  }
+}
