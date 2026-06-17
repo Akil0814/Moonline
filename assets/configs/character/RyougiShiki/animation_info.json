@@ -1,209 +1,209 @@
 {
-    "Idle":  {
-                 "frame_count":  7,
-                 "fps":  10,
-                 "loop":  true
-             },
-    "IdleIntoLong":  {
-                         "frame_count":  13,
-                         "fps":  10,
-                         "loop":  false
-                     },
-    "IdleLong":  {
-                     "frame_count":  4,
-                     "fps":  10,
-                     "loop":  true
-                 },
-    "Strengthen":  {
-                       "frame_count":  10,
-                       "fps":  10,
-                       "loop":  false
-                   },
-    "WalkEnter":  {
-                      "frame_count":  2,
-                      "fps":  10,
-                      "loop":  false
-                  },
-    "WalkLoop":  {
-                     "frame_count":  10,
-                     "fps":  10,
-                     "loop":  true
-                 },
-    "RunEnter":  {
-                     "frame_count":  4,
-                     "fps":  10,
-                     "loop":  false
-                 },
-    "RunLoop":  {
-                    "frame_count":  8,
-                    "fps":  10,
-                    "loop":  true
-                },
-    "RunExit":  {
-                    "frame_count":  5,
-                    "fps":  10,
-                    "loop":  false
-                },
-    "DashBack":  {
-                     "frame_count":  7,
-                     "fps":  10,
-                     "loop":  false
-                 },
-    "DashForward":  {
-                        "frame_count":  3,
-                        "fps":  10,
-                        "loop":  false
-                    },
-    "AirDashBack":  {
-                        "frame_count":  4,
-                        "fps":  10,
-                        "loop":  false
-                    },
-    "AirDashForward":  {
-                           "frame_count":  4,
-                           "fps":  10,
-                           "loop":  false
-                       },
-    "JumpStart":  {
-                      "frame_count":  5,
-                      "fps":  10,
-                      "loop":  false
-                  },
-    "JumpUp":  {
-                   "frame_count":  3,
-                   "fps":  10,
-                   "loop":  false
-               },
-    "JumpApex":  {
-                     "frame_count":  3,
-                     "fps":  10,
-                     "loop":  false
-                 },
-    "JumpFall":  {
-                     "frame_count":  3,
-                     "fps":  10,
-                     "loop":  false
-                 },
-    "JumpLand":  {
-                     "frame_count":  6,
-                     "fps":  10,
-                     "loop":  false
-                 },
-    "AttackNormal":  {
-                         "segments":  [
-                                          {
-                                              "frame_count":  8,
-                                              "fps":  10,
-                                              "loop":  false
-                                          },
-                                          {
-                                              "frame_count":  7,
-                                              "fps":  10,
-                                              "loop":  false
-                                          },
-                                          {
-                                              "frame_count":  8,
-                                              "fps":  10,
-                                              "loop":  false
-                                          },
-                                          {
-                                              "frame_count":  14,
-                                              "fps":  10,
-                                              "loop":  false
-                                          },
-                                          {
-                                              "frame_count":  9,
-                                              "fps":  10,
-                                              "loop":  false
-                                          },
-                                          {
-                                              "frame_count":  12,
-                                              "fps":  10,
-                                              "loop":  false
-                                          }
-                                      ]
-                     },
-    "AttackAir":  {
-                      "segments":  [
-                                       {
-                                           "frame_count":  7,
-                                           "fps":  10,
-                                           "loop":  false
-                                       },
-                                       {
-                                           "frame_count":  5,
-                                           "fps":  10,
-                                           "loop":  false
-                                       },
-                                       {
-                                           "frame_count":  6,
-                                           "fps":  10,
-                                           "loop":  false
-                                       }
-                                   ]
-                  },
-    "AttackRangedGround":  {
-                               "frame_count":  43,
-                               "fps":  10,
-                               "loop":  false
-                           },
-    "AttackRangedAir":  {
-                            "frame_count":  13,
-                            "fps":  10,
-                            "loop":  false
-                        },
-    "AttackSpecial":  {
-                          "segments":  [
-                                           {
-                                               "frame_count":  51,
-                                               "fps":  10,
-                                               "loop":  false
-                                           }
-                                       ]
-                      },
-    "GuardGround":  {
-                        "frame_count":  6,
-                        "fps":  10,
-                        "loop":  true
-                    },
-    "GuardAir":  {
-                     "frame_count":  4,
-                     "fps":  10,
-                     "loop":  true
-                 },
-    "Hurt":  {
-                 "frame_count":  7,
-                 "fps":  10,
-                 "loop":  false
-             },
-    "Knockdown":  {
-                      "frame_count":  14,
-                      "fps":  10,
-                      "loop":  false
-                  },
-    "KnockdownAirEnter":  {
-                              "frame_count":  7,
-                              "fps":  10,
-                              "loop":  false
-                          },
-    "KnockdownAirLoop":  {
-                             "frame_count":  2,
-                             "fps":  10,
-                             "loop":  true
-                         },
-    "KnockdownAirLand":  {
-                             "frame_count":  7,
-                             "fps":  10,
-                             "loop":  false
-                         },
-    "Getup":  {
-                  "frame_count":  18,
-                  "fps":  10,
-                  "loop":  false
-              },
-    "Start":  {
-                  "frame_count":  18,
-                  "fps":  10,
-                  "loop":  false
-              }
+  "idle": {
+    "frame_count": 7,
+    "fps": 10,
+    "loop": true
+  },
+  "idle_into_long": {
+    "frame_count": 13,
+    "fps": 10,
+    "loop": false
+  },
+  "idle_long": {
+    "frame_count": 4,
+    "fps": 10,
+    "loop": true
+  },
+  "strengthen": {
+    "frame_count": 10,
+    "fps": 10,
+    "loop": false
+  },
+  "walk_enter": {
+    "frame_count": 2,
+    "fps": 10,
+    "loop": false
+  },
+  "walk_loop": {
+    "frame_count": 10,
+    "fps": 10,
+    "loop": true
+  },
+  "run_enter": {
+    "frame_count": 4,
+    "fps": 10,
+    "loop": false
+  },
+  "run_loop": {
+    "frame_count": 8,
+    "fps": 10,
+    "loop": true
+  },
+  "run_exit": {
+    "frame_count": 5,
+    "fps": 10,
+    "loop": false
+  },
+  "dash_back": {
+    "frame_count": 7,
+    "fps": 10,
+    "loop": false
+  },
+  "dash_forward": {
+    "frame_count": 3,
+    "fps": 10,
+    "loop": false
+  },
+  "air_dash_back": {
+    "frame_count": 4,
+    "fps": 10,
+    "loop": false
+  },
+  "air_dash_forward": {
+    "frame_count": 4,
+    "fps": 10,
+    "loop": false
+  },
+  "jump_start": {
+    "frame_count": 5,
+    "fps": 10,
+    "loop": false
+  },
+  "jump_up": {
+    "frame_count": 3,
+    "fps": 10,
+    "loop": false
+  },
+  "jump_apex": {
+    "frame_count": 3,
+    "fps": 10,
+    "loop": false
+  },
+  "jump_fall": {
+    "frame_count": 3,
+    "fps": 10,
+    "loop": false
+  },
+  "jump_land": {
+    "frame_count": 6,
+    "fps": 10,
+    "loop": false
+  },
+  "attack_normal": {
+    "segments": [
+      {
+        "frame_count": 8,
+        "fps": 10,
+        "loop": false
+      },
+      {
+        "frame_count": 7,
+        "fps": 10,
+        "loop": false
+      },
+      {
+        "frame_count": 8,
+        "fps": 10,
+        "loop": false
+      },
+      {
+        "frame_count": 14,
+        "fps": 10,
+        "loop": false
+      },
+      {
+        "frame_count": 9,
+        "fps": 10,
+        "loop": false
+      },
+      {
+        "frame_count": 12,
+        "fps": 10,
+        "loop": false
+      }
+    ]
+  },
+  "attack_air": {
+    "segments": [
+      {
+        "frame_count": 7,
+        "fps": 10,
+        "loop": false
+      },
+      {
+        "frame_count": 5,
+        "fps": 10,
+        "loop": false
+      },
+      {
+        "frame_count": 6,
+        "fps": 10,
+        "loop": false
+      }
+    ]
+  },
+  "attack_ranged_ground": {
+    "frame_count": 43,
+    "fps": 10,
+    "loop": false
+  },
+  "attack_ranged_air": {
+    "frame_count": 13,
+    "fps": 10,
+    "loop": false
+  },
+  "attack_special": {
+    "segments": [
+      {
+        "frame_count": 51,
+        "fps": 10,
+        "loop": false
+      }
+    ]
+  },
+  "guard_ground": {
+    "frame_count": 6,
+    "fps": 10,
+    "loop": true
+  },
+  "guard_air": {
+    "frame_count": 4,
+    "fps": 10,
+    "loop": true
+  },
+  "hurt": {
+    "frame_count": 7,
+    "fps": 10,
+    "loop": false
+  },
+  "knockdown": {
+    "frame_count": 14,
+    "fps": 10,
+    "loop": false
+  },
+  "knockdown_air_enter": {
+    "frame_count": 7,
+    "fps": 10,
+    "loop": false
+  },
+  "knockdown_air_loop": {
+    "frame_count": 2,
+    "fps": 10,
+    "loop": true
+  },
+  "knockdown_air_land": {
+    "frame_count": 7,
+    "fps": 10,
+    "loop": false
+  },
+  "getup": {
+    "frame_count": 18,
+    "fps": 10,
+    "loop": false
+  },
+  "start": {
+    "frame_count": 18,
+    "fps": 10,
+    "loop": false
+  }
 }

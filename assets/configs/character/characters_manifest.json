@@ -9,6 +9,11 @@
       "id": "aozaki_aoko",
       "asset_key": "AozakiAoko",
       "enabled": false
+    },   
+    {
+      "id": "arcueid_brunestud",
+      "asset_key": "ArcueidBrunestud",
+      "enabled": false
     }
   ]
 }

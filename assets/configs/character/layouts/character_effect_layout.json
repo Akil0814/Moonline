@@ -1,0 +1,7 @@
+{
+  "attack_normal": "animation/effects/attack/normal/{segment}",
+  "attack_air": "animation/effects/attack/aerial/{segment}",
+  "attack_ranged_ground": "animation/effects/attack/ranged/ground",
+  "attack_ranged_air": "animation/effects/attack/ranged/air",
+  "attack_special": "animation/effects/attack/special/ex{segment}"
+}

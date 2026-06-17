@@ -1,0 +1,615 @@
+{
+  "sounds": {
+    "in_game.atk.atk_bladeslash": {
+      "path": "in_game/atk/atk_bladeslash.wav"
+    },
+    "in_game.atk.atk_crystal": {
+      "path": "in_game/atk/atk_crystal.wav"
+    },
+    "in_game.atk.atk_darkignitiona": {
+      "path": "in_game/atk/atk_darkignitiona.wav"
+    },
+    "in_game.atk.atk_darkignitionb": {
+      "path": "in_game/atk/atk_darkignitionb.wav"
+    },
+    "in_game.atk.atk_drawsword01": {
+      "path": "in_game/atk/atk_drawsword01.wav"
+    },
+    "in_game.atk.atk_drawsword02": {
+      "path": "in_game/atk/atk_drawsword02.wav"
+    },
+    "in_game.atk.atk_electroshock": {
+      "path": "in_game/atk/atk_electroshock.wav"
+    },
+    "in_game.atk.atk_eyebeam": {
+      "path": "in_game/atk/atk_eyebeam.wav"
+    },
+    "in_game.atk.atk_flamethrower": {
+      "path": "in_game/atk/atk_flamethrower.wav"
+    },
+    "in_game.atk.atk_flamethrower_short": {
+      "path": "in_game/atk/atk_flamethrower_short.wav"
+    },
+    "in_game.atk.atk_frameshort": {
+      "path": "in_game/atk/atk_frameshort.wav"
+    },
+    "in_game.atk.atk_guillotinebeam": {
+      "path": "in_game/atk/atk_guillotinebeam.wav"
+    },
+    "in_game.atk.atk_gunfire": {
+      "path": "in_game/atk/atk_gunfire.wav"
+    },
+    "in_game.atk.atk_icepillar": {
+      "path": "in_game/atk/atk_icepillar.wav"
+    },
+    "in_game.atk.atk_impactwavea": {
+      "path": "in_game/atk/atk_impactwavea.wav"
+    },
+    "in_game.atk.atk_impactwaveb": {
+      "path": "in_game/atk/atk_impactwaveb.wav"
+    },
+    "in_game.atk.atk_laserbeam": {
+      "path": "in_game/atk/atk_laserbeam.wav"
+    },
+    "in_game.atk.atk_longswinga": {
+      "path": "in_game/atk/atk_longswinga.wav"
+    },
+    "in_game.atk.atk_longswingb": {
+      "path": "in_game/atk/atk_longswingb.wav"
+    },
+    "in_game.atk.atk_longswingc": {
+      "path": "in_game/atk/atk_longswingc.wav"
+    },
+    "in_game.atk.atk_longswingd": {
+      "path": "in_game/atk/atk_longswingd.wav"
+    },
+    "in_game.atk.atk_magicbullet": {
+      "path": "in_game/atk/atk_magicbullet.wav"
+    },
+    "in_game.atk.atk_magicgush": {
+      "path": "in_game/atk/atk_magicgush.wav"
+    },
+    "in_game.atk.atk_magicimpact": {
+      "path": "in_game/atk/atk_magicimpact.wav"
+    },
+    "in_game.atk.atk_metalconflict": {
+      "path": "in_game/atk/atk_metalconflict.wav"
+    },
+    "in_game.atk.atk_metaldocking": {
+      "path": "in_game/atk/atk_metaldocking.wav"
+    },
+    "in_game.atk.atk_metalimpact": {
+      "path": "in_game/atk/atk_metalimpact.wav"
+    },
+    "in_game.atk.atk_metalnoise": {
+      "path": "in_game/atk/atk_metalnoise.wav"
+    },
+    "in_game.atk.atk_metalnoiseshort": {
+      "path": "in_game/atk/atk_metalnoiseshort.wav"
+    },
+    "in_game.atk.atk_piling": {
+      "path": "in_game/atk/atk_piling.wav"
+    },
+    "in_game.atk.atk_pilingshort": {
+      "path": "in_game/atk/atk_pilingshort.wav"
+    },
+    "in_game.atk.atk_railgun": {
+      "path": "in_game/atk/atk_railgun.wav"
+    },
+    "in_game.atk.atk_runwater": {
+      "path": "in_game/atk/atk_runwater.wav"
+    },
+    "in_game.atk.atk_shotcrossbow": {
+      "path": "in_game/atk/atk_shotcrossbow.wav"
+    },
+    "in_game.atk.atk_shotenergy": {
+      "path": "in_game/atk/atk_shotenergy.wav"
+    },
+    "in_game.atk.atk_shotflame": {
+      "path": "in_game/atk/atk_shotflame.wav"
+    },
+    "in_game.atk.atk_shotspark": {
+      "path": "in_game/atk/atk_shotspark.wav"
+    },
+    "in_game.atk.atk_shotstab": {
+      "path": "in_game/atk/atk_shotstab.wav"
+    },
+    "in_game.atk.atk_sparkbeam": {
+      "path": "in_game/atk/atk_sparkbeam.wav"
+    },
+    "in_game.atk.atk_string": {
+      "path": "in_game/atk/atk_string.wav"
+    },
+    "in_game.atk.atk_stringshort": {
+      "path": "in_game/atk/atk_stringshort.wav"
+    },
+    "in_game.atk.atk_strongwind": {
+      "path": "in_game/atk/atk_strongwind.wav"
+    },
+    "in_game.atk.atk_swinga": {
+      "path": "in_game/atk/atk_swinga.wav"
+    },
+    "in_game.atk.atk_swingb": {
+      "path": "in_game/atk/atk_swingb.wav"
+    },
+    "in_game.atk.atk_swingc": {
+      "path": "in_game/atk/atk_swingc.wav"
+    },
+    "in_game.atk.atk_swingclaw": {
+      "path": "in_game/atk/atk_swingclaw.wav"
+    },
+    "in_game.atk.atk_swingd": {
+      "path": "in_game/atk/atk_swingd.wav"
+    },
+    "in_game.atk.atk_swingduster": {
+      "path": "in_game/atk/atk_swingduster.wav"
+    },
+    "in_game.atk.atk_swordswinga": {
+      "path": "in_game/atk/atk_swordswinga.wav"
+    },
+    "in_game.atk.atk_swordswingb": {
+      "path": "in_game/atk/atk_swordswingb.wav"
+    },
+    "in_game.atk.atk_swordswingshorta": {
+      "path": "in_game/atk/atk_swordswingshorta.wav"
+    },
+    "in_game.atk.atk_tempest": {
+      "path": "in_game/atk/atk_tempest.wav"
+    },
+    "in_game.atk.atk_thunderbolta": {
+      "path": "in_game/atk/atk_thunderbolta.wav"
+    },
+    "in_game.atk.atk_thunderboltb": {
+      "path": "in_game/atk/atk_thunderboltb.wav"
+    },
+    "in_game.atk.atk_tornado": {
+      "path": "in_game/atk/atk_tornado.wav"
+    },
+    "in_game.atk.atk_windnoise": {
+      "path": "in_game/atk/atk_windnoise.wav"
+    },
+    "in_game.bound.bound_grounda": {
+      "path": "in_game/bound/bound_grounda.wav"
+    },
+    "in_game.bound.bound_groundb": {
+      "path": "in_game/bound/bound_groundb.wav"
+    },
+    "in_game.bound.bound_minigrounda": {
+      "path": "in_game/bound/bound_minigrounda.wav"
+    },
+    "in_game.bound.bound_wall": {
+      "path": "in_game/bound/bound_wall.wav"
+    },
+    "in_game.cmn.cmn_appearance": {
+      "path": "in_game/cmn/cmn_appearance.wav"
+    },
+    "in_game.cmn.cmn_balloonburst": {
+      "path": "in_game/cmn/cmn_balloonburst.wav"
+    },
+    "in_game.cmn.cmn_bigbang": {
+      "path": "in_game/cmn/cmn_bigbang.wav"
+    },
+    "in_game.cmn.cmn_bigsmoke": {
+      "path": "in_game/cmn/cmn_bigsmoke.wav"
+    },
+    "in_game.cmn.cmn_bomba": {
+      "path": "in_game/cmn/cmn_bomba.wav"
+    },
+    "in_game.cmn.cmn_bombb": {
+      "path": "in_game/cmn/cmn_bombb.wav"
+    },
+    "in_game.cmn.cmn_bombc": {
+      "path": "in_game/cmn/cmn_bombc.wav"
+    },
+    "in_game.cmn.cmn_bombd": {
+      "path": "in_game/cmn/cmn_bombd.wav"
+    },
+    "in_game.cmn.cmn_bombe": {
+      "path": "in_game/cmn/cmn_bombe.wav"
+    },
+    "in_game.cmn.cmn_bombkaboom": {
+      "path": "in_game/cmn/cmn_bombkaboom.wav"
+    },
+    "in_game.cmn.cmn_boundsword": {
+      "path": "in_game/cmn/cmn_boundsword.wav"
+    },
+    "in_game.cmn.cmn_clank": {
+      "path": "in_game/cmn/cmn_clank.wav"
+    },
+    "in_game.cmn.cmn_convergence": {
+      "path": "in_game/cmn/cmn_convergence.wav"
+    },
+    "in_game.cmn.cmn_crystalbrake": {
+      "path": "in_game/cmn/cmn_crystalbrake.wav"
+    },
+    "in_game.cmn.cmn_crystalbrakeshort": {
+      "path": "in_game/cmn/cmn_crystalbrakeshort.wav"
+    },
+    "in_game.cmn.cmn_deathattack": {
+      "path": "in_game/cmn/cmn_deathattack.wav"
+    },
+    "in_game.cmn.cmn_debris": {
+      "path": "in_game/cmn/cmn_debris.wav"
+    },
+    "in_game.cmn.cmn_earthbreak": {
+      "path": "in_game/cmn/cmn_earthbreak.wav"
+    },
+    "in_game.cmn.cmn_earthquake": {
+      "path": "in_game/cmn/cmn_earthquake.wav"
+    },
+    "in_game.cmn.cmn_electronicsound": {
+      "path": "in_game/cmn/cmn_electronicsound.wav"
+    },
+    "in_game.cmn.cmn_energycharge": {
+      "path": "in_game/cmn/cmn_energycharge.wav"
+    },
+    "in_game.cmn.cmn_energyrelease": {
+      "path": "in_game/cmn/cmn_energyrelease.wav"
+    },
+    "in_game.cmn.cmn_evileye": {
+      "path": "in_game/cmn/cmn_evileye.wav"
+    },
+    "in_game.cmn.cmn_eyesofdeath": {
+      "path": "in_game/cmn/cmn_eyesofdeath.wav"
+    },
+    "in_game.cmn.cmn_falledcan": {
+      "path": "in_game/cmn/cmn_falledcan.wav"
+    },
+    "in_game.cmn.cmn_flashbang": {
+      "path": "in_game/cmn/cmn_flashbang.wav"
+    },
+    "in_game.cmn.cmn_furniture": {
+      "path": "in_game/cmn/cmn_furniture.wav"
+    },
+    "in_game.cmn.cmn_furnitureexshort": {
+      "path": "in_game/cmn/cmn_furnitureexshort.wav"
+    },
+    "in_game.cmn.cmn_furnitureshort": {
+      "path": "in_game/cmn/cmn_furnitureshort.wav"
+    },
+    "in_game.cmn.cmn_generatemetal": {
+      "path": "in_game/cmn/cmn_generatemetal.wav"
+    },
+    "in_game.cmn.cmn_grassbottle": {
+      "path": "in_game/cmn/cmn_grassbottle.wav"
+    },
+    "in_game.cmn.cmn_grassbreak": {
+      "path": "in_game/cmn/cmn_grassbreak.wav"
+    },
+    "in_game.cmn.cmn_grasscrystalbrakeshort": {
+      "path": "in_game/cmn/cmn_grasscrystalbrakeshort.wav"
+    },
+    "in_game.cmn.cmn_holybarrier": {
+      "path": "in_game/cmn/cmn_holybarrier.wav"
+    },
+    "in_game.cmn.cmn_holyfield": {
+      "path": "in_game/cmn/cmn_holyfield.wav"
+    },
+    "in_game.cmn.cmn_holysword": {
+      "path": "in_game/cmn/cmn_holysword.wav"
+    },
+    "in_game.cmn.cmn_holyvoice": {
+      "path": "in_game/cmn/cmn_holyvoice.wav"
+    },
+    "in_game.cmn.cmn_itemget": {
+      "path": "in_game/cmn/cmn_itemget.wav"
+    },
+    "in_game.cmn.cmn_ivy": {
+      "path": "in_game/cmn/cmn_ivy.wav"
+    },
+    "in_game.cmn.cmn_landbreak": {
+      "path": "in_game/cmn/cmn_landbreak.wav"
+    },
+    "in_game.cmn.cmn_lightfall": {
+      "path": "in_game/cmn/cmn_lightfall.wav"
+    },
+    "in_game.cmn.cmn_lunchbomb": {
+      "path": "in_game/cmn/cmn_lunchbomb.wav"
+    },
+    "in_game.cmn.cmn_magicburst": {
+      "path": "in_game/cmn/cmn_magicburst.wav"
+    },
+    "in_game.cmn.cmn_magiccharge": {
+      "path": "in_game/cmn/cmn_magiccharge.wav"
+    },
+    "in_game.cmn.cmn_magicdeployment": {
+      "path": "in_game/cmn/cmn_magicdeployment.wav"
+    },
+    "in_game.cmn.cmn_magicsquare": {
+      "path": "in_game/cmn/cmn_magicsquare.wav"
+    },
+    "in_game.cmn.cmn_magicturbine": {
+      "path": "in_game/cmn/cmn_magicturbine.wav"
+    },
+    "in_game.cmn.cmn_metalbounda": {
+      "path": "in_game/cmn/cmn_metalbounda.wav"
+    },
+    "in_game.cmn.cmn_metalboundb": {
+      "path": "in_game/cmn/cmn_metalboundb.wav"
+    },
+    "in_game.cmn.cmn_movewind": {
+      "path": "in_game/cmn/cmn_movewind.wav"
+    },
+    "in_game.cmn.cmn_pickscratch": {
+      "path": "in_game/cmn/cmn_pickscratch.wav"
+    },
+    "in_game.cmn.cmn_potterybreak": {
+      "path": "in_game/cmn/cmn_potterybreak.wav"
+    },
+    "in_game.cmn.cmn_powerdown": {
+      "path": "in_game/cmn/cmn_powerdown.wav"
+    },
+    "in_game.cmn.cmn_rocketboost": {
+      "path": "in_game/cmn/cmn_rocketboost.wav"
+    },
+    "in_game.cmn.cmn_rosestorm": {
+      "path": "in_game/cmn/cmn_rosestorm.wav"
+    },
+    "in_game.cmn.cmn_rubbing": {
+      "path": "in_game/cmn/cmn_rubbing.wav"
+    },
+    "in_game.cmn.cmn_rushforward": {
+      "path": "in_game/cmn/cmn_rushforward.wav"
+    },
+    "in_game.cmn.cmn_sandsweep": {
+      "path": "in_game/cmn/cmn_sandsweep.wav"
+    },
+    "in_game.cmn.cmn_shakespring": {
+      "path": "in_game/cmn/cmn_shakespring.wav"
+    },
+    "in_game.cmn.cmn_shieldadvent": {
+      "path": "in_game/cmn/cmn_shieldadvent.wav"
+    },
+    "in_game.cmn.cmn_shieldvanish": {
+      "path": "in_game/cmn/cmn_shieldvanish.wav"
+    },
+    "in_game.cmn.cmn_shock": {
+      "path": "in_game/cmn/cmn_shock.wav"
+    },
+    "in_game.cmn.cmn_shortholypow": {
+      "path": "in_game/cmn/cmn_shortholypow.wav"
+    },
+    "in_game.cmn.cmn_sign": {
+      "path": "in_game/cmn/cmn_sign.wav"
+    },
+    "in_game.cmn.cmn_smokescreen": {
+      "path": "in_game/cmn/cmn_smokescreen.wav"
+    },
+    "in_game.cmn.cmn_soundbella": {
+      "path": "in_game/cmn/cmn_soundbella.wav"
+    },
+    "in_game.cmn.cmn_soundbellb": {
+      "path": "in_game/cmn/cmn_soundbellb.wav"
+    },
+    "in_game.cmn.cmn_spacequake": {
+      "path": "in_game/cmn/cmn_spacequake.wav"
+    },
+    "in_game.cmn.cmn_stamp": {
+      "path": "in_game/cmn/cmn_stamp.wav"
+    },
+    "in_game.cmn.cmn_summon": {
+      "path": "in_game/cmn/cmn_summon.wav"
+    },
+    "in_game.cmn.cmn_swish": {
+      "path": "in_game/cmn/cmn_swish.wav"
+    },
+    "in_game.cmn.cmn_touch": {
+      "path": "in_game/cmn/cmn_touch.wav"
+    },
+    "in_game.cmn.cmn_twinkle": {
+      "path": "in_game/cmn/cmn_twinkle.wav"
+    },
+    "in_game.cmn.cmn_twinkleshort": {
+      "path": "in_game/cmn/cmn_twinkleshort.wav"
+    },
+    "in_game.cmn.cmn_twinklestar": {
+      "path": "in_game/cmn/cmn_twinklestar.wav"
+    },
+    "in_game.cmn.cmn_upperwinddances": {
+      "path": "in_game/cmn/cmn_upperwinddances.wav"
+    },
+    "in_game.cmn.cmn_whirlwind": {
+      "path": "in_game/cmn/cmn_whirlwind.wav"
+    },
+    "in_game.cmn.cmn_windstorm": {
+      "path": "in_game/cmn/cmn_windstorm.wav"
+    },
+    "in_game.cmn.cmn_writingbrusha": {
+      "path": "in_game/cmn/cmn_writingbrusha.wav"
+    },
+    "in_game.cmn.cmn_writingbrushb": {
+      "path": "in_game/cmn/cmn_writingbrushb.wav"
+    },
+    "in_game.hit.hit_burning": {
+      "path": "in_game/hit/hit_burning.wav"
+    },
+    "in_game.hit.hit_burninglong": {
+      "path": "in_game/hit/hit_burninglong.wav"
+    },
+    "in_game.hit.hit_clasha": {
+      "path": "in_game/hit/hit_clasha.wav"
+    },
+    "in_game.hit.hit_clashb": {
+      "path": "in_game/hit/hit_clashb.wav"
+    },
+    "in_game.hit.hit_clashc": {
+      "path": "in_game/hit/hit_clashc.wav"
+    },
+    "in_game.hit.hit_finish": {
+      "path": "in_game/hit/hit_finish.wav"
+    },
+    "in_game.hit.hit_freeze": {
+      "path": "in_game/hit/hit_freeze.wav"
+    },
+    "in_game.hit.hit_fryingpan": {
+      "path": "in_game/hit/hit_fryingpan.wav"
+    },
+    "in_game.hit.hit_grab": {
+      "path": "in_game/hit/hit_grab.wav"
+    },
+    "in_game.hit.hit_guard": {
+      "path": "in_game/hit/hit_guard.wav"
+    },
+    "in_game.hit.hit_hipattack": {
+      "path": "in_game/hit/hit_hipattack.wav"
+    },
+    "in_game.hit.hit_kicka": {
+      "path": "in_game/hit/hit_kicka.wav"
+    },
+    "in_game.hit.hit_kickb": {
+      "path": "in_game/hit/hit_kickb.wav"
+    },
+    "in_game.hit.hit_kickc": {
+      "path": "in_game/hit/hit_kickc.wav"
+    },
+    "in_game.hit.hit_kickd": {
+      "path": "in_game/hit/hit_kickd.wav"
+    },
+    "in_game.hit.hit_metala": {
+      "path": "in_game/hit/hit_metala.wav"
+    },
+    "in_game.hit.hit_metalb": {
+      "path": "in_game/hit/hit_metalb.wav"
+    },
+    "in_game.hit.hit_metalc": {
+      "path": "in_game/hit/hit_metalc.wav"
+    },
+    "in_game.hit.hit_metald": {
+      "path": "in_game/hit/hit_metald.wav"
+    },
+    "in_game.hit.hit_penetrate": {
+      "path": "in_game/hit/hit_penetrate.wav"
+    },
+    "in_game.hit.hit_puncha": {
+      "path": "in_game/hit/hit_puncha.wav"
+    },
+    "in_game.hit.hit_punchb": {
+      "path": "in_game/hit/hit_punchb.wav"
+    },
+    "in_game.hit.hit_punchc": {
+      "path": "in_game/hit/hit_punchc.wav"
+    },
+    "in_game.hit.hit_punchd": {
+      "path": "in_game/hit/hit_punchd.wav"
+    },
+    "in_game.hit.hit_shieldmissguard": {
+      "path": "in_game/hit/hit_shieldmissguard.wav"
+    },
+    "in_game.hit.hit_shock": {
+      "path": "in_game/hit/hit_shock.wav"
+    },
+    "in_game.hit.hit_slasha": {
+      "path": "in_game/hit/hit_slasha.wav"
+    },
+    "in_game.hit.hit_slashb": {
+      "path": "in_game/hit/hit_slashb.wav"
+    },
+    "in_game.hit.hit_slashc": {
+      "path": "in_game/hit/hit_slashc.wav"
+    },
+    "in_game.hit.hit_slashd": {
+      "path": "in_game/hit/hit_slashd.wav"
+    },
+    "in_game.hit.hit_thrusta": {
+      "path": "in_game/hit/hit_thrusta.wav"
+    },
+    "in_game.hit.hit_thrustb": {
+      "path": "in_game/hit/hit_thrustb.wav"
+    },
+    "in_game.hit.hit_thrustc": {
+      "path": "in_game/hit/hit_thrustc.wav"
+    },
+    "in_game.hit.hit_thrustd": {
+      "path": "in_game/hit/hit_thrustd.wav"
+    },
+    "in_game.move.move_backdash": {
+      "path": "in_game/move/move_backdash.wav"
+    },
+    "in_game.move.move_dash": {
+      "path": "in_game/move/move_dash.wav"
+    },
+    "in_game.move.move_dashstop": {
+      "path": "in_game/move/move_dashstop.wav"
+    },
+    "in_game.move.move_landing": {
+      "path": "in_game/move/move_landing.wav"
+    },
+    "in_game.move.move_landingarmor": {
+      "path": "in_game/move/move_landingarmor.wav"
+    },
+    "in_game.move.move_landinggeta": {
+      "path": "in_game/move/move_landinggeta.wav"
+    },
+    "in_game.move.move_rereredash": {
+      "path": "in_game/move/move_rereredash.wav"
+    },
+    "in_game.move.move_rocket": {
+      "path": "in_game/move/move_rocket.wav"
+    },
+    "in_game.move.move_slide": {
+      "path": "in_game/move/move_slide.wav"
+    },
+    "in_game.move.move_teleport": {
+      "path": "in_game/move/move_teleport.wav"
+    },
+    "in_game.move.move_walkfoot": {
+      "path": "in_game/move/move_walkfoot.wav"
+    },
+    "in_game.move.move_walkgeta": {
+      "path": "in_game/move/move_walkgeta.wav"
+    },
+    "in_game.move.move_walkshoes": {
+      "path": "in_game/move/move_walkshoes.wav"
+    },
+    "system.add_credit": {
+      "path": "system/add_credit.wav"
+    },
+    "system.button_click_down": {
+      "path": "system/button_click_down.wav"
+    },
+    "system.button_click_up": {
+      "path": "system/button_click_up.wav"
+    },
+    "system.cancel": {
+      "path": "system/cancel.wav"
+    },
+    "system.confirm": {
+      "path": "system/confirm.wav"
+    },
+    "system.cut_in_ex_skill": {
+      "path": "system/cut_in_ex_skill.wav"
+    },
+    "system.cut_in_skill": {
+      "path": "system/cut_in_skill.wav"
+    },
+    "system.encounter": {
+      "path": "system/encounter.wav"
+    },
+    "system.game_over": {
+      "path": "system/game_over.wav"
+    },
+    "system.game_start": {
+      "path": "system/game_start.wav"
+    },
+    "system.power_up": {
+      "path": "system/power_up.wav"
+    },
+    "system.recover": {
+      "path": "system/recover.wav"
+    },
+    "system.set": {
+      "path": "system/set.wav"
+    },
+    "system.unlock": {
+      "path": "system/unlock.wav"
+    }
+  },
+  "music": {
+    "scene.character_select_scene_main": {
+      "path": "scene/character_select_scene_main.ogg"
+    },
+    "scene.main_meun_scene_main": {
+      "path": "scene/main_meun_scene_main.ogg"
+    }
+  }
+}

@@ -1,12 +1,12 @@
 {
   "textures": {
-    "Platform": {
+    "platform": {
       "path": "platform.png"
     },
-    "Stage000": {
+    "stage_000": {
       "path": "stage_000.png"
     },
-    "Stage001": {
+    "stage_001": {
       "path": "stage_001.png"
     }
   }
