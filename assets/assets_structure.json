@@ -20,6 +20,9 @@
   ],
   "manifests": {
     "characters": "configs/character/characters_manifest.json",
-    "character_animations": "configs/character/character_animation_layout.json"
+    "character_animations": "configs/character/character_animation_layout.json",
+    "character_textures": "textures/character/character_texture_manifest.json",
+    "map_textures": "textures/map/map_textures_manifest.json",
+    "ui_textures": "textures/ui/ui_textures_manifest.json"
   }
 }

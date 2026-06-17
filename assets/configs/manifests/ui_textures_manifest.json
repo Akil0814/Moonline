@@ -1,0 +1,22 @@
+{
+  "textures": {
+    "Cg000": {
+      "path": "cg/cg000.png"
+    },
+    "Cg001": {
+      "path": "cg/cg001.png"
+    },
+    "Cg002": {
+      "path": "cg/cg002.png"
+    },
+    "Cg003": {
+      "path": "cg/cg003.png"
+    },
+    "Cg004": {
+      "path": "cg/cg004.png"
+    },
+    "Cg": {
+      "directory": "cg"
+    }
+  }
+}

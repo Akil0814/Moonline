@@ -4,21 +4,6 @@
   "display_name": "Ryougi Shiki",
   "display_name_key": "character.ryougi_shiki.name",
 
-  "resources": {
-    "texture_root": "assets/textures/character/RyougiShiki",
-    "animation_config": "assets/configs/character/RyougiShiki/animation_info.json",
-    "skill_config": "assets/configs/character/RyougiShiki/skill_info.json",
-    "portrait": "assets/textures/character/RyougiShiki/character1.png",
-    "skill_cut": "assets/textures/character/RyougiShiki/skill_cut.png",
-    "ex_skill_cut": "assets/textures/character/RyougiShiki/ex_skill_cut.png"
-  },
-
-  "initial_state": {
-    "animation": "Idle",
-    "facing": "right",
-    "team": "player"
-  },
-
   "stats": {
     "max_hp": 1000,
     "max_mp": 100,
@@ -77,13 +62,5 @@
       "offset_x": 0,
       "offset_y": -59
     }
-  },
-
-  "render": {
-    "scale": 1.0,
-    "pivot_x": 0.5,
-    "pivot_y": 1.0,
-    "shadow_radius": 38,
-    "draw_layer": "Character"
   }
 }

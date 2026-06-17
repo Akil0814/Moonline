@@ -1,0 +1,46 @@
+{
+  "textures": {
+    "Stand": {
+      "path": "textures/stand.png"
+    },
+    "StandBack": {
+      "path": "textures/stand_back.png"
+    },
+    "Full": {
+      "path": "textures/full.png"
+    },
+    "InGame": {
+      "path": "textures/in_game.png"
+    },
+    "Name": {
+      "path": "textures/name.png"
+    },
+    "NameShort": {
+      "path": "textures/name_short.png"
+    },
+    "Pause": {
+      "path": "textures/pause.png"
+    },
+    "SelectingIcon": {
+      "path": "textures/selecting_icon.png"
+    },
+    "SkillCut": {
+      "path": "textures/skill_cut.png"
+    },
+    "SkillCutEx": {
+      "path": "textures/skill_cut_ex.png"
+    },
+    "Ending": {
+      "path": "textures/ending.png"
+    },
+    "EndingBack": {
+      "path": "textures/ending_back.png"
+    },
+    "ChatBox": {
+      "directory": "textures/chat_box"
+    },
+    "SelectedBackground": {
+      "directory": "animation/selected_background"
+    }
+  }
+}
