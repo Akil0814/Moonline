@@ -3,6 +3,7 @@
 #include "../resources/resource_manager.h"
 #include "../resources/texture/surface_loader.h"
 #include "../resources/texture/texture_loader.h"
+#include"../io/path/path_manager.h"
 
 #include <algorithm>
 #include <iostream>
@@ -94,7 +95,7 @@ bool StartupPreloadLoader::load_textures(SDL_Renderer* renderer)
     ResourceManager* resource_manager = ResourceManager::instance();
     SurfaceLoader surface_loader;
     TextureLoader texture_loader;
-    const std::filesystem::path preload_root = _manifest_path.parent_path();
+    const std::filesystem::path preload_root=PathManager::instance()->preload();
 
     for (const std::string& relative_path : texture_paths)
     {

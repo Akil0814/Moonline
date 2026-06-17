@@ -10,6 +10,6 @@
     "vsync": true
   },
   "startup": {
-    "preload_manifest": "preload/preload_manifest.json"
+    "preload_manifest": "configs/manifests/preload_manifest.json"
   }
 }

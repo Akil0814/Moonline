@@ -33,7 +33,7 @@ Application:: ~Application()
 bool Application::init(int argc, char** argv)
 {
 	const StartupParseResult parse_result =
-		Bootstrapper::instance()->parse_runtime_settings(argc, argv);
+		Bootstrapper::instance()->parse_runtime_settings();
 
 	if (!parse_result.success)
 	{

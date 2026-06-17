@@ -10,7 +10,7 @@
     "fonts": "configs/manifests/fonts_manifest.json",
     "i18n": "configs/manifests/i18n_manifest.json",
     "map_textures": "configs/manifests/map_textures_manifest.json",
-    "preload": "configs/global/preload_manifest.json",
+    "preload": "configs/manifests/preload_manifest.json",
     "ui_textures": "configs/manifests/ui_textures_manifest.json"
   }
 }

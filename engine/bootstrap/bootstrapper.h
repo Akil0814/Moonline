@@ -15,7 +15,7 @@ class Bootstrapper : public Singleton<Bootstrapper>
     friend Singleton<Bootstrapper>;
 
 public:
-    StartupParseResult parse_runtime_settings(int argc, char** argv);
+    StartupParseResult parse_runtime_settings();
     bool preload_startup_resources(SDL_Renderer* renderer);
     SDL_Texture* get_preload_texture(std::string_view key);
 
