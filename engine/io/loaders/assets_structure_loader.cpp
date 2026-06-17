@@ -87,9 +87,9 @@ bool AssetsStructureLoader::load(
 					if (!directory_path.is_absolute())
 					{
 						if (directory_path.has_parent_path())
-							directory_path = path_manager->resolve_asset_path(directory_path);
+							directory_path = path_manager->to_asset_path(directory_path);
 						else
-							directory_path = path_manager->resolve_asset_path(
+							directory_path = path_manager->to_asset_path(
 								std::filesystem::path(group_name) / directory_path
 							);
 					}
@@ -132,7 +132,7 @@ bool AssetsStructureLoader::load(
 					}
 
 					std::filesystem::path manifest_path =
-						path_manager->resolve_asset_path(manifest_item.value().get<std::string>());
+						path_manager->to_asset_path(manifest_item.value().get<std::string>());
 					if (!std::filesystem::is_regular_file(manifest_path))
 					{
 						std::cout << "Load assets structure failed: manifest file does not exist: "

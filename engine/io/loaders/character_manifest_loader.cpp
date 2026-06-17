@@ -84,7 +84,7 @@ bool CharacterManifestLoader::load(
 		}
 
 		std::filesystem::path config_path =
-			PathManager::instance()->resolve_config_path(character.at("config").get<std::string>());
+			PathManager::instance()->to_config_path(character.at("config").get<std::string>());
 		if (!std::filesystem::is_regular_file(config_path))
 		{
 			std::cout << "Load character manifest failed: config file does not exist: "

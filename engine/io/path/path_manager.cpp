@@ -118,7 +118,7 @@ std::filesystem::path PathManager::assets_structure() const
     return assets() / "assets_structure.json";
 }
 
-std::filesystem::path PathManager::resolve_project_path(const std::filesystem::path& path) const
+std::filesystem::path PathManager::to_project_path(const std::filesystem::path& path) const
 {
     if (path.is_absolute())
         return path.lexically_normal();
@@ -126,27 +126,27 @@ std::filesystem::path PathManager::resolve_project_path(const std::filesystem::p
     return (_root / path).lexically_normal();
 }
 
-std::filesystem::path PathManager::resolve_asset_path(const std::filesystem::path& path) const
+std::filesystem::path PathManager::to_asset_path(const std::filesystem::path& path) const
 {
     if (path.is_absolute())
         return path.lexically_normal();
 
     if (path_starts_with(path, "assets"))
-        return resolve_project_path(path);
+        return to_project_path(path);
 
     return (assets() / path).lexically_normal();
 }
 
-std::filesystem::path PathManager::resolve_config_path(const std::filesystem::path& path) const
+std::filesystem::path PathManager::to_config_path(const std::filesystem::path& path) const
 {
     if (path.is_absolute())
         return path.lexically_normal();
 
     if (path_starts_with(path, "assets"))
-        return resolve_project_path(path);
+        return to_project_path(path);
 
     if (path_starts_with(path, "configs"))
-        return resolve_asset_path(path);
+        return to_asset_path(path);
 
     return (configs() / path).lexically_normal();
 }

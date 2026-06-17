@@ -1,28 +1,16 @@
 {
-  "textures_directories": [
-    "character",
-    "stage",
-    "ui"
-  ],
-  "i18n_directories": [
-    "en",
-    "zh-cn",
-    "ja"
-  ],
-  "configs_directories": [
-    "character",
-    "enemy",
-    "global",
-    "scene"
-  ],
-  "audio_directories": [
-    "character"
-  ],
   "manifests": {
     "characters": "configs/character/characters_manifest.json",
-    "character_animations": "configs/character/character_animation_layout.json",
-    "character_textures": "textures/character/character_texture_manifest.json",
-    "map_textures": "textures/map/map_textures_manifest.json",
-    "ui_textures": "textures/ui/ui_textures_manifest.json"
+    "character_animations": "configs/character/layouts/character_animation_layout.json",
+    "character_audio": "configs/character/layouts/character_audio_layout.json",
+    "character_effects": "configs/character/layouts/character_effect_layout.json",
+    "character_textures": "configs/character/layouts/character_texture_layout.json",
+    
+    "audio": "configs/manifests/audio_manifest.json",
+    "fonts": "configs/manifests/fonts_manifest.json",
+    "i18n": "configs/manifests/i18n_manifest.json",
+    "map_textures": "configs/manifests/map_textures_manifest.json",
+    "preload": "configs/global/preload_manifest.json",
+    "ui_textures": "configs/manifests/ui_textures_manifest.json"
   }
 }

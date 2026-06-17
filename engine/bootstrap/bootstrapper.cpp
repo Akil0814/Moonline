@@ -32,7 +32,7 @@ StartupParseResult Bootstrapper::parse_runtime_settings(int argc, char** argv)
     }
 
     const std::filesystem::path app_config_path =
-        path_manager->resolve_config_path(APP_CONFIG_PATH);
+        path_manager->to_config_path(APP_CONFIG_PATH);
     const AppConfigLoader::Result app_config_result =
         _app_config_loader.load(app_config_path);
     if (!app_config_result.success)

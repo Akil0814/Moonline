@@ -28,9 +28,9 @@ public:
     std::filesystem::path saves() const;
 
     std::filesystem::path assets_structure() const;
-    std::filesystem::path resolve_project_path(const std::filesystem::path& path) const;
-    std::filesystem::path resolve_asset_path(const std::filesystem::path& path) const;
-    std::filesystem::path resolve_config_path(const std::filesystem::path& path) const;
+    std::filesystem::path to_project_path(const std::filesystem::path& path) const;
+    std::filesystem::path to_asset_path(const std::filesystem::path& path) const;
+    std::filesystem::path to_config_path(const std::filesystem::path& path) const;
 
     bool is_initialized() const { return _is_init; };
 

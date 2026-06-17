@@ -104,7 +104,7 @@ AppConfigLoader::Result AppConfigLoader::load(const std::filesystem::path& app_c
     }
 
     result.preload_manifest_path =
-        PathManager::instance()->resolve_asset_path(preload_manifest_relative);
+        PathManager::instance()->to_asset_path(preload_manifest_relative);
 
     if (!std::filesystem::exists(result.preload_manifest_path))
     {
