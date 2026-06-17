@@ -6,19 +6,67 @@
 #include <iostream>
 #include <string>
 #include <string_view>
-#include <utility>
 
 namespace
 {
-	constexpr std::string_view directory_suffix = "_directories";
+constexpr std::string_view manifests_key = "manifests";
+
+bool read_manifest_path(
+	const json& manifests,
+	std::string_view key,
+	PathManager& path_manager,
+	std::filesystem::path& out_path
+)
+{
+	const std::string key_string(key);
+	if (!manifests.contains(key_string))
+	{
+		std::cout << "Load assets structure failed: manifest key is missing: "
+			<< key << std::endl;
+		return false;
+	}
+
+	const json& path_node = manifests.at(key_string);
+	if (!path_node.is_string())
+	{
+		std::cout << "Load assets structure failed: manifest path is not a string: "
+			<< key << std::endl;
+		return false;
+	}
+
+	out_path = path_manager.to_asset_path(path_node.get<std::string>());
+	if (!std::filesystem::is_regular_file(out_path))
+	{
+		std::cout << "Load assets structure failed: manifest file does not exist: "
+			<< out_path << std::endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool is_known_manifest_key(std::string_view key)
+{
+	return key == "characters"
+		|| key == "character_animations"
+		|| key == "character_audio"
+		|| key == "character_effects"
+		|| key == "character_textures"
+		|| key == "audio"
+		|| key == "fonts"
+		|| key == "i18n"
+		|| key == "map_textures"
+		|| key == "preload"
+		|| key == "ui_textures";
+}
 }
 
 bool AssetsStructureLoader::load(
 	const std::filesystem::path& assets_structure_path,
-	AssetsStructureManifest& manifest
+	AssetManifestPaths& manifest_paths
 ) const
 {
-	manifest = AssetsStructureManifest{};
+	manifest_paths = AssetManifestPaths{};
 
 	JsonLoader loader;
 	JsonReadResult result = loader.open_file(assets_structure_path);
@@ -35,129 +83,61 @@ bool AssetsStructureLoader::load(
 		return false;
 	}
 
-	PathManager* path_manager = PathManager::instance();
-	AssetsStructureManifest parsed_manifest;
-
-	try
+	if (loader.root().size() != 1 || !loader.root().contains(std::string(manifests_key)))
 	{
-		for (json::const_iterator item = loader.root().begin();
-			item != loader.root().end();
-			++item)
+		for (json::const_iterator item = loader.root().begin(); item != loader.root().end(); ++item)
 		{
-			std::string item_key = item.key();
-			const json& item_value = item.value();
-
-			if (item_key.ends_with(directory_suffix))
+			if (item.key() != manifests_key)
 			{
-				if (!item_value.is_array())
-				{
-					std::cout << "Load assets structure failed: key is not an array: "
-						<< item_key << std::endl;
-					return false;
-				}
-
-				std::string group_name = item_key;
-				group_name.erase(group_name.size() - directory_suffix.size());
-
-				if (group_name.empty())
-				{
-					std::cout << "Load assets structure failed: empty directory group from key: "
-						<< item_key << std::endl;
-					return false;
-				}
-
-				for (const json& directory : item_value)
-				{
-					if (!directory.is_string())
-					{
-						std::cout << "Load assets structure failed: directory entry is not a string in key: "
-							<< item_key << std::endl;
-						return false;
-					}
-
-					const std::string directory_name = directory.get<std::string>();
-					if (directory_name.empty())
-					{
-						std::cout << "Load assets structure failed: empty directory entry in key: "
-							<< item_key << std::endl;
-						return false;
-					}
-
-					std::filesystem::path directory_path = directory_name;
-					if (!directory_path.is_absolute())
-					{
-						if (directory_path.has_parent_path())
-							directory_path = path_manager->to_asset_path(directory_path);
-						else
-							directory_path = path_manager->to_asset_path(
-								std::filesystem::path(group_name) / directory_path
-							);
-					}
-
-					directory_path = directory_path.lexically_normal();
-					if (!std::filesystem::is_directory(directory_path))
-					{
-						std::cout << "Load assets structure failed: directory does not exist: "
-							<< directory_path << std::endl;
-						return false;
-					}
-
-					AssetDirectoryEntry entry;
-					entry._group_name = group_name;
-					entry._directory_path = directory_path;
-					parsed_manifest._directories.push_back(std::move(entry));
-				}
-
-				continue;
+				std::cout << "Load assets structure failed: unknown root key: "
+					<< item.key() << std::endl;
+				return false;
 			}
+		}
 
-			if (item_key == "manifests")
-			{
-				if (!item_value.is_object())
-				{
-					std::cout << "Load assets structure failed: manifests is not an object."
-						<< std::endl;
-					return false;
-				}
-
-				for (json::const_iterator manifest_item = item_value.begin();
-					manifest_item != item_value.end();
-					++manifest_item)
-				{
-					if (!manifest_item.value().is_string())
-					{
-						std::cout << "Load assets structure failed: manifest path is not a string: "
-							<< manifest_item.key() << std::endl;
-						return false;
-					}
-
-					std::filesystem::path manifest_path =
-						path_manager->to_asset_path(manifest_item.value().get<std::string>());
-					if (!std::filesystem::is_regular_file(manifest_path))
-					{
-						std::cout << "Load assets structure failed: manifest file does not exist: "
-							<< manifest_path << std::endl;
-						return false;
-					}
-
-					parsed_manifest._manifest_paths.emplace(manifest_item.key(), manifest_path);
-				}
-
-				continue;
-			}
-
-			std::cout << "Load assets structure failed: unknown root key: "
-				<< item_key << std::endl;
+		if (!loader.root().contains(std::string(manifests_key)))
+		{
+			std::cout << "Load assets structure failed: manifests is missing." << std::endl;
 			return false;
 		}
 	}
-	catch (const std::filesystem::filesystem_error&)
+
+	const json& manifests = loader.root().at(std::string(manifests_key));
+	if (!manifests.is_object())
 	{
-		std::cout << "Load assets structure failed: filesystem error while reading: "
-			<< assets_structure_path << std::endl;
+		std::cout << "Load assets structure failed: manifests is not an object."
+			<< std::endl;
 		return false;
 	}
 
-	manifest = std::move(parsed_manifest);
-	return true;
+	for (json::const_iterator manifest_item = manifests.begin();
+		manifest_item != manifests.end();
+		++manifest_item)
+	{
+		if (!is_known_manifest_key(manifest_item.key()))
+		{
+			std::cout << "Load assets structure failed: unknown manifest key: "
+				<< manifest_item.key() << std::endl;
+			return false;
+		}
+	}
+
+	PathManager* path_manager = PathManager::instance();
+	if (!path_manager)
+	{
+		std::cout << "Load assets structure failed: path manager is null." << std::endl;
+		return false;
+	}
+
+	return read_manifest_path(manifests, "characters", *path_manager, manifest_paths._characters)
+		&& read_manifest_path(manifests, "character_animations", *path_manager, manifest_paths._character_animations)
+		&& read_manifest_path(manifests, "character_audio", *path_manager, manifest_paths._character_audio)
+		&& read_manifest_path(manifests, "character_effects", *path_manager, manifest_paths._character_effects)
+		&& read_manifest_path(manifests, "character_textures", *path_manager, manifest_paths._character_textures)
+		&& read_manifest_path(manifests, "audio", *path_manager, manifest_paths._audio)
+		&& read_manifest_path(manifests, "fonts", *path_manager, manifest_paths._fonts)
+		&& read_manifest_path(manifests, "i18n", *path_manager, manifest_paths._i18n)
+		&& read_manifest_path(manifests, "map_textures", *path_manager, manifest_paths._map_textures)
+		&& read_manifest_path(manifests, "preload", *path_manager, manifest_paths._preload)
+		&& read_manifest_path(manifests, "ui_textures", *path_manager, manifest_paths._ui_textures);
 }

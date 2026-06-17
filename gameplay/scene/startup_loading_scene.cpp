@@ -4,14 +4,11 @@
 #include "../../application/scene/scene_keys.h"
 #include "../../engine/bootstrap/bootstrapper.h"
 
-#include <iostream>
-
 void StartupLoadingScene::on_enter(const ScenePayload& payload)
 {
 	(void)payload;
 	_paused = false;
 	_has_logged_load_failure = false;
-	std::cout << "loading scene" << std::endl;
 
 	SDL_Texture* akil_tex = Bootstrapper::instance()->get_preload_texture("Akil.png");
 
@@ -20,7 +17,7 @@ void StartupLoadingScene::on_enter(const ScenePayload& payload)
 	akil_icon->configure_playback(UiFadeImageMode::FadeInOut, 2, 2, 2);
 	akil_icon->play();
 
-	_content_loader.start(Application::instance()->renderer());
+	(void)_content_loader.start(Application::instance()->renderer());
 }
 
 void StartupLoadingScene::on_update(double delta)
@@ -38,7 +35,14 @@ void StartupLoadingScene::on_update(double delta)
 	if (_content_loader.has_failed() && !_has_logged_load_failure)
 	{
 		_has_logged_load_failure = true;
-		std::cout << _content_loader.error_message() << std::endl;
+		const std::string& error_message = _content_loader.error_message();
+		SDL_ShowSimpleMessageBox(
+			SDL_MESSAGEBOX_ERROR,
+			"Game Start Error",
+			error_message.c_str(),
+			nullptr);
+		request_quit();
+		return;
 	}
 }
 

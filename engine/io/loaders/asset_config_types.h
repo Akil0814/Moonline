@@ -6,16 +6,43 @@
 #include <unordered_map>
 #include <vector>
 
-struct AssetDirectoryEntry
+struct AssetManifestPaths
 {
-	std::string _group_name;
-	std::filesystem::path _directory_path;
+	std::filesystem::path _characters;
+	std::filesystem::path _character_animations;
+	std::filesystem::path _character_audio;
+	std::filesystem::path _character_effects;
+	std::filesystem::path _character_textures;
+	std::filesystem::path _audio;
+	std::filesystem::path _fonts;
+	std::filesystem::path _i18n;
+	std::filesystem::path _map_textures;
+	std::filesystem::path _preload;
+	std::filesystem::path _ui_textures;
 };
 
-struct AssetsStructureManifest
+struct FontManifestEntry
 {
-	std::vector<AssetDirectoryEntry> _directories;
-	std::unordered_map<std::string, std::filesystem::path> _manifest_paths;
+	std::string _key;
+	std::filesystem::path _file_path;
+	int _point_size = 0;
+};
+
+struct FontManifest
+{
+	std::vector<FontManifestEntry> _fonts;
+};
+
+struct AudioManifestEntry
+{
+	std::string _key;
+	std::filesystem::path _file_path;
+};
+
+struct AudioManifest
+{
+	std::vector<AudioManifestEntry> _sounds;
+	std::vector<AudioManifestEntry> _music;
 };
 
 struct CharacterManifestEntry

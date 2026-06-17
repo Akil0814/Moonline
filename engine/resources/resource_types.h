@@ -10,6 +10,13 @@ struct TextureLoadRequest
 	std::filesystem::path file_path;
 };
 
+struct FontLoadRequest
+{
+	std::string key;
+	std::filesystem::path file_path;
+	int point_size = 0;
+};
+
 struct SoundLoadRequest
 {
 	std::string key;

@@ -1,10 +1,10 @@
 #pragma once
 
-class ConfigManager;
+struct ConfigLoadResult;
 class ResourceLoadPlan;
 
 class ResourceRequestAssembler
 {
 public:
-	bool assemble(const ConfigManager& config_manager, ResourceLoadPlan& out_plan) const;
+	bool assemble(const ConfigLoadResult& config_result, ResourceLoadPlan& out_plan) const;
 };

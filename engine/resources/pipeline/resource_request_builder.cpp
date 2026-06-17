@@ -1,8 +1,126 @@
 #include "resource_request_builder.h"
 
+#include "../../io/path/path_manager.h"
+
 #include <iostream>
 #include <string>
 #include <utility>
+
+bool ResourceRequestBuilder::append_font_requests(
+	const FontManifest& font_manifest,
+	std::vector<FontLoadRequest>& font_load_requests
+) const
+{
+	const std::filesystem::path font_root = PathManager::instance()->fonts();
+
+	for (const FontManifestEntry& entry : font_manifest._fonts)
+	{
+		if (entry._key.empty())
+		{
+			std::cout << "Build font requests failed: key is empty." << std::endl;
+			return false;
+		}
+
+		if (entry._file_path.empty())
+		{
+			std::cout << "Build font requests failed: file path is empty: "
+				<< entry._key << std::endl;
+			return false;
+		}
+
+		if (entry._point_size <= 0)
+		{
+			std::cout << "Build font requests failed: point size is invalid: "
+				<< entry._key << std::endl;
+			return false;
+		}
+
+		std::filesystem::path file_path = (font_root / entry._file_path).lexically_normal();
+		if (file_path.empty())
+		{
+			std::cout << "Build font requests failed: resolved file path is empty: "
+				<< entry._key << std::endl;
+			return false;
+		}
+
+		FontLoadRequest request;
+		request.key = entry._key;
+		request.file_path = std::move(file_path);
+		request.point_size = entry._point_size;
+		font_load_requests.push_back(std::move(request));
+	}
+
+	return true;
+}
+
+bool ResourceRequestBuilder::append_audio_requests(
+	const AudioManifest& audio_manifest,
+	std::vector<SoundLoadRequest>& sound_load_requests,
+	std::vector<MusicLoadRequest>& music_load_requests
+) const
+{
+	const std::filesystem::path audio_root = PathManager::instance()->audio();
+
+	for (const AudioManifestEntry& entry : audio_manifest._sounds)
+	{
+		if (entry._key.empty())
+		{
+			std::cout << "Build sound requests failed: key is empty." << std::endl;
+			return false;
+		}
+
+		if (entry._file_path.empty())
+		{
+			std::cout << "Build sound requests failed: file path is empty: "
+				<< entry._key << std::endl;
+			return false;
+		}
+
+		std::filesystem::path file_path = (audio_root / entry._file_path).lexically_normal();
+		if (file_path.empty())
+		{
+			std::cout << "Build sound requests failed: resolved file path is empty: "
+				<< entry._key << std::endl;
+			return false;
+		}
+
+		SoundLoadRequest request;
+		request.key = entry._key;
+		request.file_path = std::move(file_path);
+		sound_load_requests.push_back(std::move(request));
+	}
+
+	for (const AudioManifestEntry& entry : audio_manifest._music)
+	{
+		if (entry._key.empty())
+		{
+			std::cout << "Build music requests failed: key is empty." << std::endl;
+			return false;
+		}
+
+		if (entry._file_path.empty())
+		{
+			std::cout << "Build music requests failed: file path is empty: "
+				<< entry._key << std::endl;
+			return false;
+		}
+
+		std::filesystem::path file_path = (audio_root / entry._file_path).lexically_normal();
+		if (file_path.empty())
+		{
+			std::cout << "Build music requests failed: resolved file path is empty: "
+				<< entry._key << std::endl;
+			return false;
+		}
+
+		MusicLoadRequest request;
+		request.key = entry._key;
+		request.file_path = std::move(file_path);
+		music_load_requests.push_back(std::move(request));
+	}
+
+	return true;
+}
 
 bool ResourceRequestBuilder::append_character_animation_requests(
 	const CharacterConfig& character_config,

@@ -1,5 +1,6 @@
 #include "game_content_loader.h"
 
+#include "config_load_pipeline.h"
 #include "resource_request_assembler.h"
 #include "../animation/animation_manager.h"
 #include "../config/config_manager.h"
@@ -32,7 +33,7 @@ bool GameContentLoader::start(SDL_Renderer* renderer)
 	_renderer = renderer;
 	_state = GameContentLoaderState::PreparingRequests;
 
-	//确保路径合理
+	//纭繚璺緞鍚堢悊
 	PathManager* path_manager = PathManager::instance();
 	if (!path_manager->is_initialized())
 	{
@@ -40,23 +41,23 @@ bool GameContentLoader::start(SDL_Renderer* renderer)
 		return false;
 	}
 
-	//载入配置
+	//杞藉叆閰嶇疆
 	ConfigManager* config_manager = ConfigManager::instance();
+	ConfigLoadPipeline config_load_pipeline;
+	ConfigLoadResult config_result;
 	const std::filesystem::path assets_structure_path = path_manager->assets_structure();
-	if (!config_manager->load_assets_structure(assets_structure_path))
+	if (!config_load_pipeline.load(assets_structure_path, config_result))
 	{
-		fail("GameContentLoader start failed: assets_structure load failed.");
+		fail(config_load_pipeline.error_message());
 		return false;
 	}
 
-	if (!config_manager->load_character_animation_content())
-	{
-		fail("GameContentLoader start failed: character animation config load failed.");
-		return false;
-	}
+	config_manager->clear();
+	config_manager->set_font_manifest(config_result.font_manifest);
+	config_manager->set_audio_manifest(config_result.audio_manifest);
 
 	ResourceRequestAssembler assembler;
-	if (!assembler.assemble(*config_manager, _load_plan))
+	if (!assembler.assemble(config_result, _load_plan))
 	{
 		fail("GameContentLoader start failed: resource request assembly failed.");
 		return false;

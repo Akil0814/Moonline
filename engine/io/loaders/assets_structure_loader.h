@@ -8,6 +8,6 @@ class AssetsStructureLoader
 public:
 	bool load(
 		const std::filesystem::path& assets_structure_path,
-		AssetsStructureManifest& manifest
+		AssetManifestPaths& manifest_paths
 	) const;
 };

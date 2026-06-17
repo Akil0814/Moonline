@@ -8,6 +8,36 @@
 class ResourceLoadPlan
 {
 public:
+	std::vector<FontLoadRequest>& font_requests()
+	{
+		return _font_requests;
+	}
+
+	const std::vector<FontLoadRequest>& font_requests() const
+	{
+		return _font_requests;
+	}
+
+	std::vector<SoundLoadRequest>& sound_requests()
+	{
+		return _sound_requests;
+	}
+
+	const std::vector<SoundLoadRequest>& sound_requests() const
+	{
+		return _sound_requests;
+	}
+
+	std::vector<MusicLoadRequest>& music_requests()
+	{
+		return _music_requests;
+	}
+
+	const std::vector<MusicLoadRequest>& music_requests() const
+	{
+		return _music_requests;
+	}
+
 	std::vector<AtlasLoadRequest>& atlas_requests()
 	{
 		return _atlas_requests;
@@ -30,21 +60,35 @@ public:
 
 	void clear()
 	{
+		_font_requests.clear();
+		_sound_requests.clear();
+		_music_requests.clear();
 		_atlas_requests.clear();
 		_animation_build_requests.clear();
 	}
 
 	[[nodiscard]] bool empty() const
 	{
-		return _atlas_requests.empty() && _animation_build_requests.empty();
+		return _font_requests.empty()
+			&& _sound_requests.empty()
+			&& _music_requests.empty()
+			&& _atlas_requests.empty()
+			&& _animation_build_requests.empty();
 	}
 
 	[[nodiscard]] std::size_t total_request_count() const
 	{
-		return _atlas_requests.size() + _animation_build_requests.size();
+		return _font_requests.size()
+			+ _sound_requests.size()
+			+ _music_requests.size()
+			+ _atlas_requests.size()
+			+ _animation_build_requests.size();
 	}
 
 private:
+	std::vector<FontLoadRequest> _font_requests;
+	std::vector<SoundLoadRequest> _sound_requests;
+	std::vector<MusicLoadRequest> _music_requests;
 	std::vector<AtlasLoadRequest> _atlas_requests;
 	std::vector<AnimationBuildRequest> _animation_build_requests;
 };
