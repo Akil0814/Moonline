@@ -13,40 +13,40 @@ bool ResourceRequestBuilder::append_font_requests(
 {
 	const std::filesystem::path font_root = PathManager::instance()->fonts();
 
-	for (const FontManifestEntry& entry : font_manifest._fonts)
+	for (const FontManifestEntry& entry : font_manifest.fonts)
 	{
-		if (entry._key.empty())
+		if (entry.key.empty())
 		{
 			std::cout << "Build font requests failed: key is empty." << std::endl;
 			return false;
 		}
 
-		if (entry._file_path.empty())
+		if (entry.file_path.empty())
 		{
 			std::cout << "Build font requests failed: file path is empty: "
-				<< entry._key << std::endl;
+				<< entry.key << std::endl;
 			return false;
 		}
 
-		if (entry._point_size <= 0)
+		if (entry.point_size <= 0)
 		{
 			std::cout << "Build font requests failed: point size is invalid: "
-				<< entry._key << std::endl;
+				<< entry.key << std::endl;
 			return false;
 		}
 
-		std::filesystem::path file_path = (font_root / entry._file_path).lexically_normal();
+		std::filesystem::path file_path = (font_root / entry.file_path).lexically_normal();
 		if (file_path.empty())
 		{
 			std::cout << "Build font requests failed: resolved file path is empty: "
-				<< entry._key << std::endl;
+				<< entry.key << std::endl;
 			return false;
 		}
 
 		FontLoadRequest request;
-		request.key = entry._key;
+		request.key = entry.key;
 		request.file_path = std::move(file_path);
-		request.point_size = entry._point_size;
+		request.point_size = entry.point_size;
 		font_load_requests.push_back(std::move(request));
 	}
 
@@ -61,60 +61,60 @@ bool ResourceRequestBuilder::append_audio_requests(
 {
 	const std::filesystem::path audio_root = PathManager::instance()->audio();
 
-	for (const AudioManifestEntry& entry : audio_manifest._sounds)
+	for (const AudioManifestEntry& entry : audio_manifest.sounds)
 	{
-		if (entry._key.empty())
+		if (entry.key.empty())
 		{
 			std::cout << "Build sound requests failed: key is empty." << std::endl;
 			return false;
 		}
 
-		if (entry._file_path.empty())
+		if (entry.file_path.empty())
 		{
 			std::cout << "Build sound requests failed: file path is empty: "
-				<< entry._key << std::endl;
+				<< entry.key << std::endl;
 			return false;
 		}
 
-		std::filesystem::path file_path = (audio_root / entry._file_path).lexically_normal();
+		std::filesystem::path file_path = (audio_root / entry.file_path).lexically_normal();
 		if (file_path.empty())
 		{
 			std::cout << "Build sound requests failed: resolved file path is empty: "
-				<< entry._key << std::endl;
+				<< entry.key << std::endl;
 			return false;
 		}
 
 		SoundLoadRequest request;
-		request.key = entry._key;
+		request.key = entry.key;
 		request.file_path = std::move(file_path);
 		sound_load_requests.push_back(std::move(request));
 	}
 
-	for (const AudioManifestEntry& entry : audio_manifest._music)
+	for (const AudioManifestEntry& entry : audio_manifest.music)
 	{
-		if (entry._key.empty())
+		if (entry.key.empty())
 		{
 			std::cout << "Build music requests failed: key is empty." << std::endl;
 			return false;
 		}
 
-		if (entry._file_path.empty())
+		if (entry.file_path.empty())
 		{
 			std::cout << "Build music requests failed: file path is empty: "
-				<< entry._key << std::endl;
+				<< entry.key << std::endl;
 			return false;
 		}
 
-		std::filesystem::path file_path = (audio_root / entry._file_path).lexically_normal();
+		std::filesystem::path file_path = (audio_root / entry.file_path).lexically_normal();
 		if (file_path.empty())
 		{
 			std::cout << "Build music requests failed: resolved file path is empty: "
-				<< entry._key << std::endl;
+				<< entry.key << std::endl;
 			return false;
 		}
 
 		MusicLoadRequest request;
-		request.key = entry._key;
+		request.key = entry.key;
 		request.file_path = std::move(file_path);
 		music_load_requests.push_back(std::move(request));
 	}
@@ -129,53 +129,53 @@ bool ResourceRequestBuilder::append_character_animation_requests(
 	std::vector<AnimationBuildRequest>& animation_build_requests
 ) const
 {
-	if (character_config._id.empty())
+	if (character_config.id.empty())
 	{
 		std::cout << "Build resource requests failed: character id is empty." << std::endl;
 		return false;
 	}
 
-	for (const AnimationClipConfig& clip_config : animation_config._clips)
+	for (const AnimationClipConfig& clip_config : animation_config.clips)
 	{
-		if (clip_config._animation_name.empty())
+		if (clip_config.animation_name.empty())
 		{
 			std::cout << "Build resource requests failed: animation name is empty: "
-				<< character_config._id << std::endl;
+				<< character_config.id << std::endl;
 			return false;
 		}
 
-		if (clip_config._frame_count == 0 || clip_config._fps <= 0.0)
+		if (clip_config.frame_count == 0 || clip_config.fps <= 0.0)
 		{
 			std::cout << "Build resource requests failed: animation clip timing is invalid: "
-				<< character_config._id << "." << clip_config._animation_name << std::endl;
+				<< character_config.id << "." << clip_config.animation_name << std::endl;
 			return false;
 		}
 
 		std::filesystem::path directory_path =
-			(character_config._texture_root / clip_config._path).lexically_normal();
+			(character_config.texture_root / clip_config.path).lexically_normal();
 		if (directory_path.empty())
 		{
 			std::cout << "Build resource requests failed: animation directory is empty: "
-				<< character_config._id << "." << clip_config._animation_name << std::endl;
+				<< character_config.id << "." << clip_config.animation_name << std::endl;
 			return false;
 		}
 
 		std::string animation_key =
-			character_config._id + "." + clip_config._animation_name;
-		if (clip_config._is_segment)
-			animation_key += "." + std::to_string(clip_config._segment_index);
+			character_config.id + "." + clip_config.animation_name;
+		if (clip_config.is_segment)
+			animation_key += "." + std::to_string(clip_config.segment_index);
 
 		AtlasLoadRequest atlas_request;
 		atlas_request.atlas_key = animation_key;
 		atlas_request.directory_path = std::move(directory_path);
-		atlas_request.frame_count = clip_config._frame_count;
+		atlas_request.frame_count = clip_config.frame_count;
 
 		AnimationBuildRequest animation_request;
 		animation_request.animation_key = animation_key;
 		animation_request.atlas_key = atlas_request.atlas_key;
-		animation_request.fps = clip_config._fps;
-		animation_request.loop = clip_config._loop;
-		animation_request.segment_index = clip_config._segment_index;
+		animation_request.fps = clip_config.fps;
+		animation_request.loop = clip_config.loop;
+		animation_request.segment_index = clip_config.segment_index;
 
 		atlas_load_requests.push_back(std::move(atlas_request));
 		animation_build_requests.push_back(std::move(animation_request));

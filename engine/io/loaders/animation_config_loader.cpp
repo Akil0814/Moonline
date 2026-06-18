@@ -111,8 +111,8 @@ std::filesystem::path AnimationConfigLoader::resolve_clip_path(
 	}
 
 	std::unordered_map<std::string, CharacterAnimationLayoutEntry>::const_iterator iterator =
-		layout._animations.find(animation_name);
-	if (iterator == layout._animations.end())
+		layout.animations.find(animation_name);
+	if (iterator == layout.animations.end())
 	{
 		std::cout << "Load animation clip failed: layout entry does not exist: "
 			<< animation_name << std::endl;
@@ -122,24 +122,24 @@ std::filesystem::path AnimationConfigLoader::resolve_clip_path(
 	const CharacterAnimationLayoutEntry& entry = iterator->second;
 	if (is_segment)
 	{
-		if (!entry._has_segment_path)
+		if (!entry.has_segment_path)
 		{
 			std::cout << "Load animation clip failed: segment_path is missing in layout: "
 				<< animation_name << std::endl;
 			return {};
 		}
 
-		return resolve_segment_path(entry._segment_path, segment_index);
+		return resolve_segment_path(entry.segment_path, segment_index);
 	}
 
-	if (!entry._has_path)
+	if (!entry.has_path)
 	{
 		std::cout << "Load animation clip failed: path is missing in layout: "
 			<< animation_name << std::endl;
 		return {};
 	}
 
-	return entry._path;
+	return entry.path;
 }
 
 std::filesystem::path AnimationConfigLoader::resolve_segment_path(
@@ -205,14 +205,14 @@ bool AnimationConfigLoader::append_clip(
 		return false;
 
 	AnimationClipConfig clip_config;
-	clip_config._animation_name = animation_name;
-	clip_config._path = clip_path;
-	clip_config._frame_count = static_cast<size_t>(frame_count_value);
-	clip_config._fps = fps;
-	clip_config._loop = clip_node.at("loop").get<bool>();
-	clip_config._is_segment = is_segment;
-	clip_config._segment_index = segment_index;
-	config._clips.push_back(std::move(clip_config));
+	clip_config.animation_name = animation_name;
+	clip_config.path = clip_path;
+	clip_config.frame_count = static_cast<size_t>(frame_count_value);
+	clip_config.fps = fps;
+	clip_config.loop = clip_node.at("loop").get<bool>();
+	clip_config.is_segment = is_segment;
+	clip_config.segment_index = segment_index;
+	config.clips.push_back(std::move(clip_config));
 
 	return true;
 }

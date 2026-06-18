@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../audio/audio_settings.h"
+
 #include <string>
 
 struct RuntimeSettings
@@ -10,6 +12,7 @@ struct RuntimeSettings
     bool fullscreen = false;
     double target_fps = 60.0;
     bool vsync = true;
+    AudioSettings audio;
 };
 
 struct StartupParseResult

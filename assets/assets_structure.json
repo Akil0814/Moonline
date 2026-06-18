@@ -1,16 +1,18 @@
 {
   "manifests": {
+    "fonts": "configs/manifests/fonts_manifest.json",
+
+    "audio": "configs/manifests/audio_manifest.json",
+
+    "i18n": "configs/manifests/i18n_manifest.json",
+
+    "map_textures": "configs/manifests/map_textures_manifest.json",
+    "ui_textures": "configs/manifests/ui_textures_manifest.json",
+
     "characters": "configs/character/characters_manifest.json",
     "character_animations": "configs/character/layouts/character_animation_layout.json",
     "character_audio": "configs/character/layouts/character_audio_layout.json",
     "character_effects": "configs/character/layouts/character_effect_layout.json",
-    "character_textures": "configs/character/layouts/character_texture_layout.json",
-    
-    "audio": "configs/manifests/audio_manifest.json",
-    "fonts": "configs/manifests/fonts_manifest.json",
-    "i18n": "configs/manifests/i18n_manifest.json",
-    "map_textures": "configs/manifests/map_textures_manifest.json",
-    "preload": "configs/manifests/preload_manifest.json",
-    "ui_textures": "configs/manifests/ui_textures_manifest.json"
+    "character_textures": "configs/character/layouts/character_texture_layout.json"
   }
 }

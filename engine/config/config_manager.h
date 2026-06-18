@@ -11,15 +11,6 @@ public:
 	ConfigManager() = default;
 	~ConfigManager() = default;
 
-	void clear();
-
-	void set_font_manifest(FontManifest manifest);
-	void set_audio_manifest(AudioManifest manifest);
-
-	const FontManifest& font_manifest() const;
-	const AudioManifest& audio_manifest() const;
 
 private:
-	FontManifest _font_manifest;
-	AudioManifest _audio_manifest;
 };

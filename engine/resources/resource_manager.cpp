@@ -35,6 +35,16 @@ bool ResourceManager::load_font(
 	return _font_manager.load_font(key, file_path, point_size);
 }
 
+bool ResourceManager::load_sounds(const std::vector<SoundLoadRequest>& requests)
+{
+	return _audio_manager.load_sounds(requests);
+}
+
+bool ResourceManager::load_music(const std::vector<MusicLoadRequest>& requests)
+{
+	return _audio_manager.load_music(requests);
+}
+
 Atlas* ResourceManager::find_atlas(const std::string_view& key) const
 {
 	return _atlas_manager.find_atlas(key);

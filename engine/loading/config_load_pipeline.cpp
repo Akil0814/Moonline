@@ -28,14 +28,14 @@ bool ConfigLoadPipeline::load(
 	}
 
 	FontsManifestLoader fonts_manifest_loader;
-	if (!fonts_manifest_loader.load(manifest_paths._fonts, result.font_manifest))
+	if (!fonts_manifest_loader.load(manifest_paths.fonts, result.font_manifest))
 	{
 		fail("Config load pipeline failed: fonts manifest load failed.");
 		return false;
 	}
 
 	AudioManifestLoader audio_manifest_loader;
-	if (!audio_manifest_loader.load(manifest_paths._audio, result.audio_manifest))
+	if (!audio_manifest_loader.load(manifest_paths.audio, result.audio_manifest))
 	{
 		fail("Config load pipeline failed: audio manifest load failed.");
 		return false;
@@ -44,7 +44,7 @@ bool ConfigLoadPipeline::load(
 	CharacterAnimationLayout character_animation_layout;
 	CharacterAnimationLayoutLoader character_animation_layout_loader;
 	if (!character_animation_layout_loader.load(
-		manifest_paths._character_animations,
+		manifest_paths.character_animations,
 		character_animation_layout))
 	{
 		fail("Config load pipeline failed: character animation layout load failed.");
@@ -53,7 +53,7 @@ bool ConfigLoadPipeline::load(
 
 	CharacterManifest character_manifest;
 	CharacterManifestLoader character_manifest_loader;
-	if (!character_manifest_loader.load(manifest_paths._characters, character_manifest))
+	if (!character_manifest_loader.load(manifest_paths.characters, character_manifest))
 	{
 		fail("Config load pipeline failed: character manifest load failed.");
 		return false;
@@ -62,7 +62,7 @@ bool ConfigLoadPipeline::load(
 	CharacterConfigLoader character_config_loader;
 	AnimationConfigLoader animation_config_loader;
 
-	for (const CharacterManifestEntry& character_entry : character_manifest._characters)
+	for (const CharacterManifestEntry& character_entry : character_manifest.characters)
 	{
 		CharacterConfig character_config;
 		if (!character_config_loader.load(character_entry, character_config))
@@ -73,7 +73,7 @@ bool ConfigLoadPipeline::load(
 
 		AnimationConfig animation_config;
 		if (!animation_config_loader.load(
-			character_config._animation_config_path,
+			character_config.animation_config_path,
 			character_animation_layout,
 			animation_config))
 		{

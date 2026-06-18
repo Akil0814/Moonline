@@ -9,6 +9,11 @@
     "default_fps": 60,
     "vsync": true
   },
+  "audio": {
+    "master_volume": 100,
+    "music_volume": 100,
+    "sound_volume": 100
+  },
   "startup": {
     "preload_manifest": "configs/manifests/preload_manifest.json"
   }

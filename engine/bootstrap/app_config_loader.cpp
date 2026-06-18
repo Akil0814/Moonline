@@ -9,6 +9,26 @@
 namespace
 {
 constexpr const char* DEFAULT_PRELOAD_MANIFEST_PATH = "preload/preload_manifest.json";
+
+bool read_volume_setting(
+    const JsonLoader& loader,
+    const json& node,
+    const char* key,
+    int& out,
+    std::string& error
+)
+{
+    if (!loader.get(node, key, out) || out < 0 || out > 100)
+    {
+        append_bootstrap_error(
+            error,
+            std::string("App config ") + key + " is missing or invalid."
+        );
+        return false;
+    }
+
+    return true;
+}
 }
 
 AppConfigLoader::Result AppConfigLoader::load(const std::filesystem::path& app_config_path) const
@@ -73,6 +93,43 @@ AppConfigLoader::Result AppConfigLoader::load(const std::filesystem::path& app_c
     if (!loader.get(*render_node, "vsync", result.runtime_settings.vsync))
     {
         append_bootstrap_error(result.error, "App config vsync is missing or invalid.");
+        return result;
+    }
+
+    const json* audio_node = nullptr;
+    if (!loader.get_object("audio", audio_node))
+    {
+        append_bootstrap_error(result.error, "App config is missing audio object.");
+        return result;
+    }
+
+    if (!read_volume_setting(
+        loader,
+        *audio_node,
+        "master_volume",
+        result.runtime_settings.audio.master_volume,
+        result.error))
+    {
+        return result;
+    }
+
+    if (!read_volume_setting(
+        loader,
+        *audio_node,
+        "music_volume",
+        result.runtime_settings.audio.music_volume,
+        result.error))
+    {
+        return result;
+    }
+
+    if (!read_volume_setting(
+        loader,
+        *audio_node,
+        "sound_volume",
+        result.runtime_settings.audio.sound_volume,
+        result.error))
+    {
         return result;
     }
 

@@ -56,7 +56,6 @@ bool is_known_manifest_key(std::string_view key)
 		|| key == "fonts"
 		|| key == "i18n"
 		|| key == "map_textures"
-		|| key == "preload"
 		|| key == "ui_textures";
 }
 }
@@ -129,15 +128,14 @@ bool AssetsStructureLoader::load(
 		return false;
 	}
 
-	return read_manifest_path(manifests, "characters", *path_manager, manifest_paths._characters)
-		&& read_manifest_path(manifests, "character_animations", *path_manager, manifest_paths._character_animations)
-		&& read_manifest_path(manifests, "character_audio", *path_manager, manifest_paths._character_audio)
-		&& read_manifest_path(manifests, "character_effects", *path_manager, manifest_paths._character_effects)
-		&& read_manifest_path(manifests, "character_textures", *path_manager, manifest_paths._character_textures)
-		&& read_manifest_path(manifests, "audio", *path_manager, manifest_paths._audio)
-		&& read_manifest_path(manifests, "fonts", *path_manager, manifest_paths._fonts)
-		&& read_manifest_path(manifests, "i18n", *path_manager, manifest_paths._i18n)
-		&& read_manifest_path(manifests, "map_textures", *path_manager, manifest_paths._map_textures)
-		&& read_manifest_path(manifests, "preload", *path_manager, manifest_paths._preload)
-		&& read_manifest_path(manifests, "ui_textures", *path_manager, manifest_paths._ui_textures);
+	return read_manifest_path(manifests, "characters", *path_manager, manifest_paths.characters)
+		&& read_manifest_path(manifests, "character_animations", *path_manager, manifest_paths.character_animations)
+		&& read_manifest_path(manifests, "character_audio", *path_manager, manifest_paths.character_audio)
+		&& read_manifest_path(manifests, "character_effects", *path_manager, manifest_paths.character_effects)
+		&& read_manifest_path(manifests, "character_textures", *path_manager, manifest_paths.character_textures)
+		&& read_manifest_path(manifests, "audio", *path_manager, manifest_paths.audio)
+		&& read_manifest_path(manifests, "fonts", *path_manager, manifest_paths.fonts)
+		&& read_manifest_path(manifests, "i18n", *path_manager, manifest_paths.i18n)
+		&& read_manifest_path(manifests, "map_textures", *path_manager, manifest_paths.map_textures)
+		&& read_manifest_path(manifests, "ui_textures", *path_manager, manifest_paths.ui_textures);
 }

@@ -39,8 +39,8 @@ bool append_audio_entries(
 		}
 
 		AudioManifestEntry entry;
-		entry._key = item.key();
-		entry._file_path = entry_node.at("path").get<std::string>();
+		entry.key = item.key();
+		entry.file_path = entry_node.at("path").get<std::string>();
 		out_entries.push_back(std::move(entry));
 	}
 
@@ -85,10 +85,10 @@ bool AudioManifestLoader::load(
 	}
 
 	AudioManifest parsed_manifest;
-	if (!append_audio_entries(loader.root().at("sounds"), "sounds", parsed_manifest._sounds))
+	if (!append_audio_entries(loader.root().at("sounds"), "sounds", parsed_manifest.sounds))
 		return false;
 
-	if (!append_audio_entries(loader.root().at("music"), "music", parsed_manifest._music))
+	if (!append_audio_entries(loader.root().at("music"), "music", parsed_manifest.music))
 		return false;
 
 	manifest = std::move(parsed_manifest);

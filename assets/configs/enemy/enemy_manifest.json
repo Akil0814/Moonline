@@ -1,0 +1,19 @@
+{
+  "characters": [
+    {
+      "id": "ryougi_shiki",
+      "asset_key": "RyougiShiki",
+      "enabled": true
+    },
+    {
+      "id": "aozaki_aoko",
+      "asset_key": "AozakiAoko",
+      "enabled": false
+    },   
+    {
+      "id": "arcueid_brunestud",
+      "asset_key": "ArcueidBrunestud",
+      "enabled": false
+    }
+  ]
+}

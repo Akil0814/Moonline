@@ -2,6 +2,7 @@
 #include "scene/scene_keys.h"
 #include "scene/scene_registry.h"
 
+#include "../engine/audio/audio_service.h"
 #include "../engine/bootstrap/bootstrapper.h"
 #include "../engine/core/time.h"
 #include "../engine/resources/resource_manager.h"
@@ -78,6 +79,7 @@ bool Application::init_runtime(const RuntimeSettings& settings)
 
 	init_assert(!TTF_Init(), "SDL_ttf Error");
 	init_assert(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) == 0, "Mix_OpenAudio Error");
+	init_assert(AudioService::instance()->init(settings.audio), "AudioService init failed");
 
 	SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
 
@@ -192,6 +194,7 @@ void Application::shutdown()
 	_input_system.shutdown();
 	_scene_manager.detach(this);
 	_scene_manager.shutdown();
+	AudioService::instance()->shutdown();
 	ResourceManager::instance()->clear();
 }
 

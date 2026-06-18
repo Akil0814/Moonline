@@ -59,8 +59,8 @@ bool CharacterAnimationLayoutLoader::load(
 				return false;
 			}
 
-			entry._path = animation_node.at("path").get<std::string>();
-			entry._has_path = true;
+			entry.path = animation_node.at("path").get<std::string>();
+			entry.has_path = true;
 		}
 
 		if (animation_node.contains("segment_path"))
@@ -72,18 +72,18 @@ bool CharacterAnimationLayoutLoader::load(
 				return false;
 			}
 
-			entry._segment_path = animation_node.at("segment_path").get<std::string>();
-			entry._has_segment_path = true;
+			entry.segment_path = animation_node.at("segment_path").get<std::string>();
+			entry.has_segment_path = true;
 		}
 
-		if (!entry._has_path && !entry._has_segment_path)
+		if (!entry.has_path && !entry.has_segment_path)
 		{
 			std::cout << "Load character animation layout failed: path or segment_path is missing: "
 				<< animation.key() << std::endl;
 			return false;
 		}
 
-		parsed_layout._animations.emplace(animation.key(), std::move(entry));
+		parsed_layout.animations.emplace(animation.key(), std::move(entry));
 	}
 
 	layout = std::move(parsed_layout);

@@ -7,6 +7,16 @@
 #include <string>
 #include <utility>
 
+namespace
+{
+std::filesystem::path infer_character_info_path(const std::string& asset_key)
+{
+	return PathManager::instance()->to_config_path(
+		std::filesystem::path("character") / asset_key / "character_info.json"
+	);
+}
+}
+
 bool CharacterManifestLoader::load(
 	const std::filesystem::path& manifest_path,
 	CharacterManifest& manifest
@@ -76,15 +86,24 @@ bool CharacterManifestLoader::load(
 			return false;
 		}
 
-		if (!character.contains("config") || !character.at("config").is_string())
+		std::filesystem::path config_path;
+		if (character.contains("config"))
 		{
-			std::cout << "Load character manifest failed: config is missing or not a string."
-				<< std::endl;
-			return false;
+			if (!character.at("config").is_string())
+			{
+				std::cout << "Load character manifest failed: config is not a string."
+					<< std::endl;
+				return false;
+			}
+
+			config_path =
+				PathManager::instance()->to_config_path(character.at("config").get<std::string>());
+		}
+		else
+		{
+			config_path = infer_character_info_path(character.at("asset_key").get<std::string>());
 		}
 
-		std::filesystem::path config_path =
-			PathManager::instance()->to_config_path(character.at("config").get<std::string>());
 		if (!std::filesystem::is_regular_file(config_path))
 		{
 			std::cout << "Load character manifest failed: config file does not exist: "
@@ -93,10 +112,10 @@ bool CharacterManifestLoader::load(
 		}
 
 		CharacterManifestEntry entry;
-		entry._id = character.at("id").get<std::string>();
-		entry._asset_key = character.at("asset_key").get<std::string>();
-		entry._config_path = config_path;
-		parsed_manifest._characters.push_back(std::move(entry));
+		entry.id = character.at("id").get<std::string>();
+		entry.asset_key = character.at("asset_key").get<std::string>();
+		entry.config_path = config_path;
+		parsed_manifest.characters.push_back(std::move(entry));
 	}
 
 	manifest = std::move(parsed_manifest);

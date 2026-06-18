@@ -8,94 +8,97 @@
 
 struct AssetManifestPaths
 {
-	std::filesystem::path _characters;
-	std::filesystem::path _character_animations;
-	std::filesystem::path _character_audio;
-	std::filesystem::path _character_effects;
-	std::filesystem::path _character_textures;
-	std::filesystem::path _audio;
-	std::filesystem::path _fonts;
-	std::filesystem::path _i18n;
-	std::filesystem::path _map_textures;
-	std::filesystem::path _preload;
-	std::filesystem::path _ui_textures;
+	std::filesystem::path audio;
+
+	std::filesystem::path fonts;
+
+	std::filesystem::path i18n;
+
+	std::filesystem::path map_textures;
+	std::filesystem::path ui_textures;
+
+	std::filesystem::path characters;
+	std::filesystem::path character_animations;
+	std::filesystem::path character_audio;
+	std::filesystem::path character_effects;
+	std::filesystem::path character_textures;
 };
 
 struct FontManifestEntry
 {
-	std::string _key;
-	std::filesystem::path _file_path;
-	int _point_size = 0;
+	std::string key;
+	std::filesystem::path file_path;
+	int point_size = 0;
 };
 
 struct FontManifest
 {
-	std::vector<FontManifestEntry> _fonts;
+	std::vector<FontManifestEntry> fonts;
 };
 
 struct AudioManifestEntry
 {
-	std::string _key;
-	std::filesystem::path _file_path;
+	std::string key;
+	std::filesystem::path file_path;
 };
 
 struct AudioManifest
 {
-	std::vector<AudioManifestEntry> _sounds;
-	std::vector<AudioManifestEntry> _music;
+	std::vector<AudioManifestEntry> sounds;
+	std::vector<AudioManifestEntry> music;
 };
 
 struct CharacterManifestEntry
 {
-	std::string _id;
-	std::string _asset_key;
-	std::filesystem::path _config_path;
+	std::string id;
+	std::string asset_key;
+	std::filesystem::path config_path;
 };
 
 struct CharacterManifest
 {
-	std::vector<CharacterManifestEntry> _characters;
+	std::vector<CharacterManifestEntry> characters;
 };
 
 struct CharacterConfig
 {
-	std::string _id;
-	std::string _asset_key;
-	std::filesystem::path _texture_root;
-	std::filesystem::path _animation_config_path;
+	std::string id;
+	std::string asset_key;
+	std::filesystem::path texture_root;
+	std::filesystem::path animation_config_path;
 };
 
 struct CharacterAnimationLayoutEntry
 {
-	std::filesystem::path _path;
-	std::filesystem::path _segment_path;
-	bool _has_path = false;
-	bool _has_segment_path = false;
+	std::filesystem::path path;
+	std::filesystem::path segment_path;
+	bool has_path = false;
+	bool has_segment_path = false;
 };
 
 struct CharacterAnimationLayout
 {
-	std::unordered_map<std::string, CharacterAnimationLayoutEntry> _animations;
+	std::unordered_map<std::string, CharacterAnimationLayoutEntry> animations;
 };
 
 struct AnimationClipConfig
 {
-	std::string _animation_name;
-	std::filesystem::path _path;
-	size_t _frame_count = 0;
-	double _fps = 10.0;
-	bool _loop = true;
-	bool _is_segment = false;
-	size_t _segment_index = 0;
+	std::string animation_name;
+	std::filesystem::path path;
+	size_t frame_count = 0;
+	double fps = 10.0;
+	bool loop = true;
+	bool is_segment = false;
+	size_t segment_index = 0;
 };
 
 struct AnimationConfig
 {
-	std::vector<AnimationClipConfig> _clips;
+	std::vector<AnimationClipConfig> clips;
 };
 
 struct CharacterAnimationContentEntry
 {
-	CharacterConfig _character_config;
-	AnimationConfig _animation_config;
+	CharacterConfig character_config;
+	AnimationConfig animation_config;
 };

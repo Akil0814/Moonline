@@ -62,6 +62,37 @@ bool UserConfigStore::read_positive_double_override(
     return true;
 }
 
+bool UserConfigStore::read_volume_override(
+    const json& node,
+    const char* key,
+    int& out,
+    std::string& error
+)
+{
+    if (!node.contains(key))
+        return true;
+
+    const json& value = node.at(key);
+    if (!value.is_number_integer())
+    {
+        append_bootstrap_error(error, std::string("User config field must be an integer: ") + key);
+        return false;
+    }
+
+    const int parsed = value.get<int>();
+    if (parsed < 0 || parsed > 100)
+    {
+        append_bootstrap_error(
+            error,
+            std::string("User config field must be within 0..100: ") + key
+        );
+        return false;
+    }
+
+    out = parsed;
+    return true;
+}
+
 bool UserConfigStore::read_bool_override(
     const json& node,
     const char* key,
@@ -99,6 +130,14 @@ json UserConfigStore::make_user_config_json(const RuntimeSettings& runtime_setti
             {
                 { "fps", runtime_settings.target_fps },
                 { "vsync", runtime_settings.vsync }
+            }
+        },
+        {
+            "audio",
+            {
+                { "master_volume", runtime_settings.audio.master_volume },
+                { "music_volume", runtime_settings.audio.music_volume },
+                { "sound_volume", runtime_settings.audio.sound_volume }
             }
         }
     };
@@ -138,6 +177,15 @@ UserConfigStore::Result UserConfigStore::load_or_create(
     result.runtime_settings = merged_settings;
     result.success = true;
     return result;
+}
+
+bool UserConfigStore::save(
+    const std::filesystem::path& user_config_path,
+    const RuntimeSettings& runtime_settings,
+    std::string& error
+) const
+{
+    return write_user_config(user_config_path, runtime_settings, error);
 }
 
 bool UserConfigStore::apply_overrides(
@@ -220,6 +268,43 @@ bool UserConfigStore::apply_overrides(
             render_node,
             "vsync",
             runtime_settings.vsync,
+            error))
+        {
+            return false;
+        }
+    }
+
+    if (root.contains("audio"))
+    {
+        const json& audio_node = root.at("audio");
+        if (!audio_node.is_object())
+        {
+            append_bootstrap_error(error, "User config field audio must be an object.");
+            return false;
+        }
+
+        if (!read_volume_override(
+            audio_node,
+            "master_volume",
+            runtime_settings.audio.master_volume,
+            error))
+        {
+            return false;
+        }
+
+        if (!read_volume_override(
+            audio_node,
+            "music_volume",
+            runtime_settings.audio.music_volume,
+            error))
+        {
+            return false;
+        }
+
+        if (!read_volume_override(
+            audio_node,
+            "sound_volume",
+            runtime_settings.audio.sound_volume,
             error))
         {
             return false;

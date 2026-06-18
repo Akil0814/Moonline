@@ -33,6 +33,8 @@ public:
 		const std::filesystem::path& file_path,
 		int point_size
 	);
+	bool load_sounds(const std::vector<SoundLoadRequest>& requests);
+	bool load_music(const std::vector<MusicLoadRequest>& requests);
 
 	Atlas* find_atlas(const std::string_view& key) const;
 	TTF_Font* find_font(const std::string_view& key) const;

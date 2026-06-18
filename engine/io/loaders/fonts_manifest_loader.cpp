@@ -67,10 +67,10 @@ bool FontsManifestLoader::load(
 		}
 
 		FontManifestEntry entry;
-		entry._key = font.at("key").get<std::string>();
-		entry._file_path = font.at("file").get<std::string>();
-		entry._point_size = font.at("size").get<int>();
-		parsed_manifest._fonts.push_back(std::move(entry));
+		entry.key = font.at("key").get<std::string>();
+		entry.file_path = font.at("file").get<std::string>();
+		entry.point_size = font.at("size").get<int>();
+		parsed_manifest.fonts.push_back(std::move(entry));
 	}
 
 	manifest = std::move(parsed_manifest);

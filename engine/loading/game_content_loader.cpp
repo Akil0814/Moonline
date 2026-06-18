@@ -3,7 +3,6 @@
 #include "config_load_pipeline.h"
 #include "resource_request_assembler.h"
 #include "../animation/animation_manager.h"
-#include "../config/config_manager.h"
 #include "../io/path/path_manager.h"
 #include "../resources/resource_manager.h"
 
@@ -33,7 +32,7 @@ bool GameContentLoader::start(SDL_Renderer* renderer)
 	_renderer = renderer;
 	_state = GameContentLoaderState::PreparingRequests;
 
-	//纭繚璺緞鍚堢悊
+
 	PathManager* path_manager = PathManager::instance();
 	if (!path_manager->is_initialized())
 	{
@@ -41,8 +40,6 @@ bool GameContentLoader::start(SDL_Renderer* renderer)
 		return false;
 	}
 
-	//杞藉叆閰嶇疆
-	ConfigManager* config_manager = ConfigManager::instance();
 	ConfigLoadPipeline config_load_pipeline;
 	ConfigLoadResult config_result;
 	const std::filesystem::path assets_structure_path = path_manager->assets_structure();
@@ -51,10 +48,6 @@ bool GameContentLoader::start(SDL_Renderer* renderer)
 		fail(config_load_pipeline.error_message());
 		return false;
 	}
-
-	config_manager->clear();
-	config_manager->set_font_manifest(config_result.font_manifest);
-	config_manager->set_audio_manifest(config_result.audio_manifest);
 
 	ResourceRequestAssembler assembler;
 	if (!assembler.assemble(config_result, _load_plan))
@@ -80,11 +73,42 @@ void GameContentLoader::update()
 	}
 
 	ResourceManager* resource_manager = ResourceManager::instance();
+
+	for (const FontLoadRequest& request : _load_plan.font_requests())
+	{
+		if (!resource_manager->load_font(
+			request.key,
+			request.file_path,
+			request.point_size))
+		{
+			fail("GameContentLoader update failed: font load failed.");
+			return;
+		}
+	}
+
+	_progress = 0.25f;
+
 	if (!resource_manager->load_atlases(_renderer, _load_plan.atlas_requests()))
 	{
-		fail("GameContentLoader update failed: atlas loading failed.");
+		fail("GameContentLoader update failed: atlas load failed.");
 		return;
 	}
+
+	_progress = 0.5f;
+
+	if (!resource_manager->load_sounds(_load_plan.sound_requests()))
+	{
+		fail("GameContentLoader update failed: sound load failed.");
+		return;
+	}
+
+	if (!resource_manager->load_music(_load_plan.music_requests()))
+	{
+		fail("GameContentLoader update failed: music load failed.");
+		return;
+	}
+
+	_progress = 0.75f;
 
 	if (!AnimationManager::instance()->register_animations(
 		_load_plan.animation_build_requests(),

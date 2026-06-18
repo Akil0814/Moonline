@@ -24,6 +24,11 @@ public:
         const std::filesystem::path& user_config_path,
         const RuntimeSettings& default_settings
     ) const;
+    bool save(
+        const std::filesystem::path& user_config_path,
+        const RuntimeSettings& runtime_settings,
+        std::string& error
+    ) const;
 
 private:
     static bool read_positive_int_override(
@@ -36,6 +41,12 @@ private:
         const json& node,
         const char* key,
         double& out,
+        std::string& error
+    );
+    static bool read_volume_override(
+        const json& node,
+        const char* key,
+        int& out,
         std::string& error
     );
     static bool read_bool_override(

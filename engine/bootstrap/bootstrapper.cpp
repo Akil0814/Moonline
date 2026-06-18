@@ -12,6 +12,8 @@ constexpr const char* USER_CONFIG_FILE_NAME = "user_config.json";
 StartupParseResult Bootstrapper::parse_runtime_settings()
 {
     _startup_preload_loader.reset();
+    _has_runtime_settings = false;
+    _user_config_path.clear();
 
     StartupParseResult result;
 
@@ -38,9 +40,11 @@ StartupParseResult Bootstrapper::parse_runtime_settings()
         return result;
     }
 
+    _user_config_path = path_manager->player_data() / USER_CONFIG_FILE_NAME;
+
     const UserConfigStore::Result user_config_result =
         _user_config_store.load_or_create(
-            path_manager->player_data() / USER_CONFIG_FILE_NAME,
+            _user_config_path,
             app_config_result.runtime_settings
         );
     if (!user_config_result.success)
@@ -55,6 +59,8 @@ StartupParseResult Bootstrapper::parse_runtime_settings()
     }
 
     result.runtime_settings = user_config_result.runtime_settings;
+    _runtime_settings = user_config_result.runtime_settings;
+    _has_runtime_settings = true;
     result.rebuilt_user_config = user_config_result.rebuilt_user_config;
     _startup_preload_loader.set_manifest_path(app_config_result.preload_manifest_path);
     result.success = true;
@@ -69,4 +75,32 @@ bool Bootstrapper::preload_startup_resources(SDL_Renderer* renderer)
 SDL_Texture* Bootstrapper::get_preload_texture(std::string_view key)
 {
     return _startup_preload_loader.get_texture(key);
+}
+
+const RuntimeSettings& Bootstrapper::runtime_settings() const
+{
+    return _runtime_settings;
+}
+
+bool Bootstrapper::save_runtime_settings(
+    const RuntimeSettings& runtime_settings,
+    std::string& error
+)
+{
+    PathManager* path_manager = PathManager::instance();
+    if (!path_manager->is_initialized())
+    {
+        append_bootstrap_error(error, "Save runtime settings failed: path manager is not initialized.");
+        return false;
+    }
+
+    if (_user_config_path.empty())
+        _user_config_path = path_manager->player_data() / USER_CONFIG_FILE_NAME;
+
+    if (!_user_config_store.save(_user_config_path, runtime_settings, error))
+        return false;
+
+    _runtime_settings = runtime_settings;
+    _has_runtime_settings = true;
+    return true;
 }

@@ -1,0 +1,15 @@
+{
+  "stand": "textures/stand.png",
+  "stand_back": "textures/stand_back.png",
+  "full": "textures/full.png",
+  "in_game": "textures/in_game.png",
+  "name": "textures/name.png",
+  "name_short": "textures/name_short.png",
+  "pause": "textures/pause.png",
+  "selecting_icon": "textures/selecting_icon.png",
+  "skill_cut": "textures/skill_cut.png",
+  "skill_cut_ex": "textures/skill_cut_ex.png",
+  "ending": "textures/ending.png",
+  "ending_back": "textures/ending_back.png",
+  "selected_background": "animation/selected_background"
+}
