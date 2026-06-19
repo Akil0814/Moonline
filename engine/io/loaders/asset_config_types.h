@@ -92,7 +92,22 @@ struct CharacterAnimationLayout
 	std::unordered_map<std::string, CharacterAnimationLayoutEntry> animations;
 };
 
-using CharacterEffectLayoutEntry = CharacterAnimationLayoutEntry;
+struct CharacterEffectPlaybackConfig
+{
+	size_t frame_count = 0;
+	double fps = 10.0;
+	bool loop = true;
+};
+
+struct CharacterEffectLayoutEntry
+{
+	std::filesystem::path path;
+	std::filesystem::path segment_path;
+	bool has_path = false;
+	bool has_segment_path = false;
+	CharacterEffectPlaybackConfig playback;
+	std::vector<CharacterEffectPlaybackConfig> segments;
+};
 
 struct CharacterEffectLayout
 {
@@ -131,3 +146,4 @@ struct CharacterAnimationContentEntry
 	CharacterConfig character_config;
 	AnimationConfig animation_config;
 };
+

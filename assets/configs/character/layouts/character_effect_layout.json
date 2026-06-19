@@ -1,19 +1,27 @@
 {
   "effects": {
     "attack_normal": {
-      "segment_path": "animation/effects/attack/normal/{segment}"
+      "segment_path": "animation/effects/attack/normal/{segment}",
+      "segments": [
+        { "frame_count": 3, "fps": 10, "loop": false },
+        { "frame_count": 3, "fps": 10, "loop": false },
+        { "frame_count": 3, "fps": 10, "loop": false },
+        { "frame_count": 3, "fps": 10, "loop": false }
+      ]
     },
     "attack_air": {
-      "segment_path": "animation/effects/attack/aerial/{segment}"
-    },
-    "attack_ranged_ground": {
-      "path": "animation/effects/attack/ranged/ground"
-    },
-    "attack_ranged_air": {
-      "path": "animation/effects/attack/ranged/air"
+      "segment_path": "animation/effects/attack/aerial/{segment}",
+      "segments": [
+        { "frame_count": 4, "fps": 10, "loop": false },
+        { "frame_count": 3, "fps": 10, "loop": false },
+        { "frame_count": 3, "fps": 10, "loop": false }
+      ]
     },
     "attack_special": {
-      "segment_path": "animation/effects/attack/special/ex{segment}"
+      "segment_path": "animation/effects/attack/special/ex{segment}",
+      "segments": [
+        { "frame_count": 31, "fps": 10, "loop": false }
+      ]
     }
   }
 }

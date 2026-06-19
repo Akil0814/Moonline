@@ -28,36 +28,6 @@ std::filesystem::path resolve_segment_path(
 	return (segment_path / segment_number).lexically_normal();
 }
 
-std::filesystem::path resolve_layout_path(
-	const std::string& content_name,
-	bool is_segment,
-	size_t segment_index,
-	const CharacterEffectLayoutEntry& entry,
-	const char* error_prefix
-)
-{
-	if (is_segment)
-	{
-		if (!entry.has_segment_path)
-		{
-			std::cout << error_prefix << ": segment_path is missing in layout: "
-				<< content_name << std::endl;
-			return {};
-		}
-
-		return resolve_segment_path(entry.segment_path, segment_index);
-	}
-
-	if (!entry.has_path)
-	{
-		std::cout << error_prefix << ": path is missing in layout: "
-			<< content_name << std::endl;
-		return {};
-	}
-
-	return entry.path;
-}
-
 bool append_texture_request(
 	const std::string& key,
 	const std::filesystem::path& file_path,
@@ -440,21 +410,45 @@ bool ResourceRequestBuilder::append_character_effect_requests(
 			return false;
 		}
 
-		if (clip_config.frame_count == 0 || clip_config.fps <= 0.0)
-		{
-			std::cout << "Build effect requests failed: animation clip timing is invalid: "
-				<< character_config.id << "." << clip_config.animation_name << std::endl;
-			return false;
-		}
+		const CharacterEffectLayoutEntry& effect_entry = effect_iterator->second;
+		std::filesystem::path effect_relative_path;
+		CharacterEffectPlaybackConfig playback_config;
 
-		std::filesystem::path effect_relative_path = resolve_layout_path(
-			clip_config.animation_name,
-			clip_config.is_segment,
-			clip_config.segment_index,
-			effect_iterator->second,
-			"Build effect requests failed");
-		if (effect_relative_path.empty())
-			return false;
+		if (clip_config.is_segment)
+		{
+			if (!effect_entry.has_segment_path)
+			{
+				std::cout << "Build effect requests failed: segment_path is missing in effect config: "
+					<< clip_config.animation_name << std::endl;
+				return false;
+			}
+
+			if (clip_config.segment_index >= effect_entry.segments.size())
+			{
+				std::cout << "Skip effect requests: segment playback is missing: "
+					<< character_config.id << "." << clip_config.animation_name
+					<< "." << clip_config.segment_index << std::endl;
+				continue;
+			}
+
+			effect_relative_path = resolve_segment_path(
+				effect_entry.segment_path,
+				clip_config.segment_index
+			);
+			playback_config = effect_entry.segments[clip_config.segment_index];
+		}
+		else
+		{
+			if (!effect_entry.has_path)
+			{
+				std::cout << "Build effect requests failed: path is missing in effect config: "
+					<< clip_config.animation_name << std::endl;
+				return false;
+			}
+
+			effect_relative_path = effect_entry.path;
+			playback_config = effect_entry.playback;
+		}
 
 		std::filesystem::path directory_path =
 			(character_config.texture_root / effect_relative_path).lexically_normal();
@@ -477,13 +471,13 @@ bool ResourceRequestBuilder::append_character_effect_requests(
 		AtlasBuildRequest atlas_request;
 		atlas_request.atlas_key = animation_key;
 		atlas_request.directory_path = std::move(directory_path);
-		atlas_request.frame_count = clip_config.frame_count;
+		atlas_request.frame_count = playback_config.frame_count;
 
 		AnimationBuildRequest animation_request;
 		animation_request.animation_key = animation_key;
 		animation_request.atlas_key = atlas_request.atlas_key;
-		animation_request.fps = clip_config.fps;
-		animation_request.loop = clip_config.loop;
+		animation_request.fps = playback_config.fps;
+		animation_request.loop = playback_config.loop;
 		animation_request.segment_index = clip_config.segment_index;
 
 		EffectBuildRequest effect_request;
@@ -497,4 +491,3 @@ bool ResourceRequestBuilder::append_character_effect_requests(
 
 	return true;
 }
-

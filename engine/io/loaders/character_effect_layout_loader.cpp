@@ -5,6 +5,68 @@
 #include <iostream>
 #include <utility>
 
+namespace
+{
+bool parse_playback_config(
+	const json& playback_node,
+	const std::string& effect_key,
+	const char* error_prefix,
+	CharacterEffectPlaybackConfig& out_config
+)
+{
+	if (!playback_node.is_object())
+	{
+		std::cout << error_prefix << ": playback entry is not an object: "
+			<< effect_key << std::endl;
+		return false;
+	}
+
+	if (!playback_node.contains("frame_count")
+		|| !playback_node.at("frame_count").is_number_unsigned())
+	{
+		std::cout << error_prefix << ": frame_count is missing or invalid: "
+			<< effect_key << std::endl;
+		return false;
+	}
+
+	if (!playback_node.contains("fps")
+		|| !playback_node.at("fps").is_number())
+	{
+		std::cout << error_prefix << ": fps is missing or invalid: "
+			<< effect_key << std::endl;
+		return false;
+	}
+
+	if (!playback_node.contains("loop")
+		|| !playback_node.at("loop").is_boolean())
+	{
+		std::cout << error_prefix << ": loop is missing or invalid: "
+			<< effect_key << std::endl;
+		return false;
+	}
+
+	out_config.frame_count = playback_node.at("frame_count").get<size_t>();
+	out_config.fps = playback_node.at("fps").get<double>();
+	out_config.loop = playback_node.at("loop").get<bool>();
+
+	if (out_config.frame_count == 0)
+	{
+		std::cout << error_prefix << ": frame_count must be positive: "
+			<< effect_key << std::endl;
+		return false;
+	}
+
+	if (out_config.fps <= 0.0)
+	{
+		std::cout << error_prefix << ": fps must be positive: "
+			<< effect_key << std::endl;
+		return false;
+	}
+
+	return true;
+}
+}
+
 bool CharacterEffectLayoutLoader::load(
 	const std::filesystem::path& layout_path,
 	CharacterEffectLayout& layout
@@ -48,10 +110,20 @@ bool CharacterEffectLayoutLoader::load(
 		}
 
 		const json& effect_node = effect.value();
-		CharacterEffectLayoutEntry entry;
+		const bool has_path = effect_node.contains("path");
+		const bool has_segment_path = effect_node.contains("segment_path");
+		const bool has_segments = effect_node.contains("segments");
 
-		if (effect_node.contains("path"))
+		CharacterEffectLayoutEntry entry;
+		if (has_path)
 		{
+			if (has_segment_path || has_segments)
+			{
+				std::cout << "Load character effect layout failed: mixed fixed and segmented effect schema: "
+					<< effect.key() << std::endl;
+				return false;
+			}
+
 			if (!effect_node.at("path").is_string())
 			{
 				std::cout << "Load character effect layout failed: path is not a string: "
@@ -61,9 +133,16 @@ bool CharacterEffectLayoutLoader::load(
 
 			entry.path = effect_node.at("path").get<std::string>();
 			entry.has_path = true;
+			if (!parse_playback_config(
+				effect_node,
+				effect.key(),
+				"Load character effect layout failed",
+				entry.playback))
+			{
+				return false;
+			}
 		}
-
-		if (effect_node.contains("segment_path"))
+		else if (has_segment_path)
 		{
 			if (!effect_node.at("segment_path").is_string())
 			{
@@ -72,11 +151,52 @@ bool CharacterEffectLayoutLoader::load(
 				return false;
 			}
 
+			if (!has_segments || !effect_node.at("segments").is_array())
+			{
+				std::cout << "Load character effect layout failed: segments is missing or not an array: "
+					<< effect.key() << std::endl;
+				return false;
+			}
+
+			if (effect_node.contains("frame_count")
+				|| effect_node.contains("fps")
+				|| effect_node.contains("loop")
+				|| effect_node.contains("path"))
+			{
+				std::cout << "Load character effect layout failed: segmented entry contains fixed playback fields: "
+					<< effect.key() << std::endl;
+				return false;
+			}
+
 			entry.segment_path = effect_node.at("segment_path").get<std::string>();
 			entry.has_segment_path = true;
-		}
 
-		if (!entry.has_path && !entry.has_segment_path)
+			const json& segments = effect_node.at("segments");
+			if (segments.empty())
+			{
+				std::cout << "Load character effect layout failed: segments is empty: "
+					<< effect.key() << std::endl;
+				return false;
+			}
+
+			entry.segments.reserve(segments.size());
+			for (size_t index = 0; index < segments.size(); ++index)
+			{
+				CharacterEffectPlaybackConfig segment_config;
+				const std::string segment_key = effect.key() + "." + std::to_string(index);
+				if (!parse_playback_config(
+					segments.at(index),
+					segment_key,
+					"Load character effect layout failed",
+					segment_config))
+				{
+					return false;
+				}
+
+				entry.segments.push_back(std::move(segment_config));
+			}
+		}
+		else
 		{
 			std::cout << "Load character effect layout failed: path or segment_path is missing: "
 				<< effect.key() << std::endl;
