@@ -5,8 +5,11 @@
 #include "../io/loaders/assets_structure_loader.h"
 #include "../io/loaders/character_animation_layout_loader.h"
 #include "../io/loaders/character_config_loader.h"
+#include "../io/loaders/character_effect_layout_loader.h"
+#include "../io/loaders/character_texture_layout_loader.h"
 #include "../io/loaders/character_manifest_loader.h"
 #include "../io/loaders/fonts_manifest_loader.h"
+#include "../io/loaders/texture_manifest_loader.h"
 
 #include <iostream>
 #include <utility>
@@ -41,6 +44,19 @@ bool ConfigLoadPipeline::load(
 		return false;
 	}
 
+	TextureManifestLoader texture_manifest_loader;
+	if (!texture_manifest_loader.load(manifest_paths.map_textures, result.map_texture_manifest))
+	{
+		fail("Config load pipeline failed: map textures manifest load failed.");
+		return false;
+	}
+
+	if (!texture_manifest_loader.load(manifest_paths.ui_textures, result.ui_texture_manifest))
+	{
+		fail("Config load pipeline failed: ui textures manifest load failed.");
+		return false;
+	}
+
 	CharacterAnimationLayout character_animation_layout;
 	CharacterAnimationLayoutLoader character_animation_layout_loader;
 	if (!character_animation_layout_loader.load(
@@ -48,6 +64,24 @@ bool ConfigLoadPipeline::load(
 		character_animation_layout))
 	{
 		fail("Config load pipeline failed: character animation layout load failed.");
+		return false;
+	}
+
+	CharacterEffectLayoutLoader character_effect_layout_loader;
+	if (!character_effect_layout_loader.load(
+		manifest_paths.character_effects,
+		result.character_effect_layout))
+	{
+		fail("Config load pipeline failed: character effect layout load failed.");
+		return false;
+	}
+
+	CharacterTextureLayoutLoader character_texture_layout_loader;
+	if (!character_texture_layout_loader.load(
+		manifest_paths.character_textures,
+		result.character_texture_layout))
+	{
+		fail("Config load pipeline failed: character texture layout load failed.");
 		return false;
 	}
 

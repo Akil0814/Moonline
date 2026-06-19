@@ -16,10 +16,29 @@ public:
 		std::vector<SoundLoadRequest>& sound_load_requests,
 		std::vector<MusicLoadRequest>& music_load_requests
 	) const;
+	bool append_texture_manifest_requests(
+		const TextureManifest& texture_manifest,
+		const std::string& key_prefix,
+		const std::filesystem::path& texture_root,
+		std::vector<TextureLoadRequest>& texture_load_requests
+	) const;
+	bool append_character_texture_requests(
+		const CharacterConfig& character_config,
+		const CharacterTextureLayout& texture_layout,
+		std::vector<TextureLoadRequest>& texture_load_requests
+	) const;
 	bool append_character_animation_requests(
 		const CharacterConfig& character_config,
 		const AnimationConfig& animation_config,
 		std::vector<AtlasLoadRequest>& atlas_load_requests,
 		std::vector<AnimationBuildRequest>& animation_build_requests
+	) const;
+	bool append_character_effect_requests(
+		const CharacterConfig& character_config,
+		const AnimationConfig& animation_config,
+		const CharacterEffectLayout& effect_layout,
+		std::vector<AtlasLoadRequest>& atlas_load_requests,
+		std::vector<AnimationBuildRequest>& animation_build_requests,
+		std::vector<EffectBuildRequest>& effect_build_requests
 	) const;
 };

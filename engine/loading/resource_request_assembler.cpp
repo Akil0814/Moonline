@@ -2,6 +2,7 @@
 
 #include "config_load_pipeline.h"
 #include "resource_load_plan.h"
+#include "../io/path/path_manager.h"
 #include "../resources/pipeline/resource_request_builder.h"
 
 #include <iostream>
@@ -16,6 +17,9 @@ bool ResourceRequestAssembler::assemble(
 	ResourceRequestBuilder request_builder;
 	for (const CharacterAnimationContentEntry& entry : config_result.character_animation_entries)
 	{
+		const size_t animation_atlas_count_before = out_plan.atlas_requests().size();
+		const size_t animation_count_before = out_plan.animation_build_requests().size();
+
 		if (!request_builder.append_character_animation_requests(
 			entry.character_config,
 			entry.animation_config,
@@ -25,7 +29,74 @@ bool ResourceRequestAssembler::assemble(
 			out_plan.clear();
 			return false;
 		}
+
+		std::cout << "Character animation requests built: atlases="
+			<< (out_plan.atlas_requests().size() - animation_atlas_count_before)
+			<< ", animations="
+			<< (out_plan.animation_build_requests().size() - animation_count_before)
+			<< std::endl;
+
+		const size_t effect_atlas_count_before = out_plan.atlas_requests().size();
+		const size_t effect_animation_count_before = out_plan.animation_build_requests().size();
+		const size_t effect_count_before = out_plan.effect_build_requests().size();
+
+		if (!request_builder.append_character_effect_requests(
+			entry.character_config,
+			entry.animation_config,
+			config_result.character_effect_layout,
+			out_plan.atlas_requests(),
+			out_plan.animation_build_requests(),
+			out_plan.effect_build_requests()))
+		{
+			out_plan.clear();
+			return false;
+		}
+
+		std::cout << "Effect requests built: atlases="
+			<< (out_plan.atlas_requests().size() - effect_atlas_count_before)
+			<< ", animations="
+			<< (out_plan.animation_build_requests().size() - effect_animation_count_before)
+			<< ", effects="
+			<< (out_plan.effect_build_requests().size() - effect_count_before)
+			<< std::endl;
 	}
+
+	const size_t texture_count_before = out_plan.texture_requests().size();
+	const std::filesystem::path textures_root = PathManager::instance()->textures();
+	if (!request_builder.append_texture_manifest_requests(
+		config_result.ui_texture_manifest,
+		"ui",
+		textures_root / "ui",
+		out_plan.texture_requests()))
+	{
+		out_plan.clear();
+		return false;
+	}
+
+	if (!request_builder.append_texture_manifest_requests(
+		config_result.map_texture_manifest,
+		"map",
+		textures_root / "map",
+		out_plan.texture_requests()))
+	{
+		out_plan.clear();
+		return false;
+	}
+
+	for (const CharacterAnimationContentEntry& entry : config_result.character_animation_entries)
+	{
+		if (!request_builder.append_character_texture_requests(
+			entry.character_config,
+			config_result.character_texture_layout,
+			out_plan.texture_requests()))
+		{
+			out_plan.clear();
+			return false;
+		}
+	}
+
+	std::cout << "Texture requests built: "
+		<< (out_plan.texture_requests().size() - texture_count_before) << std::endl;
 
 	if (!request_builder.append_font_requests(
 		config_result.font_manifest,

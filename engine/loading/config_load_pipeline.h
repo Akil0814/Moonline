@@ -10,6 +10,10 @@ struct ConfigLoadResult
 {
 	FontManifest font_manifest;
 	AudioManifest audio_manifest;
+	TextureManifest map_texture_manifest;
+	TextureManifest ui_texture_manifest;
+	CharacterEffectLayout character_effect_layout;
+	CharacterTextureLayout character_texture_layout;
 	std::vector<CharacterAnimationContentEntry> character_animation_entries;
 };
 

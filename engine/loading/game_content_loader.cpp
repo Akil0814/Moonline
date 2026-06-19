@@ -72,53 +72,7 @@ void GameContentLoader::update()
 		return;
 	}
 
-	ResourceManager* resource_manager = ResourceManager::instance();
-
-	for (const FontLoadRequest& request : _load_plan.font_requests())
-	{
-		if (!resource_manager->load_font(
-			request.key,
-			request.file_path,
-			request.point_size))
-		{
-			fail("GameContentLoader update failed: font load failed.");
-			return;
-		}
-	}
-
-	_progress = 0.25f;
-
-	if (!resource_manager->load_atlases(_renderer, _load_plan.atlas_requests()))
-	{
-		fail("GameContentLoader update failed: atlas load failed.");
-		return;
-	}
-
-	_progress = 0.5f;
-
-	if (!resource_manager->load_sounds(_load_plan.sound_requests()))
-	{
-		fail("GameContentLoader update failed: sound load failed.");
-		return;
-	}
-
-	if (!resource_manager->load_music(_load_plan.music_requests()))
-	{
-		fail("GameContentLoader update failed: music load failed.");
-		return;
-	}
-
-	_progress = 0.75f;
-
-	if (!AnimationManager::instance()->register_animations(
-		_load_plan.animation_build_requests(),
-		*resource_manager))
-	{
-		fail("GameContentLoader update failed: animation registration failed.");
-		return;
-	}
-
-	_state = GameContentLoaderState::Finished;
+	//_state = GameContentLoaderState::Finished;
 	_progress = 1.0f;
 }
 

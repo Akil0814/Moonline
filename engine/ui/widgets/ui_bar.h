@@ -2,6 +2,8 @@
 
 #include <SDL.h>
 
+#include "../core/ui_element.h"
+
 enum class BarFillDirection
 {
     LeftToRight,
@@ -10,13 +12,14 @@ enum class BarFillDirection
     BottomToTop
 };
 
-class UiBarPainter
+class UiBar : public UiElement
 {
 public:
-    UiBarPainter() = default;
-    ~UiBarPainter() = default;
+    explicit UiBar(const Rect& rect = Rect::zero(), int order = 0) noexcept;
+    UiBar(const Vector2& position, const Vector2& size, int order = 0) noexcept;
+    ~UiBar() override = default;
 
-    void reset();
+    void reset() noexcept override;
 
     void set_range(float min_value, float max_value);
     void set_value(float value);
@@ -45,11 +48,11 @@ public:
     void set_padding(int padding);
     [[nodiscard]] int padding() const;
 
-    void render(SDL_Renderer* renderer, const SDL_Rect& rect) const;
+    void submit_ui_render_commands(std::vector<UiRenderCommand>& out_commands) const override;
 
 private:
-    [[nodiscard]] SDL_Rect content_rect(const SDL_Rect& rect) const;
-    [[nodiscard]] SDL_Rect fill_rect(const SDL_Rect& rect) const;
+    [[nodiscard]] Rect content_rect(const Rect& rect) const;
+    [[nodiscard]] Rect fill_rect(const Rect& rect) const;
 
 private:
     float _min_value = 0.0f;

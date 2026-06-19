@@ -48,6 +48,17 @@ struct AudioManifest
 	std::vector<AudioManifestEntry> music;
 };
 
+struct TextureManifestEntry
+{
+	std::string key;
+	std::filesystem::path file_path;
+};
+
+struct TextureManifest
+{
+	std::vector<TextureManifestEntry> textures;
+};
+
 struct CharacterManifestEntry
 {
 	std::string id;
@@ -79,6 +90,24 @@ struct CharacterAnimationLayoutEntry
 struct CharacterAnimationLayout
 {
 	std::unordered_map<std::string, CharacterAnimationLayoutEntry> animations;
+};
+
+using CharacterEffectLayoutEntry = CharacterAnimationLayoutEntry;
+
+struct CharacterEffectLayout
+{
+	std::unordered_map<std::string, CharacterEffectLayoutEntry> effects;
+};
+
+struct CharacterTextureLayoutEntry
+{
+	std::string key;
+	std::filesystem::path path;
+};
+
+struct CharacterTextureLayout
+{
+	std::vector<CharacterTextureLayoutEntry> textures;
 };
 
 struct AnimationClipConfig
