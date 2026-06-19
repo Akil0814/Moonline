@@ -17,13 +17,13 @@ bool ResourceRequestAssembler::assemble(
 	ResourceRequestBuilder request_builder;
 	for (const CharacterAnimationContentEntry& entry : config_result.character_animation_entries)
 	{
-		const size_t animation_atlas_count_before = out_plan.atlas_requests().size();
+		const size_t animation_atlas_count_before = out_plan.atlas_build_requests().size();
 		const size_t animation_count_before = out_plan.animation_build_requests().size();
 
 		if (!request_builder.append_character_animation_requests(
 			entry.character_config,
 			entry.animation_config,
-			out_plan.atlas_requests(),
+			out_plan.atlas_build_requests(),
 			out_plan.animation_build_requests()))
 		{
 			out_plan.clear();
@@ -31,12 +31,12 @@ bool ResourceRequestAssembler::assemble(
 		}
 
 		std::cout << "Character animation requests built: atlases="
-			<< (out_plan.atlas_requests().size() - animation_atlas_count_before)
+			<< (out_plan.atlas_build_requests().size() - animation_atlas_count_before)
 			<< ", animations="
 			<< (out_plan.animation_build_requests().size() - animation_count_before)
 			<< std::endl;
 
-		const size_t effect_atlas_count_before = out_plan.atlas_requests().size();
+		const size_t effect_atlas_count_before = out_plan.atlas_build_requests().size();
 		const size_t effect_animation_count_before = out_plan.animation_build_requests().size();
 		const size_t effect_count_before = out_plan.effect_build_requests().size();
 
@@ -44,7 +44,7 @@ bool ResourceRequestAssembler::assemble(
 			entry.character_config,
 			entry.animation_config,
 			config_result.character_effect_layout,
-			out_plan.atlas_requests(),
+			out_plan.atlas_build_requests(),
 			out_plan.animation_build_requests(),
 			out_plan.effect_build_requests()))
 		{
@@ -53,7 +53,7 @@ bool ResourceRequestAssembler::assemble(
 		}
 
 		std::cout << "Effect requests built: atlases="
-			<< (out_plan.atlas_requests().size() - effect_atlas_count_before)
+			<< (out_plan.atlas_build_requests().size() - effect_atlas_count_before)
 			<< ", animations="
 			<< (out_plan.animation_build_requests().size() - effect_animation_count_before)
 			<< ", effects="

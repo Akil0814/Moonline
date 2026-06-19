@@ -48,14 +48,14 @@ public:
 		return _texture_requests;
 	}
 
-	std::vector<AtlasLoadRequest>& atlas_requests()
+	std::vector<AtlasBuildRequest>& atlas_build_requests()
 	{
-		return _atlas_requests;
+		return _atlas_build_requests;
 	}
 
-	const std::vector<AtlasLoadRequest>& atlas_requests() const
+	const std::vector<AtlasBuildRequest>& atlas_build_requests() const
 	{
-		return _atlas_requests;
+		return _atlas_build_requests;
 	}
 
 	std::vector<AnimationBuildRequest>& animation_build_requests()
@@ -84,7 +84,7 @@ public:
 		_sound_requests.clear();
 		_music_requests.clear();
 		_texture_requests.clear();
-		_atlas_requests.clear();
+		_atlas_build_requests.clear();
 		_animation_build_requests.clear();
 		_effect_build_requests.clear();
 	}
@@ -95,7 +95,7 @@ public:
 			&& _sound_requests.empty()
 			&& _music_requests.empty()
 			&& _texture_requests.empty()
-			&& _atlas_requests.empty()
+			&& _atlas_build_requests.empty()
 			&& _animation_build_requests.empty()
 			&& _effect_build_requests.empty();
 	}
@@ -106,7 +106,7 @@ public:
 			+ _sound_requests.size()
 			+ _music_requests.size()
 			+ _texture_requests.size()
-			+ _atlas_requests.size()
+			+ _atlas_build_requests.size()
 			+ _animation_build_requests.size()
 			+ _effect_build_requests.size();
 	}
@@ -116,7 +116,7 @@ private:
 	std::vector<SoundLoadRequest> _sound_requests;
 	std::vector<MusicLoadRequest> _music_requests;
 	std::vector<TextureLoadRequest> _texture_requests;
-	std::vector<AtlasLoadRequest> _atlas_requests;
+	std::vector<AtlasBuildRequest> _atlas_build_requests;
 	std::vector<AnimationBuildRequest> _animation_build_requests;
 	std::vector<EffectBuildRequest> _effect_build_requests;
 };

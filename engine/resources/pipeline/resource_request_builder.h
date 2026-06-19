@@ -30,14 +30,14 @@ public:
 	bool append_character_animation_requests(
 		const CharacterConfig& character_config,
 		const AnimationConfig& animation_config,
-		std::vector<AtlasLoadRequest>& atlas_load_requests,
+		std::vector<AtlasBuildRequest>& atlas_build_requests,
 		std::vector<AnimationBuildRequest>& animation_build_requests
 	) const;
 	bool append_character_effect_requests(
 		const CharacterConfig& character_config,
 		const AnimationConfig& animation_config,
 		const CharacterEffectLayout& effect_layout,
-		std::vector<AtlasLoadRequest>& atlas_load_requests,
+		std::vector<AtlasBuildRequest>& atlas_build_requests,
 		std::vector<AnimationBuildRequest>& animation_build_requests,
 		std::vector<EffectBuildRequest>& effect_build_requests
 	) const;

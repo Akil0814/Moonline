@@ -1,101 +1,169 @@
 #include "atlas_manager.h"
 
 #include "atlas_builder.h"
-#include "../texture/surface_loader.h"
 #include "../texture/texture_loader.h"
 #include "../texture/texture_manager.h"
 
-#include <algorithm>
-#include <cctype>
 #include <iostream>
+#include <utility>
 
 AtlasManager::AtlasManager(TextureManager& texture_manager)
 	: _texture_manager(texture_manager)
 {
 }
 
-bool AtlasManager::load_atlas(SDL_Renderer* renderer, const AtlasLoadRequest& request)
+bool AtlasManager::begin_build(const AtlasBuildRequest& request)
 {
-	if (!renderer)
+	if (!request.is_valid())
 	{
-		std::cout << "Load atlas failed: renderer is null: "
+		std::cout << "Begin atlas build failed: request is invalid: "
 			<< request.atlas_key << std::endl;
 		return false;
 	}
 
-	if (request.atlas_key.empty())
-	{
-		std::cout << "Load atlas failed: atlas key is empty." << std::endl;
-		return false;
-	}
-
 	if (_atlas_pool.contains(request.atlas_key))
-		return true;
-
-	std::vector<std::filesystem::path> frame_paths;
-	if (!collect_frame_paths(request, frame_paths))
-		return false;
-
-	SurfaceLoader surface_loader;
-	TextureLoader texture_loader;
-	std::vector<TextureLoadResult> texture_results;
-	texture_results.reserve(frame_paths.size());
-
-	for (size_t index = 0; index < frame_paths.size(); ++index)
 	{
-		SurfaceLoadRequest surface_request;
-		surface_request._asset_key = request.atlas_key;
-		surface_request._frame_path = frame_paths[index];
-		surface_request._frame_index = index;
-
-		SurfaceLoadResult surface_result = surface_loader.load_surface(surface_request);
-		if (!surface_result._success)
-			return false;
-
-		TextureLoadResult texture_result =
-			texture_loader.load_texture(renderer, surface_result);
-		if (!texture_result._success)
-			return false;
-
-		texture_results.push_back(std::move(texture_result));
+		std::cout << "Begin atlas build failed: atlas already exists: "
+			<< request.atlas_key << std::endl;
+		return false;
 	}
 
-	std::unique_ptr<Atlas> atlas = std::make_unique<Atlas>(request.atlas_key);
-	AtlasBuilder atlas_builder;
-	if (!atlas_builder.build_atlas(request, texture_results, *atlas))
-		return false;
-
-	for (size_t index = 0; index < texture_results.size(); ++index)
+	if (_assembly_states.contains(request.atlas_key))
 	{
-		std::string texture_key = make_texture_key(request.atlas_key, index);
-		if (!_texture_manager.store_texture(
-			texture_key,
-			std::move(texture_results[index]._texture)))
-		{
-			return false;
-		}
+		std::cout << "Begin atlas build failed: atlas build already exists: "
+			<< request.atlas_key << std::endl;
+		return false;
 	}
 
-	_atlas_pool.emplace(request.atlas_key, std::move(atlas));
+	AtlasAssemblyState state;
+	state.request = request;
+	state.committed_frames.resize(request.frame_count);
+	state.committed_frame_count = 0;
+	state.finalized = false;
+	_assembly_states.emplace(request.atlas_key, std::move(state));
 	return true;
 }
 
-bool AtlasManager::load_atlases(
+bool AtlasManager::begin_builds(const std::vector<AtlasBuildRequest>& requests)
+{
+	for (const AtlasBuildRequest& request : requests)
+	{
+		if (!begin_build(request))
+			return false;
+	}
+
+	return true;
+}
+
+bool AtlasManager::commit_prepared_frame(
 	SDL_Renderer* renderer,
-	const std::vector<AtlasLoadRequest>& requests
+	const AtlasFramePreparedResult& prepared_result
 )
 {
 	if (!renderer)
 	{
-		std::cout << "Load atlases failed: renderer is null." << std::endl;
+		std::cout << "Commit atlas frame failed: renderer is null: "
+			<< prepared_result.task.atlas_key << std::endl;
 		return false;
 	}
 
-	for (const AtlasLoadRequest& request : requests)
+	if (prepared_result.task.atlas_key.empty())
 	{
-		if (!load_atlas(renderer, request))
-			return false;
+		std::cout << "Commit atlas frame failed: atlas key is empty." << std::endl;
+		return false;
 	}
+
+	std::unordered_map<std::string, AtlasAssemblyState>::iterator iterator =
+		_assembly_states.find(prepared_result.task.atlas_key);
+	if (iterator == _assembly_states.end())
+	{
+		std::cout << "Commit atlas frame failed: build state does not exist: "
+			<< prepared_result.task.atlas_key << std::endl;
+		return false;
+	}
+
+	AtlasAssemblyState& state = iterator->second;
+	if (state.finalized)
+	{
+		std::cout << "Commit atlas frame failed: atlas already finalized: "
+			<< prepared_result.task.atlas_key << std::endl;
+		return false;
+	}
+
+	if (prepared_result.task.expected_frame_count != state.request.frame_count)
+	{
+		std::cout << "Commit atlas frame failed: frame count mismatch: "
+			<< prepared_result.task.atlas_key << std::endl;
+		return false;
+	}
+
+	if (prepared_result.task.frame_index >= state.committed_frames.size())
+	{
+		std::cout << "Commit atlas frame failed: frame index out of range: "
+			<< prepared_result.task.atlas_key << ", frame "
+			<< prepared_result.task.frame_index << std::endl;
+		return false;
+	}
+
+	const SurfaceLoadResult& surface_result = prepared_result.surface_result;
+	if (!surface_result._success || !surface_result._surface)
+	{
+		std::cout << "Commit atlas frame failed: prepared surface is invalid: "
+			<< prepared_result.task.frame_path << std::endl;
+		return false;
+	}
+
+	if (surface_result._asset_key != prepared_result.task.atlas_key)
+	{
+		std::cout << "Commit atlas frame failed: asset key mismatch: "
+			<< surface_result._asset_key << std::endl;
+		return false;
+	}
+
+	if (surface_result._frame_index != prepared_result.task.frame_index)
+	{
+		std::cout << "Commit atlas frame failed: frame index mismatch: "
+			<< prepared_result.task.atlas_key << std::endl;
+		return false;
+	}
+
+	AtlasAssemblyFrame& frame_state =
+		state.committed_frames[prepared_result.task.frame_index];
+	if (frame_state.committed)
+	{
+		std::cout << "Commit atlas frame failed: frame already committed: "
+			<< prepared_result.task.atlas_key << ", frame "
+			<< prepared_result.task.frame_index << std::endl;
+		return false;
+	}
+
+	TextureLoader texture_loader;
+	TextureLoadResult texture_result =
+		texture_loader.load_texture(renderer, surface_result);
+	if (!texture_result._success || !texture_result._texture)
+		return false;
+
+	const std::string texture_key = make_texture_key(
+		prepared_result.task.atlas_key,
+		prepared_result.task.frame_index
+	);
+	if (!_texture_manager.store_texture(texture_key, std::move(texture_result._texture)))
+		return false;
+
+	frame_state.frame_path = surface_result._frame_path;
+	frame_state.texture = _texture_manager.find_texture(texture_key);
+	frame_state.committed = true;
+	++state.committed_frame_count;
+
+	if (!frame_state.texture)
+	{
+		std::cout << "Commit atlas frame failed: stored texture lookup failed: "
+			<< texture_key << std::endl;
+		return false;
+	}
+
+	if (state.committed_frame_count == state.request.frame_count)
+		return finalize_build(state.request.atlas_key);
 
 	return true;
 }
@@ -109,8 +177,19 @@ Atlas* AtlasManager::find_atlas(const std::string_view& key) const
 	return iterator->second.get();
 }
 
+bool AtlasManager::has_in_progress_build(const std::string_view& key) const
+{
+	return _assembly_states.contains(std::string(key));
+}
+
+size_t AtlasManager::in_progress_build_count() const
+{
+	return _assembly_states.size();
+}
+
 void AtlasManager::clear()
 {
+	_assembly_states.clear();
 	_atlas_pool.clear();
 }
 
@@ -119,62 +198,60 @@ size_t AtlasManager::resource_count() const
 	return _atlas_pool.size();
 }
 
-bool AtlasManager::collect_frame_paths(
-	const AtlasLoadRequest& request,
-	std::vector<std::filesystem::path>& frame_paths
-) const
+bool AtlasManager::finalize_build(const std::string& atlas_key)
 {
-	frame_paths.clear();
-
-	if (request.directory_path.empty())
+	std::unordered_map<std::string, AtlasAssemblyState>::iterator iterator =
+		_assembly_states.find(atlas_key);
+	if (iterator == _assembly_states.end())
 	{
-		std::cout << "Collect frame paths failed: directory path is empty: "
-			<< request.atlas_key << std::endl;
+		std::cout << "Finalize atlas build failed: build state does not exist: "
+			<< atlas_key << std::endl;
 		return false;
 	}
 
-	if (!std::filesystem::is_directory(request.directory_path))
+	AtlasAssemblyState& state = iterator->second;
+	if (state.finalized)
 	{
-		std::cout << "Collect frame paths failed: directory does not exist: "
-			<< request.directory_path << std::endl;
+		std::cout << "Finalize atlas build failed: atlas already finalized: "
+			<< atlas_key << std::endl;
 		return false;
 	}
 
-	for (const std::filesystem::directory_entry& entry :
-		std::filesystem::directory_iterator(request.directory_path))
+	if (state.committed_frame_count != state.request.frame_count)
 	{
-		if (!entry.is_regular_file())
-			continue;
-
-		std::string extension = entry.path().extension().string();
-		for (char& character : extension)
-			character = static_cast<char>(
-				std::tolower(static_cast<unsigned char>(character))
-			);
-
-		if (extension != ".png")
-			continue;
-
-		frame_paths.push_back(entry.path());
+		std::cout << "Finalize atlas build failed: committed frame count mismatch: "
+			<< atlas_key << ", expected " << state.request.frame_count
+			<< ", actual " << state.committed_frame_count << std::endl;
+		return false;
 	}
 
-	std::sort(
-		frame_paths.begin(),
-		frame_paths.end(),
-		[](const std::filesystem::path& lhs, const std::filesystem::path& rhs)
+	std::vector<AtlasCommittedFrame> committed_frames;
+	committed_frames.reserve(state.committed_frames.size());
+	for (size_t index = 0; index < state.committed_frames.size(); ++index)
+	{
+		const AtlasAssemblyFrame& frame_state = state.committed_frames[index];
+		if (!frame_state.committed || !frame_state.texture)
 		{
-			return lhs.filename().string() < rhs.filename().string();
+			std::cout << "Finalize atlas build failed: frame is missing: "
+				<< atlas_key << ", frame " << index << std::endl;
+			return false;
 		}
-	);
 
-	if (frame_paths.size() != request.frame_count)
-	{
-		std::cout << "Collect frame paths failed: frame count mismatch: "
-			<< request.atlas_key << ", expected " << request.frame_count
-			<< ", actual " << frame_paths.size() << std::endl;
-		return false;
+		AtlasCommittedFrame committed_frame;
+		committed_frame.frame_path = frame_state.frame_path;
+		committed_frame.texture = frame_state.texture;
+		committed_frame.frame_index = index;
+		committed_frames.push_back(std::move(committed_frame));
 	}
 
+	std::unique_ptr<Atlas> atlas = std::make_unique<Atlas>(atlas_key);
+	AtlasBuilder atlas_builder;
+	if (!atlas_builder.build_atlas(state.request, committed_frames, *atlas))
+		return false;
+
+	state.finalized = true;
+	_atlas_pool.emplace(atlas_key, std::move(atlas));
+	_assembly_states.erase(iterator);
 	return true;
 }
 

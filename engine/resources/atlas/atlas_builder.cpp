@@ -3,8 +3,8 @@
 #include <iostream>
 
 bool AtlasBuilder::build_atlas(
-	const AtlasLoadRequest& request,
-	const std::vector<TextureLoadResult>& texture_results,
+	const AtlasBuildRequest& request,
+	const std::vector<AtlasCommittedFrame>& committed_frames,
 	Atlas& atlas
 ) const
 {
@@ -21,43 +21,42 @@ bool AtlasBuilder::build_atlas(
 		return false;
 	}
 
-	if (texture_results.size() != request.frame_count)
+	if (committed_frames.size() != request.frame_count)
 	{
 		std::cout << "Build atlas failed: texture count mismatch: "
 			<< request.atlas_key << ", expected " << request.frame_count
-			<< ", actual " << texture_results.size() << std::endl;
+			<< ", actual " << committed_frames.size() << std::endl;
 		return false;
 	}
 
 	atlas.clear();
 	atlas.set_name(request.atlas_key);
 
-	for (size_t index = 0; index < texture_results.size(); ++index)
+	for (size_t index = 0; index < committed_frames.size(); ++index)
 	{
-		const TextureLoadResult& texture_result = texture_results[index];
-		if (!texture_result._success || !texture_result._texture)
+		const AtlasCommittedFrame& committed_frame = committed_frames[index];
+		if (!committed_frame.texture)
 		{
 			std::cout << "Build atlas failed: texture is invalid: "
 				<< request.atlas_key << ", frame " << index << std::endl;
 			return false;
 		}
 
-		if (texture_result._frame_index != index)
+		if (committed_frame.frame_index != index)
 		{
 			std::cout << "Build atlas failed: frame index mismatch: "
 				<< request.atlas_key << ", expected " << index
-				<< ", actual " << texture_result._frame_index << std::endl;
+				<< ", actual " << committed_frame.frame_index << std::endl;
 			return false;
 		}
 
-		if (!atlas.add_frame(texture_result._frame_path, texture_result._texture.get()))
+		if (!atlas.add_frame(committed_frame.frame_path, committed_frame.texture))
 		{
 			std::cout << "Build atlas failed: add frame failed: "
-				<< texture_result._frame_path << std::endl;
+				<< committed_frame.frame_path << std::endl;
 			return false;
 		}
 	}
 
 	return true;
 }
-

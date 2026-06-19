@@ -3,6 +3,68 @@
 
 #include <iostream>
 
+namespace
+{
+std::optional<Vector2> resolve_effect_size(
+	const EffectSpawnRequest& request,
+	const EffectDefinition& definition
+)
+{
+	if (request.size.has_value())
+		return request.size;
+
+	if (!definition.default_size.is_zero())
+		return definition.default_size;
+
+	return std::nullopt;
+}
+
+Vector2 get_effect_top_left(
+	const Vector2& anchor_position,
+	const Vector2& size,
+	EffectAnchor anchor
+)
+{
+	switch (anchor)
+	{
+	case EffectAnchor::TopLeft:
+		return anchor_position;
+
+	case EffectAnchor::TopCenter:
+		return Vector2(anchor_position.x - size.x * 0.5f, anchor_position.y);
+
+	case EffectAnchor::TopRight:
+		return Vector2(anchor_position.x - size.x, anchor_position.y);
+
+	case EffectAnchor::CenterLeft:
+		return Vector2(anchor_position.x, anchor_position.y - size.y * 0.5f);
+
+	case EffectAnchor::Center:
+		return Vector2(anchor_position.x - size.x * 0.5f, anchor_position.y - size.y * 0.5f);
+
+	case EffectAnchor::CenterRight:
+		return Vector2(anchor_position.x - size.x, anchor_position.y - size.y * 0.5f);
+
+	case EffectAnchor::BottomLeft:
+		return Vector2(anchor_position.x, anchor_position.y - size.y);
+
+	case EffectAnchor::BottomCenter:
+		return Vector2(anchor_position.x - size.x * 0.5f, anchor_position.y - size.y);
+
+	case EffectAnchor::BottomRight:
+		return Vector2(anchor_position.x - size.x, anchor_position.y - size.y);
+
+	default:
+		return anchor_position;
+	}
+}
+
+void apply_effect_anchor(Effect& effect, const EffectSpawnRequest& request)
+{
+	effect.set_position(get_effect_top_left(request.position, effect.size(), request.anchor));
+}
+}
+
 bool EffectManager::register_effect(const std::vector<EffectBuildRequest>& requests)
 {
 	for (const EffectBuildRequest& request : requests)
@@ -80,12 +142,11 @@ std::unique_ptr<Effect> EffectManager::create_effect(const EffectSpawnRequest& r
 		std::move(animation)
 	);
 
-	effect->set_position(request.position);
+	const std::optional<Vector2> final_size = resolve_effect_size(request, *definition);
+	if (final_size.has_value())
+		effect->set_size(*final_size);
 
-	if (request.size.has_value())
-		effect->set_size(*request.size);
-	else if (!definition->default_size.is_zero())
-		effect->set_size(definition->default_size);
+	apply_effect_anchor(*effect, request);
 
 	if (request.angle_degrees.has_value())
 		effect->set_angle(*request.angle_degrees);
@@ -99,4 +160,3 @@ std::unique_ptr<Effect> EffectManager::create_effect(const EffectSpawnRequest& r
 
 	return effect;
 }
-

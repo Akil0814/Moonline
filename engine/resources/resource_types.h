@@ -29,7 +29,7 @@ struct MusicLoadRequest
 	std::filesystem::path file_path;
 };
 
-struct AtlasLoadRequest
+struct AtlasBuildRequest
 {
 	[[nodiscard]] bool is_valid() const
 	{

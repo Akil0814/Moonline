@@ -1,4 +1,4 @@
-  #include "resource_manager.h"
+#include "resource_manager.h"
 
 ResourceManager::ResourceManager()
 	: _atlas_manager(_texture_manager)
@@ -10,20 +10,22 @@ bool ResourceManager::init()
 	return true;
 }
 
-bool ResourceManager::load_atlas(
-	SDL_Renderer* renderer,
-	const AtlasLoadRequest& request
-)
+bool ResourceManager::begin_atlas_build(const AtlasBuildRequest& request)
 {
-	return _atlas_manager.load_atlas(renderer, request);
+	return _atlas_manager.begin_build(request);
 }
 
-bool ResourceManager::load_atlases(
+bool ResourceManager::begin_atlas_builds(const std::vector<AtlasBuildRequest>& requests)
+{
+	return _atlas_manager.begin_builds(requests);
+}
+
+bool ResourceManager::commit_prepared_atlas_frame(
 	SDL_Renderer* renderer,
-	const std::vector<AtlasLoadRequest>& requests
+	const AtlasFramePreparedResult& result
 )
 {
-	return _atlas_manager.load_atlases(renderer, requests);
+	return _atlas_manager.commit_prepared_frame(renderer, result);
 }
 
 bool ResourceManager::load_font(

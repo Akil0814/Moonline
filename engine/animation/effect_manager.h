@@ -13,6 +13,19 @@
 
 class AnimationManager;
 
+enum class EffectAnchor
+{
+	TopLeft,
+	TopCenter,
+	TopRight,
+	CenterLeft,
+	Center,
+	CenterRight,
+	BottomLeft,
+	BottomCenter,
+	BottomRight
+};
+
 struct EffectDefinition
 {
 	std::string effect_key;
@@ -24,7 +37,9 @@ struct EffectDefinition
 struct EffectSpawnRequest
 {
 	std::string effect_key;
+	// World-space position of the selected playback anchor.
 	Vector2 position;
+	EffectAnchor anchor = EffectAnchor::TopLeft;
 	std::optional<Vector2> size;
 	std::optional<double> angle_degrees;
 	std::optional<SpriteFlip> flip;
@@ -46,4 +61,3 @@ public:
 private:
 	std::unordered_map<std::string, EffectDefinition> _definitions;
 };
-

@@ -12,10 +12,13 @@ void StartupLoadingScene::on_enter(const ScenePayload& payload)
 
 	SDL_Texture* akil_tex = Bootstrapper::instance()->get_preload_texture("Akil.png");
 
-	akil_icon = Scene::create_and_add_object<UiFadeImage>(akil_tex, Rect{ 600,300,200,200 });
+	_akil_icon = Scene::create_and_add_object<UiFadeImage>(akil_tex, Rect{ 540, 260, 200, 200 });
+	_loading_bar = Scene::create_and_add_object<UiBar>(Rect{ 700, 700, 200, 5 });
+	_loading_bar->set_draw_border(true);
+	_loading_bar->set_ratio(0.0);
 
-	akil_icon->configure_playback(UiFadeImageMode::FadeInOut, 2, 2, 2);
-	akil_icon->play();
+	_akil_icon->configure_playback(UiFadeImageMode::FadeInOut, 2, 2, 2);
+	_akil_icon->play();
 
 	(void)_content_loader.start(Application::instance()->renderer());
 }
@@ -25,6 +28,8 @@ void StartupLoadingScene::on_update(double delta)
 	Scene::on_update(delta);
 
 	_content_loader.update();
+	if (_loading_bar)
+		_loading_bar->set_ratio(_content_loader.progress());
 
 	if (_content_loader.is_finished())
 	{
@@ -49,15 +54,12 @@ void StartupLoadingScene::on_update(double delta)
 void StartupLoadingScene::on_render(SDL_Renderer* renderer)
 {
 	Scene::on_render(renderer);
-	//---------------test--------------------
-	//---------------test--------------------
 }
 
 void StartupLoadingScene::on_input(const RawInputFrame& input, const std::vector<RawInputEvent>& events)
 {
 	ApplicationScene::on_input(input, events);
 }
-
 
 void StartupLoadingScene::on_exit()
 {

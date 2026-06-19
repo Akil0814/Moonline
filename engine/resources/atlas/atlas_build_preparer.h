@@ -1,0 +1,32 @@
+#pragma once
+
+#include "atlas.h"
+#include "../resource_types.h"
+#include "../texture/surface_loader.h"
+
+#include <vector>
+
+struct AtlasFramePrepareTask
+{
+	std::string atlas_key;
+	std::filesystem::path frame_path;
+	size_t frame_index = 0;
+	size_t expected_frame_count = 0;
+};
+
+struct AtlasFramePreparedResult
+{
+	AtlasFramePrepareTask task;
+	SurfaceLoadResult surface_result;
+};
+
+class AtlasBuildPreparer
+{
+public:
+	bool expand_build_request(
+		const AtlasBuildRequest& request,
+		std::vector<AtlasFramePrepareTask>& out_tasks
+	) const;
+
+	AtlasFramePreparedResult prepare_frame(const AtlasFramePrepareTask& task) const;
+};

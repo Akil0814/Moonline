@@ -3,14 +3,26 @@
 #include <SDL.h>
 
 #include "resource_load_plan.h"
+#include "../resources/atlas/atlas_build_preparer.h"
 
+#include <atomic>
+#include <condition_variable>
+#include <deque>
+#include <mutex>
 #include <string>
+#include <thread>
+#include <variant>
+#include <vector>
 
 enum class GameContentLoaderState
 {
 	Idle,
 	PreparingRequests,
-	LoadingResources,
+	StreamingTextureAndAtlasWork,
+	LoadingFonts,
+	LoadingAudio,
+	RegisteringAnimations,
+	RegisteringEffects,
 	Finished,
 	Failed
 };
@@ -18,6 +30,9 @@ enum class GameContentLoaderState
 class GameContentLoader
 {
 public:
+	GameContentLoader() = default;
+	~GameContentLoader();
+
 	void reset();
 
 	bool start(SDL_Renderer* renderer);
@@ -31,6 +46,27 @@ public:
 	GameContentLoaderState state() const;
 
 private:
+	struct PrepareJob
+	{
+		std::variant<TextureLoadRequest, AtlasFramePrepareTask> payload;
+	};
+
+	bool initialize_streaming_work();
+	void reset_streaming_state();
+	void start_worker_threads();
+	void shutdown_worker_threads();
+	void worker_loop();
+	void dispatch_prepare_jobs();
+	void drain_completed_prepare_results();
+	bool commit_ready_streaming_results();
+	bool commit_texture_result(const SurfaceLoadResult& surface_result);
+	bool commit_atlas_frame_result(const AtlasFramePreparedResult& prepared_result);
+	bool is_streaming_phase_complete();
+	bool load_fonts();
+	bool load_audio();
+	bool register_animations();
+	bool register_effects();
+	void update_progress_value();
 	void fail(std::string message);
 
 private:
@@ -39,4 +75,29 @@ private:
 	std::string _error_message;
 	GameContentLoaderState _state = GameContentLoaderState::Idle;
 	float _progress = 0.0f;
+	std::size_t _total_work_units = 0;
+	std::size_t _completed_work_units = 0;
+
+	std::vector<AtlasFramePrepareTask> _atlas_frame_tasks;
+	std::size_t _next_texture_request_index = 0;
+	std::size_t _next_atlas_frame_task_index = 0;
+	bool _dispatch_texture_turn = true;
+
+	std::deque<PrepareJob> _prepare_jobs;
+	std::mutex _prepare_mutex;
+	std::condition_variable _prepare_cv;
+	std::atomic<bool> _stop_workers = false;
+	std::atomic<std::size_t> _in_flight_prepare_job_count = 0;
+	std::vector<std::thread> _worker_threads;
+
+	std::mutex _completed_results_mutex;
+	std::deque<SurfaceLoadResult> _completed_texture_results;
+	std::deque<AtlasFramePreparedResult> _completed_atlas_frame_results;
+	std::deque<SurfaceLoadResult> _ready_texture_results;
+	std::deque<AtlasFramePreparedResult> _ready_atlas_frame_results;
+
+	std::size_t _prepared_texture_count = 0;
+	std::size_t _prepared_atlas_frame_count = 0;
+	std::size_t _committed_texture_count = 0;
+	std::size_t _committed_atlas_frame_count = 0;
 };

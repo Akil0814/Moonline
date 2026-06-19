@@ -352,7 +352,7 @@ bool ResourceRequestBuilder::append_character_texture_requests(
 bool ResourceRequestBuilder::append_character_animation_requests(
 	const CharacterConfig& character_config,
 	const AnimationConfig& animation_config,
-	std::vector<AtlasLoadRequest>& atlas_load_requests,
+	std::vector<AtlasBuildRequest>& atlas_build_requests,
 	std::vector<AnimationBuildRequest>& animation_build_requests
 ) const
 {
@@ -392,7 +392,7 @@ bool ResourceRequestBuilder::append_character_animation_requests(
 		if (clip_config.is_segment)
 			animation_key += "." + std::to_string(clip_config.segment_index);
 
-		AtlasLoadRequest atlas_request;
+		AtlasBuildRequest atlas_request;
 		atlas_request.atlas_key = animation_key;
 		atlas_request.directory_path = std::move(directory_path);
 		atlas_request.frame_count = clip_config.frame_count;
@@ -404,7 +404,7 @@ bool ResourceRequestBuilder::append_character_animation_requests(
 		animation_request.loop = clip_config.loop;
 		animation_request.segment_index = clip_config.segment_index;
 
-		atlas_load_requests.push_back(std::move(atlas_request));
+		atlas_build_requests.push_back(std::move(atlas_request));
 		animation_build_requests.push_back(std::move(animation_request));
 	}
 
@@ -415,7 +415,7 @@ bool ResourceRequestBuilder::append_character_effect_requests(
 	const CharacterConfig& character_config,
 	const AnimationConfig& animation_config,
 	const CharacterEffectLayout& effect_layout,
-	std::vector<AtlasLoadRequest>& atlas_load_requests,
+	std::vector<AtlasBuildRequest>& atlas_build_requests,
 	std::vector<AnimationBuildRequest>& animation_build_requests,
 	std::vector<EffectBuildRequest>& effect_build_requests
 ) const
@@ -474,7 +474,7 @@ bool ResourceRequestBuilder::append_character_effect_requests(
 		const std::string effect_key =
 			character_config.id + ".effect." + effect_suffix;
 
-		AtlasLoadRequest atlas_request;
+		AtlasBuildRequest atlas_request;
 		atlas_request.atlas_key = animation_key;
 		atlas_request.directory_path = std::move(directory_path);
 		atlas_request.frame_count = clip_config.frame_count;
@@ -490,10 +490,11 @@ bool ResourceRequestBuilder::append_character_effect_requests(
 		effect_request.effect_key = effect_key;
 		effect_request.animation_key = animation_key;
 
-		atlas_load_requests.push_back(std::move(atlas_request));
+		atlas_build_requests.push_back(std::move(atlas_request));
 		animation_build_requests.push_back(std::move(animation_request));
 		effect_build_requests.push_back(std::move(effect_request));
 	}
 
 	return true;
 }
+
