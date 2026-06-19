@@ -1,6 +1,7 @@
 #include "main_menu_scene.h"
 
 #include "../../application/scene/scene_payloads.h"
+#include "../../engine/audio/audio_service.h"
 #include "../../engine/resources/resource_manager.h"
 
 void MainMenuScene::on_enter(const ScenePayload& payload)
@@ -13,6 +14,7 @@ void MainMenuScene::on_enter(const ScenePayload& payload)
 	}
 
 	_paused = false;
+	(void)AudioService::instance()->play_music("scene.main_meun_scene_main");
 }
 
 void MainMenuScene::on_update(double delta)
