@@ -2,7 +2,7 @@
 
 #include "../../application/scene/scene_payloads.h"
 #include "../../engine/audio/audio_service.h"
-#include "../../engine/bootstrap/bootstrapper.h"
+#include "../../engine/config/config_manager.h"
 #include "../../engine/input/raw_input_types.h"
 #include "../../engine/localization/localization_manager.h"
 
@@ -162,11 +162,16 @@ void MainMenuScene::cycle_language()
 
 	rebuild_menu_textures();
 
-	RuntimeSettings runtime_settings = Bootstrapper::instance()->runtime_settings();
-	runtime_settings.language = localization_manager->current_language();
-
+	ConfigManager* config_manager = ConfigManager::instance();
 	std::string save_error;
-	if (!Bootstrapper::instance()->save_runtime_settings(runtime_settings, save_error))
+	if (!config_manager->set_language(
+		localization_manager->current_language(),
+		save_error))
+	{
+		std::cout << "MainMenuScene warning: sync language config failed: "
+			<< save_error << std::endl;
+	}
+	else if (!config_manager->save(save_error))
 	{
 		std::cout << "MainMenuScene warning: save language failed: "
 			<< save_error << std::endl;

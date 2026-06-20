@@ -1,6 +1,7 @@
 #include "bootstrapper.h"
 
 #include "bootstrap_error_utils.h"
+#include "../config/config_manager.h"
 #include "../io/loaders/assets_structure_loader.h"
 #include "../io/path/path_manager.h"
 
@@ -13,8 +14,7 @@ constexpr const char* USER_CONFIG_FILE_NAME = "user_config.json";
 StartupParseResult Bootstrapper::parse_runtime_settings()
 {
     _startup_preload_loader.reset();
-    _has_runtime_settings = false;
-    _user_config_path.clear();
+    ConfigManager::instance()->shutdown();
 
     StartupParseResult result;
 
@@ -52,29 +52,28 @@ StartupParseResult Bootstrapper::parse_runtime_settings()
         return result;
     }
 
-    _user_config_path = path_manager->player_data() / USER_CONFIG_FILE_NAME;
+    const std::filesystem::path user_config_path =
+        path_manager->player_data() / USER_CONFIG_FILE_NAME;
 
-    const UserConfigStore::Result user_config_result =
-        _user_config_store.load_or_create(
-            _user_config_path,
-            app_config_result.runtime_settings
+    const ConfigInitResult config_result =
+        ConfigManager::instance()->init(
+            app_config_result.runtime_settings,
+            user_config_path
         );
-    if (!user_config_result.success)
+    if (!config_result.success)
     {
-        result.error = user_config_result.error;
+        result.error = config_result.error;
         return result;
     }
 
-    if (!user_config_result.warning.empty())
+    if (!config_result.warning.empty())
     {
-        result.warning = user_config_result.warning;
+        result.warning = config_result.warning;
     }
 
-    result.runtime_settings = user_config_result.runtime_settings;
+    result.runtime_settings = config_result.runtime_settings;
     result.i18n_manifest_path = manifest_paths.i18n;
-    _runtime_settings = user_config_result.runtime_settings;
-    _has_runtime_settings = true;
-    result.rebuilt_user_config = user_config_result.rebuilt_user_config;
+    result.rebuilt_user_config = config_result.rebuilt_user_config;
     _startup_preload_loader.set_manifest_path(app_config_result.preload_manifest_path);
     result.success = true;
     return result;
@@ -88,32 +87,4 @@ bool Bootstrapper::preload_startup_resources(SDL_Renderer* renderer)
 SDL_Texture* Bootstrapper::get_preload_texture(std::string_view key)
 {
     return _startup_preload_loader.get_texture(key);
-}
-
-const RuntimeSettings& Bootstrapper::runtime_settings() const
-{
-    return _runtime_settings;
-}
-
-bool Bootstrapper::save_runtime_settings(
-    const RuntimeSettings& runtime_settings,
-    std::string& error
-)
-{
-    PathManager* path_manager = PathManager::instance();
-    if (!path_manager->is_initialized())
-    {
-        append_bootstrap_error(error, "Save runtime settings failed: path manager is not initialized.");
-        return false;
-    }
-
-    if (_user_config_path.empty())
-        _user_config_path = path_manager->player_data() / USER_CONFIG_FILE_NAME;
-
-    if (!_user_config_store.save(_user_config_path, runtime_settings, error))
-        return false;
-
-    _runtime_settings = runtime_settings;
-    _has_runtime_settings = true;
-    return true;
 }

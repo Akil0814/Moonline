@@ -4,6 +4,7 @@
 
 #include "../engine/audio/audio_service.h"
 #include "../engine/bootstrap/bootstrapper.h"
+#include "../engine/config/config_manager.h"
 #include "../engine/core/time.h"
 #include "../engine/localization/localization_manager.h"
 #include "../engine/resources/resource_manager.h"
@@ -65,11 +66,18 @@ bool Application::init(int argc, char** argv)
 		return false;
 	}
 
-	if (runtime_settings.language != LocalizationManager::instance()->current_language())
+	ConfigManager* config_manager = ConfigManager::instance();
+	if (config_manager->language() != LocalizationManager::instance()->current_language())
 	{
-		runtime_settings.language = LocalizationManager::instance()->current_language();
 		std::string save_error;
-		if (!Bootstrapper::instance()->save_runtime_settings(runtime_settings, save_error))
+		if (!config_manager->set_language(
+			LocalizationManager::instance()->current_language(),
+			save_error))
+		{
+			std::cout << "Localization warning: normalize language in config failed: "
+				<< save_error << std::endl;
+		}
+		else if (!config_manager->save(save_error))
 		{
 			std::cout << "Localization warning: save normalized language failed: "
 				<< save_error << std::endl;
@@ -183,7 +191,7 @@ int  Application::run(int argc, char** argv)
 			_input_system.events()
 		);
 
-		Uint64 current_counter = SDL_GetPerformanceCounter();//实现动态延时
+		Uint64 current_counter = SDL_GetPerformanceCounter();//å®žçŽ°åŠ¨æ€å»¶æ—¶
 		double delta = (double)(current_counter - last_counter) / counter_freq;
 		last_counter = current_counter;
 		Time::instance()->begin_frame(delta);
@@ -218,6 +226,7 @@ void Application::shutdown()
 	_scene_manager.detach(this);
 	_scene_manager.shutdown();
 	LocalizationManager::instance()->shutdown();
+	ConfigManager::instance()->shutdown();
 	AudioService::instance()->shutdown();
 	ResourceManager::instance()->clear();
 }

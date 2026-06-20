@@ -6,6 +6,6 @@
 using ConfigValue = std::variant<
     bool,
     int,
-    float,
+    double,
     std::string
 >;
