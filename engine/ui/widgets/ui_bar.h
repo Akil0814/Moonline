@@ -1,7 +1,6 @@
 #pragma once
 
-#include <SDL.h>
-
+#include "../../core/render/colors.h"
 #include "../core/ui_element.h"
 
 enum class BarFillDirection
@@ -30,14 +29,14 @@ public:
     [[nodiscard]] float value() const;
     [[nodiscard]] float ratio() const;
 
-    void set_background_color(SDL_Color color);
-    [[nodiscard]] SDL_Color background_color() const;
+    void set_background_color(Color color);
+    [[nodiscard]] Color background_color() const;
 
-    void set_fill_color(SDL_Color color);
-    [[nodiscard]] SDL_Color fill_color() const;
+    void set_fill_color(Color color);
+    [[nodiscard]] Color fill_color() const;
 
-    void set_border_color(SDL_Color color);
-    [[nodiscard]] SDL_Color border_color() const;
+    void set_border_color(Color color);
+    [[nodiscard]] Color border_color() const;
 
     void set_draw_border(bool draw_border);
     [[nodiscard]] bool draws_border() const;
@@ -59,9 +58,9 @@ private:
     float _max_value = 1.0f;
     float _value = 0.0f;
 
-    SDL_Color _background_color{ 0, 43, 100, 255 };
-    SDL_Color _fill_color{ 245, 255, 255, 255 };
-    SDL_Color _border_color{ 0, 0, 0, 255 };
+    Color _background_color = colors::loading_blue_bar_background;
+    Color _fill_color = colors::loading_blue_bar_fill;
+    Color _border_color = colors::black;
 
     BarFillDirection _fill_direction = BarFillDirection::LeftToRight;
     bool _draw_border = false;

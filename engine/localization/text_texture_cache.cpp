@@ -22,10 +22,7 @@ bool TextTextureCacheKey::operator==(const TextTextureCacheKey& other) const
 		&& translation_key == other.translation_key
 		&& point_size == other.point_size
 		&& wrap_width == other.wrap_width
-		&& color.r == other.color.r
-		&& color.g == other.color.g
-		&& color.b == other.color.b
-		&& color.a == other.color.a;
+		&& color == other.color;
 }
 
 size_t TextTextureCacheKeyHash::operator()(const TextTextureCacheKey& key) const

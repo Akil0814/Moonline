@@ -2,8 +2,19 @@
 
 #include <SDL.h>
 
+#include "color.h"
 #include "../geometry/rect.h"
 #include "../geometry/vector2.h"
+
+[[nodiscard]] inline SDL_Color to_sdl_color(Color color) noexcept
+{
+    return SDL_Color{ color.r, color.g, color.b, color.a };
+}
+
+[[nodiscard]] inline Color from_sdl_color(SDL_Color color) noexcept
+{
+    return Color{ color.r, color.g, color.b, color.a };
+}
 
 [[nodiscard]] inline SDL_Point to_sdl_point(const Vector2& point) noexcept
 {

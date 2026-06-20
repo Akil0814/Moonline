@@ -1,10 +1,10 @@
 #pragma once
 
-#include <SDL.h>
+#include "../core/render/color.h"
 
 struct LocalizedTextStyle
 {
 	int point_size = 0;
-	SDL_Color color{ 255, 255, 255, 255 };
+	Color color{};
 	int wrap_width = 0;
 };

@@ -1,5 +1,6 @@
 #include "localization_manager.h"
 
+#include "../core/render/sdl_convert.h"
 #include "../io/json/json_loader.h"
 #include "../io/loaders/i18n_manifest_loader.h"
 #include "../io/path/path_manager.h"
@@ -354,12 +355,13 @@ CachedTexturePtr LocalizationManager::create_text_texture(
 	}
 
 	SDL_Surface* surface = nullptr;
+    const SDL_Color text_color = to_sdl_color(style.color);
 	if (style.wrap_width > 0)
 	{
 		surface = TTF_RenderUTF8_Blended_Wrapped(
 			font,
 			translated_text.c_str(),
-			style.color,
+			text_color,
 			style.wrap_width);
 	}
 	else
@@ -367,7 +369,7 @@ CachedTexturePtr LocalizationManager::create_text_texture(
 		surface = TTF_RenderUTF8_Blended(
 			font,
 			translated_text.c_str(),
-			style.color);
+			text_color);
 	}
 
 	if (!surface)

@@ -1,5 +1,6 @@
 #include "ui_bar.h"
 
+#include "../../core/render/colors.h"
 #include "../../core/render/render_command.h"
 
 #include <algorithm>
@@ -24,9 +25,9 @@ void UiBar::reset() noexcept
     _min_value = 0.0f;
     _max_value = 1.0f;
     _value = 0.0f;
-    _background_color = SDL_Color{ 0, 43, 100, 255 };
-    _fill_color = SDL_Color{ 245, 255, 255, 255 };
-    _border_color = SDL_Color{ 0, 0, 0, 255 };
+    _background_color = colors::loading_blue_bar_background;
+    _fill_color = colors::loading_blue_bar_fill;
+    _border_color = colors::black;
     _fill_direction = BarFillDirection::LeftToRight;
     _draw_border = false;
     _padding = 0;
@@ -81,32 +82,32 @@ float UiBar::ratio() const
     return (_value - _min_value) / range;
 }
 
-void UiBar::set_background_color(SDL_Color color)
+void UiBar::set_background_color(Color color)
 {
     _background_color = color;
 }
 
-SDL_Color UiBar::background_color() const
+Color UiBar::background_color() const
 {
     return _background_color;
 }
 
-void UiBar::set_fill_color(SDL_Color color)
+void UiBar::set_fill_color(Color color)
 {
     _fill_color = color;
 }
 
-SDL_Color UiBar::fill_color() const
+Color UiBar::fill_color() const
 {
     return _fill_color;
 }
 
-void UiBar::set_border_color(SDL_Color color)
+void UiBar::set_border_color(Color color)
 {
     _border_color = color;
 }
 
-SDL_Color UiBar::border_color() const
+Color UiBar::border_color() const
 {
     return _border_color;
 }

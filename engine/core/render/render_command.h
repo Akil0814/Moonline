@@ -2,6 +2,7 @@
 
 #include <SDL.h>
 
+#include "color.h"
 #include "../geometry/rect.h"
 #include "../geometry/vector2.h"
 
@@ -61,7 +62,7 @@ struct UiRenderCommand
     Rect clip_rect{};
 
     // Used by FillRect, DrawRect, and DrawLine.
-    SDL_Color color{ 255, 255, 255, 255 };
+    Color color{};
 
     // Used by DrawLine.
     Vector2 line_start{};
@@ -120,7 +121,7 @@ inline void set_ui_command_clip_rect(UiRenderCommand& command, const Rect& clip_
 
 [[nodiscard]] inline UiRenderCommand make_ui_fill_rect_command(
     const Rect& screen_rect,
-    SDL_Color color
+    Color color
 ) noexcept
 {
     UiRenderCommand command;
@@ -132,7 +133,7 @@ inline void set_ui_command_clip_rect(UiRenderCommand& command, const Rect& clip_
 
 [[nodiscard]] inline UiRenderCommand make_ui_fill_rect_command(
     const Rect& screen_rect,
-    SDL_Color color,
+    Color color,
     const Rect& clip_rect
 ) noexcept
 {
@@ -143,7 +144,7 @@ inline void set_ui_command_clip_rect(UiRenderCommand& command, const Rect& clip_
 
 [[nodiscard]] inline UiRenderCommand make_ui_draw_rect_command(
     const Rect& screen_rect,
-    SDL_Color color
+    Color color
 ) noexcept
 {
     UiRenderCommand command;
@@ -155,7 +156,7 @@ inline void set_ui_command_clip_rect(UiRenderCommand& command, const Rect& clip_
 
 [[nodiscard]] inline UiRenderCommand make_ui_draw_rect_command(
     const Rect& screen_rect,
-    SDL_Color color,
+    Color color,
     const Rect& clip_rect
 ) noexcept
 {
@@ -167,7 +168,7 @@ inline void set_ui_command_clip_rect(UiRenderCommand& command, const Rect& clip_
 [[nodiscard]] inline UiRenderCommand make_ui_draw_line_command(
     const Vector2& line_start,
     const Vector2& line_end,
-    SDL_Color color
+    Color color
 ) noexcept
 {
     UiRenderCommand command;
@@ -181,7 +182,7 @@ inline void set_ui_command_clip_rect(UiRenderCommand& command, const Rect& clip_
 [[nodiscard]] inline UiRenderCommand make_ui_draw_line_command(
     const Vector2& line_start,
     const Vector2& line_end,
-    SDL_Color color,
+    Color color,
     const Rect& clip_rect
 ) noexcept
 {

@@ -130,6 +130,7 @@ inline void execute_render_command(SDL_Renderer* renderer, const UiRenderCommand
             break;
 
         SDL_Rect rect = to_sdl_rect(render_command.screen_rect);
+        const SDL_Color color = to_sdl_color(render_command.color);
 
         Uint8 old_r = 0;
         Uint8 old_g = 0;
@@ -139,10 +140,10 @@ inline void execute_render_command(SDL_Renderer* renderer, const UiRenderCommand
 
         SDL_SetRenderDrawColor(
             renderer,
-            render_command.color.r,
-            render_command.color.g,
-            render_command.color.b,
-            render_command.color.a
+            color.r,
+            color.g,
+            color.b,
+            color.a
         );
 
         if (render_command.type == UiRenderCommandType::FillRect)
@@ -156,6 +157,8 @@ inline void execute_render_command(SDL_Renderer* renderer, const UiRenderCommand
 
     case UiRenderCommandType::DrawLine:
     {
+        const SDL_Color color = to_sdl_color(render_command.color);
+
         Uint8 old_r = 0;
         Uint8 old_g = 0;
         Uint8 old_b = 0;
@@ -164,10 +167,10 @@ inline void execute_render_command(SDL_Renderer* renderer, const UiRenderCommand
 
         SDL_SetRenderDrawColor(
             renderer,
-            render_command.color.r,
-            render_command.color.g,
-            render_command.color.b,
-            render_command.color.a
+            color.r,
+            color.g,
+            color.b,
+            color.a
         );
 
         const SDL_Point start = to_sdl_point(render_command.line_start);

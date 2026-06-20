@@ -3,6 +3,7 @@
 #include "../../application/scene/scene_payloads.h"
 #include "../../engine/audio/audio_service.h"
 #include "../../engine/config/config_manager.h"
+#include "../../engine/core/render/colors.h"
 #include "../../engine/input/raw_input_types.h"
 #include "../../engine/localization/localization_manager.h"
 
@@ -14,7 +15,7 @@ namespace
 constexpr int kMenuCenterX = 640;
 constexpr int kMenuStartY = 220;
 constexpr int kMenuVerticalSpacing = 70;
-constexpr SDL_Color kMenuTextColor{ 255, 255, 255, 255 };
+constexpr Color kMenuTextColor = colors::white;
 constexpr int kMenuTextPointSize = 24;
 }
 

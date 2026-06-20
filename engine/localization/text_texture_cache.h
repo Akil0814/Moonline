@@ -22,7 +22,7 @@ struct TextTextureCacheKey
 	std::string language;
 	std::string translation_key;
 	int point_size = 0;
-	SDL_Color color{ 255, 255, 255, 255 };
+	Color color{};
 	int wrap_width = 0;
 
 	bool operator==(const TextTextureCacheKey& other) const;

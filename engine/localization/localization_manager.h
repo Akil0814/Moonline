@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include "localized_text_style.h"
