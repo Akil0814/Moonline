@@ -4,52 +4,52 @@ namespace
 {
 struct GameplayBinding
 {
-    GameplayAction action;
+    arcneco::input::GameplayAction action;
     elysia::input::RawInputControl control;
 };
 
 constexpr GameplayBinding k_gameplay_bindings[] = {
-    { GameplayAction::MoveLeft, elysia::input::RawInputControl::KeyA },
-    { GameplayAction::MoveLeft, elysia::input::RawInputControl::KeyLeft },
-    { GameplayAction::MoveRight, elysia::input::RawInputControl::KeyD },
-    { GameplayAction::MoveRight, elysia::input::RawInputControl::KeyRight },
-    { GameplayAction::MoveUp, elysia::input::RawInputControl::KeyW },
-    { GameplayAction::MoveUp, elysia::input::RawInputControl::KeyUp },
-    { GameplayAction::MoveDown, elysia::input::RawInputControl::KeyS },
-    { GameplayAction::MoveDown, elysia::input::RawInputControl::KeyDown },
-    { GameplayAction::Jump, elysia::input::RawInputControl::KeySpace },
-    { GameplayAction::Attack, elysia::input::RawInputControl::KeyJ },
-    { GameplayAction::Special, elysia::input::RawInputControl::KeyK },
-    { GameplayAction::Guard, elysia::input::RawInputControl::KeyL },
-    { GameplayAction::Dash, elysia::input::RawInputControl::KeyLeftShift },
-    { GameplayAction::Dash, elysia::input::RawInputControl::KeyRightShift },
-    { GameplayAction::Pause, elysia::input::RawInputControl::KeyP },
-    { GameplayAction::Attack, elysia::input::RawInputControl::MouseLeft },
-    { GameplayAction::Guard, elysia::input::RawInputControl::MouseRight },
-    { GameplayAction::MoveLeft, elysia::input::RawInputControl::GamepadDPadLeft },
-    { GameplayAction::MoveRight, elysia::input::RawInputControl::GamepadDPadRight },
-    { GameplayAction::MoveUp, elysia::input::RawInputControl::GamepadDPadUp },
-    { GameplayAction::MoveDown, elysia::input::RawInputControl::GamepadDPadDown },
-    { GameplayAction::Jump, elysia::input::RawInputControl::GamepadSouth },
-    { GameplayAction::Attack, elysia::input::RawInputControl::GamepadWest },
-    { GameplayAction::Special, elysia::input::RawInputControl::GamepadNorth },
-    { GameplayAction::Guard, elysia::input::RawInputControl::GamepadLeftShoulder },
-    { GameplayAction::Dash, elysia::input::RawInputControl::GamepadRightShoulder },
-    { GameplayAction::Pause, elysia::input::RawInputControl::GamepadStart }
+    { arcneco::input::GameplayAction::MoveLeft, elysia::input::RawInputControl::KeyA },
+    { arcneco::input::GameplayAction::MoveLeft, elysia::input::RawInputControl::KeyLeft },
+    { arcneco::input::GameplayAction::MoveRight, elysia::input::RawInputControl::KeyD },
+    { arcneco::input::GameplayAction::MoveRight, elysia::input::RawInputControl::KeyRight },
+    { arcneco::input::GameplayAction::MoveUp, elysia::input::RawInputControl::KeyW },
+    { arcneco::input::GameplayAction::MoveUp, elysia::input::RawInputControl::KeyUp },
+    { arcneco::input::GameplayAction::MoveDown, elysia::input::RawInputControl::KeyS },
+    { arcneco::input::GameplayAction::MoveDown, elysia::input::RawInputControl::KeyDown },
+    { arcneco::input::GameplayAction::Jump, elysia::input::RawInputControl::KeySpace },
+    { arcneco::input::GameplayAction::Attack, elysia::input::RawInputControl::KeyJ },
+    { arcneco::input::GameplayAction::Special, elysia::input::RawInputControl::KeyK },
+    { arcneco::input::GameplayAction::Guard, elysia::input::RawInputControl::KeyL },
+    { arcneco::input::GameplayAction::Dash, elysia::input::RawInputControl::KeyLeftShift },
+    { arcneco::input::GameplayAction::Dash, elysia::input::RawInputControl::KeyRightShift },
+    { arcneco::input::GameplayAction::Pause, elysia::input::RawInputControl::KeyP },
+    { arcneco::input::GameplayAction::Attack, elysia::input::RawInputControl::MouseLeft },
+    { arcneco::input::GameplayAction::Guard, elysia::input::RawInputControl::MouseRight },
+    { arcneco::input::GameplayAction::MoveLeft, elysia::input::RawInputControl::GamepadDPadLeft },
+    { arcneco::input::GameplayAction::MoveRight, elysia::input::RawInputControl::GamepadDPadRight },
+    { arcneco::input::GameplayAction::MoveUp, elysia::input::RawInputControl::GamepadDPadUp },
+    { arcneco::input::GameplayAction::MoveDown, elysia::input::RawInputControl::GamepadDPadDown },
+    { arcneco::input::GameplayAction::Jump, elysia::input::RawInputControl::GamepadSouth },
+    { arcneco::input::GameplayAction::Attack, elysia::input::RawInputControl::GamepadWest },
+    { arcneco::input::GameplayAction::Special, elysia::input::RawInputControl::GamepadNorth },
+    { arcneco::input::GameplayAction::Guard, elysia::input::RawInputControl::GamepadLeftShoulder },
+    { arcneco::input::GameplayAction::Dash, elysia::input::RawInputControl::GamepadRightShoulder },
+    { arcneco::input::GameplayAction::Pause, elysia::input::RawInputControl::GamepadStart }
 };
 }
 
-GameplayInputFrame GameplayInputRouter::route_frame(const elysia::input::RawInputFrame& raw_input) const
+arcneco::input::GameplayInputFrame GameplayInputRouter::route_frame(const elysia::input::RawInputFrame& raw_input) const
 {
-    GameplayInputFrame gameplay_input;
+    arcneco::input::GameplayInputFrame gameplay_input;
     gameplay_input.active_device = raw_input.active_device;
     gameplay_input.device_switched_this_frame = raw_input.device_switched_this_frame;
 
-    for (int action_index = static_cast<int>(GameplayAction::None) + 1;
-        action_index < static_cast<int>(GameplayAction::Count);
+    for (int action_index = static_cast<int>(arcneco::input::GameplayAction::None) + 1;
+        action_index < static_cast<int>(arcneco::input::GameplayAction::Count);
         ++action_index)
     {
-        const GameplayAction action = static_cast<GameplayAction>(action_index);
+        const arcneco::input::GameplayAction action = static_cast<arcneco::input::GameplayAction>(action_index);
         gameplay_input.state.set(
             action,
             is_action_pressed(raw_input.state, action),
@@ -61,26 +61,26 @@ GameplayInputFrame GameplayInputRouter::route_frame(const elysia::input::RawInpu
     return gameplay_input;
 }
 
-std::vector<GameplayInputEvent> GameplayInputRouter::route_event(const elysia::input::RawInputEvent& raw_event) const
+std::vector<arcneco::input::GameplayInputEvent> GameplayInputRouter::route_event(const elysia::input::RawInputEvent& raw_event) const
 {
-    std::vector<GameplayInputEvent> events;
+    std::vector<arcneco::input::GameplayInputEvent> events;
 
     switch (raw_event.type)
     {
     case elysia::input::RawInputEventType::ControlPressed:
     case elysia::input::RawInputEventType::ControlReleased:
     {
-        const GameplayAction action = action_from_control(raw_event.control);
-        if (action == GameplayAction::None)
+        const arcneco::input::GameplayAction action = action_from_control(raw_event.control);
+        if (action == arcneco::input::GameplayAction::None)
         {
             return events;
         }
 
-        GameplayInputEvent event;
+        arcneco::input::GameplayInputEvent event;
         event.action = action;
         event.type = raw_event.type == elysia::input::RawInputEventType::ControlPressed
-            ? GameplayInputEventType::ActionPressed
-            : GameplayInputEventType::ActionReleased;
+            ? arcneco::input::GameplayInputEventType::ActionPressed
+            : arcneco::input::GameplayInputEventType::ActionReleased;
         event.device = raw_event.device;
         events.push_back(event);
         break;
@@ -88,8 +88,8 @@ std::vector<GameplayInputEvent> GameplayInputRouter::route_event(const elysia::i
 
     case elysia::input::RawInputEventType::AxisChanged:
     {
-        GameplayInputEvent event;
-        event.type = GameplayInputEventType::AxisChanged;
+        arcneco::input::GameplayInputEvent event;
+        event.type = arcneco::input::GameplayInputEventType::AxisChanged;
         event.device = raw_event.device;
         event.axis = raw_event.axis;
         event.axis_value = raw_event.axis_value;
@@ -108,7 +108,7 @@ std::vector<GameplayInputEvent> GameplayInputRouter::route_event(const elysia::i
     return events;
 }
 
-bool GameplayInputRouter::is_action_pressed(const elysia::input::RawInputState& state, GameplayAction action) const
+bool GameplayInputRouter::is_action_pressed(const elysia::input::RawInputState& state, arcneco::input::GameplayAction action) const
 {
     for (const GameplayBinding& binding : k_gameplay_bindings)
     {
@@ -121,7 +121,7 @@ bool GameplayInputRouter::is_action_pressed(const elysia::input::RawInputState& 
     return false;
 }
 
-bool GameplayInputRouter::is_action_just_pressed(const elysia::input::RawInputState& state, GameplayAction action) const
+bool GameplayInputRouter::is_action_just_pressed(const elysia::input::RawInputState& state, arcneco::input::GameplayAction action) const
 {
     for (const GameplayBinding& binding : k_gameplay_bindings)
     {
@@ -134,7 +134,7 @@ bool GameplayInputRouter::is_action_just_pressed(const elysia::input::RawInputSt
     return false;
 }
 
-bool GameplayInputRouter::is_action_just_released(const elysia::input::RawInputState& state, GameplayAction action) const
+bool GameplayInputRouter::is_action_just_released(const elysia::input::RawInputState& state, arcneco::input::GameplayAction action) const
 {
     for (const GameplayBinding& binding : k_gameplay_bindings)
     {
@@ -147,7 +147,7 @@ bool GameplayInputRouter::is_action_just_released(const elysia::input::RawInputS
     return false;
 }
 
-GameplayAction GameplayInputRouter::action_from_control(elysia::input::RawInputControl control) const
+arcneco::input::GameplayAction GameplayInputRouter::action_from_control(elysia::input::RawInputControl control) const
 {
     for (const GameplayBinding& binding : k_gameplay_bindings)
     {
@@ -157,5 +157,5 @@ GameplayAction GameplayInputRouter::action_from_control(elysia::input::RawInputC
         }
     }
 
-    return GameplayAction::None;
+    return arcneco::input::GameplayAction::None;
 }

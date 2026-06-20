@@ -2,6 +2,8 @@
 
 #include "../../engine/input/raw_input_types.h"
 
+namespace arcneco::input
+{
 enum class GameplayAction
 {
     None = 0,
@@ -34,3 +36,4 @@ struct GameplayInputEvent
     elysia::input::RawInputAxis axis = elysia::input::RawInputAxis::None;
     float axis_value = 0.0f;
 };
+}

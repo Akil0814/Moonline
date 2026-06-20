@@ -46,7 +46,7 @@ void ApplicationScene::on_input(
     {
         _ui_input_router.reset_transient_state();
 
-        const GameplayInputFrame gameplay_frame = _gameplay_input_router.route_frame(input);
+        const arcneco::input::GameplayInputFrame gameplay_frame = _gameplay_input_router.route_frame(input);
         dispatch_gameplay_frame(gameplay_frame);
 
         for (const elysia::input::RawInputEvent& raw_event : events)
@@ -91,7 +91,7 @@ void ApplicationScene::on_scene_object_registered(elysia::core::SceneObject& obj
         );
     }
 
-    if (auto* receiver = dynamic_cast<GameplayInputFrameReceiver*>(&object))
+    if (auto* receiver = dynamic_cast<arcneco::input::GameplayInputFrameReceiver*>(&object))
     {
         elysia::scene::scene_input_order::insert_receiver_entry_sorted(
             _gameplay_frame_receivers,
@@ -99,7 +99,7 @@ void ApplicationScene::on_scene_object_registered(elysia::core::SceneObject& obj
         );
     }
 
-    if (auto* receiver = dynamic_cast<GameplayInputEventReceiver*>(&object))
+    if (auto* receiver = dynamic_cast<arcneco::input::GameplayInputEventReceiver*>(&object))
     {
         elysia::scene::scene_input_order::insert_receiver_entry_sorted(
             _gameplay_event_receivers,
@@ -162,7 +162,7 @@ void ApplicationScene::dispatch_ui_events(const std::vector<elysia::ui::UiInputE
     }
 }
 
-void ApplicationScene::dispatch_gameplay_frame(const GameplayInputFrame& input)
+void ApplicationScene::dispatch_gameplay_frame(const arcneco::input::GameplayInputFrame& input)
 {
     for (const GameplayInputFrameReceiverEntry& entry : _gameplay_frame_receivers)
     {
@@ -182,9 +182,9 @@ void ApplicationScene::dispatch_gameplay_frame(const GameplayInputFrame& input)
     }
 }
 
-void ApplicationScene::dispatch_gameplay_events(const std::vector<GameplayInputEvent>& events)
+void ApplicationScene::dispatch_gameplay_events(const std::vector<arcneco::input::GameplayInputEvent>& events)
 {
-    for (const GameplayInputEvent& gameplay_event : events)
+    for (const arcneco::input::GameplayInputEvent& gameplay_event : events)
     {
         for (const GameplayInputEventReceiverEntry& entry : _gameplay_event_receivers)
         {

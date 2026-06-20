@@ -5,6 +5,8 @@
 #include "../../engine/ui/widgets/ui_fade_image.h"
 #include "../../engine/ui/widgets/ui_bar.h"
 
+namespace arcneco::scene
+{
 class StartupLoadingScene final : public ApplicationScene
 {
 public:
@@ -25,3 +27,4 @@ private:
 	elysia::loading::GameContentLoader _content_loader;
 	bool _has_logged_load_failure = false;
 };
+}

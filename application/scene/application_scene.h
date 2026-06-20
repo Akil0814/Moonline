@@ -37,21 +37,21 @@ private:
     struct GameplayInputFrameReceiverEntry
     {
         elysia::core::SceneObject* object = nullptr;
-        GameplayInputFrameReceiver* receiver = nullptr;
+        arcneco::input::GameplayInputFrameReceiver* receiver = nullptr;
     };
 
     struct GameplayInputEventReceiverEntry
     {
         elysia::core::SceneObject* object = nullptr;
-        GameplayInputEventReceiver* receiver = nullptr;
+        arcneco::input::GameplayInputEventReceiver* receiver = nullptr;
     };
 
 private:
     void prune_domain_receivers();
     void dispatch_ui_frame(const elysia::ui::UiInputFrame& input);
     void dispatch_ui_events(const std::vector<elysia::ui::UiInputEvent>& events);
-    void dispatch_gameplay_frame(const GameplayInputFrame& input);
-    void dispatch_gameplay_events(const std::vector<GameplayInputEvent>& events);
+    void dispatch_gameplay_frame(const arcneco::input::GameplayInputFrame& input);
+    void dispatch_gameplay_events(const std::vector<arcneco::input::GameplayInputEvent>& events);
 
 private:
     UiInputRouter _ui_input_router;

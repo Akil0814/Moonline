@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+namespace arcneco::scene
+{
 class MainMenuScene final : public ApplicationScene
 {
 public:
@@ -39,3 +41,4 @@ private:
 private:
 	std::vector<MenuTextEntry> _menu_text_entries;
 };
+}

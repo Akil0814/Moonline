@@ -5,6 +5,8 @@
 #include <array>
 #include <cstddef>
 
+namespace arcneco::input
+{
 class GameplayInputState
 {
 public:
@@ -65,3 +67,4 @@ private:
     std::array<bool, static_cast<std::size_t>(GameplayAction::Count)> _just_pressed{};
     std::array<bool, static_cast<std::size_t>(GameplayAction::Count)> _just_released{};
 };
+}

@@ -10,6 +10,8 @@
 #include <algorithm>
 #include <iostream>
 
+namespace arcneco::scene
+{
 namespace
 {
 constexpr int kMenuCenterX = 640;
@@ -177,4 +179,5 @@ void MainMenuScene::cycle_language()
 		std::cout << "MainMenuScene warning: save language failed: "
 			<< save_error << std::endl;
 	}
+}
 }

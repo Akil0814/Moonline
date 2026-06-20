@@ -4,6 +4,8 @@
 #include "../../application/scene/scene_keys.h"
 #include "../../engine/bootstrap/bootstrapper.h"
 
+namespace arcneco::scene
+{
 void StartupLoadingScene::on_enter(const elysia::scene::ScenePayload& payload)
 {
 	(void)payload;
@@ -72,4 +74,5 @@ void StartupLoadingScene::reset()
 	_paused = false;
 	_has_logged_load_failure = false;
 	_content_loader.reset();
+}
 }

@@ -8,6 +8,6 @@
 
 void register_all_scenes(elysia::scene::SceneManager& scene_manager)
 {
-    scene_manager.register_scene<StartupLoadingScene>(AppSceneKeys::StartupLoading);
-    scene_manager.register_scene<MainMenuScene>(AppSceneKeys::MainMenu);
+    scene_manager.register_scene<arcneco::scene::StartupLoadingScene>(AppSceneKeys::StartupLoading);
+    scene_manager.register_scene<arcneco::scene::MainMenuScene>(AppSceneKeys::MainMenu);
 }
