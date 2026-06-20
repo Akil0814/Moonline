@@ -1,5 +1,7 @@
 #pragma once
 
+namespace elysia::ui
+{
 enum class UiPanelThemeRole
 {
     Default,
@@ -28,3 +30,5 @@ enum class UiBarThemeRole
     Default,
     Progress
 };
+
+}

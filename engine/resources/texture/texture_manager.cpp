@@ -3,6 +3,8 @@
 #include <iostream>
 #include <utility>
 
+namespace elysia::resources
+{
 bool TextureManager::store_texture(const std::string& key, TexturePtr texture)
 {
 	if (key.empty())
@@ -42,4 +44,6 @@ void TextureManager::clear()
 size_t TextureManager::resource_count() const
 {
 	return _texture_pool.size();
+}
+
 }

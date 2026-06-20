@@ -15,6 +15,8 @@
 #include <iostream>
 #include <utility>
 
+namespace elysia::loading
+{
 bool ConfigLoadPipeline::load(
 	const std::filesystem::path& assets_structure_path,
 	ConfigLoadResult& result
@@ -23,29 +25,29 @@ bool ConfigLoadPipeline::load(
 	result = ConfigLoadResult{};
 	_error_message.clear();
 
-	AssetManifestPaths manifest_paths;
-	AssetsStructureLoader assets_structure_loader;
+	elysia::io::AssetManifestPaths manifest_paths;
+	elysia::io::AssetsStructureLoader assets_structure_loader;
 	if (!assets_structure_loader.load(assets_structure_path, manifest_paths))
 	{
 		fail("Config load pipeline failed: assets structure load failed.");
 		return false;
 	}
 
-	FontsManifestLoader fonts_manifest_loader;
+	elysia::io::FontsManifestLoader fonts_manifest_loader;
 	if (!fonts_manifest_loader.load(manifest_paths.fonts, result.font_manifest))
 	{
 		fail("Config load pipeline failed: fonts manifest load failed.");
 		return false;
 	}
 
-	AudioManifestLoader audio_manifest_loader;
+	elysia::io::AudioManifestLoader audio_manifest_loader;
 	if (!audio_manifest_loader.load(manifest_paths.audio, result.audio_manifest))
 	{
 		fail("Config load pipeline failed: audio manifest load failed.");
 		return false;
 	}
 
-	TextureManifestLoader texture_manifest_loader;
+	elysia::io::TextureManifestLoader texture_manifest_loader;
 	if (!texture_manifest_loader.load(manifest_paths.map_textures, result.map_texture_manifest))
 	{
 		fail("Config load pipeline failed: map textures manifest load failed.");
@@ -58,8 +60,8 @@ bool ConfigLoadPipeline::load(
 		return false;
 	}
 
-	CharacterAnimationLayout character_animation_layout;
-	CharacterAnimationLayoutLoader character_animation_layout_loader;
+	elysia::io::CharacterAnimationLayout character_animation_layout;
+	elysia::io::CharacterAnimationLayoutLoader character_animation_layout_loader;
 	if (!character_animation_layout_loader.load(
 		manifest_paths.character_animations,
 		character_animation_layout))
@@ -68,7 +70,7 @@ bool ConfigLoadPipeline::load(
 		return false;
 	}
 
-	CharacterEffectLayoutLoader character_effect_layout_loader;
+	elysia::io::CharacterEffectLayoutLoader character_effect_layout_loader;
 	if (!character_effect_layout_loader.load(
 		manifest_paths.character_effects,
 		result.character_effect_layout))
@@ -77,7 +79,7 @@ bool ConfigLoadPipeline::load(
 		return false;
 	}
 
-	CharacterTextureLayoutLoader character_texture_layout_loader;
+	elysia::io::CharacterTextureLayoutLoader character_texture_layout_loader;
 	if (!character_texture_layout_loader.load(
 		manifest_paths.character_textures,
 		result.character_texture_layout))
@@ -86,7 +88,7 @@ bool ConfigLoadPipeline::load(
 		return false;
 	}
 
-	CharacterAudioLayoutLoader character_audio_layout_loader;
+	elysia::io::CharacterAudioLayoutLoader character_audio_layout_loader;
 	if (!character_audio_layout_loader.load(
 		manifest_paths.character_audio,
 		result.character_audio_layout))
@@ -95,27 +97,27 @@ bool ConfigLoadPipeline::load(
 		return false;
 	}
 
-	CharacterManifest character_manifest;
-	CharacterManifestLoader character_manifest_loader;
+	elysia::io::CharacterManifest character_manifest;
+	elysia::io::CharacterManifestLoader character_manifest_loader;
 	if (!character_manifest_loader.load(manifest_paths.characters, character_manifest))
 	{
 		fail("Config load pipeline failed: character manifest load failed.");
 		return false;
 	}
 
-	CharacterConfigLoader character_config_loader;
-	AnimationConfigLoader animation_config_loader;
+	elysia::io::CharacterConfigLoader character_config_loader;
+	elysia::io::AnimationConfigLoader animation_config_loader;
 
-	for (const CharacterManifestEntry& character_entry : character_manifest.characters)
+	for (const elysia::io::CharacterManifestEntry& character_entry : character_manifest.characters)
 	{
-		CharacterConfig character_config;
+		elysia::io::CharacterConfig character_config;
 		if (!character_config_loader.load(character_entry, character_config))
 		{
 			fail("Config load pipeline failed: character config load failed.");
 			return false;
 		}
 
-		AnimationConfig animation_config;
+		elysia::io::AnimationConfig animation_config;
 		if (!animation_config_loader.load(
 			character_config.animation_config_path,
 			character_animation_layout,
@@ -125,7 +127,7 @@ bool ConfigLoadPipeline::load(
 			return false;
 		}
 
-		result.character_animation_entries.push_back(CharacterAnimationContentEntry{
+		result.character_animation_entries.push_back(elysia::io::CharacterAnimationContentEntry{
 			std::move(character_config),
 			std::move(animation_config)
 		});
@@ -143,4 +145,6 @@ void ConfigLoadPipeline::fail(std::string message)
 {
 	_error_message = std::move(message);
 	std::cout << _error_message << std::endl;
+}
+
 }

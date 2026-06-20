@@ -4,47 +4,47 @@ namespace
 {
 struct UiBinding
 {
-    UiAction action;
-    RawInputControl control;
+    elysia::ui::UiAction action;
+    elysia::input::RawInputControl control;
 };
 
 constexpr UiBinding k_ui_bindings[] = {
-    { UiAction::NavigateLeft, RawInputControl::KeyA },
-    { UiAction::NavigateLeft, RawInputControl::KeyLeft },
-    { UiAction::NavigateRight, RawInputControl::KeyD },
-    { UiAction::NavigateRight, RawInputControl::KeyRight },
-    { UiAction::NavigateUp, RawInputControl::KeyW },
-    { UiAction::NavigateUp, RawInputControl::KeyUp },
-    { UiAction::NavigateDown, RawInputControl::KeyS },
-    { UiAction::NavigateDown, RawInputControl::KeyDown },
-    { UiAction::Confirm, RawInputControl::KeyEnter },
-    { UiAction::Confirm, RawInputControl::KeyNumpadEnter },
-    { UiAction::Confirm, RawInputControl::GamepadSouth },
-    { UiAction::Cancel, RawInputControl::KeyEscape },
-    { UiAction::Cancel, RawInputControl::GamepadEast },
-    { UiAction::Tab, RawInputControl::KeyTab },
-    { UiAction::Backspace, RawInputControl::KeyBackspace },
-    { UiAction::DeleteKey, RawInputControl::KeyDelete },
-    { UiAction::Home, RawInputControl::KeyHome },
-    { UiAction::End, RawInputControl::KeyEnd },
-    { UiAction::NavigateLeft, RawInputControl::GamepadDPadLeft },
-    { UiAction::NavigateRight, RawInputControl::GamepadDPadRight },
-    { UiAction::NavigateUp, RawInputControl::GamepadDPadUp },
-    { UiAction::NavigateDown, RawInputControl::GamepadDPadDown }
+    { elysia::ui::UiAction::NavigateLeft, elysia::input::RawInputControl::KeyA },
+    { elysia::ui::UiAction::NavigateLeft, elysia::input::RawInputControl::KeyLeft },
+    { elysia::ui::UiAction::NavigateRight, elysia::input::RawInputControl::KeyD },
+    { elysia::ui::UiAction::NavigateRight, elysia::input::RawInputControl::KeyRight },
+    { elysia::ui::UiAction::NavigateUp, elysia::input::RawInputControl::KeyW },
+    { elysia::ui::UiAction::NavigateUp, elysia::input::RawInputControl::KeyUp },
+    { elysia::ui::UiAction::NavigateDown, elysia::input::RawInputControl::KeyS },
+    { elysia::ui::UiAction::NavigateDown, elysia::input::RawInputControl::KeyDown },
+    { elysia::ui::UiAction::Confirm, elysia::input::RawInputControl::KeyEnter },
+    { elysia::ui::UiAction::Confirm, elysia::input::RawInputControl::KeyNumpadEnter },
+    { elysia::ui::UiAction::Confirm, elysia::input::RawInputControl::GamepadSouth },
+    { elysia::ui::UiAction::Cancel, elysia::input::RawInputControl::KeyEscape },
+    { elysia::ui::UiAction::Cancel, elysia::input::RawInputControl::GamepadEast },
+    { elysia::ui::UiAction::Tab, elysia::input::RawInputControl::KeyTab },
+    { elysia::ui::UiAction::Backspace, elysia::input::RawInputControl::KeyBackspace },
+    { elysia::ui::UiAction::DeleteKey, elysia::input::RawInputControl::KeyDelete },
+    { elysia::ui::UiAction::Home, elysia::input::RawInputControl::KeyHome },
+    { elysia::ui::UiAction::End, elysia::input::RawInputControl::KeyEnd },
+    { elysia::ui::UiAction::NavigateLeft, elysia::input::RawInputControl::GamepadDPadLeft },
+    { elysia::ui::UiAction::NavigateRight, elysia::input::RawInputControl::GamepadDPadRight },
+    { elysia::ui::UiAction::NavigateUp, elysia::input::RawInputControl::GamepadDPadUp },
+    { elysia::ui::UiAction::NavigateDown, elysia::input::RawInputControl::GamepadDPadDown }
 };
 }
 
-UiInputFrame UiInputRouter::route_frame(const RawInputFrame& raw_input) const
+elysia::ui::UiInputFrame UiInputRouter::route_frame(const elysia::input::RawInputFrame& raw_input) const
 {
-    UiInputFrame ui_input;
+    elysia::ui::UiInputFrame ui_input;
     ui_input.active_device = raw_input.active_device;
     ui_input.device_switched_this_frame = raw_input.device_switched_this_frame;
 
-    for (int action_index = static_cast<int>(UiAction::None) + 1;
-        action_index < static_cast<int>(UiAction::Count);
+    for (int action_index = static_cast<int>(elysia::ui::UiAction::None) + 1;
+        action_index < static_cast<int>(elysia::ui::UiAction::Count);
         ++action_index)
     {
-        const UiAction action = static_cast<UiAction>(action_index);
+        const elysia::ui::UiAction action = static_cast<elysia::ui::UiAction>(action_index);
         ui_input.state.set(
             action,
             is_action_pressed(raw_input.state, action),
@@ -56,35 +56,35 @@ UiInputFrame UiInputRouter::route_frame(const RawInputFrame& raw_input) const
     return ui_input;
 }
 
-std::vector<UiInputEvent> UiInputRouter::route_event(const RawInputEvent& raw_event) const
+std::vector<elysia::ui::UiInputEvent> UiInputRouter::route_event(const elysia::input::RawInputEvent& raw_event) const
 {
-    std::vector<UiInputEvent> events;
+    std::vector<elysia::ui::UiInputEvent> events;
 
     switch (raw_event.type)
     {
-    case RawInputEventType::ControlPressed:
-    case RawInputEventType::ControlReleased:
+    case elysia::input::RawInputEventType::ControlPressed:
+    case elysia::input::RawInputEventType::ControlReleased:
     {
-        const UiAction action = action_from_control(raw_event.control);
-        if (action == UiAction::None)
+        const elysia::ui::UiAction action = action_from_control(raw_event.control);
+        if (action == elysia::ui::UiAction::None)
         {
             return events;
         }
 
-        UiInputEvent event;
+        elysia::ui::UiInputEvent event;
         event.action = action;
-        event.type = raw_event.type == RawInputEventType::ControlPressed
-            ? UiInputEventType::ActionPressed
-            : UiInputEventType::ActionReleased;
+        event.type = raw_event.type == elysia::input::RawInputEventType::ControlPressed
+            ? elysia::ui::UiInputEventType::ActionPressed
+            : elysia::ui::UiInputEventType::ActionReleased;
         event.device = raw_event.device;
         events.push_back(event);
         break;
     }
 
-    case RawInputEventType::MouseWheel:
+    case elysia::input::RawInputEventType::MouseWheel:
     {
-        UiInputEvent event;
-        event.type = UiInputEventType::MouseWheel;
+        elysia::ui::UiInputEvent event;
+        event.type = elysia::ui::UiInputEventType::MouseWheel;
         event.device = raw_event.device;
         event.wheel_x = raw_event.wheel_x;
         event.wheel_y = raw_event.wheel_y;
@@ -92,30 +92,30 @@ std::vector<UiInputEvent> UiInputRouter::route_event(const RawInputEvent& raw_ev
         break;
     }
 
-    case RawInputEventType::TextInput:
+    case elysia::input::RawInputEventType::TextInput:
     {
-        UiInputEvent event;
-        event.type = UiInputEventType::TextInput;
+        elysia::ui::UiInputEvent event;
+        event.type = elysia::ui::UiInputEventType::TextInput;
         event.device = raw_event.device;
         event.text = raw_event.text;
         events.push_back(event);
         break;
     }
 
-    case RawInputEventType::TextEditing:
+    case elysia::input::RawInputEventType::TextEditing:
     {
-        UiInputEvent event;
-        event.type = UiInputEventType::TextEditing;
+        elysia::ui::UiInputEvent event;
+        event.type = elysia::ui::UiInputEventType::TextEditing;
         event.device = raw_event.device;
         event.text = raw_event.text;
         events.push_back(event);
         break;
     }
 
-    case RawInputEventType::AxisChanged:
+    case elysia::input::RawInputEventType::AxisChanged:
     {
-        UiInputEvent event;
-        event.type = UiInputEventType::AxisChanged;
+        elysia::ui::UiInputEvent event;
+        event.type = elysia::ui::UiInputEventType::AxisChanged;
         event.device = raw_event.device;
         event.axis = raw_event.axis;
         event.axis_value = raw_event.axis_value;
@@ -123,7 +123,7 @@ std::vector<UiInputEvent> UiInputRouter::route_event(const RawInputEvent& raw_ev
         break;
     }
 
-    case RawInputEventType::None:
+    case elysia::input::RawInputEventType::None:
     default:
         break;
     }
@@ -131,9 +131,9 @@ std::vector<UiInputEvent> UiInputRouter::route_event(const RawInputEvent& raw_ev
     return events;
 }
 
-std::vector<UiInputEvent> UiInputRouter::synthesize_events(const RawInputFrame& raw_input)
+std::vector<elysia::ui::UiInputEvent> UiInputRouter::synthesize_events(const elysia::input::RawInputFrame& raw_input)
 {
-    std::vector<UiInputEvent> events;
+    std::vector<elysia::ui::UiInputEvent> events;
 
     const auto synthesized_event = _gamepad_scroll_synthesizer.synthesize(raw_input);
     if (synthesized_event)
@@ -149,7 +149,7 @@ void UiInputRouter::reset_transient_state()
     _gamepad_scroll_synthesizer.reset();
 }
 
-bool UiInputRouter::is_action_pressed(const RawInputState& state, UiAction action) const
+bool UiInputRouter::is_action_pressed(const elysia::input::RawInputState& state, elysia::ui::UiAction action) const
 {
     for (const UiBinding& binding : k_ui_bindings)
     {
@@ -162,7 +162,7 @@ bool UiInputRouter::is_action_pressed(const RawInputState& state, UiAction actio
     return false;
 }
 
-bool UiInputRouter::is_action_just_pressed(const RawInputState& state, UiAction action) const
+bool UiInputRouter::is_action_just_pressed(const elysia::input::RawInputState& state, elysia::ui::UiAction action) const
 {
     for (const UiBinding& binding : k_ui_bindings)
     {
@@ -175,7 +175,7 @@ bool UiInputRouter::is_action_just_pressed(const RawInputState& state, UiAction 
     return false;
 }
 
-bool UiInputRouter::is_action_just_released(const RawInputState& state, UiAction action) const
+bool UiInputRouter::is_action_just_released(const elysia::input::RawInputState& state, elysia::ui::UiAction action) const
 {
     for (const UiBinding& binding : k_ui_bindings)
     {
@@ -188,7 +188,7 @@ bool UiInputRouter::is_action_just_released(const RawInputState& state, UiAction
     return false;
 }
 
-UiAction UiInputRouter::action_from_control(RawInputControl control) const
+elysia::ui::UiAction UiInputRouter::action_from_control(elysia::input::RawInputControl control) const
 {
     for (const UiBinding& binding : k_ui_bindings)
     {
@@ -198,5 +198,5 @@ UiAction UiInputRouter::action_from_control(RawInputControl control) const
         }
     }
 
-    return UiAction::None;
+    return elysia::ui::UiAction::None;
 }

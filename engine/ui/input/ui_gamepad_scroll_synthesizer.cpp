@@ -3,19 +3,21 @@
 #include <algorithm>
 #include <cmath>
 
-std::optional<UiInputEvent> UiGamepadScrollSynthesizer::synthesize(const RawInputFrame& input)
+namespace elysia::ui
 {
-    if (input.active_device != InputDevice::Gamepad || input.device_switched_this_frame)
+std::optional<UiInputEvent> UiGamepadScrollSynthesizer::synthesize(const elysia::input::RawInputFrame& input)
+{
+    if (input.active_device != elysia::input::InputDevice::Gamepad || input.device_switched_this_frame)
     {
         _scroll_accumulator = 0.0f;
         return std::nullopt;
     }
 
     const float normalized_x = normalize_axis(
-        input.state.axis_value(RawInputAxis::GamepadLeftX)
+        input.state.axis_value(elysia::input::RawInputAxis::GamepadLeftX)
     );
     const float normalized_y = normalize_axis(
-        input.state.axis_value(RawInputAxis::GamepadLeftY)
+        input.state.axis_value(elysia::input::RawInputAxis::GamepadLeftY)
     );
 
     if (normalized_y == 0.0f)
@@ -48,7 +50,7 @@ std::optional<UiInputEvent> UiGamepadScrollSynthesizer::synthesize(const RawInpu
 
     UiInputEvent scroll_event;
     scroll_event.type = UiInputEventType::MouseWheel;
-    scroll_event.device = InputDevice::Gamepad;
+    scroll_event.device = elysia::input::InputDevice::Gamepad;
     scroll_event.wheel_y = wheel_steps;
     return scroll_event;
 }
@@ -69,4 +71,6 @@ float UiGamepadScrollSynthesizer::normalize_axis(float axis_value) const
 
     const float normalized = (abs_value - deadzone) / (1.0f - deadzone);
     return axis_value < 0.0f ? -normalized : normalized;
+}
+
 }

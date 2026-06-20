@@ -6,6 +6,8 @@
 #include <memory>
 #include <string>
 
+namespace elysia::resources
+{
 struct SurfaceDeleter
 {
 	void operator()(SDL_Surface* surface) const;
@@ -35,3 +37,5 @@ public:
 	SurfaceLoadResult load_surface(const SurfaceLoadRequest& request) const;
 };
 
+
+}

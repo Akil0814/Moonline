@@ -2,6 +2,8 @@
 
 #include "input_translator.h"
 
+namespace elysia::input
+{
 class GamepadInputTranslator : public InputTranslator
 {
 public:
@@ -31,3 +33,5 @@ private:
     bool _left_trigger_pressed = false;
     bool _right_trigger_pressed = false;
 };
+
+}

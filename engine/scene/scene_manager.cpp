@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+namespace elysia::scene
+{
 SceneManager::~SceneManager()
 {
     shutdown();
@@ -23,8 +25,8 @@ void SceneManager::start(
 }
 
 void SceneManager::on_input(
-    const RawInputFrame& input,
-    const std::vector<RawInputEvent>& events
+    const elysia::input::RawInputFrame& input,
+    const std::vector<elysia::input::RawInputEvent>& events
 )
 {
     if (_current_scene)
@@ -226,4 +228,6 @@ void SceneManager::shutdown()
     _pending_request = SceneRequest{};
     _has_pending_request = false;
     _is_processing_request = false;
+}
+
 }

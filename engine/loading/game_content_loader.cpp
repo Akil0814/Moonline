@@ -14,6 +14,8 @@
 #include <iostream>
 #include <utility>
 
+namespace elysia::loading
+{
 namespace
 {
 constexpr std::size_t kMaxInFlightPrepareJobs = 16;
@@ -65,7 +67,7 @@ bool GameContentLoader::start(SDL_Renderer* renderer)
 	_renderer = renderer;
 	_state = GameContentLoaderState::PreparingRequests;
 
-	PathManager* path_manager = PathManager::instance();
+	elysia::io::PathManager* path_manager = elysia::io::PathManager::instance();
 	if (!path_manager->is_initialized())
 	{
 		fail("GameContentLoader start failed: path manager is not init.");
@@ -208,11 +210,11 @@ GameContentLoaderState GameContentLoader::state() const
 
 bool GameContentLoader::initialize_streaming_work()
 {
-	AtlasBuildPreparer atlas_build_preparer;
-	std::vector<AtlasFramePrepareTask> atlas_frame_tasks;
-	for (const AtlasBuildRequest& request : _load_plan.atlas_build_requests())
+	elysia::resources::AtlasBuildPreparer atlas_build_preparer;
+	std::vector<elysia::resources::AtlasFramePrepareTask> atlas_frame_tasks;
+	for (const elysia::resources::AtlasBuildRequest& request : _load_plan.atlas_build_requests())
 	{
-		std::vector<AtlasFramePrepareTask> expanded_tasks;
+		std::vector<elysia::resources::AtlasFramePrepareTask> expanded_tasks;
 		if (!atlas_build_preparer.expand_build_request(request, expanded_tasks))
 		{
 			fail("GameContentLoader start failed: atlas build request expansion failed.");
@@ -226,7 +228,7 @@ bool GameContentLoader::initialize_streaming_work()
 		);
 	}
 
-	ResourceManager* resource_manager = ResourceManager::instance();
+	elysia::resources::ResourceManager* resource_manager = elysia::resources::ResourceManager::instance();
 	if (!resource_manager->begin_atlas_builds(_load_plan.atlas_build_requests()))
 	{
 		fail("GameContentLoader start failed: atlas build initialization failed.");
@@ -293,8 +295,8 @@ void GameContentLoader::shutdown_worker_threads()
 
 void GameContentLoader::worker_loop()
 {
-	SurfaceLoader surface_loader;
-	AtlasBuildPreparer atlas_build_preparer;
+	elysia::resources::SurfaceLoader surface_loader;
+	elysia::resources::AtlasBuildPreparer atlas_build_preparer;
 
 	for (;;)
 	{
@@ -313,17 +315,17 @@ void GameContentLoader::worker_loop()
 			_prepare_jobs.pop_front();
 		}
 
-		if (std::holds_alternative<TextureLoadRequest>(job.payload))
+		if (std::holds_alternative<elysia::resources::TextureLoadRequest>(job.payload))
 		{
-			const TextureLoadRequest& texture_request =
-				std::get<TextureLoadRequest>(job.payload);
+			const elysia::resources::TextureLoadRequest& texture_request =
+				std::get<elysia::resources::TextureLoadRequest>(job.payload);
 
-			SurfaceLoadRequest surface_request;
+			elysia::resources::SurfaceLoadRequest surface_request;
 			surface_request._asset_key = texture_request.key;
 			surface_request._frame_path = texture_request.file_path;
 			surface_request._frame_index = 0;
 
-			SurfaceLoadResult surface_result =
+			elysia::resources::SurfaceLoadResult surface_result =
 				surface_loader.load_surface(surface_request);
 			{
 				std::lock_guard<std::mutex> lock(_completed_results_mutex);
@@ -332,9 +334,9 @@ void GameContentLoader::worker_loop()
 		}
 		else
 		{
-			AtlasFramePreparedResult prepared_result =
+			elysia::resources::AtlasFramePreparedResult prepared_result =
 				atlas_build_preparer.prepare_frame(
-					std::get<AtlasFramePrepareTask>(job.payload)
+					std::get<elysia::resources::AtlasFramePrepareTask>(job.payload)
 				);
 			{
 				std::lock_guard<std::mutex> lock(_completed_results_mutex);
@@ -424,7 +426,7 @@ bool GameContentLoader::commit_ready_streaming_results()
 	while (committed_texture_count < kTextureCommitBudgetPerUpdate
 		&& !_ready_texture_results.empty())
 	{
-		SurfaceLoadResult surface_result = std::move(_ready_texture_results.front());
+		elysia::resources::SurfaceLoadResult surface_result = std::move(_ready_texture_results.front());
 		_ready_texture_results.pop_front();
 		if (!commit_texture_result(surface_result))
 			return false;
@@ -436,7 +438,7 @@ bool GameContentLoader::commit_ready_streaming_results()
 	while (committed_atlas_count < kAtlasFrameCommitBudgetPerUpdate
 		&& !_ready_atlas_frame_results.empty())
 	{
-		AtlasFramePreparedResult prepared_result =
+		elysia::resources::AtlasFramePreparedResult prepared_result =
 			std::move(_ready_atlas_frame_results.front());
 		_ready_atlas_frame_results.pop_front();
 		if (!commit_atlas_frame_result(prepared_result))
@@ -448,7 +450,7 @@ bool GameContentLoader::commit_ready_streaming_results()
 	return true;
 }
 
-bool GameContentLoader::commit_texture_result(const SurfaceLoadResult& surface_result)
+bool GameContentLoader::commit_texture_result(const elysia::resources::SurfaceLoadResult& surface_result)
 {
 	if (!surface_result._success || !surface_result._surface)
 	{
@@ -456,8 +458,8 @@ bool GameContentLoader::commit_texture_result(const SurfaceLoadResult& surface_r
 		return false;
 	}
 
-	TextureLoader texture_loader;
-	TextureLoadResult texture_result =
+	elysia::resources::TextureLoader texture_loader;
+	elysia::resources::TextureLoadResult texture_result =
 		texture_loader.load_texture(_renderer, surface_result);
 	if (!texture_result._success || !texture_result._texture)
 	{
@@ -465,7 +467,7 @@ bool GameContentLoader::commit_texture_result(const SurfaceLoadResult& surface_r
 		return false;
 	}
 
-	ResourceManager* resource_manager = ResourceManager::instance();
+	elysia::resources::ResourceManager* resource_manager = elysia::resources::ResourceManager::instance();
 	if (!resource_manager->texture_manager().store_texture(
 		surface_result._asset_key,
 		std::move(texture_result._texture)))
@@ -480,7 +482,7 @@ bool GameContentLoader::commit_texture_result(const SurfaceLoadResult& surface_r
 }
 
 bool GameContentLoader::commit_atlas_frame_result(
-	const AtlasFramePreparedResult& prepared_result
+	const elysia::resources::AtlasFramePreparedResult& prepared_result
 )
 {
 	if (!prepared_result.surface_result._success || !prepared_result.surface_result._surface)
@@ -489,7 +491,7 @@ bool GameContentLoader::commit_atlas_frame_result(
 		return false;
 	}
 
-	if (!ResourceManager::instance()->commit_prepared_atlas_frame(
+	if (!elysia::resources::ResourceManager::instance()->commit_prepared_atlas_frame(
 		_renderer,
 		prepared_result))
 	{
@@ -531,13 +533,13 @@ bool GameContentLoader::is_streaming_phase_complete()
 		}
 	}
 
-	return ResourceManager::instance()->atlas_manager().in_progress_build_count() == 0;
+	return elysia::resources::ResourceManager::instance()->atlas_manager().in_progress_build_count() == 0;
 }
 
 bool GameContentLoader::load_fonts()
 {
-	ResourceManager* resource_manager = ResourceManager::instance();
-	for (const FontLoadRequest& request : _load_plan.font_requests())
+	elysia::resources::ResourceManager* resource_manager = elysia::resources::ResourceManager::instance();
+	for (const elysia::resources::FontLoadRequest& request : _load_plan.font_requests())
 	{
 		if (!resource_manager->load_font(request.key, request.file_path, request.point_size))
 		{
@@ -553,8 +555,8 @@ bool GameContentLoader::load_fonts()
 
 bool GameContentLoader::load_audio()
 {
-	ResourceManager* resource_manager = ResourceManager::instance();
-	for (const SoundLoadRequest& request : _load_plan.sound_requests())
+	elysia::resources::ResourceManager* resource_manager = elysia::resources::ResourceManager::instance();
+	for (const elysia::resources::SoundLoadRequest& request : _load_plan.sound_requests())
 	{
 		if (!resource_manager->audio_manager().load_sound(request.key, request.file_path))
 		{
@@ -565,7 +567,7 @@ bool GameContentLoader::load_audio()
 		++_completed_work_units;
 	}
 
-	for (const MusicLoadRequest& request : _load_plan.music_requests())
+	for (const elysia::resources::MusicLoadRequest& request : _load_plan.music_requests())
 	{
 		if (!resource_manager->audio_manager().load_music(request))
 		{
@@ -581,11 +583,11 @@ bool GameContentLoader::load_audio()
 
 bool GameContentLoader::register_animations()
 {
-	ResourceManager* resource_manager = ResourceManager::instance();
-	AnimationManager* animation_manager = AnimationManager::instance();
-	for (const AnimationBuildRequest& request : _load_plan.animation_build_requests())
+	elysia::resources::ResourceManager* resource_manager = elysia::resources::ResourceManager::instance();
+	elysia::animation::AnimationManager* animation_manager = elysia::animation::AnimationManager::instance();
+	for (const elysia::resources::AnimationBuildRequest& request : _load_plan.animation_build_requests())
 	{
-		const Atlas* atlas = resource_manager->find_atlas(request.atlas_key);
+		const elysia::resources::Atlas* atlas = resource_manager->find_atlas(request.atlas_key);
 		if (!animation_manager->register_animation(request, atlas))
 		{
 			fail("GameContentLoader animation registration failed.");
@@ -600,8 +602,8 @@ bool GameContentLoader::register_animations()
 
 bool GameContentLoader::register_effects()
 {
-	EffectManager* effect_manager = EffectManager::instance();
-	for (const EffectBuildRequest& request : _load_plan.effect_build_requests())
+	elysia::animation::EffectManager* effect_manager = elysia::animation::EffectManager::instance();
+	for (const elysia::resources::EffectBuildRequest& request : _load_plan.effect_build_requests())
 	{
 		if (!effect_manager->register_effect(request))
 		{
@@ -643,3 +645,5 @@ void GameContentLoader::fail(std::string message)
 	std::cout << _error_message << std::endl;
 }
 
+
+}

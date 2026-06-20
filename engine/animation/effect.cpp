@@ -1,16 +1,18 @@
 #include "effect.h"
 #include "animation_manager.h"
 
+namespace elysia::animation
+{
 Effect::Effect(std::string effect_key, std::string animation_key, std::unique_ptr<Animation> animation) 
-    : GameObject(DepthLayer::EffectFront), _effect_key(effect_key), _animation_key(animation_key), _animation(std::move(animation))
+    : elysia::core::GameObject(elysia::core::DepthLayer::EffectFront), _effect_key(effect_key), _animation_key(animation_key), _animation(std::move(animation))
 {}
 
-void Effect::submit_render_commands(std::vector<RenderCommand>& out_commands) const
+void Effect::submit_render_commands(std::vector<elysia::core::RenderCommand>& out_commands) const
 {
 	if (!_animation)
 		return;
 
-	RenderCommand render_command;
+	elysia::core::RenderCommand render_command;
 	if (_animation->build_render_command(world_rect(), _angle_degrees, _flip, render_command))
 		out_commands.push_back(render_command);
 }
@@ -19,7 +21,7 @@ void Effect::update(double delta)
 {
 	_animation->update(delta);
 	if (_animation->is_finished())
-		GameObject::destroy();
+		elysia::core::GameObject::destroy();
 }
 
 std::unique_ptr<Effect> Effect::clone() const
@@ -45,7 +47,9 @@ void Effect::set_angle(double angle_degrees)
 	_angle_degrees = angle_degrees;
 }
 
-void Effect::set_flip(SpriteFlip flip)
+void Effect::set_flip(elysia::core::SpriteFlip flip)
 {
 	_flip = flip;
+}
+
 }

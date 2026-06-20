@@ -4,6 +4,8 @@
 #include <filesystem>
 #include <string>
 
+namespace elysia::io
+{
 class CharacterConfigLoader
 {
 public:
@@ -19,3 +21,5 @@ public:
 		CharacterConfig& config
 	) const;
 };
+
+}

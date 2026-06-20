@@ -4,29 +4,29 @@
 
 #include <algorithm>
 
-UiLayout::UiLayout(Vector2 position, Vector2 size, int order)
+UiLayout::UiLayout(elysia::core::Vector2 position, elysia::core::Vector2 size, int order)
     : UiElement(position, size, order)
 {
 }
 
-void UiLayout::set_world_position(const Vector2& position)
+void UiLayout::set_world_position(const elysia::core::Vector2& position)
 {
-    GameObject::set_world_position(position);
+    elysia::core::GameObject::set_world_position(position);
     mark_dirty();
 }
 
-void UiLayout::set_size(const Vector2& size)
+void UiLayout::set_size(const elysia::core::Vector2& size)
 {
-    GameObject::set_size(size);
+    elysia::core::GameObject::set_size(size);
     mark_dirty();
 }
 
-void UiLayout::add_child(const std::shared_ptr<GameObject>& child)
+void UiLayout::add_child(const std::shared_ptr<elysia::core::GameObject>& child)
 {
     add_child(child, UiLayoutChildOptions{});
 }
 
-void UiLayout::add_child(const std::shared_ptr<GameObject>& child, const UiLayoutChildOptions& options)
+void UiLayout::add_child(const std::shared_ptr<elysia::core::GameObject>& child, const UiLayoutChildOptions& options)
 {
     if (!child)
     {
@@ -41,7 +41,7 @@ void UiLayout::add_child(const std::shared_ptr<GameObject>& child, const UiLayou
     mark_dirty();
 }
 
-bool UiLayout::remove_child(const GameObject* child)
+bool UiLayout::remove_child(const elysia::core::GameObject* child)
 {
     const size_t original_size = _children.size();
 
@@ -69,7 +69,7 @@ void UiLayout::clear_children()
     mark_dirty();
 }
 
-bool UiLayout::set_child_options(const GameObject* child, const UiLayoutChildOptions& options)
+bool UiLayout::set_child_options(const elysia::core::GameObject* child, const UiLayoutChildOptions& options)
 {
     for (LayoutChild& layout_child : _children)
     {
@@ -86,7 +86,7 @@ bool UiLayout::set_child_options(const GameObject* child, const UiLayoutChildOpt
     return false;
 }
 
-bool UiLayout::try_get_child_options(const GameObject* child, UiLayoutChildOptions& out_options) const
+bool UiLayout::try_get_child_options(const elysia::core::GameObject* child, UiLayoutChildOptions& out_options) const
 {
     for (const LayoutChild& layout_child : _children)
     {
@@ -189,37 +189,37 @@ const UiLayoutTransform& UiLayout::transform() const
     return _transform;
 }
 
-void UiLayout::set_transform_translation(const Vector2& translation)
+void UiLayout::set_transform_translation(const elysia::core::Vector2& translation)
 {
     _transform.translation = translation;
     mark_dirty();
 }
 
-const Vector2& UiLayout::transform_translation() const
+const elysia::core::Vector2& UiLayout::transform_translation() const
 {
     return _transform.translation;
 }
 
-void UiLayout::set_transform_scale(const Vector2& scale)
+void UiLayout::set_transform_scale(const elysia::core::Vector2& scale)
 {
     _transform.scale.x = std::max(0.0f, scale.x);
     _transform.scale.y = std::max(0.0f, scale.y);
     mark_dirty();
 }
 
-const Vector2& UiLayout::transform_scale() const
+const elysia::core::Vector2& UiLayout::transform_scale() const
 {
     return _transform.scale;
 }
 
-void UiLayout::set_content_offset(const Vector2& offset)
+void UiLayout::set_content_offset(const elysia::core::Vector2& offset)
 {
     _content_offset.x = std::max(0.0f, offset.x);
     _content_offset.y = std::max(0.0f, offset.y);
     mark_dirty();
 }
 
-const Vector2& UiLayout::content_offset() const
+const elysia::core::Vector2& UiLayout::content_offset() const
 {
     return _content_offset;
 }
@@ -241,18 +241,18 @@ bool UiLayout::auto_sizes_height() const
     return _auto_height;
 }
 
-Vector2 UiLayout::content_view_size() const
+elysia::core::Vector2 UiLayout::content_view_size() const
 {
     return available_content_area();
 }
 
-Vector2 UiLayout::measure_content_size()
+elysia::core::Vector2 UiLayout::measure_content_size()
 {
     sync_child_sizes();
     return content_size(available_content_area());
 }
 
-bool UiLayout::try_get_child_rect(const GameObject* child, SDL_Rect& out_rect) const
+bool UiLayout::try_get_child_rect(const elysia::core::GameObject* child, SDL_Rect& out_rect) const
 {
     for (const LayoutChild& layout_child : _children)
     {
@@ -291,7 +291,7 @@ void UiLayout::on_render(SDL_Renderer* renderer)
     ui_child_object_utils::render_children(child_objects(), renderer);
 }
 
-void UiLayout::on_input(const InputSnapshot& input)
+void UiLayout::on_input(const elysia::input::InputSnapshot& input)
 {
     refresh_theme_if_needed();
     remove_destroyed_children();
@@ -299,7 +299,7 @@ void UiLayout::on_input(const InputSnapshot& input)
     ui_child_object_utils::input_children(child_objects(), input);
 }
 
-void UiLayout::on_input_event(const InputEvent& event)
+void UiLayout::on_input_event(const elysia::input::InputEvent& event)
 {
     refresh_theme_if_needed();
     remove_destroyed_children();
@@ -321,9 +321,9 @@ void UiLayout::apply_theme(const UiTheme& theme)
     (void)theme;
 }
 
-std::vector<std::shared_ptr<GameObject>> UiLayout::child_objects() const
+std::vector<std::shared_ptr<elysia::core::GameObject>> UiLayout::child_objects() const
 {
-    std::vector<std::shared_ptr<GameObject>> objects;
+    std::vector<std::shared_ptr<elysia::core::GameObject>> objects;
     objects.reserve(_children.size());
     for (const LayoutChild& child : _children)
     {
@@ -347,7 +347,7 @@ void UiLayout::sync_child_sizes()
             continue;
         }
 
-        const Vector2 current_size = child._object->size();
+        const elysia::core::Vector2 current_size = child._object->size();
         if (!current_size.nearly_equals(child._applied_size))
         {
             child._base_size = current_size;
@@ -383,11 +383,11 @@ void UiLayout::apply_layout()
 
     sync_child_sizes();
 
-    const Vector2 available_area_before_auto_size = available_content_area();
-    const Vector2 content_size_before_auto_size = content_size(available_area_before_auto_size);
+    const elysia::core::Vector2 available_area_before_auto_size = available_content_area();
+    const elysia::core::Vector2 content_size_before_auto_size = content_size(available_area_before_auto_size);
     if (_auto_width || _auto_height)
     {
-        Vector2 layout_size = size();
+        elysia::core::Vector2 layout_size = size();
         if (_auto_width)
         {
             layout_size.x = content_size_before_auto_size.x + _padding.left + _padding.right;
@@ -398,12 +398,12 @@ void UiLayout::apply_layout()
             layout_size.y = content_size_before_auto_size.y + _padding.top + _padding.bottom;
         }
 
-        GameObject::set_size(layout_size);
+        elysia::core::GameObject::set_size(layout_size);
     }
 
-    const Vector2 available_area = available_content_area();
-    const Vector2 layout_content_size = content_size(available_area);
-    const Vector2 start = content_origin(layout_content_size);
+    const elysia::core::Vector2 available_area = available_content_area();
+    const elysia::core::Vector2 layout_content_size = content_size(available_area);
+    const elysia::core::Vector2 start = content_origin(layout_content_size);
     const float spacing_x = _spacing * _transform.scale.x;
     const float spacing_y = _spacing * _transform.scale.y;
 
@@ -415,13 +415,13 @@ void UiLayout::apply_layout()
             continue;
         }
 
-        const Vector2 child_size = child_layout_size(child, available_area);
-        const Vector2 child_outer_size = UiLayout::child_outer_size(child, available_area);
+        const elysia::core::Vector2 child_size = child_layout_size(child, available_area);
+        const elysia::core::Vector2 child_outer_size = UiLayout::child_outer_size(child, available_area);
         const UiLayoutMargin& margin = child._options._margin;
         const UiLayoutAlign align = child._options._use_custom_cross_align
             ? child._options._cross_align
             : _cross_align;
-        Vector2 child_world_position = start;
+        elysia::core::Vector2 child_world_position = start;
 
         if (_direction == UiLayoutDirection::Horizontal)
         {
@@ -453,25 +453,25 @@ void UiLayout::apply_layout()
     _layout_dirty = false;
 }
 
-Vector2 UiLayout::available_content_area() const
+elysia::core::Vector2 UiLayout::available_content_area() const
 {
-    const Vector2 layout_size = size();
+    const elysia::core::Vector2 layout_size = size();
     return {
         std::max(0.0f, layout_size.x - _padding.left - _padding.right),
         std::max(0.0f, layout_size.y - _padding.top - _padding.bottom)
     };
 }
 
-Vector2 UiLayout::child_layout_size(
+elysia::core::Vector2 UiLayout::child_layout_size(
     const LayoutChild& child,
-    const Vector2& available_content_area
+    const elysia::core::Vector2& available_content_area
 ) const
 {
-    Vector2 base_size = child._options._use_size_override
+    elysia::core::Vector2 base_size = child._options._use_size_override
         ? child._options._size_override
         : child._base_size;
 
-    Vector2 child_size{
+    elysia::core::Vector2 child_size{
         std::max(0.0f, base_size.x * _transform.scale.x),
         std::max(0.0f, base_size.y * _transform.scale.y)
     };
@@ -498,12 +498,12 @@ Vector2 UiLayout::child_layout_size(
     return child_size;
 }
 
-Vector2 UiLayout::child_outer_size(
+elysia::core::Vector2 UiLayout::child_outer_size(
     const LayoutChild& child,
-    const Vector2& available_content_area
+    const elysia::core::Vector2& available_content_area
 ) const
 {
-    const Vector2 child_size = child_layout_size(child, available_content_area);
+    const elysia::core::Vector2 child_size = child_layout_size(child, available_content_area);
     const UiLayoutMargin& margin = child._options._margin;
     return {
         child_size.x + margin.left + margin.right,
@@ -511,11 +511,11 @@ Vector2 UiLayout::child_outer_size(
     };
 }
 
-Vector2 UiLayout::content_size(const Vector2& available_content_area) const
+elysia::core::Vector2 UiLayout::content_size(const elysia::core::Vector2& available_content_area) const
 {
     if (_children.empty())
     {
-        return Vector2::zero();
+        return elysia::core::Vector2::zero();
     }
 
     float width = 0.0f;
@@ -530,7 +530,7 @@ Vector2 UiLayout::content_size(const Vector2& available_content_area) const
         }
 
         ++valid_child_count;
-        const Vector2 child_size = child_outer_size(child, available_content_area);
+        const elysia::core::Vector2 child_size = child_outer_size(child, available_content_area);
         if (_direction == UiLayoutDirection::Horizontal)
         {
             width += child_size.x;
@@ -559,10 +559,10 @@ Vector2 UiLayout::content_size(const Vector2& available_content_area) const
     return { width, height };
 }
 
-Vector2 UiLayout::content_origin(const Vector2& content_size) const
+elysia::core::Vector2 UiLayout::content_origin(const elysia::core::Vector2& content_size) const
 {
-    const Vector2 layout_position = position();
-    const Vector2 layout_size = size();
+    const elysia::core::Vector2 layout_position = position();
+    const elysia::core::Vector2 layout_size = size();
 
     const float available_x = layout_position.x + _padding.left + _transform.translation.x;
     const float available_y = layout_position.y + _padding.top + _transform.translation.y;
@@ -637,3 +637,7 @@ float UiLayout::cross_axis_offset(
 
     return 0.0f;
 }*/
+namespace elysia::ui
+{
+
+}

@@ -2,6 +2,8 @@
 
 #include "raw_input_state.h"
 
+namespace elysia::input
+{
 struct RawInputFrame
 {
     RawInputState state;
@@ -12,3 +14,5 @@ struct RawInputFrame
     int mouse_delta_x = 0;
     int mouse_delta_y = 0;
 };
+
+}

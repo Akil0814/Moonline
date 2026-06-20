@@ -17,9 +17,9 @@ public:
 
 	void on_update(double delta)override;
 	void on_render(SDL_Renderer* renderer)override;
-	void on_input(const RawInputFrame& input, const std::vector<RawInputEvent>& events)override;
+	void on_input(const elysia::input::RawInputFrame& input, const std::vector<elysia::input::RawInputEvent>& events)override;
 
-	void on_enter(const ScenePayload& payload) override;
+	void on_enter(const elysia::scene::ScenePayload& payload) override;
 	void on_exit() override;
 	void reset() override;
 
@@ -27,7 +27,7 @@ private:
 	struct MenuTextEntry
 	{
 		std::string key;
-		LocalizedTextStyle style;
+		elysia::localization::LocalizedTextStyle style;
 		SDL_Texture* texture = nullptr;
 		SDL_Rect destination{ 0, 0, 0, 0 };
 	};

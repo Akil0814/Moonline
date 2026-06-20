@@ -1,5 +1,7 @@
 #include "../geometry/vector2.h"
 
+namespace elysia::core
+{
 class Movable
 {
 public:
@@ -12,3 +14,4 @@ public:
 {
     _world_rect.set_position(_world_rect.position() + offset);
 }*/
+}

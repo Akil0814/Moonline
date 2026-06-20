@@ -3,6 +3,8 @@
 #include "scene_key.h"
 #include "scene_payload.h"
 
+namespace elysia::scene
+{
 enum class SceneRequestType
 {
     None,
@@ -25,3 +27,5 @@ struct SceneRequest
 
     ScenePayload payload{};
 };
+
+}

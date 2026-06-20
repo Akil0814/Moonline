@@ -9,6 +9,8 @@
 #include <string_view>
 #include <vector>
 
+namespace elysia::bootstrap
+{
 class StartupPreloadLoader
 {
 public:
@@ -23,8 +25,10 @@ private:
     bool load_textures(SDL_Renderer* renderer);
 
 private:
-    JsonLoader _manifest_loader;
+    elysia::io::JsonLoader _manifest_loader;
     std::filesystem::path _manifest_path;
     std::vector<std::string> _preloaded_texture_keys;
     bool _is_loaded = false;
 };
+
+}

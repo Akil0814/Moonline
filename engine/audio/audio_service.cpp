@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <iostream>
 
+namespace elysia::audio
+{
 bool AudioService::init(const AudioSettings& settings)
 {
     _settings.master_volume = clamp_volume(settings.master_volume);
@@ -36,7 +38,7 @@ bool AudioService::play_sound(const std::string_view& key, int loops)
         return false;
     }
 
-    Mix_Chunk* sound = ResourceManager::instance()->find_sound(key);
+    Mix_Chunk* sound = elysia::resources::ResourceManager::instance()->find_sound(key);
     if (!sound)
     {
         std::cout << "Play sound failed: sound does not exist: " << key << std::endl;
@@ -61,7 +63,7 @@ bool AudioService::play_music(const std::string_view& key, int loops)
         return false;
     }
 
-    Mix_Music* music = ResourceManager::instance()->find_music(key);
+    Mix_Music* music = elysia::resources::ResourceManager::instance()->find_music(key);
     if (!music)
     {
         std::cout << "Play music failed: music does not exist: " << key << std::endl;
@@ -135,4 +137,6 @@ int AudioService::clamp_volume(int volume)
 int AudioService::to_mix_volume(int volume)
 {
     return (clamp_volume(volume) * MIX_MAX_VOLUME) / 100;
+}
+
 }

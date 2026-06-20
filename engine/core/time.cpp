@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+namespace elysia::core
+{
 void Time::begin_frame(double raw_delta_seconds)
 {
     _raw_delta_seconds = raw_delta_seconds > 0.0 ? raw_delta_seconds : 0.0;
@@ -54,4 +56,6 @@ double Time::scaled_total_time() const
 std::size_t Time::frame_count() const
 {
     return _frame_count;
+}
+
 }

@@ -10,6 +10,8 @@
 #include <string_view>
 #include <unordered_map>
 
+namespace elysia::localization
+{
 struct SdlTextureDeleter
 {
 	void operator()(SDL_Texture* texture) const;
@@ -22,7 +24,7 @@ struct TextTextureCacheKey
 	std::string language;
 	std::string translation_key;
 	int point_size = 0;
-	Color color{};
+	elysia::core::Color color{};
 	int wrap_width = 0;
 
 	bool operator==(const TextTextureCacheKey& other) const;
@@ -50,3 +52,5 @@ public:
 private:
 	std::unordered_map<TextTextureCacheKey, CachedTexturePtr, TextTextureCacheKeyHash> _textures;
 };
+
+}

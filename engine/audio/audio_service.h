@@ -5,9 +5,11 @@
 
 #include <string_view>
 
-class AudioService : public Singleton<AudioService>
+namespace elysia::audio
 {
-    friend Singleton<AudioService>;
+class AudioService : public elysia::tools::Singleton<AudioService>
+{
+    friend elysia::tools::Singleton<AudioService>;
 
 public:
     bool init(const AudioSettings& settings);
@@ -33,3 +35,5 @@ private:
     AudioSettings _settings{};
     bool _initialized = false;
 };
+
+}

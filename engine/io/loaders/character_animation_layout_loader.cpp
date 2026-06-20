@@ -5,6 +5,8 @@
 #include <iostream>
 #include <utility>
 
+namespace elysia::io
+{
 bool CharacterAnimationLayoutLoader::load(
 	const std::filesystem::path& layout_path,
 	CharacterAnimationLayout& layout
@@ -88,4 +90,6 @@ bool CharacterAnimationLayoutLoader::load(
 
 	layout = std::move(parsed_layout);
 	return true;
+}
+
 }

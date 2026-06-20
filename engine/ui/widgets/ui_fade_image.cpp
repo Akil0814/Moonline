@@ -1,12 +1,14 @@
 #include "ui_fade_image.h"
 
-UiFadeImage::UiFadeImage(SDL_Texture* texture, Vector2 pos, Vector2 size,int order)
+namespace elysia::ui
+{
+UiFadeImage::UiFadeImage(SDL_Texture* texture, elysia::core::Vector2 pos, elysia::core::Vector2 size,int order)
 	: UiImage(texture, pos, size, order)
 {
     _timer.set_one_shot(true);
 }
 
-UiFadeImage::UiFadeImage(SDL_Texture* texture, Rect rect, int order)
+UiFadeImage::UiFadeImage(SDL_Texture* texture, elysia::core::Rect rect, int order)
     : UiImage(texture, rect, order)
 {
     _timer.set_one_shot(true);
@@ -14,8 +16,8 @@ UiFadeImage::UiFadeImage(SDL_Texture* texture, Rect rect, int order)
 
 UiFadeImage::UiFadeImage(
     SDL_Texture* texture,
-    Vector2 center,
-    Vector2 image_size,
+    elysia::core::Vector2 center,
+    elysia::core::Vector2 image_size,
     UiImageCenterTag tag,
     int order
 )
@@ -26,9 +28,9 @@ UiFadeImage::UiFadeImage(
 
 UiFadeImage::UiFadeImage(
     SDL_Texture* texture,
-    Vector2 center,
-    Vector2 source_size,
-    Vector2 render_size,
+    elysia::core::Vector2 center,
+    elysia::core::Vector2 source_size,
+    elysia::core::Vector2 render_size,
     UiImageCenterTag tag,
     int order
 )
@@ -206,4 +208,6 @@ void UiFadeImage::start_hold()
 
     _state = FadeState::Holding;
     _timer.restart();
+}
+
 }

@@ -4,6 +4,8 @@
 #include <filesystem>
 #include <string>
 
+namespace elysia::resources
+{
 struct TextureLoadRequest
 {
 	std::string key;
@@ -57,3 +59,5 @@ struct EffectBuildRequest
 	std::string effect_key;
 	std::string animation_key;
 };
+
+}

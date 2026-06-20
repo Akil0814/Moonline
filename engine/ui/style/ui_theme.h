@@ -29,3 +29,7 @@ struct UiTheme
 };
 
 UiTheme make_loading_blue_theme();*/
+namespace elysia::ui
+{
+
+}

@@ -6,10 +6,12 @@
 
 #include <optional>
 
+namespace elysia::ui
+{
 class UiGamepadScrollSynthesizer
 {
 public:
-    std::optional<UiInputEvent> synthesize(const RawInputFrame& input);
+    std::optional<UiInputEvent> synthesize(const elysia::input::RawInputFrame& input);
     void reset();
 
 private:
@@ -18,3 +20,5 @@ private:
 private:
     float _scroll_accumulator = 0.0f;
 };
+
+}

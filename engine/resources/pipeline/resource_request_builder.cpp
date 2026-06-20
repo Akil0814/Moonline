@@ -8,6 +8,8 @@
 #include <utility>
 #include <vector>
 
+namespace elysia::resources
+{
 namespace
 {
 std::filesystem::path resolve_segment_path(
@@ -106,13 +108,13 @@ bool append_directory_texture_requests(
 }
 
 bool ResourceRequestBuilder::append_font_requests(
-	const FontManifest& font_manifest,
+	const elysia::io::FontManifest& font_manifest,
 	std::vector<FontLoadRequest>& font_load_requests
 ) const
 {
-	const std::filesystem::path font_root = PathManager::instance()->fonts();
+	const std::filesystem::path font_root = elysia::io::PathManager::instance()->fonts();
 
-	for (const FontManifestEntry& entry : font_manifest.fonts)
+	for (const elysia::io::FontManifestEntry& entry : font_manifest.fonts)
 	{
 		if (entry.key.empty())
 		{
@@ -153,14 +155,14 @@ bool ResourceRequestBuilder::append_font_requests(
 }
 
 bool ResourceRequestBuilder::append_audio_requests(
-	const AudioManifest& audio_manifest,
+	const elysia::io::AudioManifest& audio_manifest,
 	std::vector<SoundLoadRequest>& sound_load_requests,
 	std::vector<MusicLoadRequest>& music_load_requests
 ) const
 {
-	const std::filesystem::path audio_root = PathManager::instance()->audio();
+	const std::filesystem::path audio_root = elysia::io::PathManager::instance()->audio();
 
-	for (const AudioManifestEntry& entry : audio_manifest.sounds)
+	for (const elysia::io::AudioManifestEntry& entry : audio_manifest.sounds)
 	{
 		if (entry.key.empty())
 		{
@@ -189,7 +191,7 @@ bool ResourceRequestBuilder::append_audio_requests(
 		sound_load_requests.push_back(std::move(request));
 	}
 
-	for (const AudioManifestEntry& entry : audio_manifest.music)
+	for (const elysia::io::AudioManifestEntry& entry : audio_manifest.music)
 	{
 		if (entry.key.empty())
 		{
@@ -222,7 +224,7 @@ bool ResourceRequestBuilder::append_audio_requests(
 }
 
 bool ResourceRequestBuilder::append_texture_manifest_requests(
-	const TextureManifest& texture_manifest,
+	const elysia::io::TextureManifest& texture_manifest,
 	const std::string& key_prefix,
 	const std::filesystem::path& texture_root,
 	std::vector<TextureLoadRequest>& texture_load_requests
@@ -241,7 +243,7 @@ bool ResourceRequestBuilder::append_texture_manifest_requests(
 		return false;
 	}
 
-	for (const TextureManifestEntry& entry : texture_manifest.textures)
+	for (const elysia::io::TextureManifestEntry& entry : texture_manifest.textures)
 	{
 		const std::string key = key_prefix + "." + entry.key;
 		const std::filesystem::path file_path = (texture_root / entry.file_path).lexically_normal();
@@ -259,8 +261,8 @@ bool ResourceRequestBuilder::append_texture_manifest_requests(
 }
 
 bool ResourceRequestBuilder::append_character_texture_requests(
-	const CharacterConfig& character_config,
-	const CharacterTextureLayout& texture_layout,
+	const elysia::io::CharacterConfig& character_config,
+	const elysia::io::CharacterTextureLayout& texture_layout,
 	std::vector<TextureLoadRequest>& texture_load_requests
 ) const
 {
@@ -277,7 +279,7 @@ bool ResourceRequestBuilder::append_character_texture_requests(
 		return false;
 	}
 
-	for (const CharacterTextureLayoutEntry& entry : texture_layout.textures)
+	for (const elysia::io::CharacterTextureLayoutEntry& entry : texture_layout.textures)
 	{
 		const std::string base_key = character_config.id + "." + entry.key;
 		const std::filesystem::path resolved_path =
@@ -320,8 +322,8 @@ bool ResourceRequestBuilder::append_character_texture_requests(
 }
 
 bool ResourceRequestBuilder::append_character_audio_requests(
-	const CharacterConfig& character_config,
-	const CharacterAudioLayout& audio_layout,
+	const elysia::io::CharacterConfig& character_config,
+	const elysia::io::CharacterAudioLayout& audio_layout,
 	std::vector<SoundLoadRequest>& sound_load_requests
 ) const
 {
@@ -338,8 +340,8 @@ bool ResourceRequestBuilder::append_character_audio_requests(
 		return false;
 	}
 
-	const std::filesystem::path audio_root = PathManager::instance()->audio() / "character" / character_config.asset_key;
-	for (const CharacterAudioLayoutEntry& entry : audio_layout.sounds)
+	const std::filesystem::path audio_root = elysia::io::PathManager::instance()->audio() / "character" / character_config.asset_key;
+	for (const elysia::io::CharacterAudioLayoutEntry& entry : audio_layout.sounds)
 	{
 		if (entry.key.empty())
 		{
@@ -371,8 +373,8 @@ bool ResourceRequestBuilder::append_character_audio_requests(
 	return true;
 }
 bool ResourceRequestBuilder::append_character_animation_requests(
-	const CharacterConfig& character_config,
-	const AnimationConfig& animation_config,
+	const elysia::io::CharacterConfig& character_config,
+	const elysia::io::AnimationConfig& animation_config,
 	std::vector<AtlasBuildRequest>& atlas_build_requests,
 	std::vector<AnimationBuildRequest>& animation_build_requests
 ) const
@@ -383,7 +385,7 @@ bool ResourceRequestBuilder::append_character_animation_requests(
 		return false;
 	}
 
-	for (const AnimationClipConfig& clip_config : animation_config.clips)
+	for (const elysia::io::AnimationClipConfig& clip_config : animation_config.clips)
 	{
 		if (clip_config.animation_name.empty())
 		{
@@ -433,9 +435,9 @@ bool ResourceRequestBuilder::append_character_animation_requests(
 }
 
 bool ResourceRequestBuilder::append_character_effect_requests(
-	const CharacterConfig& character_config,
-	const AnimationConfig& animation_config,
-	const CharacterEffectLayout& effect_layout,
+	const elysia::io::CharacterConfig& character_config,
+	const elysia::io::AnimationConfig& animation_config,
+	const elysia::io::CharacterEffectLayout& effect_layout,
 	std::vector<AtlasBuildRequest>& atlas_build_requests,
 	std::vector<AnimationBuildRequest>& animation_build_requests,
 	std::vector<EffectBuildRequest>& effect_build_requests
@@ -447,9 +449,9 @@ bool ResourceRequestBuilder::append_character_effect_requests(
 		return false;
 	}
 
-	for (const AnimationClipConfig& clip_config : animation_config.clips)
+	for (const elysia::io::AnimationClipConfig& clip_config : animation_config.clips)
 	{
-		std::unordered_map<std::string, CharacterEffectLayoutEntry>::const_iterator effect_iterator =
+		std::unordered_map<std::string, elysia::io::CharacterEffectLayoutEntry>::const_iterator effect_iterator =
 			effect_layout.effects.find(clip_config.animation_name);
 		if (effect_iterator == effect_layout.effects.end())
 			continue;
@@ -461,9 +463,9 @@ bool ResourceRequestBuilder::append_character_effect_requests(
 			return false;
 		}
 
-		const CharacterEffectLayoutEntry& effect_entry = effect_iterator->second;
+		const elysia::io::CharacterEffectLayoutEntry& effect_entry = effect_iterator->second;
 		std::filesystem::path effect_relative_path;
-		CharacterEffectPlaybackConfig playback_config;
+		elysia::io::CharacterEffectPlaybackConfig playback_config;
 
 		if (clip_config.is_segment)
 		{
@@ -546,3 +548,5 @@ bool ResourceRequestBuilder::append_character_effect_requests(
 
 
 
+
+}

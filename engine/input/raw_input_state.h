@@ -5,6 +5,8 @@
 #include <array>
 #include <cstddef>
 
+namespace elysia::input
+{
 class RawInputState
 {
 public:
@@ -108,3 +110,5 @@ private:
     std::array<bool, static_cast<std::size_t>(RawInputControl::Count)> _previous{};
     std::array<float, static_cast<std::size_t>(RawInputAxis::Count)> _axes{};
 };
+
+}

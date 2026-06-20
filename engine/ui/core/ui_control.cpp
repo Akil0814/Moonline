@@ -1,6 +1,8 @@
 #include "ui_control.h"
 
-UiControl::UiControl(Vector2 position, Vector2 size, int order)
+namespace elysia::ui
+{
+UiControl::UiControl(elysia::core::Vector2 position, elysia::core::Vector2 size, int order)
     : UiElement(position, size, order)
 {
 }
@@ -34,4 +36,6 @@ void UiControl::set_focused(bool focused)
 bool UiControl::is_focused() const
 {
     return _is_focused;
+}
+
 }

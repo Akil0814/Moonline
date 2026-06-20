@@ -4,7 +4,7 @@
 
 namespace AppSceneKeys
 {
-	inline constexpr SceneKey StartupLoading = 1;
-	inline constexpr SceneKey MainMenu = 2;
-	inline constexpr SceneKey Game = 3;
+	inline constexpr elysia::scene::SceneKey StartupLoading = 1;
+	inline constexpr elysia::scene::SceneKey MainMenu = 2;
+	inline constexpr elysia::scene::SceneKey Game = 3;
 }

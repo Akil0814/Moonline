@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+namespace elysia::core
+{
 struct Color
 {
     std::uint8_t r = 255;
@@ -26,3 +28,5 @@ struct Color
 
     [[nodiscard]] constexpr bool operator==(const Color& other) const noexcept = default;
 };
+
+}

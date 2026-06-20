@@ -4,6 +4,8 @@
 
 #include <vector>
 
+namespace elysia::input
+{
 class ControllerManager
 {
 public:
@@ -30,3 +32,5 @@ private:
     std::vector<SDL_GameController*> _controllers;
     bool _is_initialized = false;
 };
+
+}

@@ -1,5 +1,7 @@
 #include "../geometry/rect.h"
 
+namespace elysia::core
+{
 class Collidable
 {
 public:
@@ -12,3 +14,4 @@ public:
         return false;
     }
 };
+}

@@ -5,13 +5,15 @@
 
 #include <algorithm>
 
-UiBar::UiBar(const Rect& rect, int order) noexcept
+namespace elysia::ui
+{
+UiBar::UiBar(const elysia::core::Rect& rect, int order) noexcept
     : UiElement(rect, order)
 {
     set_use_theme(false);
 }
 
-UiBar::UiBar(const Vector2& position, const Vector2& size, int order) noexcept
+UiBar::UiBar(const elysia::core::Vector2& position, const elysia::core::Vector2& size, int order) noexcept
     : UiElement(position, size, order)
 {
     set_use_theme(false);
@@ -25,9 +27,9 @@ void UiBar::reset() noexcept
     _min_value = 0.0f;
     _max_value = 1.0f;
     _value = 0.0f;
-    _background_color = colors::loading_blue_bar_background;
-    _fill_color = colors::loading_blue_bar_fill;
-    _border_color = colors::black;
+    _background_color = elysia::core::colors::loading_blue_bar_background;
+    _fill_color = elysia::core::colors::loading_blue_bar_fill;
+    _border_color = elysia::core::colors::black;
     _fill_direction = BarFillDirection::LeftToRight;
     _draw_border = false;
     _padding = 0;
@@ -82,32 +84,32 @@ float UiBar::ratio() const
     return (_value - _min_value) / range;
 }
 
-void UiBar::set_background_color(Color color)
+void UiBar::set_background_color(elysia::core::Color color)
 {
     _background_color = color;
 }
 
-Color UiBar::background_color() const
+elysia::core::Color UiBar::background_color() const
 {
     return _background_color;
 }
 
-void UiBar::set_fill_color(Color color)
+void UiBar::set_fill_color(elysia::core::Color color)
 {
     _fill_color = color;
 }
 
-Color UiBar::fill_color() const
+elysia::core::Color UiBar::fill_color() const
 {
     return _fill_color;
 }
 
-void UiBar::set_border_color(Color color)
+void UiBar::set_border_color(elysia::core::Color color)
 {
     _border_color = color;
 }
 
-Color UiBar::border_color() const
+elysia::core::Color UiBar::border_color() const
 {
     return _border_color;
 }
@@ -142,34 +144,34 @@ int UiBar::padding() const
     return _padding;
 }
 
-void UiBar::submit_ui_render_commands(std::vector<UiRenderCommand>& out_commands) const
+void UiBar::submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const
 {
     if (!is_visible())
     {
         return;
     }
 
-    const Rect& bar_rect = screen_rect();
+    const elysia::core::Rect& bar_rect = screen_rect();
     if (bar_rect.is_empty())
     {
         return;
     }
 
-    out_commands.push_back(make_ui_fill_rect_command(bar_rect, _background_color));
+    out_commands.push_back(elysia::core::make_ui_fill_rect_command(bar_rect, _background_color));
 
-    const Rect fill = fill_rect(bar_rect);
+    const elysia::core::Rect fill = fill_rect(bar_rect);
     if (!fill.is_empty())
     {
-        out_commands.push_back(make_ui_fill_rect_command(fill, _fill_color));
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(fill, _fill_color));
     }
 
     if (_draw_border)
     {
-        out_commands.push_back(make_ui_draw_rect_command(bar_rect, _border_color));
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(bar_rect, _border_color));
     }
 }
 
-Rect UiBar::content_rect(const Rect& rect) const
+elysia::core::Rect UiBar::content_rect(const elysia::core::Rect& rect) const
 {
     const float width = std::max(0.0f, rect.width());
     const float height = std::max(0.0f, rect.height());
@@ -178,7 +180,7 @@ Rect UiBar::content_rect(const Rect& rect) const
     const float pad_x = std::min(padding, width * 0.5f);
     const float pad_y = std::min(padding, height * 0.5f);
 
-    Rect content = rect;
+    elysia::core::Rect content = rect;
     content.set_x(rect.x() + pad_x);
     content.set_y(rect.y() + pad_y);
     content.set_width(width - pad_x * 2.0f);
@@ -186,9 +188,9 @@ Rect UiBar::content_rect(const Rect& rect) const
     return content;
 }
 
-Rect UiBar::fill_rect(const Rect& rect) const
+elysia::core::Rect UiBar::fill_rect(const elysia::core::Rect& rect) const
 {
-    Rect fill = content_rect(rect);
+    elysia::core::Rect fill = content_rect(rect);
     const float clamped_ratio = std::clamp(ratio(), 0.0f, 1.0f);
 
     switch (_fill_direction)
@@ -219,4 +221,6 @@ Rect UiBar::fill_rect(const Rect& rect) const
     }
 
     return fill;
+}
+
 }

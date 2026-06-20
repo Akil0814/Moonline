@@ -2,6 +2,8 @@
 
 #include <memory>
 
+namespace elysia::ui
+{
 class UiContainer : public UiElement
 {
 public:
@@ -16,3 +18,4 @@ private:
     UiLayout _layout;
     bool _layout_dirty = true;
 };
+}

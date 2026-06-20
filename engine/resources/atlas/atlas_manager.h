@@ -13,6 +13,8 @@
 #include <unordered_map>
 #include <vector>
 
+namespace elysia::resources
+{
 class TextureManager;
 
 using AtlasPool = std::unordered_map<std::string, std::unique_ptr<Atlas>>;
@@ -63,3 +65,5 @@ private:
 	AtlasPool _atlas_pool;
 	std::unordered_map<std::string, AtlasAssemblyState> _assembly_states;
 };
+
+}

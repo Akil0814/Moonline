@@ -4,9 +4,11 @@
 #include <filesystem>
 #include <optional>
 
-class PathManager : public Singleton<PathManager>
+namespace elysia::io
 {
-    friend Singleton<PathManager>;
+class PathManager : public elysia::tools::Singleton<PathManager>
+{
+    friend elysia::tools::Singleton<PathManager>;
 
 public:
     bool init();
@@ -49,3 +51,5 @@ private:
     std::filesystem::path _root;
     bool _is_init = false;
 };
+
+}

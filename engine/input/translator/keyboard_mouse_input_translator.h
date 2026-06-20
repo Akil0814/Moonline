@@ -4,6 +4,8 @@
 
 #include <optional>
 
+namespace elysia::input
+{
 class KeyboardMouseInputTranslator : public InputTranslator
 {
 public:
@@ -13,3 +15,5 @@ private:
     std::optional<RawInputControl> control_from_key(SDL_Keycode key) const;
     std::optional<RawInputControl> control_from_mouse_button(Uint8 button) const;
 };
+
+}

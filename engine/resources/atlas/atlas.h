@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+namespace elysia::resources
+{
 struct FrameInfo
 {
 	std::filesystem::path _path;
@@ -52,3 +54,5 @@ private:
 	std::string _name;
 	std::vector<FrameInfo> _frames;
 };
+
+}

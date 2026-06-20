@@ -4,6 +4,8 @@
 
 #include <algorithm>
 
+namespace elysia::input
+{
 namespace
 {
 constexpr float k_trigger_pressed_threshold = 0.5f;
@@ -244,4 +246,6 @@ float GamepadInputTranslator::normalize_stick_axis(Sint16 value) const
 float GamepadInputTranslator::normalize_trigger_axis(Sint16 value) const
 {
     return std::clamp(static_cast<float>(value) / 32767.0f, 0.0f, 1.0f);
+}
+
 }

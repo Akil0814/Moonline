@@ -10,6 +10,8 @@
 
 #include <algorithm>
 
+namespace elysia::scene
+{
 namespace
 {
 template <typename Entry>
@@ -20,11 +22,11 @@ void erase_destroyed_entries(std::vector<Entry>& entries)
 }
 }
 
-void Scene::on_input(const RawInputFrame& input,const std::vector<RawInputEvent>& events)
+void Scene::on_input(const elysia::input::RawInputFrame& input,const std::vector<elysia::input::RawInputEvent>& events)
 {
 	for (const RawInputFrameReceiverEntry& entry : _frame_receivers)
 	{
-		SceneObject* object = entry.object;
+		elysia::core::SceneObject* object = entry.object;
 
 		if (!object || object->is_destroyed() || !object->is_active())
 			continue;
@@ -35,11 +37,11 @@ void Scene::on_input(const RawInputFrame& input,const std::vector<RawInputEvent>
 		entry.receiver->on_raw_input_frame(input);
 	}
 
-	for (const RawInputEvent& input_event : events)
+	for (const elysia::input::RawInputEvent& input_event : events)
 	{
 		for (const RawInputEventReceiverEntry& entry : _event_receivers)
 		{
-			SceneObject* object = entry.object;
+			elysia::core::SceneObject* object = entry.object;
 
 			if (!object || object->is_destroyed() || !object->is_active())
 				continue;
@@ -57,7 +59,7 @@ void Scene::on_update(double delta)
 {
 	for (const UpdatableEntry& entry : _updatables)
 	{
-		SceneObject* object = entry.object;
+		elysia::core::SceneObject* object = entry.object;
 
 		if (!object || object->is_destroyed() || !object->is_active())
 			continue;
@@ -76,8 +78,8 @@ void Scene::on_render(SDL_Renderer* renderer)
 	if (!renderer)
 		return;
 
-	std::vector<RenderCommand> render_commands;
-	std::vector<UiRenderCommand> ui_render_commands;
+	std::vector<elysia::core::RenderCommand> render_commands;
+	std::vector<elysia::core::UiRenderCommand> ui_render_commands;
 	render_commands.reserve(256);
 	ui_render_commands.reserve(256);
 
@@ -85,7 +87,7 @@ void Scene::on_render(SDL_Renderer* renderer)
 	{
 		render_commands.clear();
 
-		for (const std::unique_ptr<GameObject>& obj : layer)
+		for (const std::unique_ptr<elysia::core::GameObject>& obj : layer)
 		{
 			if (!obj || obj->is_destroyed() || !obj->is_visible())
 				continue;
@@ -93,7 +95,7 @@ void Scene::on_render(SDL_Renderer* renderer)
 			obj->submit_render_commands(render_commands);
 		}
 
-		execute_render_commands(renderer, render_commands);
+		elysia::core::execute_render_commands(renderer, render_commands);
 	}
 
 
@@ -106,21 +108,21 @@ void Scene::on_render(SDL_Renderer* renderer)
 		ui_root->submit_ui_render_commands(ui_render_commands);
 	}
 
-	execute_render_commands(renderer, ui_render_commands);
+	elysia::core::execute_render_commands(renderer, ui_render_commands);
 }
 
-void Scene::register_scene_object_interfaces(SceneObject* object)
+void Scene::register_scene_object_interfaces(elysia::core::SceneObject* object)
 {
 	if (!object)
 		return;
 
-	if (Updatable* updatable = dynamic_cast<Updatable*>(object))
+	if (elysia::core::Updatable* updatable = dynamic_cast<elysia::core::Updatable*>(object))
 		_updatables.push_back(UpdatableEntry{ object,updatable });
 
-	if (RawInputFrameReceiver* receiver = dynamic_cast<RawInputFrameReceiver*>(object))
+	if (elysia::input::RawInputFrameReceiver* receiver = dynamic_cast<elysia::input::RawInputFrameReceiver*>(object))
 		_frame_receivers.push_back(RawInputFrameReceiverEntry{ object,receiver });
 
-	if (RawInputEventReceiver* receiver = dynamic_cast<RawInputEventReceiver*>(object))
+	if (elysia::input::RawInputEventReceiver* receiver = dynamic_cast<elysia::input::RawInputEventReceiver*>(object))
 	{
 		scene_input_order::insert_receiver_entry_sorted(
 			_event_receivers,
@@ -139,13 +141,13 @@ void Scene::remove_destroyed_objects()
 
 	for (auto& layer : _object_layers)
 	{
-		std::erase_if(layer, [](const std::unique_ptr<GameObject>& object)
+		std::erase_if(layer, [](const std::unique_ptr<elysia::core::GameObject>& object)
 			{
 				return !object || object->is_destroyed();
 			});
 	}
 
-	std::erase_if(_ui_roots, [](const std::unique_ptr<UiElement>& object)
+	std::erase_if(_ui_roots, [](const std::unique_ptr<elysia::ui::UiElement>& object)
 		{
 			return !object || object->is_destroyed();
 		});
@@ -183,12 +185,12 @@ void Scene::request_quit()
 	notify_scene_request(request);
 }
 
-void Scene::on_scene_object_registered(SceneObject& object)
+void Scene::on_scene_object_registered(elysia::core::SceneObject& object)
 {
 	(void)object;
 }
 
-bool Scene::add_game_object(std::unique_ptr<GameObject> object)
+bool Scene::add_game_object(std::unique_ptr<elysia::core::GameObject> object)
 {
 	if (!object)
 		return false;
@@ -198,13 +200,13 @@ bool Scene::add_game_object(std::unique_ptr<GameObject> object)
 	if (layer_index >= _object_layers.size())
 		return false;
 
-	std::vector<std::unique_ptr<GameObject>>& layer = _object_layers[layer_index];
+	std::vector<std::unique_ptr<elysia::core::GameObject>>& layer = _object_layers[layer_index];
 
 	auto iter = std::upper_bound(
 		layer.begin(),
 		layer.end(),
 		object->order_in_layer(),
-		[](int order, const std::unique_ptr<GameObject>& existing)
+		[](int order, const std::unique_ptr<elysia::core::GameObject>& existing)
 		{
 			return order < existing->order_in_layer();
 		}
@@ -214,7 +216,7 @@ bool Scene::add_game_object(std::unique_ptr<GameObject> object)
 	return true;
 }
 
-bool Scene::add_ui_root(std::unique_ptr<UiElement> object)
+bool Scene::add_ui_root(std::unique_ptr<elysia::ui::UiElement> object)
 {
 	if (!object)
 		return false;
@@ -223,7 +225,7 @@ bool Scene::add_ui_root(std::unique_ptr<UiElement> object)
 		_ui_roots.begin(),
 		_ui_roots.end(),
 		object->order(),
-		[](int order, const std::unique_ptr<UiElement>& existing)
+		[](int order, const std::unique_ptr<elysia::ui::UiElement>& existing)
 		{
 			return order < existing->order();
 		}
@@ -231,4 +233,6 @@ bool Scene::add_ui_root(std::unique_ptr<UiElement> object)
 
 	_ui_roots.insert(iter, std::move(object));
 	return true;
+}
+
 }

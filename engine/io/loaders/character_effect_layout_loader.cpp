@@ -5,6 +5,8 @@
 #include <iostream>
 #include <utility>
 
+namespace elysia::io
+{
 namespace
 {
 bool parse_playback_config(
@@ -208,4 +210,6 @@ bool CharacterEffectLayoutLoader::load(
 
 	layout = std::move(parsed_layout);
 	return true;
+}
+
 }

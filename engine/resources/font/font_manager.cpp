@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+namespace elysia::resources
+{
 FontManager::~FontManager()
 {
 	clear();
@@ -99,4 +101,6 @@ void FontManager::clear()
 size_t FontManager::resource_count() const
 {
 	return _font_pool.size();
+}
+
 }

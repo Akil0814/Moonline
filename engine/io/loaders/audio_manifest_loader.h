@@ -3,6 +3,8 @@
 
 #include <filesystem>
 
+namespace elysia::io
+{
 class AudioManifestLoader
 {
 public:
@@ -11,3 +13,5 @@ public:
 		AudioManifest& manifest
 	) const;
 };
+
+}

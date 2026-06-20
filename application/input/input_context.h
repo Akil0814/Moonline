@@ -1,10 +1,3 @@
 #pragma once
 
-enum class InputContext
-{
-    None,
-    Gameplay,
-    UI,
-    Dialogue,
-    Debug
-};
+#include "../../engine/input/input_types.h"

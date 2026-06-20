@@ -8,6 +8,8 @@
 #include <utility>
 
 //Factory + Registry
+namespace elysia::scene
+{
 class SceneFactory
 {
 public:
@@ -84,4 +86,6 @@ bool SceneFactory::destroy_scene()
 	_scene_cache.erase(iter);
 
 	return true;
+}
+
 }

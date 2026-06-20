@@ -4,6 +4,8 @@
 
 #include <filesystem>
 
+namespace elysia::io
+{
 class I18nManifestLoader
 {
 public:
@@ -12,3 +14,5 @@ public:
 		I18nManifest& manifest
 	) const;
 };
+
+}

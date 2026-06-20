@@ -1,6 +1,8 @@
 #pragma once
 #include "scene_request.h"
 
+namespace elysia::scene
+{
 class SceneRequestObserver
 {
 public:
@@ -8,3 +10,4 @@ public:
 
     virtual void on_scene_request(const SceneRequest& request) = 0;
 };
+}

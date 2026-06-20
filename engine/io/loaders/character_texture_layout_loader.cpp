@@ -5,6 +5,8 @@
 #include <iostream>
 #include <utility>
 
+namespace elysia::io
+{
 bool CharacterTextureLayoutLoader::load(
 	const std::filesystem::path& layout_path,
 	CharacterTextureLayout& layout
@@ -47,4 +49,6 @@ bool CharacterTextureLayoutLoader::load(
 
 	layout = std::move(parsed_layout);
 	return true;
+}
+
 }

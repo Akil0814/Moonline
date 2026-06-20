@@ -3,6 +3,8 @@
 
 #include <filesystem>
 
+namespace elysia::io
+{
 class AssetsStructureLoader
 {
 public:
@@ -11,3 +13,5 @@ public:
 		AssetManifestPaths& manifest_paths
 	) const;
 };
+
+}

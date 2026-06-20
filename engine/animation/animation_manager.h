@@ -1,6 +1,7 @@
 #pragma once
 
 #include "animation.h"
+#include "../resources/resource_manager.h"
 #include "../tools/singleton.h"
 #include "../resources/resource_types.h"
 
@@ -10,8 +11,8 @@
 #include <unordered_map>
 #include <vector>
 
-class ResourceManager;
-
+namespace elysia::animation
+{
 struct AnimationDefinition
 {
 	std::string animation_key;
@@ -19,21 +20,21 @@ struct AnimationDefinition
 	double fps = 10.0;
 	bool loop = true;
 	size_t segment_index = 0;
-	const Atlas* atlas = nullptr;
+	const elysia::resources::Atlas* atlas = nullptr;
 };
 
-class AnimationManager : public Singleton<AnimationManager>
+class AnimationManager : public elysia::tools::Singleton<AnimationManager>
 {
-	friend Singleton<AnimationManager>;
+	friend elysia::tools::Singleton<AnimationManager>;
 
 public:
 	bool register_animation(
-		const AnimationBuildRequest& request,
-		const Atlas* atlas
+		const elysia::resources::AnimationBuildRequest& request,
+		const elysia::resources::Atlas* atlas
 	);
 	bool register_animations(
-		const std::vector<AnimationBuildRequest>& requests,
-		const ResourceManager& resource_manager
+		const std::vector<elysia::resources::AnimationBuildRequest>& requests,
+		const elysia::resources::ResourceManager& resource_manager
 	);
 
 	const AnimationDefinition* find_definition(const std::string_view& key) const;
@@ -42,3 +43,5 @@ public:
 private:
 	std::unordered_map<std::string, AnimationDefinition> _definitions;
 };
+
+}

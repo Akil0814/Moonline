@@ -7,6 +7,8 @@
 #include <iostream>
 #include <utility>
 
+namespace elysia::resources
+{
 AtlasManager::AtlasManager(TextureManager& texture_manager)
 	: _texture_manager(texture_manager)
 {
@@ -261,4 +263,6 @@ std::string AtlasManager::make_texture_key(
 ) const
 {
 	return atlas_key + "#" + std::to_string(frame_index);
+}
+
 }

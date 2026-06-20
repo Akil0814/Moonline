@@ -7,6 +7,8 @@
 #include <string>
 #include <string_view>
 
+namespace elysia::io
+{
 namespace
 {
 constexpr std::string_view manifests_key = "manifests";
@@ -138,4 +140,6 @@ bool AssetsStructureLoader::load(
 		&& read_manifest_path(manifests, "i18n", *path_manager, manifest_paths.i18n)
 		&& read_manifest_path(manifests, "map_textures", *path_manager, manifest_paths.map_textures)
 		&& read_manifest_path(manifests, "ui_textures", *path_manager, manifest_paths.ui_textures);
+}
+
 }

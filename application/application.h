@@ -3,19 +3,17 @@
 #include "../engine/scene/scene_manager_observer.h"
 #include "../engine/tools/singleton.h"
 #include "../engine/input/input_system.h"
+#include "../engine/bootstrap/runtime_settings.h"
 
 #include <SDL.h>
 
 #include <string>
 
-struct RuntimeSettings;
-struct StartupParseResult;
-
 class Application
-    : public Singleton<Application>
-    , public SceneManagerObserver
+    : public elysia::tools::Singleton<Application>
+    , public elysia::scene::SceneManagerObserver
 {
-    friend Singleton<Application>;
+    friend elysia::tools::Singleton<Application>;
 public:
     Application();
     ~Application();
@@ -25,7 +23,7 @@ public:
     SDL_Renderer* renderer() const { return _renderer; }
 
 private:
-    bool init_runtime(const RuntimeSettings& settings);
+    bool init_runtime(const elysia::bootstrap::RuntimeSettings& settings);
     void enter_startup_scene();
 
     void shutdown();
@@ -63,8 +61,8 @@ private:
     SDL_Window* _window = nullptr;
     SDL_Renderer* _renderer = nullptr;
 
-    InputSystem _input_system;
-    SceneManager _scene_manager;
+    elysia::input::InputSystem _input_system;
+    elysia::scene::SceneManager _scene_manager;
 
     bool _active = { true };
     bool _has_shutdown = false;

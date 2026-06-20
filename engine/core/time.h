@@ -4,9 +4,11 @@
 
 #include <cstddef>
 
-class Time : public Singleton<Time>
+namespace elysia::core
 {
-    friend Singleton<Time>;
+class Time : public elysia::tools::Singleton<Time>
+{
+    friend elysia::tools::Singleton<Time>;
 
 public:
     void begin_frame(double raw_delta_seconds);
@@ -31,3 +33,5 @@ private:
     double _scaled_total_time_seconds = 0.0;
     std::size_t _frame_count = 0;
 };
+
+}

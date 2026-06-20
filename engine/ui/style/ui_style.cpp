@@ -88,3 +88,7 @@ void UiStyle::apply_text_input(UiTextInput& text_input, const TextInputStyle& st
     text_input.set_caret_color(style._caret_color);
     text_input.set_padding(style._padding);
 }*/
+namespace elysia::ui
+{
+
+}

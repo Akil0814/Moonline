@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <iostream>
 
+namespace elysia::bootstrap
+{
 void StartupPreloadLoader::set_manifest_path(const std::filesystem::path& preload_manifest_path)
 {
     _manifest_path = preload_manifest_path;
@@ -64,12 +66,12 @@ SDL_Texture* StartupPreloadLoader::get_texture(std::string_view key) const
         return nullptr;
     }
 
-    return ResourceManager::instance()->find_texture(key);
+    return elysia::resources::ResourceManager::instance()->find_texture(key);
 }
 
 bool StartupPreloadLoader::load_manifest()
 {
-    const JsonReadResult result = _manifest_loader.open_file(_manifest_path);
+    const elysia::io::JsonReadResult result = _manifest_loader.open_file(_manifest_path);
     if (!result.success)
     {
         std::cout << "Load preload manifest failed: " << result.error;
@@ -84,7 +86,7 @@ bool StartupPreloadLoader::load_textures(SDL_Renderer* renderer)
     _preloaded_texture_keys.clear();
 
     std::vector<std::string> texture_paths;
-    const JsonReadResult array_result =
+    const elysia::io::JsonReadResult array_result =
         _manifest_loader.get_array("textures", texture_paths);
     if (!array_result.success)
     {
@@ -92,10 +94,10 @@ bool StartupPreloadLoader::load_textures(SDL_Renderer* renderer)
         return false;
     }
 
-    ResourceManager* resource_manager = ResourceManager::instance();
-    SurfaceLoader surface_loader;
-    TextureLoader texture_loader;
-    const std::filesystem::path preload_root=PathManager::instance()->preload();
+    elysia::resources::ResourceManager* resource_manager = elysia::resources::ResourceManager::instance();
+    elysia::resources::SurfaceLoader surface_loader;
+    elysia::resources::TextureLoader texture_loader;
+    const std::filesystem::path preload_root=elysia::io::PathManager::instance()->preload();
 
     for (const std::string& relative_path : texture_paths)
     {
@@ -105,16 +107,16 @@ bool StartupPreloadLoader::load_textures(SDL_Renderer* renderer)
             return false;
         }
 
-        SurfaceLoadRequest surface_request;
+        elysia::resources::SurfaceLoadRequest surface_request;
         surface_request._asset_key = relative_path;
         surface_request._frame_path = preload_root / std::filesystem::path(relative_path);
         surface_request._frame_index = 0;
 
-        SurfaceLoadResult surface_result = surface_loader.load_surface(surface_request);
+        elysia::resources::SurfaceLoadResult surface_result = surface_loader.load_surface(surface_request);
         if (!surface_result._success)
             return false;
 
-        TextureLoadResult texture_result =
+        elysia::resources::TextureLoadResult texture_result =
             texture_loader.load_texture(renderer, surface_result);
         if (!texture_result._success)
             return false;
@@ -132,4 +134,6 @@ bool StartupPreloadLoader::load_textures(SDL_Renderer* renderer)
     }
 
     return true;
+}
+
 }

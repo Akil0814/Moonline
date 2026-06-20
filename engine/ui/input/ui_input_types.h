@@ -4,6 +4,8 @@
 
 #include <string>
 
+namespace elysia::ui
+{
 enum class UiAction
 {
     None = 0,
@@ -36,10 +38,12 @@ struct UiInputEvent
 {
     UiAction action = UiAction::None;
     UiInputEventType type = UiInputEventType::None;
-    InputDevice device = InputDevice::Unknown;
-    RawInputAxis axis = RawInputAxis::None;
+    elysia::input::InputDevice device = elysia::input::InputDevice::Unknown;
+    elysia::input::RawInputAxis axis = elysia::input::RawInputAxis::None;
     int wheel_x = 0;
     int wheel_y = 0;
     float axis_value = 0.0f;
     std::string text;
 };
+
+}

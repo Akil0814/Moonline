@@ -2,6 +2,8 @@
 
 #include "../bootstrap/bootstrap_error_utils.h"
 
+namespace elysia::config
+{
 namespace
 {
 constexpr const char* KEY_WINDOW_WIDTH = "window.width";
@@ -20,7 +22,7 @@ bool validate_positive_int(const ConfigValue& value, std::string& error)
     if (parsed > 0)
         return true;
 
-    append_bootstrap_error(error, "Config value must be a positive integer.");
+    elysia::bootstrap::append_bootstrap_error(error, "Config value must be a positive integer.");
     return false;
 }
 
@@ -37,7 +39,7 @@ bool validate_positive_double(const ConfigValue& value, std::string& error)
     if (parsed > 0.0)
         return true;
 
-    append_bootstrap_error(error, "Config value must be positive.");
+    elysia::bootstrap::append_bootstrap_error(error, "Config value must be positive.");
     return false;
 }
 
@@ -47,7 +49,7 @@ bool validate_volume(const ConfigValue& value, std::string& error)
     if (parsed >= 0 && parsed <= 100)
         return true;
 
-    append_bootstrap_error(error, "Config value must be within 0..100.");
+    elysia::bootstrap::append_bootstrap_error(error, "Config value must be within 0..100.");
     return false;
 }
 
@@ -57,103 +59,103 @@ bool validate_non_empty_string(const ConfigValue& value, std::string& error)
     if (!parsed.empty())
         return true;
 
-    append_bootstrap_error(error, "Config value must be a non-empty string.");
+    elysia::bootstrap::append_bootstrap_error(error, "Config value must be a non-empty string.");
     return false;
 }
 
-ConfigValue read_window_width(const RuntimeSettings& settings)
+ConfigValue read_window_width(const elysia::bootstrap::RuntimeSettings& settings)
 {
     return settings.window_width;
 }
 
-ConfigValue read_window_height(const RuntimeSettings& settings)
+ConfigValue read_window_height(const elysia::bootstrap::RuntimeSettings& settings)
 {
     return settings.window_height;
 }
 
-ConfigValue read_window_fullscreen(const RuntimeSettings& settings)
+ConfigValue read_window_fullscreen(const elysia::bootstrap::RuntimeSettings& settings)
 {
     return settings.fullscreen;
 }
 
-ConfigValue read_render_fps(const RuntimeSettings& settings)
+ConfigValue read_render_fps(const elysia::bootstrap::RuntimeSettings& settings)
 {
     return settings.target_fps;
 }
 
-ConfigValue read_render_vsync(const RuntimeSettings& settings)
+ConfigValue read_render_vsync(const elysia::bootstrap::RuntimeSettings& settings)
 {
     return settings.vsync;
 }
 
-ConfigValue read_audio_master_volume(const RuntimeSettings& settings)
+ConfigValue read_audio_master_volume(const elysia::bootstrap::RuntimeSettings& settings)
 {
     return settings.audio.master_volume;
 }
 
-ConfigValue read_audio_music_volume(const RuntimeSettings& settings)
+ConfigValue read_audio_music_volume(const elysia::bootstrap::RuntimeSettings& settings)
 {
     return settings.audio.music_volume;
 }
 
-ConfigValue read_audio_sound_volume(const RuntimeSettings& settings)
+ConfigValue read_audio_sound_volume(const elysia::bootstrap::RuntimeSettings& settings)
 {
     return settings.audio.sound_volume;
 }
 
-ConfigValue read_localization_language(const RuntimeSettings& settings)
+ConfigValue read_localization_language(const elysia::bootstrap::RuntimeSettings& settings)
 {
     return settings.language;
 }
 
-void write_window_width(const ConfigValue& value, RuntimeSettings& settings)
+void write_window_width(const ConfigValue& value, elysia::bootstrap::RuntimeSettings& settings)
 {
     settings.window_width = std::get<int>(value);
 }
 
-void write_window_height(const ConfigValue& value, RuntimeSettings& settings)
+void write_window_height(const ConfigValue& value, elysia::bootstrap::RuntimeSettings& settings)
 {
     settings.window_height = std::get<int>(value);
 }
 
-void write_window_fullscreen(const ConfigValue& value, RuntimeSettings& settings)
+void write_window_fullscreen(const ConfigValue& value, elysia::bootstrap::RuntimeSettings& settings)
 {
     settings.fullscreen = std::get<bool>(value);
 }
 
-void write_render_fps(const ConfigValue& value, RuntimeSettings& settings)
+void write_render_fps(const ConfigValue& value, elysia::bootstrap::RuntimeSettings& settings)
 {
     settings.target_fps = std::get<double>(value);
 }
 
-void write_render_vsync(const ConfigValue& value, RuntimeSettings& settings)
+void write_render_vsync(const ConfigValue& value, elysia::bootstrap::RuntimeSettings& settings)
 {
     settings.vsync = std::get<bool>(value);
 }
 
-void write_audio_master_volume(const ConfigValue& value, RuntimeSettings& settings)
+void write_audio_master_volume(const ConfigValue& value, elysia::bootstrap::RuntimeSettings& settings)
 {
     settings.audio.master_volume = std::get<int>(value);
 }
 
-void write_audio_music_volume(const ConfigValue& value, RuntimeSettings& settings)
+void write_audio_music_volume(const ConfigValue& value, elysia::bootstrap::RuntimeSettings& settings)
 {
     settings.audio.music_volume = std::get<int>(value);
 }
 
-void write_audio_sound_volume(const ConfigValue& value, RuntimeSettings& settings)
+void write_audio_sound_volume(const ConfigValue& value, elysia::bootstrap::RuntimeSettings& settings)
 {
     settings.audio.sound_volume = std::get<int>(value);
 }
 
-void write_localization_language(const ConfigValue& value, RuntimeSettings& settings)
+void write_localization_language(const ConfigValue& value, elysia::bootstrap::RuntimeSettings& settings)
 {
     settings.language = std::get<std::string>(value);
 }
 }
 
 ConfigInitResult ConfigManager::init(
-    const RuntimeSettings& default_settings,
+    const elysia::bootstrap::RuntimeSettings& default_settings,
     const std::filesystem::path& user_config_path
 )
 {
@@ -165,7 +167,7 @@ ConfigInitResult ConfigManager::init(
     _base_runtime_settings = default_settings;
     register_runtime_settings(default_settings);
 
-    const UserConfigStore::Result user_config_result =
+    const elysia::bootstrap::UserConfigStore::Result user_config_result =
         _user_config_store.load_or_create(_user_config_path, default_settings);
     if (!user_config_result.success)
     {
@@ -191,7 +193,7 @@ void ConfigManager::shutdown()
     _user_config_path.clear();
     _entries.clear();
     _values.clear();
-    _base_runtime_settings = RuntimeSettings{};
+    _base_runtime_settings = elysia::bootstrap::RuntimeSettings{};
     _dirty = false;
     _initialized = false;
 }
@@ -200,14 +202,14 @@ bool ConfigManager::save(std::string& error)
 {
     if (!_initialized)
     {
-        append_bootstrap_error(error, "Save config failed: config manager is not initialized.");
+        elysia::bootstrap::append_bootstrap_error(error, "Save config failed: config manager is not initialized.");
         return false;
     }
 
     if (!_dirty)
         return true;
 
-    RuntimeSettings runtime_settings = snapshot_runtime_settings();
+    elysia::bootstrap::RuntimeSettings runtime_settings = snapshot_runtime_settings();
     if (!_user_config_store.save(_user_config_path, runtime_settings, error))
         return false;
 
@@ -243,21 +245,21 @@ bool ConfigManager::set_value(
 {
     if (!_initialized)
     {
-        append_bootstrap_error(error, "Set config value failed: config manager is not initialized.");
+        elysia::bootstrap::append_bootstrap_error(error, "Set config value failed: config manager is not initialized.");
         return false;
     }
 
     const auto entry_it = _entries.find(std::string(key));
     if (entry_it == _entries.end())
     {
-        append_bootstrap_error(error, "Set config value failed: unknown key: " + std::string(key));
+        elysia::bootstrap::append_bootstrap_error(error, "Set config value failed: unknown key: " + std::string(key));
         return false;
     }
 
     const ConfigEntry& entry = entry_it->second;
     if (!matches_type(value, entry.type))
     {
-        append_bootstrap_error(error, "Set config value failed: type mismatch for key: " + std::string(key));
+        elysia::bootstrap::append_bootstrap_error(error, "Set config value failed: type mismatch for key: " + std::string(key));
         return false;
     }
 
@@ -273,9 +275,9 @@ bool ConfigManager::set_value(
     return true;
 }
 
-RuntimeSettings ConfigManager::snapshot_runtime_settings() const
+elysia::bootstrap::RuntimeSettings ConfigManager::snapshot_runtime_settings() const
 {
-    RuntimeSettings runtime_settings = _base_runtime_settings;
+    elysia::bootstrap::RuntimeSettings runtime_settings = _base_runtime_settings;
     for (const auto& [key, entry] : _entries)
     {
         const auto value_it = _values.find(key);
@@ -383,7 +385,7 @@ bool ConfigManager::set_sound_volume(int value, std::string& error)
     return set_value(KEY_AUDIO_SOUND_VOLUME, value, error);
 }
 
-void ConfigManager::register_runtime_settings(const RuntimeSettings& default_settings)
+void ConfigManager::register_runtime_settings(const elysia::bootstrap::RuntimeSettings& default_settings)
 {
     _entries.clear();
     _values.clear();
@@ -458,8 +460,8 @@ void ConfigManager::register_entry(
     ValueType type,
     ConfigValue default_value,
     bool (*validator)(const ConfigValue& value, std::string& error),
-    ConfigValue (*read_from_settings)(const RuntimeSettings& settings),
-    void (*write_to_settings)(const ConfigValue& value, RuntimeSettings& settings)
+    ConfigValue (*read_from_settings)(const elysia::bootstrap::RuntimeSettings& settings),
+    void (*write_to_settings)(const ConfigValue& value, elysia::bootstrap::RuntimeSettings& settings)
 )
 {
     _values[key] = default_value;
@@ -474,7 +476,7 @@ void ConfigManager::register_entry(
         });
 }
 
-void ConfigManager::load_values_from_settings(const RuntimeSettings& settings)
+void ConfigManager::load_values_from_settings(const elysia::bootstrap::RuntimeSettings& settings)
 {
     for (const auto& [key, entry] : _entries)
     {
@@ -500,4 +502,5 @@ bool ConfigManager::matches_type(const ConfigValue& value, ValueType type)
     default:
         return false;
     }
+}
 }

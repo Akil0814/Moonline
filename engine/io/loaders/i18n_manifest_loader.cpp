@@ -5,6 +5,8 @@
 #include <iostream>
 #include <utility>
 
+namespace elysia::io
+{
 bool I18nManifestLoader::load(
 	const std::filesystem::path& manifest_path,
 	I18nManifest& manifest
@@ -79,4 +81,6 @@ bool I18nManifestLoader::load(
 
 	manifest = std::move(parsed_manifest);
 	return true;
+}
+
 }

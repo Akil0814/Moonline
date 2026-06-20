@@ -1,5 +1,7 @@
 #pragma once
 
+namespace elysia::scene
+{
 class SceneManagerObserver
 {
 public:
@@ -7,3 +9,5 @@ public:
 
     virtual void on_scene_manager_quit_requested() = 0;
 };
+
+}

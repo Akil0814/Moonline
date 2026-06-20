@@ -6,6 +6,8 @@
 #include <unordered_map>
 #include <vector>
 
+namespace elysia::io
+{
 struct AssetManifestPaths
 {
 	std::filesystem::path audio;
@@ -166,3 +168,5 @@ struct CharacterAnimationContentEntry
 };
 
 
+
+}

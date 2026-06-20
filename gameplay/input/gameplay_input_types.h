@@ -30,7 +30,7 @@ struct GameplayInputEvent
 {
     GameplayAction action = GameplayAction::None;
     GameplayInputEventType type = GameplayInputEventType::None;
-    InputDevice device = InputDevice::Unknown;
-    RawInputAxis axis = RawInputAxis::None;
+    elysia::input::InputDevice device = elysia::input::InputDevice::Unknown;
+    elysia::input::RawInputAxis axis = elysia::input::RawInputAxis::None;
     float axis_value = 0.0f;
 };

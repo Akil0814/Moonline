@@ -12,44 +12,44 @@
 
 #include <vector>
 
-class ApplicationScene : public Scene
+class ApplicationScene : public elysia::scene::Scene
 {
 public:
-    void on_input(const RawInputFrame& input, const std::vector<RawInputEvent>& events) override;
+    void on_input(const elysia::input::RawInputFrame& input, const std::vector<elysia::input::RawInputEvent>& events) override;
 
 protected:
-    [[nodiscard]] virtual InputContext input_context() const;
-    void on_scene_object_registered(SceneObject& object) override;
+    [[nodiscard]] virtual elysia::input::InputContext input_context() const;
+    void on_scene_object_registered(elysia::core::SceneObject& object) override;
 
 private:
     struct UiInputFrameReceiverEntry
     {
-        SceneObject* object = nullptr;
-        UiInputFrameReceiver* receiver = nullptr;
+        elysia::core::SceneObject* object = nullptr;
+        elysia::ui::UiInputFrameReceiver* receiver = nullptr;
     };
 
     struct UiInputEventReceiverEntry
     {
-        SceneObject* object = nullptr;
-        UiInputEventReceiver* receiver = nullptr;
+        elysia::core::SceneObject* object = nullptr;
+        elysia::ui::UiInputEventReceiver* receiver = nullptr;
     };
 
     struct GameplayInputFrameReceiverEntry
     {
-        SceneObject* object = nullptr;
+        elysia::core::SceneObject* object = nullptr;
         GameplayInputFrameReceiver* receiver = nullptr;
     };
 
     struct GameplayInputEventReceiverEntry
     {
-        SceneObject* object = nullptr;
+        elysia::core::SceneObject* object = nullptr;
         GameplayInputEventReceiver* receiver = nullptr;
     };
 
 private:
     void prune_domain_receivers();
-    void dispatch_ui_frame(const UiInputFrame& input);
-    void dispatch_ui_events(const std::vector<UiInputEvent>& events);
+    void dispatch_ui_frame(const elysia::ui::UiInputFrame& input);
+    void dispatch_ui_events(const std::vector<elysia::ui::UiInputEvent>& events);
     void dispatch_gameplay_frame(const GameplayInputFrame& input);
     void dispatch_gameplay_events(const std::vector<GameplayInputEvent>& events);
 

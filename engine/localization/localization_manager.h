@@ -14,9 +14,11 @@
 #include <unordered_map>
 #include <vector>
 
-class LocalizationManager : public Singleton<LocalizationManager>
+namespace elysia::localization
 {
-	friend Singleton<LocalizationManager>;
+class LocalizationManager : public elysia::tools::Singleton<LocalizationManager>
+{
+	friend elysia::tools::Singleton<LocalizationManager>;
 
 public:
 	bool init(
@@ -55,9 +57,11 @@ private:
 	SDL_Renderer* _renderer = nullptr;
 	std::filesystem::path _manifest_path;
 	std::filesystem::path _i18n_root;
-	I18nManifest _manifest;
+	elysia::io::I18nManifest _manifest;
 	TextTextureCache _text_texture_cache;
 	std::unordered_map<std::string, TranslationTable> _translation_tables;
 	std::string _current_language;
 	bool _initialized = false;
 };
+
+}

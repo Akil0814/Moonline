@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+namespace elysia::resources
+{
 bool AtlasBuilder::build_atlas(
 	const AtlasBuildRequest& request,
 	const std::vector<AtlasCommittedFrame>& committed_frames,
@@ -59,4 +61,6 @@ bool AtlasBuilder::build_atlas(
 	}
 
 	return true;
+}
+
 }

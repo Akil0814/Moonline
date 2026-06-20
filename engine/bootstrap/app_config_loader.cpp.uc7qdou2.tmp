@@ -1,7 +1,7 @@
 #include "app_config_loader.h"
 
 #include "bootstrap_error_utils.h"
-#include "../io/json/json_loader.h"
+#include "../io/elysia::io::json/json_loader.h"
 #include "../io/path/path_manager.h"
 
 #include <filesystem>
@@ -13,7 +13,7 @@ namespace
 constexpr const char* DEFAULT_PRELOAD_MANIFEST_PATH = "preload/preload_manifest.elysia::io::json";
 
 bool read_volume_setting(
-    const elysia::io::JsonLoader& loader,
+    const JsonLoader& loader,
     const elysia::io::json& node,
     const char* key,
     int& out,
@@ -37,8 +37,8 @@ AppConfigLoader::Result AppConfigLoader::load(const std::filesystem::path& app_c
 {
     AppConfigLoader::Result result;
 
-    elysia::io::JsonLoader loader;
-    const elysia::io::JsonReadResult open_result = loader.open_file(app_config_path);
+    JsonLoader loader;
+    const JsonReadResult open_result = loader.open_file(app_config_path);
     if (!open_result.success)
     {
         append_bootstrap_error(result.error, open_result.error);
@@ -163,7 +163,7 @@ AppConfigLoader::Result AppConfigLoader::load(const std::filesystem::path& app_c
     }
 
     result.preload_manifest_path =
-        elysia::io::PathManager::instance()->to_asset_path(preload_manifest_relative);
+        PathManager::instance()->to_asset_path(preload_manifest_relative);
 
     if (!std::filesystem::exists(result.preload_manifest_path))
     {

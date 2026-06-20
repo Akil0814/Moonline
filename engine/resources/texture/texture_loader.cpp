@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+namespace elysia::resources
+{
 void TextureDeleter::operator()(SDL_Texture* texture) const
 {
 	if (texture)
@@ -49,3 +51,5 @@ TextureLoadResult TextureLoader::load_texture(
 	return result;
 }
 
+
+}

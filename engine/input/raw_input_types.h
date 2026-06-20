@@ -2,16 +2,12 @@
 
 #include <SDL.h>
 
+#include "input_types.h"
+
 #include <string>
 
-enum class InputDevice
+namespace elysia::input
 {
-    Keyboard,
-    Mouse,
-    Gamepad,
-    Unknown
-};
-
 enum class RawInputControl
 {
     None = 0,
@@ -177,3 +173,5 @@ struct RawInputEvent
     float axis_value = 0.0f;
     std::string text;
 };
+
+}

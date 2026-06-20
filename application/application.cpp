@@ -35,8 +35,8 @@ Application:: ~Application()
 
 bool Application::init(int argc, char** argv)
 {
-	const StartupParseResult parse_result =
-		Bootstrapper::instance()->parse_runtime_settings();
+	const elysia::bootstrap::StartupParseResult parse_result =
+		elysia::bootstrap::Bootstrapper::instance()->parse_runtime_settings();
 
 	if (!parse_result.success)
 	{
@@ -49,7 +49,7 @@ bool Application::init(int argc, char** argv)
 		std::cout << "Startup warning: " << parse_result.warning << std::endl;
 	}
 
-	RuntimeSettings runtime_settings = parse_result.runtime_settings;
+	elysia::bootstrap::RuntimeSettings runtime_settings = parse_result.runtime_settings;
 
 	if (!init_runtime(runtime_settings))
 	{
@@ -57,7 +57,7 @@ bool Application::init(int argc, char** argv)
 		return false;
 	}
 
-	if (!LocalizationManager::instance()->init(
+	if (!elysia::localization::LocalizationManager::instance()->init(
 		_renderer,
 		parse_result.i18n_manifest_path,
 		runtime_settings.language))
@@ -66,12 +66,12 @@ bool Application::init(int argc, char** argv)
 		return false;
 	}
 
-	ConfigManager* config_manager = ConfigManager::instance();
-	if (config_manager->language() != LocalizationManager::instance()->current_language())
+	elysia::config::ConfigManager* config_manager = elysia::config::ConfigManager::instance();
+	if (config_manager->language() != elysia::localization::LocalizationManager::instance()->current_language())
 	{
 		std::string save_error;
 		if (!config_manager->set_language(
-			LocalizationManager::instance()->current_language(),
+			elysia::localization::LocalizationManager::instance()->current_language(),
 			save_error))
 		{
 			std::cout << "Localization warning: normalize language in config failed: "
@@ -87,7 +87,7 @@ bool Application::init(int argc, char** argv)
 	_input_system.init();
 	_input_system.set_renderer(_renderer);
 
-	if (!Bootstrapper::instance()->preload_startup_resources(_renderer))
+	if (!elysia::bootstrap::Bootstrapper::instance()->preload_startup_resources(_renderer))
 	{
 		startup_fail("Startup resource preload failed.");
 		return false;
@@ -98,19 +98,19 @@ bool Application::init(int argc, char** argv)
 	return true;
 }
 
-bool Application::init_runtime(const RuntimeSettings& settings)
+bool Application::init_runtime(const elysia::bootstrap::RuntimeSettings& settings)
 {
-	init_assert(!SDL_Init(SDL_INIT_EVERYTHING), "SDL2 Error");
+	init_assert(!SDL_Init(SDL_INIT_EVERYTHING), "SDL2 elysia::core::Error");
 
 	const int img_flags = IMG_INIT_JPG | IMG_INIT_PNG;
-	init_assert((IMG_Init(img_flags) & img_flags) == img_flags, "SDL_image Error");
+	init_assert((IMG_Init(img_flags) & img_flags) == img_flags, "SDL_image elysia::core::Error");
 
 	const int mix_flags = MIX_INIT_MP3;
-	init_assert((Mix_Init(mix_flags) & mix_flags) == mix_flags, "SDL_mixer Error");
+	init_assert((Mix_Init(mix_flags) & mix_flags) == mix_flags, "SDL_mixer elysia::core::Error");
 
-	init_assert(!TTF_Init(), "SDL_ttf Error");
-	init_assert(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) == 0, "Mix_OpenAudio Error");
-	init_assert(AudioService::instance()->init(settings.audio), "AudioService init failed");
+	init_assert(!TTF_Init(), "SDL_ttf elysia::core::Error");
+	init_assert(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) == 0, "Mix_OpenAudio elysia::core::Error");
+	init_assert(elysia::audio::AudioService::instance()->init(settings.audio), "elysia::audio::AudioService init failed");
 
 	SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
 
@@ -121,7 +121,7 @@ bool Application::init_runtime(const RuntimeSettings& settings)
 		settings.window_width,
 		settings.window_height,
 		SDL_WINDOW_SHOWN);
-	init_assert(_window, "SDL_CreateWindow Error");
+	init_assert(_window, "SDL_CreateWindow elysia::core::Error");
 
 	if (settings.fullscreen
 		&& SDL_SetWindowFullscreen(_window, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)
@@ -138,11 +138,11 @@ bool Application::init_runtime(const RuntimeSettings& settings)
 		renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
 
 	_renderer = SDL_CreateRenderer(_window, -1, renderer_flags);
-	init_assert(_renderer, "SDL_CreateRenderer Error");
+	init_assert(_renderer, "SDL_CreateRenderer elysia::core::Error");
 
 	init_assert(
 		SDL_RenderSetLogicalSize(_renderer, _logical_width, _logical_height) == 0,
-		"SDL_RenderSetLogicalSize Error");
+		"SDL_RenderSetLogicalSize elysia::core::Error");
 
 	FPS = settings.target_fps;
 	return true;
@@ -167,7 +167,7 @@ int  Application::run(int argc, char** argv)
 	Uint64 last_counter = SDL_GetPerformanceCounter();
 	const Uint64 counter_freq = SDL_GetPerformanceFrequency();
 
-	Time::instance()->reset();
+	elysia::core::Time::instance()->reset();
 
 
 	_counter_freq = SDL_GetPerformanceFrequency();
@@ -194,13 +194,13 @@ int  Application::run(int argc, char** argv)
 		Uint64 current_counter = SDL_GetPerformanceCounter();//å®žçŽ°åŠ¨æ€å»¶æ—¶
 		double delta = (double)(current_counter - last_counter) / counter_freq;
 		last_counter = current_counter;
-		Time::instance()->begin_frame(delta);
+		elysia::core::Time::instance()->begin_frame(delta);
 
 		if (delta * 1000 < 1000.0 / FPS)
 			SDL_Delay((Uint32)(1000.0 / FPS - delta * 1000));
 		
 
-		_scene_manager.on_update(Time::instance()->delta());
+		_scene_manager.on_update(elysia::core::Time::instance()->delta());
 
 		SDL_SetRenderDrawColor(_renderer, 0,0,0,255);
 		SDL_RenderClear(_renderer);
@@ -225,10 +225,10 @@ void Application::shutdown()
 	_input_system.shutdown();
 	_scene_manager.detach(this);
 	_scene_manager.shutdown();
-	LocalizationManager::instance()->shutdown();
-	ConfigManager::instance()->shutdown();
-	AudioService::instance()->shutdown();
-	ResourceManager::instance()->clear();
+	elysia::localization::LocalizationManager::instance()->shutdown();
+	elysia::config::ConfigManager::instance()->shutdown();
+	elysia::audio::AudioService::instance()->shutdown();
+	elysia::resources::ResourceManager::instance()->clear();
 }
 
 void Application::on_scene_manager_quit_requested()

@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+namespace elysia::resources
+{
 AudioManager::~AudioManager()
 {
 	clear();
@@ -189,4 +191,6 @@ void AudioManager::clear()
 size_t AudioManager::resource_count() const
 {
 	return _sound_pool.size() + _music_pool.size();
+}
+
 }

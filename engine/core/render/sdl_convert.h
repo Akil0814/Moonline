@@ -6,6 +6,8 @@
 #include "../geometry/rect.h"
 #include "../geometry/vector2.h"
 
+namespace elysia::core
+{
 [[nodiscard]] inline SDL_Color to_sdl_color(Color color) noexcept
 {
     return SDL_Color{ color.r, color.g, color.b, color.a };
@@ -45,4 +47,6 @@
     sdl_rect.w = rect.width();
     sdl_rect.h = rect.height();
     return sdl_rect;
+}
+
 }

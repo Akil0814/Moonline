@@ -7,6 +7,8 @@
 #include <string>
 #include <utility>
 
+namespace elysia::io
+{
 namespace
 {
 std::filesystem::path infer_character_info_path(const std::string& asset_key)
@@ -120,4 +122,6 @@ bool CharacterManifestLoader::load(
 
 	manifest = std::move(parsed_manifest);
 	return true;
+}
+
 }

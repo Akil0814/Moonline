@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+namespace elysia::input
+{
 void InputSystem::init()
 {
     _controller_manager.init();
@@ -233,4 +235,6 @@ bool InputSystem::should_clear_state_for_event(const SDL_Event& event) const
 {
     return event.type == SDL_WINDOWEVENT
         && event.window.event == SDL_WINDOWEVENT_FOCUS_LOST;
+}
+
 }

@@ -3,6 +3,8 @@
 
 #include <filesystem>
 
+namespace elysia::io
+{
 class TextureManifestLoader
 {
 public:
@@ -11,3 +13,5 @@ public:
 		TextureManifest& manifest
 	) const;
 };
+
+}

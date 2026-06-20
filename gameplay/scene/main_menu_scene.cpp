@@ -15,32 +15,32 @@ namespace
 constexpr int kMenuCenterX = 640;
 constexpr int kMenuStartY = 220;
 constexpr int kMenuVerticalSpacing = 70;
-constexpr Color kMenuTextColor = colors::white;
+constexpr elysia::core::Color kMenuTextColor = elysia::core::colors::white;
 constexpr int kMenuTextPointSize = 24;
 }
 
-void MainMenuScene::on_enter(const ScenePayload& payload)
+void MainMenuScene::on_enter(const elysia::scene::ScenePayload& payload)
 {
 	if (payload.has_value())
 	{
 		const MainMenuEnterPayload& enter_payload =
-			require_scene_payload<MainMenuEnterPayload>(payload);
+			elysia::scene::require_scene_payload<MainMenuEnterPayload>(payload);
 		(void)enter_payload;
 	}
 
 	_paused = false;
-	(void)AudioService::instance()->play_music("scene.main_meun_scene_main");
+	(void)elysia::audio::AudioService::instance()->play_music("scene.main_meun_scene_main");
 	rebuild_menu_textures();
 }
 
 void MainMenuScene::on_update(double delta)
 {
-	Scene::on_update(delta);
+	elysia::scene::Scene::on_update(delta);
 }
 
 void MainMenuScene::on_render(SDL_Renderer* renderer)
 {
-	Scene::on_render(renderer);
+	elysia::scene::Scene::on_render(renderer);
 
 	for (const MenuTextEntry& entry : _menu_text_entries)
 	{
@@ -51,15 +51,15 @@ void MainMenuScene::on_render(SDL_Renderer* renderer)
 	}
 }
 
-void MainMenuScene::on_input(const RawInputFrame& input, const std::vector<RawInputEvent>& events)
+void MainMenuScene::on_input(const elysia::input::RawInputFrame& input, const std::vector<elysia::input::RawInputEvent>& events)
 {
 	ApplicationScene::on_input(input, events);
 	(void)input;
 
-	for (const RawInputEvent& event : events)
+	for (const elysia::input::RawInputEvent& event : events)
 	{
-		if (event.type == RawInputEventType::ControlPressed
-			&& event.control == RawInputControl::KeyF6)
+		if (event.type == elysia::input::RawInputEventType::ControlPressed
+			&& event.control == elysia::input::RawInputControl::KeyF6)
 		{
 			cycle_language();
 			break;
@@ -84,7 +84,7 @@ void MainMenuScene::rebuild_menu_textures()
 {
 	clear_menu_textures();
 
-	LocalizationManager* localization_manager = LocalizationManager::instance();
+	elysia::localization::LocalizationManager* localization_manager = elysia::localization::LocalizationManager::instance();
 	if (!localization_manager)
 		return;
 
@@ -137,7 +137,7 @@ void MainMenuScene::clear_menu_textures()
 
 void MainMenuScene::cycle_language()
 {
-	LocalizationManager* localization_manager = LocalizationManager::instance();
+	elysia::localization::LocalizationManager* localization_manager = elysia::localization::LocalizationManager::instance();
 	if (!localization_manager)
 		return;
 
@@ -163,7 +163,7 @@ void MainMenuScene::cycle_language()
 
 	rebuild_menu_textures();
 
-	ConfigManager* config_manager = ConfigManager::instance();
+	elysia::config::ConfigManager* config_manager = elysia::config::ConfigManager::instance();
 	std::string save_error;
 	if (!config_manager->set_language(
 		localization_manager->current_language(),

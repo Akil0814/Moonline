@@ -5,6 +5,10 @@
 #include "../../core/interface/updatable.h"
 #include "../../tools/timer.h"
 
+struct SDL_Texture;
+
+namespace elysia::ui
+{
 enum class UiFadeImageMode
 {
     FadeIn,
@@ -12,27 +16,25 @@ enum class UiFadeImageMode
     FadeInOut
 };
 
-struct SDL_Texture;
-
-class UiFadeImage : public UiImage, public Updatable
+class UiFadeImage : public UiImage, public elysia::core::Updatable
 {
 public:
     using FadeImageOnEnd = std::function<void()>;
 
-    UiFadeImage(SDL_Texture* texture, Vector2 pos, Vector2 size, int order = 0);
-    UiFadeImage(SDL_Texture* texture, Rect rect ,int order = 0);
+    UiFadeImage(SDL_Texture* texture, elysia::core::Vector2 pos, elysia::core::Vector2 size, int order = 0);
+    UiFadeImage(SDL_Texture* texture, elysia::core::Rect rect ,int order = 0);
     UiFadeImage(
         SDL_Texture* texture,
-        Vector2 center,
-        Vector2 image_size,
+        elysia::core::Vector2 center,
+        elysia::core::Vector2 image_size,
         UiImageCenterTag,
         int order = 0
     );
     UiFadeImage(
         SDL_Texture* texture,
-        Vector2 center,
-        Vector2 source_size,
-        Vector2 render_size,
+        elysia::core::Vector2 center,
+        elysia::core::Vector2 source_size,
+        elysia::core::Vector2 render_size,
         UiImageCenterTag,
         int order = 0
     );
@@ -72,7 +74,7 @@ private:
 
     FadeImageOnEnd _on_end;
 
-    Timer _timer;
+    elysia::tools::Timer _timer;
 
     double _elapsed = 0.0;
     double _hold_time = 0.0;
@@ -80,3 +82,5 @@ private:
     double _fade_in_duration = 1.0;
     double _fade_out_duration = 1.0;
 };
+
+}

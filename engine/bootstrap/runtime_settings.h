@@ -5,6 +5,8 @@
 #include <filesystem>
 #include <string>
 
+namespace elysia::bootstrap
+{
 struct RuntimeSettings
 {
     std::string window_title = "Moonline";
@@ -14,7 +16,7 @@ struct RuntimeSettings
     double target_fps = 60.0;
     bool vsync = true;
     std::string language;
-    AudioSettings audio;
+    elysia::audio::AudioSettings audio;
 };
 
 struct StartupParseResult
@@ -28,3 +30,5 @@ struct StartupParseResult
 
     explicit operator bool() const { return success; }
 };
+
+}

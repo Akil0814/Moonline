@@ -8,6 +8,8 @@
 #include <memory>
 #include <string>
 
+namespace elysia::resources
+{
 struct TextureDeleter
 {
 	void operator()(SDL_Texture* texture) const;
@@ -33,3 +35,5 @@ public:
 	) const;
 };
 
+
+}

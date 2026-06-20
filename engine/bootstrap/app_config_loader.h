@@ -5,6 +5,8 @@
 #include <filesystem>
 #include <string>
 
+namespace elysia::bootstrap
+{
 class AppConfigLoader
 {
 public:
@@ -20,3 +22,5 @@ public:
 
     Result load(const std::filesystem::path& app_config_path) const;
 };
+
+}

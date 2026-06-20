@@ -28,3 +28,7 @@ private:
     UiTheme _current_theme = make_loading_blue_theme();
     std::vector<UiElement*> _registered_elements;
 };*/
+namespace elysia::ui
+{
+
+}

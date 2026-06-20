@@ -6,6 +6,8 @@
 #include <string>
 #include <utility>
 
+namespace elysia::io
+{
 namespace
 {
 bool append_audio_entries(
@@ -93,4 +95,6 @@ bool AudioManifestLoader::load(
 
 	manifest = std::move(parsed_manifest);
 	return true;
+}
+
 }

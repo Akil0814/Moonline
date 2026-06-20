@@ -14,6 +14,8 @@
 #include <variant>
 #include <vector>
 
+namespace elysia::loading
+{
 enum class GameContentLoaderState
 {
 	Idle,
@@ -48,7 +50,7 @@ public:
 private:
 	struct PrepareJob
 	{
-		std::variant<TextureLoadRequest, AtlasFramePrepareTask> payload;
+		std::variant<elysia::resources::TextureLoadRequest, elysia::resources::AtlasFramePrepareTask> payload;
 	};
 
 	bool initialize_streaming_work();
@@ -59,8 +61,8 @@ private:
 	void dispatch_prepare_jobs();
 	void drain_completed_prepare_results();
 	bool commit_ready_streaming_results();
-	bool commit_texture_result(const SurfaceLoadResult& surface_result);
-	bool commit_atlas_frame_result(const AtlasFramePreparedResult& prepared_result);
+	bool commit_texture_result(const elysia::resources::SurfaceLoadResult& surface_result);
+	bool commit_atlas_frame_result(const elysia::resources::AtlasFramePreparedResult& prepared_result);
 	bool is_streaming_phase_complete();
 	bool load_fonts();
 	bool load_audio();
@@ -78,7 +80,7 @@ private:
 	std::size_t _total_work_units = 0;
 	std::size_t _completed_work_units = 0;
 
-	std::vector<AtlasFramePrepareTask> _atlas_frame_tasks;
+	std::vector<elysia::resources::AtlasFramePrepareTask> _atlas_frame_tasks;
 	std::size_t _next_texture_request_index = 0;
 	std::size_t _next_atlas_frame_task_index = 0;
 	bool _dispatch_texture_turn = true;
@@ -91,13 +93,15 @@ private:
 	std::vector<std::thread> _worker_threads;
 
 	std::mutex _completed_results_mutex;
-	std::deque<SurfaceLoadResult> _completed_texture_results;
-	std::deque<AtlasFramePreparedResult> _completed_atlas_frame_results;
-	std::deque<SurfaceLoadResult> _ready_texture_results;
-	std::deque<AtlasFramePreparedResult> _ready_atlas_frame_results;
+	std::deque<elysia::resources::SurfaceLoadResult> _completed_texture_results;
+	std::deque<elysia::resources::AtlasFramePreparedResult> _completed_atlas_frame_results;
+	std::deque<elysia::resources::SurfaceLoadResult> _ready_texture_results;
+	std::deque<elysia::resources::AtlasFramePreparedResult> _ready_atlas_frame_results;
 
 	std::size_t _prepared_texture_count = 0;
 	std::size_t _prepared_atlas_frame_count = 0;
 	std::size_t _committed_texture_count = 0;
 	std::size_t _committed_atlas_frame_count = 0;
 };
+
+}

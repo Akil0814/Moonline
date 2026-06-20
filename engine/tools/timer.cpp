@@ -1,5 +1,7 @@
 #include "timer.h"
 
+namespace elysia::tools
+{
 void Timer::restart()
 {
 	_elapsed_seconds = 0.0;
@@ -88,4 +90,6 @@ void Timer::update(double delta_seconds)
 			break;
 		}
 	}
+}
+
 }

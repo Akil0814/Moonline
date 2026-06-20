@@ -5,75 +5,77 @@
 #include <cstddef>
 #include <vector>
 
+namespace elysia::loading
+{
 class ResourceLoadPlan
 {
 public:
-	std::vector<FontLoadRequest>& font_requests()
+	std::vector<elysia::resources::FontLoadRequest>& font_requests()
 	{
 		return _font_requests;
 	}
 
-	const std::vector<FontLoadRequest>& font_requests() const
+	const std::vector<elysia::resources::FontLoadRequest>& font_requests() const
 	{
 		return _font_requests;
 	}
 
-	std::vector<SoundLoadRequest>& sound_requests()
+	std::vector<elysia::resources::SoundLoadRequest>& sound_requests()
 	{
 		return _sound_requests;
 	}
 
-	const std::vector<SoundLoadRequest>& sound_requests() const
+	const std::vector<elysia::resources::SoundLoadRequest>& sound_requests() const
 	{
 		return _sound_requests;
 	}
 
-	std::vector<MusicLoadRequest>& music_requests()
+	std::vector<elysia::resources::MusicLoadRequest>& music_requests()
 	{
 		return _music_requests;
 	}
 
-	const std::vector<MusicLoadRequest>& music_requests() const
+	const std::vector<elysia::resources::MusicLoadRequest>& music_requests() const
 	{
 		return _music_requests;
 	}
 
-	std::vector<TextureLoadRequest>& texture_requests()
+	std::vector<elysia::resources::TextureLoadRequest>& texture_requests()
 	{
 		return _texture_requests;
 	}
 
-	const std::vector<TextureLoadRequest>& texture_requests() const
+	const std::vector<elysia::resources::TextureLoadRequest>& texture_requests() const
 	{
 		return _texture_requests;
 	}
 
-	std::vector<AtlasBuildRequest>& atlas_build_requests()
+	std::vector<elysia::resources::AtlasBuildRequest>& atlas_build_requests()
 	{
 		return _atlas_build_requests;
 	}
 
-	const std::vector<AtlasBuildRequest>& atlas_build_requests() const
+	const std::vector<elysia::resources::AtlasBuildRequest>& atlas_build_requests() const
 	{
 		return _atlas_build_requests;
 	}
 
-	std::vector<AnimationBuildRequest>& animation_build_requests()
+	std::vector<elysia::resources::AnimationBuildRequest>& animation_build_requests()
 	{
 		return _animation_build_requests;
 	}
 
-	const std::vector<AnimationBuildRequest>& animation_build_requests() const
+	const std::vector<elysia::resources::AnimationBuildRequest>& animation_build_requests() const
 	{
 		return _animation_build_requests;
 	}
 
-	std::vector<EffectBuildRequest>& effect_build_requests()
+	std::vector<elysia::resources::EffectBuildRequest>& effect_build_requests()
 	{
 		return _effect_build_requests;
 	}
 
-	const std::vector<EffectBuildRequest>& effect_build_requests() const
+	const std::vector<elysia::resources::EffectBuildRequest>& effect_build_requests() const
 	{
 		return _effect_build_requests;
 	}
@@ -112,11 +114,13 @@ public:
 	}
 
 private:
-	std::vector<FontLoadRequest> _font_requests;
-	std::vector<SoundLoadRequest> _sound_requests;
-	std::vector<MusicLoadRequest> _music_requests;
-	std::vector<TextureLoadRequest> _texture_requests;
-	std::vector<AtlasBuildRequest> _atlas_build_requests;
-	std::vector<AnimationBuildRequest> _animation_build_requests;
-	std::vector<EffectBuildRequest> _effect_build_requests;
+	std::vector<elysia::resources::FontLoadRequest> _font_requests;
+	std::vector<elysia::resources::SoundLoadRequest> _sound_requests;
+	std::vector<elysia::resources::MusicLoadRequest> _music_requests;
+	std::vector<elysia::resources::TextureLoadRequest> _texture_requests;
+	std::vector<elysia::resources::AtlasBuildRequest> _atlas_build_requests;
+	std::vector<elysia::resources::AnimationBuildRequest> _animation_build_requests;
+	std::vector<elysia::resources::EffectBuildRequest> _effect_build_requests;
 };
+
+}

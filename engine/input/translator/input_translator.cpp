@@ -1,5 +1,7 @@
 #include "input_translator.h"
 
+namespace elysia::input
+{
 RawInputEventType InputTranslator::input_event_type(bool pressed) const
 {
     return pressed ? RawInputEventType::ControlPressed : RawInputEventType::ControlReleased;
@@ -18,4 +20,6 @@ void InputTranslator::append_event(
     event.type = type;
     event.device = device;
     events.push_back(event);
+}
+
 }

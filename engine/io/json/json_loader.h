@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+namespace elysia::io
+{
 using json = nlohmann::json;
 
 // 统一返回 JSON 读取结果，并在失败时附带可直接上抛/记录的错误信息
@@ -252,4 +254,6 @@ bool JsonLoader::read_value(const json& value, T& out) const
     }
 
     return true;
+}
+
 }

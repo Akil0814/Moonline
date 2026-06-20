@@ -2,6 +2,8 @@
 
 #include <SDL.h>
 
+namespace elysia::input
+{
 std::vector<RawInputEvent> KeyboardMouseInputTranslator::translate_event(const SDL_Event& event)
 {
     std::vector<RawInputEvent> events;
@@ -202,4 +204,6 @@ std::optional<RawInputControl> KeyboardMouseInputTranslator::control_from_mouse_
     default:
         return std::nullopt;
     }
+}
+
 }

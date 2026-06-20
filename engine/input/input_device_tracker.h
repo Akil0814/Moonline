@@ -4,6 +4,8 @@
 
 #include <SDL.h>
 
+namespace elysia::input
+{
 struct InputDeviceUpdateResult
 {
     InputDevice event_device = InputDevice::Unknown;
@@ -29,3 +31,5 @@ private:
     InputDevice _current_device = InputDevice::Unknown;
     bool _device_switched_this_frame = false;
 };
+
+}

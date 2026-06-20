@@ -6,6 +6,8 @@
 #include <filesystem>
 #include <vector>
 
+namespace elysia::resources
+{
 struct AtlasCommittedFrame
 {
 	std::filesystem::path frame_path;
@@ -22,3 +24,5 @@ public:
 		Atlas& atlas
 	) const;
 };
+
+}

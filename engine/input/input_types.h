@@ -2,6 +2,8 @@
 
 #include <string>
 
+namespace elysia::input
+{
 enum class InputAction
 {
     Left,
@@ -31,6 +33,7 @@ enum class InputAction
 
 enum class InputContext
 {
+    None,
     Gameplay,
     UI,
     Dialogue,
@@ -63,3 +66,5 @@ struct InputEvent
     int wheel_y = 0;
     std::string text;
 };
+
+}

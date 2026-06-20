@@ -5,6 +5,8 @@
 
 #include <iostream>
 
+namespace elysia::io
+{
 namespace
 {
 std::filesystem::path infer_texture_root(const std::string& asset_key)
@@ -129,4 +131,6 @@ bool CharacterConfigLoader::load(
 	config.texture_root = texture_root;
 	config.animation_config_path = animation_config_path;
 	return true;
+}
+
 }

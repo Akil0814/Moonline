@@ -6,8 +6,10 @@
 #include <filesystem>
 #include <fstream>
 
+namespace elysia::bootstrap
+{
 bool UserConfigStore::read_positive_int_override(
-    const json& node,
+    const elysia::io::json& node,
     const char* key,
     int& out,
     std::string& error
@@ -16,7 +18,7 @@ bool UserConfigStore::read_positive_int_override(
     if (!node.contains(key))
         return true;
 
-    const json& value = node.at(key);
+    const elysia::io::json& value = node.at(key);
     if (!value.is_number_integer())
     {
         append_bootstrap_error(error, std::string("User config field must be an integer: ") + key);
@@ -35,7 +37,7 @@ bool UserConfigStore::read_positive_int_override(
 }
 
 bool UserConfigStore::read_positive_double_override(
-    const json& node,
+    const elysia::io::json& node,
     const char* key,
     double& out,
     std::string& error
@@ -44,7 +46,7 @@ bool UserConfigStore::read_positive_double_override(
     if (!node.contains(key))
         return true;
 
-    const json& value = node.at(key);
+    const elysia::io::json& value = node.at(key);
     if (!value.is_number())
     {
         append_bootstrap_error(error, std::string("User config field must be numeric: ") + key);
@@ -63,7 +65,7 @@ bool UserConfigStore::read_positive_double_override(
 }
 
 bool UserConfigStore::read_volume_override(
-    const json& node,
+    const elysia::io::json& node,
     const char* key,
     int& out,
     std::string& error
@@ -72,7 +74,7 @@ bool UserConfigStore::read_volume_override(
     if (!node.contains(key))
         return true;
 
-    const json& value = node.at(key);
+    const elysia::io::json& value = node.at(key);
     if (!value.is_number_integer())
     {
         append_bootstrap_error(error, std::string("User config field must be an integer: ") + key);
@@ -94,7 +96,7 @@ bool UserConfigStore::read_volume_override(
 }
 
 bool UserConfigStore::read_bool_override(
-    const json& node,
+    const elysia::io::json& node,
     const char* key,
     bool& out,
     std::string& error
@@ -103,7 +105,7 @@ bool UserConfigStore::read_bool_override(
     if (!node.contains(key))
         return true;
 
-    const json& value = node.at(key);
+    const elysia::io::json& value = node.at(key);
     if (!value.is_boolean())
     {
         append_bootstrap_error(error, std::string("User config field must be boolean: ") + key);
@@ -115,7 +117,7 @@ bool UserConfigStore::read_bool_override(
 }
 
 bool UserConfigStore::read_non_empty_string_override(
-    const json& node,
+    const elysia::io::json& node,
     const char* key,
     std::string& out,
     std::string& error
@@ -124,7 +126,7 @@ bool UserConfigStore::read_non_empty_string_override(
     if (!node.contains(key))
         return true;
 
-    const json& value = node.at(key);
+    const elysia::io::json& value = node.at(key);
     if (!value.is_string())
     {
         append_bootstrap_error(error, std::string("User config field must be a string: ") + key);
@@ -145,9 +147,9 @@ bool UserConfigStore::read_non_empty_string_override(
     return true;
 }
 
-json UserConfigStore::make_user_config_json(const RuntimeSettings& runtime_settings)
+elysia::io::json UserConfigStore::make_user_config_json(const RuntimeSettings& runtime_settings)
 {
-    return json{
+    return elysia::io::json{
         {
             "window",
             {
@@ -231,15 +233,15 @@ bool UserConfigStore::apply_overrides(
     std::string& error
 ) const
 {
-    JsonLoader loader;
-    const JsonReadResult open_result = loader.open_file(user_config_path);
+    elysia::io::JsonLoader loader;
+    const elysia::io::JsonReadResult open_result = loader.open_file(user_config_path);
     if (!open_result.success)
     {
         append_bootstrap_error(error, open_result.error);
         return false;
     }
 
-    const json& root = loader.root();
+    const elysia::io::json& root = loader.root();
     if (!root.is_object())
     {
         append_bootstrap_error(error, "User config root must be an object.");
@@ -248,7 +250,7 @@ bool UserConfigStore::apply_overrides(
 
     if (root.contains("window"))
     {
-        const json& window_node = root.at("window");
+        const elysia::io::json& window_node = root.at("window");
         if (!window_node.is_object())
         {
             append_bootstrap_error(error, "User config field window must be an object.");
@@ -285,7 +287,7 @@ bool UserConfigStore::apply_overrides(
 
     if (root.contains("render"))
     {
-        const json& render_node = root.at("render");
+        const elysia::io::json& render_node = root.at("render");
         if (!render_node.is_object())
         {
             append_bootstrap_error(error, "User config field render must be an object.");
@@ -313,7 +315,7 @@ bool UserConfigStore::apply_overrides(
 
     if (root.contains("audio"))
     {
-        const json& audio_node = root.at("audio");
+        const elysia::io::json& audio_node = root.at("audio");
         if (!audio_node.is_object())
         {
             append_bootstrap_error(error, "User config field audio must be an object.");
@@ -350,7 +352,7 @@ bool UserConfigStore::apply_overrides(
 
     if (root.contains("localization"))
     {
-        const json& localization_node = root.at("localization");
+        const elysia::io::json& localization_node = root.at("localization");
         if (!localization_node.is_object())
         {
             append_bootstrap_error(error, "User config field localization must be an object.");
@@ -407,4 +409,6 @@ bool UserConfigStore::write_user_config(
     }
 
     return true;
+}
+
 }

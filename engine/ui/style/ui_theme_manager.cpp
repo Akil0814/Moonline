@@ -87,3 +87,7 @@ void UiThemeManager::mark_registered_elements_dirty()
         }
     }
 }*/
+namespace elysia::ui
+{
+
+}

@@ -6,6 +6,8 @@
 #include <filesystem>
 #include <string>
 
+namespace elysia::io
+{
 class AnimationConfigLoader
 {
 public:
@@ -38,3 +40,5 @@ private:
 		AnimationConfig& config
 	) const;
 };
+
+}

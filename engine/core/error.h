@@ -5,6 +5,8 @@
 #define FILE_FIND
 #define FILE_WRITE
 
+namespace elysia::core
+{
 enum class ErroRType
 {
 	FileFinding,
@@ -18,3 +20,4 @@ struct Error
 	int _error_line;
 	std::string _error_message;
 };
+}

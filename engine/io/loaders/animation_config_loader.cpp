@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <utility>
 
+namespace elysia::io
+{
 bool AnimationConfigLoader::load(
 	const std::filesystem::path& animation_config_path,
 	const CharacterAnimationLayout& layout,
@@ -215,4 +217,6 @@ bool AnimationConfigLoader::append_clip(
 	config.clips.push_back(std::move(clip_config));
 
 	return true;
+}
+
 }

@@ -2,6 +2,8 @@
 
 #include "color.h"
 
+namespace elysia::core
+{
 namespace colors
 {
 inline constexpr Color transparent{ 0, 0, 0, 0 };
@@ -23,4 +25,6 @@ inline constexpr Color loading_blue_panel_screen{ 8, 16, 28, 255 };
 
 inline constexpr Color loading_blue_bar_background{ 0, 43, 100, 255 };
 inline constexpr Color loading_blue_bar_fill{ 245, 255, 255, 255 };
+}
+
 }

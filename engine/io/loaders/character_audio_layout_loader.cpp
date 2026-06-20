@@ -5,6 +5,8 @@
 #include <iostream>
 #include <utility>
 
+namespace elysia::io
+{
 bool CharacterAudioLayoutLoader::load(
 	const std::filesystem::path& layout_path,
 	CharacterAudioLayout& layout
@@ -47,4 +49,6 @@ bool CharacterAudioLayoutLoader::load(
 
 	layout = std::move(parsed_layout);
 	return true;
+}
+
 }

@@ -12,12 +12,14 @@
 #include <iostream>
 #include <utility>
 
+namespace elysia::localization
+{
 namespace
 {
 using TranslationTable = std::unordered_map<std::string, std::string>;
 
 bool flatten_locale_json(
-	const json& node,
+	const elysia::io::json& node,
 	const std::string& prefix,
 	TranslationTable& out_table
 )
@@ -64,7 +66,7 @@ bool LocalizationManager::init(
 		return false;
 	}
 
-	I18nManifestLoader manifest_loader;
+	elysia::io::I18nManifestLoader manifest_loader;
 	if (!manifest_loader.load(manifest_path, _manifest))
 	{
 		std::cout << "Localization init failed: i18n manifest load failed: "
@@ -88,7 +90,7 @@ bool LocalizationManager::init(
 	if (!is_supported_language(_manifest.default_language))
 		_manifest.languages.push_back(_manifest.default_language);
 
-	PathManager* path_manager = PathManager::instance();
+	elysia::io::PathManager* path_manager = elysia::io::PathManager::instance();
 	if (!path_manager->is_initialized())
 	{
 		std::cout << "Localization init failed: path manager is not initialized."
@@ -122,7 +124,7 @@ void LocalizationManager::shutdown()
 {
 	_text_texture_cache.clear();
 	_translation_tables.clear();
-	_manifest = I18nManifest{};
+	_manifest = elysia::io::I18nManifest{};
 	_manifest_path.clear();
 	_i18n_root.clear();
 	_current_language.clear();
@@ -251,8 +253,8 @@ bool LocalizationManager::load_language_table(
 	for (const std::filesystem::path& relative_file_path : _manifest.files)
 	{
 		const std::filesystem::path full_file_path = locale_directory / relative_file_path;
-		JsonLoader loader;
-		const JsonReadResult open_result = loader.open_file(full_file_path);
+		elysia::io::JsonLoader loader;
+		const elysia::io::JsonReadResult open_result = loader.open_file(full_file_path);
 		if (!open_result.success)
 		{
 			std::cout << "Load language table failed: " << open_result.error << std::endl;
@@ -338,7 +340,7 @@ CachedTexturePtr LocalizationManager::create_text_texture(
 		return {};
 	}
 
-	TTF_Font* font = ResourceManager::instance()->find_font(font_key);
+	TTF_Font* font = elysia::resources::ResourceManager::instance()->find_font(font_key);
 	if (!font)
 	{
 		std::cout << "Create text texture failed: font is not loaded: "
@@ -355,7 +357,7 @@ CachedTexturePtr LocalizationManager::create_text_texture(
 	}
 
 	SDL_Surface* surface = nullptr;
-    const SDL_Color text_color = to_sdl_color(style.color);
+    const SDL_Color text_color = elysia::core::to_sdl_color(style.color);
 	if (style.wrap_width > 0)
 	{
 		surface = TTF_RenderUTF8_Blended_Wrapped(
@@ -389,4 +391,6 @@ CachedTexturePtr LocalizationManager::create_text_texture(
 	}
 
 	return CachedTexturePtr(texture);
+}
+
 }

@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+namespace elysia::input
+{
 ControllerManager::~ControllerManager()
 {
     shutdown();
@@ -128,4 +130,6 @@ void ControllerManager::close_all_controllers()
     }
 
     _controllers.clear();
+}
+
 }

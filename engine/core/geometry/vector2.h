@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+namespace elysia::core
+{
 class Vector2
 {
 public:
@@ -180,3 +182,5 @@ public:
 		return vec * val;
 	}
 };
+
+}

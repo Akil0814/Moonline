@@ -6,6 +6,8 @@
 
 #include <vector>
 
+namespace elysia::resources
+{
 struct AtlasFramePrepareTask
 {
 	std::string atlas_key;
@@ -30,3 +32,5 @@ public:
 
 	AtlasFramePreparedResult prepare_frame(const AtlasFramePrepareTask& task) const;
 };
+
+}

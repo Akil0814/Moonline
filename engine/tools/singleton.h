@@ -1,5 +1,7 @@
 #pragma once
 
+namespace elysia::tools
+{
 template<typename T>
 class Singleton
 {
@@ -16,3 +18,5 @@ protected:
     Singleton(const Singleton&) = delete;
     Singleton& operator=(const Singleton&) = delete;
 };
+
+}

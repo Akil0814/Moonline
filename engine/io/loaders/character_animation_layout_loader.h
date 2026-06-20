@@ -3,6 +3,8 @@
 
 #include <filesystem>
 
+namespace elysia::io
+{
 class CharacterAnimationLayoutLoader
 {
 public:
@@ -11,3 +13,5 @@ public:
 		CharacterAnimationLayout& layout
 	) const;
 };
+
+}

@@ -1,5 +1,7 @@
 #include "../../core/geometry/vector2.h"
 
+namespace elysia::ui
+{
 enum class UiLayoutAnchor
 {
     TopLeft,
@@ -48,7 +50,7 @@ struct UiLayoutChildOptions
 {
     UiLayoutMargin _margin;
     UiLayoutAlign _cross_align = UiLayoutAlign::Start;
-    Vector2 _size_override{ 0.0f, 0.0f };
+    elysia::core::Vector2 _size_override{ 0.0f, 0.0f };
 
     bool _use_custom_cross_align = false;
     bool _fill_cross_axis = false;
@@ -57,6 +59,7 @@ struct UiLayoutChildOptions
 
 struct UiLayoutTransform
 {
-    Vector2 translation{ 0.0f, 0.0f };
-    Vector2 scale{ 1.0f, 1.0f };
+    elysia::core::Vector2 translation{ 0.0f, 0.0f };
+    elysia::core::Vector2 scale{ 1.0f, 1.0f };
 };
+}

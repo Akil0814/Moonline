@@ -8,12 +8,12 @@
 class GameplayInputRouter
 {
 public:
-    GameplayInputFrame route_frame(const RawInputFrame& raw_input) const;
-    std::vector<GameplayInputEvent> route_event(const RawInputEvent& raw_event) const;
+    GameplayInputFrame route_frame(const elysia::input::RawInputFrame& raw_input) const;
+    std::vector<GameplayInputEvent> route_event(const elysia::input::RawInputEvent& raw_event) const;
 
 private:
-    [[nodiscard]] bool is_action_pressed(const RawInputState& state, GameplayAction action) const;
-    [[nodiscard]] bool is_action_just_pressed(const RawInputState& state, GameplayAction action) const;
-    [[nodiscard]] bool is_action_just_released(const RawInputState& state, GameplayAction action) const;
-    [[nodiscard]] GameplayAction action_from_control(RawInputControl control) const;
+    [[nodiscard]] bool is_action_pressed(const elysia::input::RawInputState& state, GameplayAction action) const;
+    [[nodiscard]] bool is_action_just_pressed(const elysia::input::RawInputState& state, GameplayAction action) const;
+    [[nodiscard]] bool is_action_just_released(const elysia::input::RawInputState& state, GameplayAction action) const;
+    [[nodiscard]] GameplayAction action_from_control(elysia::input::RawInputControl control) const;
 };

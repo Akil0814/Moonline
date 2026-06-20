@@ -8,11 +8,13 @@
 #include <tuple>
 #include <vector>
 
+namespace elysia::scene
+{
 namespace scene_input_order
 {
 [[nodiscard]] inline bool receiver_priority_less(
-    const SceneObject* lhs,
-    const SceneObject* rhs
+    const elysia::core::SceneObject* lhs,
+    const elysia::core::SceneObject* rhs
 ) noexcept
 {
     if (lhs == rhs)
@@ -20,16 +22,16 @@ namespace scene_input_order
         return false;
     }
 
-    const UiElement* lhs_ui = dynamic_cast<const UiElement*>(lhs);
-    const UiElement* rhs_ui = dynamic_cast<const UiElement*>(rhs);
+    const elysia::ui::UiElement* lhs_ui = dynamic_cast<const elysia::ui::UiElement*>(lhs);
+    const elysia::ui::UiElement* rhs_ui = dynamic_cast<const elysia::ui::UiElement*>(rhs);
 
     if (lhs_ui && rhs_ui)
     {
         return lhs_ui->order() > rhs_ui->order();
     }
 
-    const GameObject* lhs_game = dynamic_cast<const GameObject*>(lhs);
-    const GameObject* rhs_game = dynamic_cast<const GameObject*>(rhs);
+    const elysia::core::GameObject* lhs_game = dynamic_cast<const elysia::core::GameObject*>(lhs);
+    const elysia::core::GameObject* rhs_game = dynamic_cast<const elysia::core::GameObject*>(rhs);
 
     if (lhs_game && rhs_game)
     {
@@ -52,7 +54,7 @@ namespace scene_input_order
         return false;
     }
 
-    return std::less<const SceneObject*>{}(lhs, rhs);
+    return std::less<const elysia::core::SceneObject*>{}(lhs, rhs);
 }
 
 template <typename Entry>
@@ -71,3 +73,5 @@ void insert_receiver_entry_sorted(std::vector<Entry>& entries, Entry entry)
     entries.insert(iter, entry);
 }
 } // namespace scene_input_order
+
+}

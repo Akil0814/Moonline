@@ -5,41 +5,41 @@ namespace
 struct GameplayBinding
 {
     GameplayAction action;
-    RawInputControl control;
+    elysia::input::RawInputControl control;
 };
 
 constexpr GameplayBinding k_gameplay_bindings[] = {
-    { GameplayAction::MoveLeft, RawInputControl::KeyA },
-    { GameplayAction::MoveLeft, RawInputControl::KeyLeft },
-    { GameplayAction::MoveRight, RawInputControl::KeyD },
-    { GameplayAction::MoveRight, RawInputControl::KeyRight },
-    { GameplayAction::MoveUp, RawInputControl::KeyW },
-    { GameplayAction::MoveUp, RawInputControl::KeyUp },
-    { GameplayAction::MoveDown, RawInputControl::KeyS },
-    { GameplayAction::MoveDown, RawInputControl::KeyDown },
-    { GameplayAction::Jump, RawInputControl::KeySpace },
-    { GameplayAction::Attack, RawInputControl::KeyJ },
-    { GameplayAction::Special, RawInputControl::KeyK },
-    { GameplayAction::Guard, RawInputControl::KeyL },
-    { GameplayAction::Dash, RawInputControl::KeyLeftShift },
-    { GameplayAction::Dash, RawInputControl::KeyRightShift },
-    { GameplayAction::Pause, RawInputControl::KeyP },
-    { GameplayAction::Attack, RawInputControl::MouseLeft },
-    { GameplayAction::Guard, RawInputControl::MouseRight },
-    { GameplayAction::MoveLeft, RawInputControl::GamepadDPadLeft },
-    { GameplayAction::MoveRight, RawInputControl::GamepadDPadRight },
-    { GameplayAction::MoveUp, RawInputControl::GamepadDPadUp },
-    { GameplayAction::MoveDown, RawInputControl::GamepadDPadDown },
-    { GameplayAction::Jump, RawInputControl::GamepadSouth },
-    { GameplayAction::Attack, RawInputControl::GamepadWest },
-    { GameplayAction::Special, RawInputControl::GamepadNorth },
-    { GameplayAction::Guard, RawInputControl::GamepadLeftShoulder },
-    { GameplayAction::Dash, RawInputControl::GamepadRightShoulder },
-    { GameplayAction::Pause, RawInputControl::GamepadStart }
+    { GameplayAction::MoveLeft, elysia::input::RawInputControl::KeyA },
+    { GameplayAction::MoveLeft, elysia::input::RawInputControl::KeyLeft },
+    { GameplayAction::MoveRight, elysia::input::RawInputControl::KeyD },
+    { GameplayAction::MoveRight, elysia::input::RawInputControl::KeyRight },
+    { GameplayAction::MoveUp, elysia::input::RawInputControl::KeyW },
+    { GameplayAction::MoveUp, elysia::input::RawInputControl::KeyUp },
+    { GameplayAction::MoveDown, elysia::input::RawInputControl::KeyS },
+    { GameplayAction::MoveDown, elysia::input::RawInputControl::KeyDown },
+    { GameplayAction::Jump, elysia::input::RawInputControl::KeySpace },
+    { GameplayAction::Attack, elysia::input::RawInputControl::KeyJ },
+    { GameplayAction::Special, elysia::input::RawInputControl::KeyK },
+    { GameplayAction::Guard, elysia::input::RawInputControl::KeyL },
+    { GameplayAction::Dash, elysia::input::RawInputControl::KeyLeftShift },
+    { GameplayAction::Dash, elysia::input::RawInputControl::KeyRightShift },
+    { GameplayAction::Pause, elysia::input::RawInputControl::KeyP },
+    { GameplayAction::Attack, elysia::input::RawInputControl::MouseLeft },
+    { GameplayAction::Guard, elysia::input::RawInputControl::MouseRight },
+    { GameplayAction::MoveLeft, elysia::input::RawInputControl::GamepadDPadLeft },
+    { GameplayAction::MoveRight, elysia::input::RawInputControl::GamepadDPadRight },
+    { GameplayAction::MoveUp, elysia::input::RawInputControl::GamepadDPadUp },
+    { GameplayAction::MoveDown, elysia::input::RawInputControl::GamepadDPadDown },
+    { GameplayAction::Jump, elysia::input::RawInputControl::GamepadSouth },
+    { GameplayAction::Attack, elysia::input::RawInputControl::GamepadWest },
+    { GameplayAction::Special, elysia::input::RawInputControl::GamepadNorth },
+    { GameplayAction::Guard, elysia::input::RawInputControl::GamepadLeftShoulder },
+    { GameplayAction::Dash, elysia::input::RawInputControl::GamepadRightShoulder },
+    { GameplayAction::Pause, elysia::input::RawInputControl::GamepadStart }
 };
 }
 
-GameplayInputFrame GameplayInputRouter::route_frame(const RawInputFrame& raw_input) const
+GameplayInputFrame GameplayInputRouter::route_frame(const elysia::input::RawInputFrame& raw_input) const
 {
     GameplayInputFrame gameplay_input;
     gameplay_input.active_device = raw_input.active_device;
@@ -61,14 +61,14 @@ GameplayInputFrame GameplayInputRouter::route_frame(const RawInputFrame& raw_inp
     return gameplay_input;
 }
 
-std::vector<GameplayInputEvent> GameplayInputRouter::route_event(const RawInputEvent& raw_event) const
+std::vector<GameplayInputEvent> GameplayInputRouter::route_event(const elysia::input::RawInputEvent& raw_event) const
 {
     std::vector<GameplayInputEvent> events;
 
     switch (raw_event.type)
     {
-    case RawInputEventType::ControlPressed:
-    case RawInputEventType::ControlReleased:
+    case elysia::input::RawInputEventType::ControlPressed:
+    case elysia::input::RawInputEventType::ControlReleased:
     {
         const GameplayAction action = action_from_control(raw_event.control);
         if (action == GameplayAction::None)
@@ -78,7 +78,7 @@ std::vector<GameplayInputEvent> GameplayInputRouter::route_event(const RawInputE
 
         GameplayInputEvent event;
         event.action = action;
-        event.type = raw_event.type == RawInputEventType::ControlPressed
+        event.type = raw_event.type == elysia::input::RawInputEventType::ControlPressed
             ? GameplayInputEventType::ActionPressed
             : GameplayInputEventType::ActionReleased;
         event.device = raw_event.device;
@@ -86,7 +86,7 @@ std::vector<GameplayInputEvent> GameplayInputRouter::route_event(const RawInputE
         break;
     }
 
-    case RawInputEventType::AxisChanged:
+    case elysia::input::RawInputEventType::AxisChanged:
     {
         GameplayInputEvent event;
         event.type = GameplayInputEventType::AxisChanged;
@@ -97,10 +97,10 @@ std::vector<GameplayInputEvent> GameplayInputRouter::route_event(const RawInputE
         break;
     }
 
-    case RawInputEventType::MouseWheel:
-    case RawInputEventType::TextInput:
-    case RawInputEventType::TextEditing:
-    case RawInputEventType::None:
+    case elysia::input::RawInputEventType::MouseWheel:
+    case elysia::input::RawInputEventType::TextInput:
+    case elysia::input::RawInputEventType::TextEditing:
+    case elysia::input::RawInputEventType::None:
     default:
         break;
     }
@@ -108,7 +108,7 @@ std::vector<GameplayInputEvent> GameplayInputRouter::route_event(const RawInputE
     return events;
 }
 
-bool GameplayInputRouter::is_action_pressed(const RawInputState& state, GameplayAction action) const
+bool GameplayInputRouter::is_action_pressed(const elysia::input::RawInputState& state, GameplayAction action) const
 {
     for (const GameplayBinding& binding : k_gameplay_bindings)
     {
@@ -121,7 +121,7 @@ bool GameplayInputRouter::is_action_pressed(const RawInputState& state, Gameplay
     return false;
 }
 
-bool GameplayInputRouter::is_action_just_pressed(const RawInputState& state, GameplayAction action) const
+bool GameplayInputRouter::is_action_just_pressed(const elysia::input::RawInputState& state, GameplayAction action) const
 {
     for (const GameplayBinding& binding : k_gameplay_bindings)
     {
@@ -134,7 +134,7 @@ bool GameplayInputRouter::is_action_just_pressed(const RawInputState& state, Gam
     return false;
 }
 
-bool GameplayInputRouter::is_action_just_released(const RawInputState& state, GameplayAction action) const
+bool GameplayInputRouter::is_action_just_released(const elysia::input::RawInputState& state, GameplayAction action) const
 {
     for (const GameplayBinding& binding : k_gameplay_bindings)
     {
@@ -147,7 +147,7 @@ bool GameplayInputRouter::is_action_just_released(const RawInputState& state, Ga
     return false;
 }
 
-GameplayAction GameplayInputRouter::action_from_control(RawInputControl control) const
+GameplayAction GameplayInputRouter::action_from_control(elysia::input::RawInputControl control) const
 {
     for (const GameplayBinding& binding : k_gameplay_bindings)
     {

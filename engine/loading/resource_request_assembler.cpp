@@ -7,6 +7,8 @@
 
 #include <iostream>
 
+namespace elysia::loading
+{
 bool ResourceRequestAssembler::assemble(
 	const ConfigLoadResult& config_result,
 	ResourceLoadPlan& out_plan
@@ -14,8 +16,8 @@ bool ResourceRequestAssembler::assemble(
 {
 	out_plan.clear();
 
-	ResourceRequestBuilder request_builder;
-	for (const CharacterAnimationContentEntry& entry : config_result.character_animation_entries)
+	elysia::resources::ResourceRequestBuilder request_builder;
+	for (const elysia::io::CharacterAnimationContentEntry& entry : config_result.character_animation_entries)
 	{
 		const size_t animation_atlas_count_before = out_plan.atlas_build_requests().size();
 		const size_t animation_count_before = out_plan.animation_build_requests().size();
@@ -52,7 +54,7 @@ bool ResourceRequestAssembler::assemble(
 			return false;
 		}
 
-		std::cout << "Effect requests built: atlases="
+		std::cout << "elysia::animation::Effect requests built: atlases="
 			<< (out_plan.atlas_build_requests().size() - effect_atlas_count_before)
 			<< ", animations="
 			<< (out_plan.animation_build_requests().size() - effect_animation_count_before)
@@ -62,7 +64,7 @@ bool ResourceRequestAssembler::assemble(
 	}
 
 	const size_t texture_count_before = out_plan.texture_requests().size();
-	const std::filesystem::path textures_root = PathManager::instance()->textures();
+	const std::filesystem::path textures_root = elysia::io::PathManager::instance()->textures();
 	if (!request_builder.append_texture_manifest_requests(
 		config_result.ui_texture_manifest,
 		"ui",
@@ -83,7 +85,7 @@ bool ResourceRequestAssembler::assemble(
 		return false;
 	}
 
-	for (const CharacterAnimationContentEntry& entry : config_result.character_animation_entries)
+	for (const elysia::io::CharacterAnimationContentEntry& entry : config_result.character_animation_entries)
 	{
 		if (!request_builder.append_character_texture_requests(
 			entry.character_config,
@@ -118,7 +120,7 @@ bool ResourceRequestAssembler::assemble(
 		return false;
 	}
 
-	for (const CharacterAnimationContentEntry& entry : config_result.character_animation_entries)
+	for (const elysia::io::CharacterAnimationContentEntry& entry : config_result.character_animation_entries)
 	{
 		if (!request_builder.append_character_audio_requests(
 			entry.character_config,
@@ -136,3 +138,5 @@ bool ResourceRequestAssembler::assemble(
 	return true;
 }
 
+
+}

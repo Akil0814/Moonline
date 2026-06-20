@@ -14,15 +14,16 @@
 #include "../core/depth_layer.h"
 #include "../core/game_object.h"
 #include "../core/event/subject.h"
+#include "../core/interface/updatable.h"
+#include "../input/contracts/raw_input_event_receiver.h"
+#include "../input/contracts/raw_input_frame_receiver.h"
 #include "../input/raw_input_frame.h"
 #include "../input/raw_input_types.h"
 #include "../ui/core/ui_element.h"
 
-struct RawInputFrameReceiver;
-struct RawInputEventReceiver;
-struct Updatable;
-
-class Scene : public Subject<SceneRequestObserver>
+namespace elysia::scene
+{
+class Scene : public elysia::core::Subject<SceneRequestObserver>
 {
 public:
 	Scene() = default;
@@ -42,7 +43,7 @@ public:
 
 	virtual void on_render(SDL_Renderer* renderer);
 
-	virtual void on_input(const RawInputFrame& input,const std::vector<RawInputEvent>& events);
+	virtual void on_input(const elysia::input::RawInputFrame& input,const std::vector<elysia::input::RawInputEvent>& events);
 
 	void pause() { _paused = true; }
 	void resume() { _paused = false; }
@@ -52,8 +53,8 @@ public:
 	T* create_and_add_object(Args&&... args)
 	{
 		static_assert(
-			std::is_base_of_v<GameObject, T> || std::is_base_of_v<UiElement, T>,
-			"T must derive from GameObject or UiElement.");
+			std::is_base_of_v<elysia::core::GameObject, T> || std::is_base_of_v<elysia::ui::UiElement, T>,
+			"T must derive from elysia::core::GameObject or elysia::ui::UiElement.");
 
 		return add_object(
 			std::make_unique<T>(std::forward<Args>(args)...)
@@ -64,12 +65,12 @@ public:
 	T* add_object(std::unique_ptr<T> object)
 	{
 		static_assert(
-			std::is_base_of_v<SceneObject, T>,
-			"T must derive from SceneObject.");
+			std::is_base_of_v<elysia::core::SceneObject, T>,
+			"T must derive from elysia::core::SceneObject.");
 
 		static_assert(
-			std::is_base_of_v<GameObject, T> || std::is_base_of_v<UiElement, T>,
-			"T must derive from GameObject or UiElement.");
+			std::is_base_of_v<elysia::core::GameObject, T> || std::is_base_of_v<elysia::ui::UiElement, T>,
+			"T must derive from elysia::core::GameObject or elysia::ui::UiElement.");
 
 		if (!object)
 			return nullptr;
@@ -77,9 +78,9 @@ public:
 		T* raw_object = object.get();
 		bool added = false;
 
-		if constexpr (std::is_base_of_v<GameObject, T>)
+		if constexpr (std::is_base_of_v<elysia::core::GameObject, T>)
 			added = add_game_object(std::move(object));
-		else if constexpr (std::is_base_of_v<UiElement, T>)
+		else if constexpr (std::is_base_of_v<elysia::ui::UiElement, T>)
 			added = add_ui_root(std::move(object));
 
 		if (!added)
@@ -98,42 +99,44 @@ protected:
 		SceneReloadMode reload_mode = SceneReloadMode::Reuse
 	);
 	void request_quit();
-	virtual void on_scene_object_registered(SceneObject& object);
+	virtual void on_scene_object_registered(elysia::core::SceneObject& object);
 
 protected:
 	bool _paused = false;
 
 private:
-	void register_scene_object_interfaces(SceneObject* object);
+	void register_scene_object_interfaces(elysia::core::SceneObject* object);
 	void remove_destroyed_objects();
-	bool add_game_object(std::unique_ptr<GameObject> object);
-	bool add_ui_root(std::unique_ptr<UiElement> object);
+	bool add_game_object(std::unique_ptr<elysia::core::GameObject> object);
+	bool add_ui_root(std::unique_ptr<elysia::ui::UiElement> object);
 
 	struct UpdatableEntry
 	{
-		SceneObject* object = nullptr;
-		Updatable* updatable = nullptr;
+		elysia::core::SceneObject* object = nullptr;
+		elysia::core::Updatable* updatable = nullptr;
 	};
 
 	struct RawInputFrameReceiverEntry
 	{
-		SceneObject* object = nullptr;
-		RawInputFrameReceiver* receiver = nullptr;
+		elysia::core::SceneObject* object = nullptr;
+		elysia::input::RawInputFrameReceiver* receiver = nullptr;
 	};
 
 	struct RawInputEventReceiverEntry
 	{
-		SceneObject* object = nullptr;
-		RawInputEventReceiver* receiver = nullptr;
+		elysia::core::SceneObject* object = nullptr;
+		elysia::input::RawInputEventReceiver* receiver = nullptr;
 	};
 
 private:
 
-	std::array<std::vector<std::unique_ptr<GameObject>>,
-		static_cast<size_t>(DepthLayer::Count)> _object_layers;
-	std::vector<std::unique_ptr<UiElement>> _ui_roots;
+	std::array<std::vector<std::unique_ptr<elysia::core::GameObject>>,
+		static_cast<size_t>(elysia::core::DepthLayer::Count)> _object_layers;
+	std::vector<std::unique_ptr<elysia::ui::UiElement>> _ui_roots;
 
 	std::vector<UpdatableEntry> _updatables;
 	std::vector<RawInputFrameReceiverEntry> _frame_receivers;
 	std::vector<RawInputEventReceiverEntry> _event_receivers;
 };
+
+}

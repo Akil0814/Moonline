@@ -8,8 +8,9 @@
 #include <vector>
 
 struct SDL_Texture;
-struct UiRenderCommand;
 
+namespace elysia::ui
+{
 struct UiButtonTextures
 {
     SDL_Texture* idle;
@@ -24,13 +25,13 @@ public:
     using ClickCallback = std::function<void()>;
 
     explicit UiButton(
-        const Rect& rect = Rect::zero(),
+        const elysia::core::Rect& rect = elysia::core::Rect::zero(),
         int order = 0,
         std::string text_key = {}
     ) noexcept;
     UiButton(
-        const Vector2& position,
-        const Vector2& size,
+        const elysia::core::Vector2& position,
+        const elysia::core::Vector2& size,
         int order = 0,
         std::string text_key = {}
     ) noexcept;
@@ -42,27 +43,27 @@ public:
     void set_focused(bool focused);
 
     bool on_ui_input_event(const UiInputEvent& event) override;
-    void submit_ui_render_commands(std::vector<UiRenderCommand>& out_commands) const override;
+    void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
 
     void set_text_key(std::string text_key);
     [[nodiscard]] const std::string& text_key() const noexcept;
 
     void set_on_click(ClickCallback on_click);
 
-    void set_idle_color(Color color);
-    [[nodiscard]] Color idle_color() const noexcept;
+    void set_idle_color(elysia::core::Color color);
+    [[nodiscard]] elysia::core::Color idle_color() const noexcept;
 
-    void set_focused_color(Color color);
-    [[nodiscard]] Color focused_color() const noexcept;
+    void set_focused_color(elysia::core::Color color);
+    [[nodiscard]] elysia::core::Color focused_color() const noexcept;
 
-    void set_pushed_color(Color color);
-    [[nodiscard]] Color pushed_color() const noexcept;
+    void set_pushed_color(elysia::core::Color color);
+    [[nodiscard]] elysia::core::Color pushed_color() const noexcept;
 
-    void set_border_color(Color color);
-    [[nodiscard]] Color border_color() const noexcept;
+    void set_border_color(elysia::core::Color color);
+    [[nodiscard]] elysia::core::Color border_color() const noexcept;
 
-    void set_text_color(Color color);
-    [[nodiscard]] Color text_color() const noexcept;
+    void set_text_color(elysia::core::Color color);
+    [[nodiscard]] elysia::core::Color text_color() const noexcept;
 
     void set_text_point_size(int point_size);
     [[nodiscard]] int text_point_size() const noexcept;
@@ -75,23 +76,25 @@ public:
 
 private:
     [[nodiscard]] bool can_interact() const noexcept;
-    [[nodiscard]] Color current_background_color() const noexcept;
-    [[nodiscard]] Rect content_rect() const noexcept;
-    [[nodiscard]] Rect text_render_rect(SDL_Texture* text_texture) const noexcept;
+    [[nodiscard]] elysia::core::Color current_background_color() const noexcept;
+    [[nodiscard]] elysia::core::Rect content_rect() const noexcept;
+    [[nodiscard]] elysia::core::Rect text_render_rect(SDL_Texture* text_texture) const noexcept;
     void clear_pushed_state() noexcept;
 
 private:
     std::string _text_key;
     ClickCallback _on_click;
 
-    Color _idle_color = colors::loading_blue_button_idle;
-    Color _focused_color = colors::loading_blue_button_hovered;
-    Color _pushed_color = colors::loading_blue_button_pushed;
-    Color _border_color = colors::loading_blue_button_frame;
-    Color _text_color = colors::white;
+    elysia::core::Color _idle_color = elysia::core::colors::loading_blue_button_idle;
+    elysia::core::Color _focused_color = elysia::core::colors::loading_blue_button_hovered;
+    elysia::core::Color _pushed_color = elysia::core::colors::loading_blue_button_pushed;
+    elysia::core::Color _border_color = elysia::core::colors::loading_blue_button_frame;
+    elysia::core::Color _text_color = elysia::core::colors::white;
 
     int _text_point_size = 24;
     int _padding = 10;
     bool _draw_border = true;
     bool _is_pushed = false;
 };
+
+}

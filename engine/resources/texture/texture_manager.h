@@ -8,6 +8,8 @@
 #include <string_view>
 #include <unordered_map>
 
+namespace elysia::resources
+{
 using TexturePool = std::unordered_map<std::string, TexturePtr>;
 
 class TextureManager : public ResourceSubManager
@@ -22,3 +24,5 @@ public:
 private:
 	TexturePool _texture_pool;
 };
+
+}

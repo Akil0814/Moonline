@@ -5,6 +5,8 @@
 #include <array>
 #include <cstddef>
 
+namespace elysia::input
+{
 class InputState
 {
 public:
@@ -76,3 +78,5 @@ private:
     std::array<bool, static_cast<std::size_t>(InputAction::Count)> _current{};
     std::array<bool, static_cast<std::size_t>(InputAction::Count)> _previous{};
 };
+
+}

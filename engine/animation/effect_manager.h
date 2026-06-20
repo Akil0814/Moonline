@@ -11,6 +11,8 @@
 #include <vector>
 #include <optional>
 
+namespace elysia::animation
+{
 class AnimationManager;
 
 enum class EffectAnchor
@@ -31,27 +33,27 @@ struct EffectDefinition
 	std::string effect_key;
 	std::string animation_key;
 	double angle_degrees = 0.0;
-	Vector2 default_size;
+	elysia::core::Vector2 default_size;
 };
 
 struct EffectSpawnRequest
 {
 	std::string effect_key;
 	// World-space position of the selected playback anchor.
-	Vector2 position;
+	elysia::core::Vector2 position;
 	EffectAnchor anchor = EffectAnchor::TopLeft;
-	std::optional<Vector2> size;
+	std::optional<elysia::core::Vector2> size;
 	std::optional<double> angle_degrees;
-	std::optional<SpriteFlip> flip;
+	std::optional<elysia::core::SpriteFlip> flip;
 };
 
-class EffectManager : public Singleton<EffectManager>
+class EffectManager : public elysia::tools::Singleton<EffectManager>
 {
-	friend Singleton<EffectManager>;
+	friend elysia::tools::Singleton<EffectManager>;
 
 public:
-	bool register_effect(const EffectBuildRequest& request);
-	bool register_effect(const std::vector<EffectBuildRequest>& requests);
+	bool register_effect(const elysia::resources::EffectBuildRequest& request);
+	bool register_effect(const std::vector<elysia::resources::EffectBuildRequest>& requests);
 
 	const EffectDefinition* find_definition(const std::string_view& key) const;
 
@@ -61,3 +63,5 @@ public:
 private:
 	std::unordered_map<std::string, EffectDefinition> _definitions;
 };
+
+}

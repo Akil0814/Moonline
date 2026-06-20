@@ -3,6 +3,8 @@
 
 #include <filesystem>
 
+namespace elysia::io
+{
 class CharacterTextureLayoutLoader
 {
 public:
@@ -11,3 +13,5 @@ public:
 		CharacterTextureLayout& layout
 	) const;
 };
+
+}

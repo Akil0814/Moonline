@@ -1,26 +1,28 @@
 #include "resource_manager.h"
 
-ResourceManager::ResourceManager()
+namespace elysia::resources
+{
+elysia::resources::ResourceManager::ResourceManager()
 	: _atlas_manager(_texture_manager)
 {
 }
 
-bool ResourceManager::init()
+bool elysia::resources::ResourceManager::init()
 {
 	return true;
 }
 
-bool ResourceManager::begin_atlas_build(const AtlasBuildRequest& request)
+bool elysia::resources::ResourceManager::begin_atlas_build(const AtlasBuildRequest& request)
 {
 	return _atlas_manager.begin_build(request);
 }
 
-bool ResourceManager::begin_atlas_builds(const std::vector<AtlasBuildRequest>& requests)
+bool elysia::resources::ResourceManager::begin_atlas_builds(const std::vector<AtlasBuildRequest>& requests)
 {
 	return _atlas_manager.begin_builds(requests);
 }
 
-bool ResourceManager::commit_prepared_atlas_frame(
+bool elysia::resources::ResourceManager::commit_prepared_atlas_frame(
 	SDL_Renderer* renderer,
 	const AtlasFramePreparedResult& result
 )
@@ -28,7 +30,7 @@ bool ResourceManager::commit_prepared_atlas_frame(
 	return _atlas_manager.commit_prepared_frame(renderer, result);
 }
 
-bool ResourceManager::load_font(
+bool elysia::resources::ResourceManager::load_font(
 	const std::string& key,
 	const std::filesystem::path& file_path,
 	int point_size
@@ -37,82 +39,82 @@ bool ResourceManager::load_font(
 	return _font_manager.load_font(key, file_path, point_size);
 }
 
-bool ResourceManager::load_sounds(const std::vector<SoundLoadRequest>& requests)
+bool elysia::resources::ResourceManager::load_sounds(const std::vector<SoundLoadRequest>& requests)
 {
 	return _audio_manager.load_sounds(requests);
 }
 
-bool ResourceManager::load_music(const std::vector<MusicLoadRequest>& requests)
+bool elysia::resources::ResourceManager::load_music(const std::vector<MusicLoadRequest>& requests)
 {
 	return _audio_manager.load_music(requests);
 }
 
-Atlas* ResourceManager::find_atlas(const std::string_view& key) const
+Atlas* elysia::resources::ResourceManager::find_atlas(const std::string_view& key) const
 {
 	return _atlas_manager.find_atlas(key);
 }
 
-TTF_Font* ResourceManager::find_font(const std::string_view& key) const
+TTF_Font* elysia::resources::ResourceManager::find_font(const std::string_view& key) const
 {
 	return _font_manager.find_font(key);
 }
 
-Mix_Chunk* ResourceManager::find_sound(const std::string_view& key) const
+Mix_Chunk* elysia::resources::ResourceManager::find_sound(const std::string_view& key) const
 {
 	return _audio_manager.find_sound(key);
 }
 
-Mix_Music* ResourceManager::find_music(const std::string_view& key) const
+Mix_Music* elysia::resources::ResourceManager::find_music(const std::string_view& key) const
 {
 	return _audio_manager.find_music(key);
 }
 
-SDL_Texture* ResourceManager::find_texture(const std::string_view& key) const
+SDL_Texture* elysia::resources::ResourceManager::find_texture(const std::string_view& key) const
 {
 	return _texture_manager.find_texture(key);
 }
 
-AtlasManager& ResourceManager::atlas_manager()
+AtlasManager& elysia::resources::ResourceManager::atlas_manager()
 {
 	return _atlas_manager;
 }
 
-const AtlasManager& ResourceManager::atlas_manager() const
+const AtlasManager& elysia::resources::ResourceManager::atlas_manager() const
 {
 	return _atlas_manager;
 }
 
-TextureManager& ResourceManager::texture_manager()
+TextureManager& elysia::resources::ResourceManager::texture_manager()
 {
 	return _texture_manager;
 }
 
-const TextureManager& ResourceManager::texture_manager() const
+const TextureManager& elysia::resources::ResourceManager::texture_manager() const
 {
 	return _texture_manager;
 }
 
-FontManager& ResourceManager::font_manager()
+FontManager& elysia::resources::ResourceManager::font_manager()
 {
 	return _font_manager;
 }
 
-const FontManager& ResourceManager::font_manager() const
+const FontManager& elysia::resources::ResourceManager::font_manager() const
 {
 	return _font_manager;
 }
 
-AudioManager& ResourceManager::audio_manager()
+AudioManager& elysia::resources::ResourceManager::audio_manager()
 {
 	return _audio_manager;
 }
 
-const AudioManager& ResourceManager::audio_manager() const
+const AudioManager& elysia::resources::ResourceManager::audio_manager() const
 {
 	return _audio_manager;
 }
 
-void ResourceManager::clear()
+void elysia::resources::ResourceManager::clear()
 {
 	_atlas_manager.clear();
 	_texture_manager.clear();
@@ -120,10 +122,12 @@ void ResourceManager::clear()
 	_audio_manager.clear();
 }
 
-size_t ResourceManager::resource_count() const
+size_t elysia::resources::ResourceManager::resource_count() const
 {
 	return _atlas_manager.resource_count()
 		+ _texture_manager.resource_count()
 		+ _font_manager.resource_count()
 		+ _audio_manager.resource_count();
+}
+
 }

@@ -2,6 +2,8 @@
 
 #include <functional>
 
+namespace elysia::localization
+{
 namespace
 {
 inline void hash_combine(size_t& seed, size_t value)
@@ -71,4 +73,6 @@ SDL_Texture* TextTextureCache::get_or_create(
 void TextTextureCache::clear()
 {
 	_textures.clear();
+}
+
 }

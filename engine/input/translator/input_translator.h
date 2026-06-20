@@ -5,6 +5,8 @@
 #include <SDL.h>
 #include <vector>
 
+namespace elysia::input
+{
 class InputTranslator
 {
 public:
@@ -20,3 +22,5 @@ protected:
         InputDevice device
     ) const;
 };
+
+}

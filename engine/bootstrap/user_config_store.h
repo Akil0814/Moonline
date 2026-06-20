@@ -6,6 +6,8 @@
 #include <filesystem>
 #include <string>
 
+namespace elysia::bootstrap
+{
 class UserConfigStore
 {
 public:
@@ -32,36 +34,36 @@ public:
 
 private:
     static bool read_positive_int_override(
-        const json& node,
+        const elysia::io::json& node,
         const char* key,
         int& out,
         std::string& error
     );
     static bool read_positive_double_override(
-        const json& node,
+        const elysia::io::json& node,
         const char* key,
         double& out,
         std::string& error
     );
     static bool read_volume_override(
-        const json& node,
+        const elysia::io::json& node,
         const char* key,
         int& out,
         std::string& error
     );
     static bool read_bool_override(
-        const json& node,
+        const elysia::io::json& node,
         const char* key,
         bool& out,
         std::string& error
     );
     static bool read_non_empty_string_override(
-        const json& node,
+        const elysia::io::json& node,
         const char* key,
         std::string& out,
         std::string& error
     );
-    static json make_user_config_json(const RuntimeSettings& runtime_settings);
+    static elysia::io::json make_user_config_json(const RuntimeSettings& runtime_settings);
 
     bool apply_overrides(
         const std::filesystem::path& user_config_path,
@@ -74,3 +76,5 @@ private:
         std::string& error
     ) const;
 };
+
+}

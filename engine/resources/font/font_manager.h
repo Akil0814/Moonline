@@ -8,6 +8,8 @@
 #include <string_view>
 #include <unordered_map>
 
+namespace elysia::resources
+{
 using FontPool = std::unordered_map<std::string, TTF_Font*>;
 
 class FontManager : public ResourceSubManager
@@ -29,3 +31,5 @@ public:
 private:
 	FontPool _font_pool;
 };
+
+}

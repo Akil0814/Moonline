@@ -5,6 +5,8 @@
 #include <array>
 #include <cstddef>
 
+namespace elysia::ui
+{
 class UiInputState
 {
 public:
@@ -65,3 +67,5 @@ private:
     std::array<bool, static_cast<std::size_t>(UiAction::Count)> _just_pressed{};
     std::array<bool, static_cast<std::size_t>(UiAction::Count)> _just_released{};
 };
+
+}

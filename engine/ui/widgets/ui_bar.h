@@ -3,6 +3,8 @@
 #include "../../core/render/colors.h"
 #include "../core/ui_element.h"
 
+namespace elysia::ui
+{
 enum class BarFillDirection
 {
     LeftToRight,
@@ -14,8 +16,8 @@ enum class BarFillDirection
 class UiBar : public UiElement
 {
 public:
-    explicit UiBar(const Rect& rect = Rect::zero(), int order = 0) noexcept;
-    UiBar(const Vector2& position, const Vector2& size, int order = 0) noexcept;
+    explicit UiBar(const elysia::core::Rect& rect = elysia::core::Rect::zero(), int order = 0) noexcept;
+    UiBar(const elysia::core::Vector2& position, const elysia::core::Vector2& size, int order = 0) noexcept;
     ~UiBar() override = default;
 
     void reset() noexcept override;
@@ -29,14 +31,14 @@ public:
     [[nodiscard]] float value() const;
     [[nodiscard]] float ratio() const;
 
-    void set_background_color(Color color);
-    [[nodiscard]] Color background_color() const;
+    void set_background_color(elysia::core::Color color);
+    [[nodiscard]] elysia::core::Color background_color() const;
 
-    void set_fill_color(Color color);
-    [[nodiscard]] Color fill_color() const;
+    void set_fill_color(elysia::core::Color color);
+    [[nodiscard]] elysia::core::Color fill_color() const;
 
-    void set_border_color(Color color);
-    [[nodiscard]] Color border_color() const;
+    void set_border_color(elysia::core::Color color);
+    [[nodiscard]] elysia::core::Color border_color() const;
 
     void set_draw_border(bool draw_border);
     [[nodiscard]] bool draws_border() const;
@@ -47,22 +49,24 @@ public:
     void set_padding(int padding);
     [[nodiscard]] int padding() const;
 
-    void submit_ui_render_commands(std::vector<UiRenderCommand>& out_commands) const override;
+    void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
 
 private:
-    [[nodiscard]] Rect content_rect(const Rect& rect) const;
-    [[nodiscard]] Rect fill_rect(const Rect& rect) const;
+    [[nodiscard]] elysia::core::Rect content_rect(const elysia::core::Rect& rect) const;
+    [[nodiscard]] elysia::core::Rect fill_rect(const elysia::core::Rect& rect) const;
 
 private:
     float _min_value = 0.0f;
     float _max_value = 1.0f;
     float _value = 0.0f;
 
-    Color _background_color = colors::loading_blue_bar_background;
-    Color _fill_color = colors::loading_blue_bar_fill;
-    Color _border_color = colors::black;
+    elysia::core::Color _background_color = elysia::core::colors::loading_blue_bar_background;
+    elysia::core::Color _fill_color = elysia::core::colors::loading_blue_bar_fill;
+    elysia::core::Color _border_color = elysia::core::colors::black;
 
     BarFillDirection _fill_direction = BarFillDirection::LeftToRight;
     bool _draw_border = false;
     int _padding = 0;
 };
+
+}

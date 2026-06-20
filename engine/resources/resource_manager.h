@@ -14,9 +14,11 @@
 #include <string_view>
 #include <vector>
 
-class ResourceManager : public Singleton<ResourceManager>
+namespace elysia::resources
 {
-	friend Singleton<ResourceManager>;
+class ResourceManager : public elysia::tools::Singleton<ResourceManager>
+{
+	friend elysia::tools::Singleton<ResourceManager>;
 
 public:
 	ResourceManager();
@@ -61,3 +63,5 @@ private:
 	FontManager _font_manager;
 	AudioManager _audio_manager;
 };
+
+}

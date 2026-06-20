@@ -6,6 +6,8 @@
 #include <cctype>
 #include <iostream>
 
+namespace elysia::resources
+{
 namespace
 {
 bool is_png_file(const std::filesystem::path& file_path)
@@ -122,4 +124,6 @@ AtlasFramePreparedResult AtlasBuildPreparer::prepare_frame(
 	SurfaceLoader surface_loader;
 	result.surface_result = surface_loader.load_surface(surface_request);
 	return result;
+}
+
 }

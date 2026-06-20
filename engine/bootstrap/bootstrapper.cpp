@@ -5,20 +5,22 @@
 #include "../io/loaders/assets_structure_loader.h"
 #include "../io/path/path_manager.h"
 
+namespace elysia::bootstrap
+{
 namespace
 {
-constexpr const char* APP_CONFIG_PATH = "configs/global/app_config.json";
-constexpr const char* USER_CONFIG_FILE_NAME = "user_config.json";
+constexpr const char* APP_CONFIG_PATH = "configs/global/app_config.elysia::io::json";
+constexpr const char* USER_CONFIG_FILE_NAME = "user_config.elysia::io::json";
 }
 
 StartupParseResult Bootstrapper::parse_runtime_settings()
 {
     _startup_preload_loader.reset();
-    ConfigManager::instance()->shutdown();
+    elysia::config::ConfigManager::instance()->shutdown();
 
     StartupParseResult result;
 
-    PathManager* path_manager = PathManager::instance();
+    elysia::io::PathManager* path_manager = elysia::io::PathManager::instance();
     if (!path_manager->init())
     {
         append_bootstrap_error(result.error, "Bootstrapper phase1 failed: path manager init failed.");
@@ -41,8 +43,8 @@ StartupParseResult Bootstrapper::parse_runtime_settings()
         return result;
     }
 
-    AssetManifestPaths manifest_paths;
-    AssetsStructureLoader assets_structure_loader;
+    elysia::io::AssetManifestPaths manifest_paths;
+    elysia::io::AssetsStructureLoader assets_structure_loader;
     if (!assets_structure_loader.load(path_manager->assets_structure(), manifest_paths))
     {
         append_bootstrap_error(
@@ -55,8 +57,8 @@ StartupParseResult Bootstrapper::parse_runtime_settings()
     const std::filesystem::path user_config_path =
         path_manager->player_data() / USER_CONFIG_FILE_NAME;
 
-    const ConfigInitResult config_result =
-        ConfigManager::instance()->init(
+    const elysia::config::ConfigInitResult config_result =
+        elysia::config::ConfigManager::instance()->init(
             app_config_result.runtime_settings,
             user_config_path
         );
@@ -87,4 +89,5 @@ bool Bootstrapper::preload_startup_resources(SDL_Renderer* renderer)
 SDL_Texture* Bootstrapper::get_preload_texture(std::string_view key)
 {
     return _startup_preload_loader.get_texture(key);
+}
 }

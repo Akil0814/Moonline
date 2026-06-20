@@ -9,9 +9,11 @@
 
 #include <string_view>
 
-class Bootstrapper : public Singleton<Bootstrapper>
+namespace elysia::bootstrap
 {
-    friend Singleton<Bootstrapper>;
+class Bootstrapper : public elysia::tools::Singleton<Bootstrapper>
+{
+    friend elysia::tools::Singleton<Bootstrapper>;
 
 public:
     StartupParseResult parse_runtime_settings();
@@ -22,3 +24,4 @@ private:
     AppConfigLoader _app_config_loader;
     StartupPreloadLoader _startup_preload_loader;
 };
+}

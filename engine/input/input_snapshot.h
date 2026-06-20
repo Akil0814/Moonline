@@ -2,6 +2,8 @@
 
 #include "input_types.h"
 
+namespace elysia::input
+{
 class InputState;
 
 struct InputSnapshot
@@ -11,3 +13,5 @@ struct InputSnapshot
     InputDevice device = InputDevice::Unknown;
     bool device_switched_this_frame = false;
 };
+
+}

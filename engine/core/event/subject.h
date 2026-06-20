@@ -2,6 +2,8 @@
 #include <vector>
 #include <algorithm>
 
+namespace elysia::core
+{
 template<typename ObserverType>
 class Subject
 {
@@ -51,3 +53,4 @@ protected:
 private:
     std::vector<ObserverType*> _observers;
 };
+}

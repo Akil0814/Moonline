@@ -10,22 +10,24 @@
 #include <string_view>
 #include <unordered_map>
 
+namespace elysia::config
+{
 struct ConfigInitResult
 {
     bool success = false;
-    RuntimeSettings runtime_settings;
+    elysia::bootstrap::RuntimeSettings runtime_settings;
     std::string error;
     std::string warning;
     bool rebuilt_user_config = false;
 };
 
-class ConfigManager : public Singleton<ConfigManager>
+class ConfigManager : public elysia::tools::Singleton<ConfigManager>
 {
-    friend Singleton<ConfigManager>;
+    friend elysia::tools::Singleton<ConfigManager>;
 
 public:
     ConfigInitResult init(
-        const RuntimeSettings& default_settings,
+        const elysia::bootstrap::RuntimeSettings& default_settings,
         const std::filesystem::path& user_config_path
     );
     void shutdown();
@@ -37,7 +39,7 @@ public:
     const ConfigValue* get_value(std::string_view key) const;
     bool set_value(std::string_view key, const ConfigValue& value, std::string& error);
 
-    RuntimeSettings snapshot_runtime_settings() const;
+    elysia::bootstrap::RuntimeSettings snapshot_runtime_settings() const;
 
     std::string_view language() const;
     bool set_language(std::string language, std::string& error);
@@ -80,20 +82,20 @@ private:
         ValueType type;
         ConfigValue default_value;
         bool (*validator)(const ConfigValue& value, std::string& error) = nullptr;
-        ConfigValue (*read_from_settings)(const RuntimeSettings& settings) = nullptr;
-        void (*write_to_settings)(const ConfigValue& value, RuntimeSettings& settings) = nullptr;
+        ConfigValue (*read_from_settings)(const elysia::bootstrap::RuntimeSettings& settings) = nullptr;
+        void (*write_to_settings)(const ConfigValue& value, elysia::bootstrap::RuntimeSettings& settings) = nullptr;
     };
 
-    void register_runtime_settings(const RuntimeSettings& default_settings);
+    void register_runtime_settings(const elysia::bootstrap::RuntimeSettings& default_settings);
     void register_entry(
         std::string key,
         ValueType type,
         ConfigValue default_value,
         bool (*validator)(const ConfigValue& value, std::string& error),
-        ConfigValue (*read_from_settings)(const RuntimeSettings& settings),
-        void (*write_to_settings)(const ConfigValue& value, RuntimeSettings& settings)
+        ConfigValue (*read_from_settings)(const elysia::bootstrap::RuntimeSettings& settings),
+        void (*write_to_settings)(const ConfigValue& value, elysia::bootstrap::RuntimeSettings& settings)
     );
-    void load_values_from_settings(const RuntimeSettings& settings);
+    void load_values_from_settings(const elysia::bootstrap::RuntimeSettings& settings);
     static bool matches_type(const ConfigValue& value, ValueType type);
 
     template <typename T>
@@ -109,11 +111,12 @@ private:
     ConfigManager() = default;
     ~ConfigManager() = default;
 
-    UserConfigStore _user_config_store;
+    elysia::bootstrap::UserConfigStore _user_config_store;
     std::filesystem::path _user_config_path;
-    RuntimeSettings _base_runtime_settings;
+    elysia::bootstrap::RuntimeSettings _base_runtime_settings;
     std::unordered_map<std::string, ConfigEntry> _entries;
     std::unordered_map<std::string, ConfigValue> _values;
     bool _dirty = false;
     bool _initialized = false;
 };
+}

@@ -7,6 +7,8 @@
 #include "geometry/rect.h"
 #include "geometry/vector2.h"
 
+namespace elysia::core
+{
 struct RenderCommand;
 
 class GameObject : public SceneObject
@@ -71,3 +73,4 @@ private:
 
     double _time_scale = 1.0;
 };
+}

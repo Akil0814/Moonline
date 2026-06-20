@@ -4,6 +4,8 @@
 
 #include <iostream>
 
+namespace elysia::resources
+{
 void SurfaceDeleter::operator()(SDL_Surface* surface) const
 {
 	if (surface)
@@ -43,3 +45,5 @@ SurfaceLoadResult SurfaceLoader::load_surface(const SurfaceLoadRequest& request)
 	return result;
 }
 
+
+}

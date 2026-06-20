@@ -11,6 +11,8 @@
 #include <SDL.h>
 #include <vector>
 
+namespace elysia::input
+{
 class InputSystem
 {
 public:
@@ -48,3 +50,5 @@ private:
     int _mouse_delta_y = 0;
     bool _has_mouse_position = false;
 };
+
+}

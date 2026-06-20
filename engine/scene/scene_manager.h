@@ -16,11 +16,10 @@
 
 #include "../core/event/subject.h"
 
-struct RawInputFrame;
-struct RawInputEvent;
-
+namespace elysia::scene
+{
 class SceneManager
-    : public Subject<SceneManagerObserver>
+    : public elysia::core::Subject<SceneManagerObserver>
     , public SceneRequestObserver
 {
 public:
@@ -41,8 +40,8 @@ public:
     );
 
     void on_input(
-        const RawInputFrame& input,
-        const std::vector<RawInputEvent>& events
+        const elysia::input::RawInputFrame& input,
+        const std::vector<elysia::input::RawInputEvent>& events
     );
 
     void on_update(double delta);
@@ -129,4 +128,6 @@ void SceneManager::register_scene(SceneKey scene_key)
             return _scene_factory.get_scene<T>();
         }
     );
+}
+
 }

@@ -6,16 +6,18 @@
 #include <string>
 #include <vector>
 
+namespace elysia::loading
+{
 struct ConfigLoadResult
 {
-	FontManifest font_manifest;
-	AudioManifest audio_manifest;
-	TextureManifest map_texture_manifest;
-	TextureManifest ui_texture_manifest;
-	CharacterEffectLayout character_effect_layout;
-	CharacterTextureLayout character_texture_layout;
-	CharacterAudioLayout character_audio_layout;
-	std::vector<CharacterAnimationContentEntry> character_animation_entries;
+	elysia::io::FontManifest font_manifest;
+	elysia::io::AudioManifest audio_manifest;
+	elysia::io::TextureManifest map_texture_manifest;
+	elysia::io::TextureManifest ui_texture_manifest;
+	elysia::io::CharacterEffectLayout character_effect_layout;
+	elysia::io::CharacterTextureLayout character_texture_layout;
+	elysia::io::CharacterAudioLayout character_audio_layout;
+	std::vector<elysia::io::CharacterAnimationContentEntry> character_animation_entries;
 };
 
 class ConfigLoadPipeline
@@ -34,3 +36,5 @@ private:
 private:
 	std::string _error_message;
 };
+
+}

@@ -1,5 +1,7 @@
 #pragma once
 
+namespace elysia::core
+{
 enum class DepthLayer
 {
     Background,
@@ -11,3 +13,5 @@ enum class DepthLayer
     Foreground,
     Count
 };
+
+}

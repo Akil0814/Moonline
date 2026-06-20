@@ -17,23 +17,23 @@ void erase_destroyed_entries(std::vector<Entry>& entries)
 }
 
 void ApplicationScene::on_input(
-    const RawInputFrame& input,
-    const std::vector<RawInputEvent>& events
+    const elysia::input::RawInputFrame& input,
+    const std::vector<elysia::input::RawInputEvent>& events
 )
 {
-    Scene::on_input(input, events);
+    elysia::scene::Scene::on_input(input, events);
     prune_domain_receivers();
 
-    const InputContext context = input_context();
+    const elysia::input::InputContext context = input_context();
 
     switch (context)
     {
-    case InputContext::UI:
+    case elysia::input::InputContext::UI:
     {
-        const UiInputFrame ui_frame = _ui_input_router.route_frame(input);
+        const elysia::ui::UiInputFrame ui_frame = _ui_input_router.route_frame(input);
         dispatch_ui_frame(ui_frame);
 
-        for (const RawInputEvent& raw_event : events)
+        for (const elysia::input::RawInputEvent& raw_event : events)
         {
             dispatch_ui_events(_ui_input_router.route_event(raw_event));
         }
@@ -42,14 +42,14 @@ void ApplicationScene::on_input(
         break;
     }
 
-    case InputContext::Gameplay:
+    case elysia::input::InputContext::Gameplay:
     {
         _ui_input_router.reset_transient_state();
 
         const GameplayInputFrame gameplay_frame = _gameplay_input_router.route_frame(input);
         dispatch_gameplay_frame(gameplay_frame);
 
-        for (const RawInputEvent& raw_event : events)
+        for (const elysia::input::RawInputEvent& raw_event : events)
         {
             dispatch_gameplay_events(_gameplay_input_router.route_event(raw_event));
         }
@@ -57,35 +57,35 @@ void ApplicationScene::on_input(
         break;
     }
 
-    case InputContext::Dialogue:
-    case InputContext::Debug:
-    case InputContext::None:
+    case elysia::input::InputContext::Dialogue:
+    case elysia::input::InputContext::Debug:
+    case elysia::input::InputContext::None:
     default:
         _ui_input_router.reset_transient_state();
         break;
     }
 }
 
-InputContext ApplicationScene::input_context() const
+elysia::input::InputContext ApplicationScene::input_context() const
 {
-    return InputContext::None;
+    return elysia::input::InputContext::None;
 }
 
-void ApplicationScene::on_scene_object_registered(SceneObject& object)
+void ApplicationScene::on_scene_object_registered(elysia::core::SceneObject& object)
 {
-    Scene::on_scene_object_registered(object);
+    elysia::scene::Scene::on_scene_object_registered(object);
 
-    if (auto* receiver = dynamic_cast<UiInputFrameReceiver*>(&object))
+    if (auto* receiver = dynamic_cast<elysia::ui::UiInputFrameReceiver*>(&object))
     {
-        scene_input_order::insert_receiver_entry_sorted(
+        elysia::scene::scene_input_order::insert_receiver_entry_sorted(
             _ui_frame_receivers,
             UiInputFrameReceiverEntry{ &object, receiver }
         );
     }
 
-    if (auto* receiver = dynamic_cast<UiInputEventReceiver*>(&object))
+    if (auto* receiver = dynamic_cast<elysia::ui::UiInputEventReceiver*>(&object))
     {
-        scene_input_order::insert_receiver_entry_sorted(
+        elysia::scene::scene_input_order::insert_receiver_entry_sorted(
             _ui_event_receivers,
             UiInputEventReceiverEntry{ &object, receiver }
         );
@@ -93,7 +93,7 @@ void ApplicationScene::on_scene_object_registered(SceneObject& object)
 
     if (auto* receiver = dynamic_cast<GameplayInputFrameReceiver*>(&object))
     {
-        scene_input_order::insert_receiver_entry_sorted(
+        elysia::scene::scene_input_order::insert_receiver_entry_sorted(
             _gameplay_frame_receivers,
             GameplayInputFrameReceiverEntry{ &object, receiver }
         );
@@ -101,7 +101,7 @@ void ApplicationScene::on_scene_object_registered(SceneObject& object)
 
     if (auto* receiver = dynamic_cast<GameplayInputEventReceiver*>(&object))
     {
-        scene_input_order::insert_receiver_entry_sorted(
+        elysia::scene::scene_input_order::insert_receiver_entry_sorted(
             _gameplay_event_receivers,
             GameplayInputEventReceiverEntry{ &object, receiver }
         );
@@ -116,11 +116,11 @@ void ApplicationScene::prune_domain_receivers()
     erase_destroyed_entries(_gameplay_event_receivers);
 }
 
-void ApplicationScene::dispatch_ui_frame(const UiInputFrame& input)
+void ApplicationScene::dispatch_ui_frame(const elysia::ui::UiInputFrame& input)
 {
     for (const UiInputFrameReceiverEntry& entry : _ui_frame_receivers)
     {
-        SceneObject* object = entry.object;
+        elysia::core::SceneObject* object = entry.object;
 
         if (!object || object->is_destroyed() || !object->is_active())
         {
@@ -136,13 +136,13 @@ void ApplicationScene::dispatch_ui_frame(const UiInputFrame& input)
     }
 }
 
-void ApplicationScene::dispatch_ui_events(const std::vector<UiInputEvent>& events)
+void ApplicationScene::dispatch_ui_events(const std::vector<elysia::ui::UiInputEvent>& events)
 {
-    for (const UiInputEvent& ui_event : events)
+    for (const elysia::ui::UiInputEvent& ui_event : events)
     {
         for (const UiInputEventReceiverEntry& entry : _ui_event_receivers)
         {
-            SceneObject* object = entry.object;
+            elysia::core::SceneObject* object = entry.object;
 
             if (!object || object->is_destroyed() || !object->is_active())
             {
@@ -166,7 +166,7 @@ void ApplicationScene::dispatch_gameplay_frame(const GameplayInputFrame& input)
 {
     for (const GameplayInputFrameReceiverEntry& entry : _gameplay_frame_receivers)
     {
-        SceneObject* object = entry.object;
+        elysia::core::SceneObject* object = entry.object;
 
         if (!object || object->is_destroyed() || !object->is_active())
         {
@@ -188,7 +188,7 @@ void ApplicationScene::dispatch_gameplay_events(const std::vector<GameplayInputE
     {
         for (const GameplayInputEventReceiverEntry& entry : _gameplay_event_receivers)
         {
-            SceneObject* object = entry.object;
+            elysia::core::SceneObject* object = entry.object;
 
             if (!object || object->is_destroyed() || !object->is_active())
             {

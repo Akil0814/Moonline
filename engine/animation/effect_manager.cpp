@@ -3,9 +3,11 @@
 
 #include <iostream>
 
+namespace elysia::animation
+{
 namespace
 {
-std::optional<Vector2> resolve_effect_size(
+std::optional<elysia::core::Vector2> resolve_effect_size(
 	const EffectSpawnRequest& request,
 	const EffectDefinition& definition
 )
@@ -19,9 +21,9 @@ std::optional<Vector2> resolve_effect_size(
 	return std::nullopt;
 }
 
-Vector2 get_effect_top_left(
-	const Vector2& anchor_position,
-	const Vector2& size,
+elysia::core::Vector2 get_effect_top_left(
+	const elysia::core::Vector2& anchor_position,
+	const elysia::core::Vector2& size,
 	EffectAnchor anchor
 )
 {
@@ -31,28 +33,28 @@ Vector2 get_effect_top_left(
 		return anchor_position;
 
 	case EffectAnchor::TopCenter:
-		return Vector2(anchor_position.x - size.x * 0.5f, anchor_position.y);
+		return elysia::core::Vector2(anchor_position.x - size.x * 0.5f, anchor_position.y);
 
 	case EffectAnchor::TopRight:
-		return Vector2(anchor_position.x - size.x, anchor_position.y);
+		return elysia::core::Vector2(anchor_position.x - size.x, anchor_position.y);
 
 	case EffectAnchor::CenterLeft:
-		return Vector2(anchor_position.x, anchor_position.y - size.y * 0.5f);
+		return elysia::core::Vector2(anchor_position.x, anchor_position.y - size.y * 0.5f);
 
 	case EffectAnchor::Center:
-		return Vector2(anchor_position.x - size.x * 0.5f, anchor_position.y - size.y * 0.5f);
+		return elysia::core::Vector2(anchor_position.x - size.x * 0.5f, anchor_position.y - size.y * 0.5f);
 
 	case EffectAnchor::CenterRight:
-		return Vector2(anchor_position.x - size.x, anchor_position.y - size.y * 0.5f);
+		return elysia::core::Vector2(anchor_position.x - size.x, anchor_position.y - size.y * 0.5f);
 
 	case EffectAnchor::BottomLeft:
-		return Vector2(anchor_position.x, anchor_position.y - size.y);
+		return elysia::core::Vector2(anchor_position.x, anchor_position.y - size.y);
 
 	case EffectAnchor::BottomCenter:
-		return Vector2(anchor_position.x - size.x * 0.5f, anchor_position.y - size.y);
+		return elysia::core::Vector2(anchor_position.x - size.x * 0.5f, anchor_position.y - size.y);
 
 	case EffectAnchor::BottomRight:
-		return Vector2(anchor_position.x - size.x, anchor_position.y - size.y);
+		return elysia::core::Vector2(anchor_position.x - size.x, anchor_position.y - size.y);
 
 	default:
 		return anchor_position;
@@ -65,9 +67,9 @@ void apply_effect_anchor(Effect& effect, const EffectSpawnRequest& request)
 }
 }
 
-bool EffectManager::register_effect(const std::vector<EffectBuildRequest>& requests)
+bool EffectManager::register_effect(const std::vector<elysia::resources::EffectBuildRequest>& requests)
 {
-	for (const EffectBuildRequest& request : requests)
+	for (const elysia::resources::EffectBuildRequest& request : requests)
 	{
 		if (!register_effect(request))
 			return false;
@@ -76,7 +78,7 @@ bool EffectManager::register_effect(const std::vector<EffectBuildRequest>& reque
 	return true;
 };
 
-bool EffectManager::register_effect(const EffectBuildRequest& request)
+bool EffectManager::register_effect(const elysia::resources::EffectBuildRequest& request)
 {
 	if (request.effect_key.empty())
 	{
@@ -142,7 +144,7 @@ std::unique_ptr<Effect> EffectManager::create_effect(const EffectSpawnRequest& r
 		std::move(animation)
 	);
 
-	const std::optional<Vector2> final_size = resolve_effect_size(request, *definition);
+	const std::optional<elysia::core::Vector2> final_size = resolve_effect_size(request, *definition);
 	if (final_size.has_value())
 		effect->set_size(*final_size);
 
@@ -156,7 +158,9 @@ std::unique_ptr<Effect> EffectManager::create_effect(const EffectSpawnRequest& r
 	if (request.flip.has_value())
 		effect->set_flip(*request.flip);
 	else
-		effect->set_flip(SpriteFlip::None);
+		effect->set_flip(elysia::core::SpriteFlip::None);
 
 	return effect;
+}
+
 }
