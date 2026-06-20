@@ -27,6 +27,11 @@ public:
 		const CharacterTextureLayout& texture_layout,
 		std::vector<TextureLoadRequest>& texture_load_requests
 	) const;
+	bool append_character_audio_requests(
+		const CharacterConfig& character_config,
+		const CharacterAudioLayout& audio_layout,
+		std::vector<SoundLoadRequest>& sound_load_requests
+	) const;
 	bool append_character_animation_requests(
 		const CharacterConfig& character_config,
 		const AnimationConfig& animation_config,
@@ -42,3 +47,4 @@ public:
 		std::vector<EffectBuildRequest>& effect_build_requests
 	) const;
 };
+

@@ -319,6 +319,57 @@ bool ResourceRequestBuilder::append_character_texture_requests(
 	return true;
 }
 
+bool ResourceRequestBuilder::append_character_audio_requests(
+	const CharacterConfig& character_config,
+	const CharacterAudioLayout& audio_layout,
+	std::vector<SoundLoadRequest>& sound_load_requests
+) const
+{
+	if (character_config.id.empty())
+	{
+		std::cout << "Build character audio requests failed: character id is empty." << std::endl;
+		return false;
+	}
+
+	if (character_config.asset_key.empty())
+	{
+		std::cout << "Build character audio requests failed: asset key is empty: "
+			<< character_config.id << std::endl;
+		return false;
+	}
+
+	const std::filesystem::path audio_root = PathManager::instance()->audio() / "character" / character_config.asset_key;
+	for (const CharacterAudioLayoutEntry& entry : audio_layout.sounds)
+	{
+		if (entry.key.empty())
+		{
+			std::cout << "Build character audio requests failed: sound key is empty." << std::endl;
+			return false;
+		}
+
+		if (entry.path.empty())
+		{
+			std::cout << "Build character audio requests failed: sound path is empty: "
+				<< entry.key << std::endl;
+			return false;
+		}
+
+		const std::filesystem::path file_path = (audio_root / entry.path).lexically_normal();
+		if (!std::filesystem::is_regular_file(file_path))
+		{
+			std::cout << "Build character audio requests failed: file does not exist: "
+				<< file_path << std::endl;
+			return false;
+		}
+
+		SoundLoadRequest request;
+		request.key = character_config.id + "." + entry.key;
+		request.file_path = file_path;
+		sound_load_requests.push_back(std::move(request));
+	}
+
+	return true;
+}
 bool ResourceRequestBuilder::append_character_animation_requests(
 	const CharacterConfig& character_config,
 	const AnimationConfig& animation_config,
@@ -491,3 +542,7 @@ bool ResourceRequestBuilder::append_character_effect_requests(
 
 	return true;
 }
+
+
+
+

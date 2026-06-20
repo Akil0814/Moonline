@@ -125,6 +125,17 @@ struct CharacterTextureLayout
 	std::vector<CharacterTextureLayoutEntry> textures;
 };
 
+struct CharacterAudioLayoutEntry
+{
+	std::string key;
+	std::filesystem::path path;
+};
+
+struct CharacterAudioLayout
+{
+	std::vector<CharacterAudioLayoutEntry> sounds;
+};
+
 struct AnimationClipConfig
 {
 	std::string animation_name;
@@ -146,4 +157,5 @@ struct CharacterAnimationContentEntry
 	CharacterConfig character_config;
 	AnimationConfig animation_config;
 };
+
 

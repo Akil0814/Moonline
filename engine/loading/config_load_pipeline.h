@@ -14,6 +14,7 @@ struct ConfigLoadResult
 	TextureManifest ui_texture_manifest;
 	CharacterEffectLayout character_effect_layout;
 	CharacterTextureLayout character_texture_layout;
+	CharacterAudioLayout character_audio_layout;
 	std::vector<CharacterAnimationContentEntry> character_animation_entries;
 };
 

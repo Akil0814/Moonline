@@ -118,8 +118,21 @@ bool ResourceRequestAssembler::assemble(
 		return false;
 	}
 
+	for (const CharacterAnimationContentEntry& entry : config_result.character_animation_entries)
+	{
+		if (!request_builder.append_character_audio_requests(
+			entry.character_config,
+			config_result.character_audio_layout,
+			out_plan.sound_requests()))
+		{
+			out_plan.clear();
+			return false;
+		}
+	}
+
 	std::cout << "Audio requests built: sounds=" << out_plan.sound_requests().size()
 		<< ", music=" << out_plan.music_requests().size() << std::endl;
 
 	return true;
 }
+

@@ -4,6 +4,7 @@
 #include "../io/loaders/audio_manifest_loader.h"
 #include "../io/loaders/assets_structure_loader.h"
 #include "../io/loaders/character_animation_layout_loader.h"
+#include "../io/loaders/character_audio_layout_loader.h"
 #include "../io/loaders/character_config_loader.h"
 #include "../io/loaders/character_effect_layout_loader.h"
 #include "../io/loaders/character_texture_layout_loader.h"
@@ -85,6 +86,15 @@ bool ConfigLoadPipeline::load(
 		return false;
 	}
 
+	CharacterAudioLayoutLoader character_audio_layout_loader;
+	if (!character_audio_layout_loader.load(
+		manifest_paths.character_audio,
+		result.character_audio_layout))
+	{
+		fail("Config load pipeline failed: character audio layout load failed.");
+		return false;
+	}
+
 	CharacterManifest character_manifest;
 	CharacterManifestLoader character_manifest_loader;
 	if (!character_manifest_loader.load(manifest_paths.characters, character_manifest))
@@ -118,7 +128,7 @@ bool ConfigLoadPipeline::load(
 		result.character_animation_entries.push_back(CharacterAnimationContentEntry{
 			std::move(character_config),
 			std::move(animation_config)
-			});
+		});
 	}
 
 	return true;
