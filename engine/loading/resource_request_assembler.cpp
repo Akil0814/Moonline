@@ -54,7 +54,7 @@ bool ResourceRequestAssembler::assemble(
 			return false;
 		}
 
-		std::cout << "elysia::animation::Effect requests built: atlases="
+		std::cout << "Effect requests built: atlases="
 			<< (out_plan.atlas_build_requests().size() - effect_atlas_count_before)
 			<< ", animations="
 			<< (out_plan.animation_build_requests().size() - effect_animation_count_before)

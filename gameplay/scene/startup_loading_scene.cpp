@@ -43,7 +43,7 @@ void StartupLoadingScene::on_update(double delta)
 		const std::string& error_message = _content_loader.error_message();
 		SDL_ShowSimpleMessageBox(
 			SDL_MESSAGEBOX_ERROR,
-			"Game Start elysia::core::Error",
+			"Game Start Error",
 			error_message.c_str(),
 			nullptr);
 		request_quit();

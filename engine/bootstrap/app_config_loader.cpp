@@ -10,7 +10,7 @@ namespace elysia::bootstrap
 {
 namespace
 {
-constexpr const char* DEFAULT_PRELOAD_MANIFEST_PATH = "preload/preload_manifest.elysia::io::json";
+constexpr const char* DEFAULT_PRELOAD_MANIFEST_PATH = "preload/preload_manifest.json";
 
 bool read_volume_setting(
     const elysia::io::JsonLoader& loader,

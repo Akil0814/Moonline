@@ -100,17 +100,17 @@ bool Application::init(int argc, char** argv)
 
 bool Application::init_runtime(const elysia::bootstrap::RuntimeSettings& settings)
 {
-	init_assert(!SDL_Init(SDL_INIT_EVERYTHING), "SDL2 elysia::core::Error");
+	init_assert(!SDL_Init(SDL_INIT_EVERYTHING), "SDL2 Error");
 
 	const int img_flags = IMG_INIT_JPG | IMG_INIT_PNG;
-	init_assert((IMG_Init(img_flags) & img_flags) == img_flags, "SDL_image elysia::core::Error");
+	init_assert((IMG_Init(img_flags) & img_flags) == img_flags, "SDL_image Error");
 
 	const int mix_flags = MIX_INIT_MP3;
-	init_assert((Mix_Init(mix_flags) & mix_flags) == mix_flags, "SDL_mixer elysia::core::Error");
+	init_assert((Mix_Init(mix_flags) & mix_flags) == mix_flags, "SDL_mixer Error");
 
-	init_assert(!TTF_Init(), "SDL_ttf elysia::core::Error");
-	init_assert(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) == 0, "Mix_OpenAudio elysia::core::Error");
-	init_assert(elysia::audio::AudioService::instance()->init(settings.audio), "elysia::audio::AudioService init failed");
+	init_assert(!TTF_Init(), "SDL_ttf Error");
+	init_assert(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) == 0, "Mix_OpenAudio Error");
+	init_assert(elysia::audio::AudioService::instance()->init(settings.audio), "AudioService init failed");
 
 	SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
 
@@ -121,7 +121,7 @@ bool Application::init_runtime(const elysia::bootstrap::RuntimeSettings& setting
 		settings.window_width,
 		settings.window_height,
 		SDL_WINDOW_SHOWN);
-	init_assert(_window, "SDL_CreateWindow elysia::core::Error");
+	init_assert(_window, "SDL_CreateWindow Error");
 
 	if (settings.fullscreen
 		&& SDL_SetWindowFullscreen(_window, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)
@@ -138,11 +138,11 @@ bool Application::init_runtime(const elysia::bootstrap::RuntimeSettings& setting
 		renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
 
 	_renderer = SDL_CreateRenderer(_window, -1, renderer_flags);
-	init_assert(_renderer, "SDL_CreateRenderer elysia::core::Error");
+	init_assert(_renderer, "SDL_CreateRenderer Error");
 
 	init_assert(
 		SDL_RenderSetLogicalSize(_renderer, _logical_width, _logical_height) == 0,
-		"SDL_RenderSetLogicalSize elysia::core::Error");
+		"SDL_RenderSetLogicalSize Error");
 
 	FPS = settings.target_fps;
 	return true;

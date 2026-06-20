@@ -9,8 +9,8 @@ namespace elysia::bootstrap
 {
 namespace
 {
-constexpr const char* APP_CONFIG_PATH = "configs/global/app_config.elysia::io::json";
-constexpr const char* USER_CONFIG_FILE_NAME = "user_config.elysia::io::json";
+constexpr const char* APP_CONFIG_PATH = "configs/global/app_config.json";
+constexpr const char* USER_CONFIG_FILE_NAME = "user_config.json";
 }
 
 StartupParseResult Bootstrapper::parse_runtime_settings()
