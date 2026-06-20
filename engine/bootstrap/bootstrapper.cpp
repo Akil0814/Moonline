@@ -1,6 +1,7 @@
 #include "bootstrapper.h"
 
 #include "bootstrap_error_utils.h"
+#include "../io/loaders/assets_structure_loader.h"
 #include "../io/path/path_manager.h"
 
 namespace
@@ -40,6 +41,17 @@ StartupParseResult Bootstrapper::parse_runtime_settings()
         return result;
     }
 
+    AssetManifestPaths manifest_paths;
+    AssetsStructureLoader assets_structure_loader;
+    if (!assets_structure_loader.load(path_manager->assets_structure(), manifest_paths))
+    {
+        append_bootstrap_error(
+            result.error,
+            "Bootstrapper phase1 failed: assets structure load failed."
+        );
+        return result;
+    }
+
     _user_config_path = path_manager->player_data() / USER_CONFIG_FILE_NAME;
 
     const UserConfigStore::Result user_config_result =
@@ -59,6 +71,7 @@ StartupParseResult Bootstrapper::parse_runtime_settings()
     }
 
     result.runtime_settings = user_config_result.runtime_settings;
+    result.i18n_manifest_path = manifest_paths.i18n;
     _runtime_settings = user_config_result.runtime_settings;
     _has_runtime_settings = true;
     result.rebuilt_user_config = user_config_result.rebuilt_user_config;

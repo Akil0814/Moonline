@@ -114,6 +114,37 @@ bool UserConfigStore::read_bool_override(
     return true;
 }
 
+bool UserConfigStore::read_non_empty_string_override(
+    const json& node,
+    const char* key,
+    std::string& out,
+    std::string& error
+)
+{
+    if (!node.contains(key))
+        return true;
+
+    const json& value = node.at(key);
+    if (!value.is_string())
+    {
+        append_bootstrap_error(error, std::string("User config field must be a string: ") + key);
+        return false;
+    }
+
+    const std::string parsed = value.get<std::string>();
+    if (parsed.empty())
+    {
+        append_bootstrap_error(
+            error,
+            std::string("User config field must be a non-empty string: ") + key
+        );
+        return false;
+    }
+
+    out = parsed;
+    return true;
+}
+
 json UserConfigStore::make_user_config_json(const RuntimeSettings& runtime_settings)
 {
     return json{
@@ -138,6 +169,12 @@ json UserConfigStore::make_user_config_json(const RuntimeSettings& runtime_setti
                 { "master_volume", runtime_settings.audio.master_volume },
                 { "music_volume", runtime_settings.audio.music_volume },
                 { "sound_volume", runtime_settings.audio.sound_volume }
+            }
+        },
+        {
+            "localization",
+            {
+                { "language", runtime_settings.language }
             }
         }
     };
@@ -305,6 +342,25 @@ bool UserConfigStore::apply_overrides(
             audio_node,
             "sound_volume",
             runtime_settings.audio.sound_volume,
+            error))
+        {
+            return false;
+        }
+    }
+
+    if (root.contains("localization"))
+    {
+        const json& localization_node = root.at("localization");
+        if (!localization_node.is_object())
+        {
+            append_bootstrap_error(error, "User config field localization must be an object.");
+            return false;
+        }
+
+        if (!read_non_empty_string_override(
+            localization_node,
+            "language",
+            runtime_settings.language,
             error))
         {
             return false;

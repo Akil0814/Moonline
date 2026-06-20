@@ -5,6 +5,7 @@
 #include "../engine/audio/audio_service.h"
 #include "../engine/bootstrap/bootstrapper.h"
 #include "../engine/core/time.h"
+#include "../engine/localization/localization_manager.h"
 #include "../engine/resources/resource_manager.h"
 
 #include <cstdlib>
@@ -47,10 +48,32 @@ bool Application::init(int argc, char** argv)
 		std::cout << "Startup warning: " << parse_result.warning << std::endl;
 	}
 
-	if (!init_runtime(parse_result.runtime_settings))
+	RuntimeSettings runtime_settings = parse_result.runtime_settings;
+
+	if (!init_runtime(runtime_settings))
 	{
 		startup_fail("Application runtime initialization failed.");
 		return false;
+	}
+
+	if (!LocalizationManager::instance()->init(
+		_renderer,
+		parse_result.i18n_manifest_path,
+		runtime_settings.language))
+	{
+		startup_fail("Localization initialization failed.");
+		return false;
+	}
+
+	if (runtime_settings.language != LocalizationManager::instance()->current_language())
+	{
+		runtime_settings.language = LocalizationManager::instance()->current_language();
+		std::string save_error;
+		if (!Bootstrapper::instance()->save_runtime_settings(runtime_settings, save_error))
+		{
+			std::cout << "Localization warning: save normalized language failed: "
+				<< save_error << std::endl;
+		}
 	}
 
 	_input_system.init();
@@ -194,6 +217,7 @@ void Application::shutdown()
 	_input_system.shutdown();
 	_scene_manager.detach(this);
 	_scene_manager.shutdown();
+	LocalizationManager::instance()->shutdown();
 	AudioService::instance()->shutdown();
 	ResourceManager::instance()->clear();
 }

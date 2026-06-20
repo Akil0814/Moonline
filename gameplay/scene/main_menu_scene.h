@@ -2,6 +2,13 @@
 
 #include "../../application/scene/application_scene.h"
 
+#include "../../engine/localization/localized_text_style.h"
+
+#include <SDL.h>
+
+#include <string>
+#include <vector>
+
 class MainMenuScene final : public ApplicationScene
 {
 public:
@@ -15,4 +22,20 @@ public:
 	void on_enter(const ScenePayload& payload) override;
 	void on_exit() override;
 	void reset() override;
+
+private:
+	struct MenuTextEntry
+	{
+		std::string key;
+		LocalizedTextStyle style;
+		SDL_Texture* texture = nullptr;
+		SDL_Rect destination{ 0, 0, 0, 0 };
+	};
+
+	void rebuild_menu_textures();
+	void clear_menu_textures();
+	void cycle_language();
+
+private:
+	std::vector<MenuTextEntry> _menu_text_entries;
 };

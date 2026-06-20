@@ -2,6 +2,7 @@
 
 #include "../audio/audio_settings.h"
 
+#include <filesystem>
 #include <string>
 
 struct RuntimeSettings
@@ -12,6 +13,7 @@ struct RuntimeSettings
     bool fullscreen = false;
     double target_fps = 60.0;
     bool vsync = true;
+    std::string language;
     AudioSettings audio;
 };
 
@@ -19,6 +21,7 @@ struct StartupParseResult
 {
     bool success = false;
     RuntimeSettings runtime_settings;
+    std::filesystem::path i18n_manifest_path;
     std::string error;
     std::string warning;
     bool rebuilt_user_config = false;

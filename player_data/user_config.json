@@ -1,0 +1,19 @@
+{
+  "audio": {
+    "master_volume": 100,
+    "music_volume": 100,
+    "sound_volume": 100
+  },
+  "localization": {
+    "language": "en"
+  },
+  "render": {
+    "fps": 60.0,
+    "vsync": true
+  },
+  "window": {
+    "fullscreen": false,
+    "height": 720,
+    "width": 1280
+  }
+}

@@ -55,6 +55,12 @@ private:
         bool& out,
         std::string& error
     );
+    static bool read_non_empty_string_override(
+        const json& node,
+        const char* key,
+        std::string& out,
+        std::string& error
+    );
     static json make_user_config_json(const RuntimeSettings& runtime_settings);
 
     bool apply_overrides(

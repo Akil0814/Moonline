@@ -36,6 +36,13 @@ struct FontManifest
 	std::vector<FontManifestEntry> fonts;
 };
 
+struct I18nManifest
+{
+	std::string default_language;
+	std::vector<std::string> languages;
+	std::vector<std::filesystem::path> files;
+};
+
 struct AudioManifestEntry
 {
 	std::string key;

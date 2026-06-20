@@ -9,6 +9,7 @@
 #include <string>
 
 struct RuntimeSettings;
+struct StartupParseResult;
 
 class Application
     : public Singleton<Application>
