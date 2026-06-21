@@ -1,20 +1,18 @@
 #pragma once
 
 #include "effect.h"
-#include "../tools/singleton.h"
 #include "../resources/resource_types.h"
+#include "../tools/singleton.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <unordered_map>
 #include <vector>
-#include <optional>
 
-namespace elysia::animation
+namespace elysia::effects
 {
-class AnimationManager;
-
 enum class EffectAnchor
 {
 	TopLeft,
@@ -56,9 +54,7 @@ public:
 	bool register_effect(const std::vector<elysia::resources::EffectBuildRequest>& requests);
 
 	const EffectDefinition* find_definition(const std::string_view& key) const;
-
 	std::unique_ptr<Effect> create_effect(const EffectSpawnRequest& request) const;
-
 
 private:
 	std::unordered_map<std::string, EffectDefinition> _definitions;

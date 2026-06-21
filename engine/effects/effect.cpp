@@ -1,10 +1,18 @@
 #include "effect.h"
-#include "animation_manager.h"
 
-namespace elysia::animation
+#include "../animation/animation_manager.h"
+
+namespace elysia::effects
 {
-Effect::Effect(std::string effect_key, std::string animation_key, std::unique_ptr<Animation> animation) 
-    : elysia::core::GameObject(elysia::core::DepthLayer::EffectFront), _effect_key(effect_key), _animation_key(animation_key), _animation(std::move(animation))
+Effect::Effect(
+    std::string effect_key,
+    std::string animation_key,
+    std::unique_ptr<elysia::animation::Animation> animation
+)
+    : elysia::core::GameObject(elysia::core::DepthLayer::EffectFront),
+      _effect_key(std::move(effect_key)),
+      _animation_key(std::move(animation_key)),
+      _animation(std::move(animation))
 {}
 
 void Effect::submit_render_commands(std::vector<elysia::core::RenderCommand>& out_commands) const
@@ -26,7 +34,8 @@ void Effect::update(double delta)
 
 std::unique_ptr<Effect> Effect::clone() const
 {
-    std::unique_ptr<Animation> animation = AnimationManager::instance()->create_animation(_animation_key);
+    std::unique_ptr<elysia::animation::Animation> animation =
+        elysia::animation::AnimationManager::instance()->create_animation(_animation_key);
 
     std::unique_ptr<Effect> effect = std::make_unique<Effect>(
         _effect_key,

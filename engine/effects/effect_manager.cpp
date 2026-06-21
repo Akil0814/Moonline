@@ -1,9 +1,10 @@
 #include "effect_manager.h"
-#include "animation_manager.h"
+
+#include "../animation/animation_manager.h"
 
 #include <iostream>
 
-namespace elysia::animation
+namespace elysia::effects
 {
 namespace
 {
@@ -76,7 +77,7 @@ bool EffectManager::register_effect(const std::vector<elysia::resources::EffectB
 	}
 
 	return true;
-};
+}
 
 bool EffectManager::register_effect(const elysia::resources::EffectBuildRequest& request)
 {
@@ -92,12 +93,11 @@ bool EffectManager::register_effect(const elysia::resources::EffectBuildRequest&
 		return false;
 	}
 
-	if (!AnimationManager::instance()->find_definition(request.animation_key))
+	if (!elysia::animation::AnimationManager::instance()->find_definition(request.animation_key))
 	{
 		std::cout << "Register effect failed: can't find animation definition." << std::endl;
 		return false;
 	}
-
 
 	EffectDefinition definition;
 	definition.effect_key = request.effect_key;
@@ -105,7 +105,7 @@ bool EffectManager::register_effect(const elysia::resources::EffectBuildRequest&
 
 	_definitions[request.effect_key] = definition;
 	return true;
-};
+}
 
 const EffectDefinition* EffectManager::find_definition(const std::string_view& key) const
 {
@@ -128,8 +128,8 @@ std::unique_ptr<Effect> EffectManager::create_effect(const EffectSpawnRequest& r
 		return nullptr;
 	}
 
-	std::unique_ptr<Animation> animation =
-		AnimationManager::instance()->create_animation(definition->animation_key);
+	std::unique_ptr<elysia::animation::Animation> animation =
+		elysia::animation::AnimationManager::instance()->create_animation(definition->animation_key);
 
 	if (!animation)
 	{

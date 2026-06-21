@@ -3,7 +3,7 @@
 #include "config_load_pipeline.h"
 #include "resource_request_assembler.h"
 #include "../animation/animation_manager.h"
-#include "../animation/effect_manager.h"
+#include "../effects/effect_manager.h"
 #include "../io/path/path_manager.h"
 #include "../resources/resource_manager.h"
 #include "../resources/texture/surface_loader.h"
@@ -602,7 +602,7 @@ bool GameContentLoader::register_animations()
 
 bool GameContentLoader::register_effects()
 {
-	elysia::animation::EffectManager* effect_manager = elysia::animation::EffectManager::instance();
+	elysia::effects::EffectManager* effect_manager = elysia::effects::EffectManager::instance();
 	for (const elysia::resources::EffectBuildRequest& request : _load_plan.effect_build_requests())
 	{
 		if (!effect_manager->register_effect(request))

@@ -1,17 +1,21 @@
 #pragma once
 
-#include "animation.h"
+#include "../animation/animation.h"
 #include "../core/game_object.h"
 #include "../core/interface/updatable.h"
 
 #include <memory>
 
-namespace elysia::animation
+namespace elysia::effects
 {
 class Effect : public elysia::core::GameObject, public elysia::core::Updatable
 {
 public:
-	Effect(std::string effect_key, std::string animation_key, std::unique_ptr<Animation> animation);
+	Effect(
+		std::string effect_key,
+		std::string animation_key,
+		std::unique_ptr<elysia::animation::Animation> animation
+	);
 	~Effect() override = default;
 
 	void submit_render_commands(std::vector<elysia::core::RenderCommand>& out_commands) const override;
@@ -27,7 +31,7 @@ private:
 	std::string _animation_key;
 	double _angle_degrees = 0.0;
 	elysia::core::SpriteFlip _flip = elysia::core::SpriteFlip::None;
-	std::unique_ptr<Animation> _animation;
+	std::unique_ptr<elysia::animation::Animation> _animation;
 };
 
 }
