@@ -29,7 +29,7 @@ struct RenderCommand
     SDL_Texture* texture = nullptr;
 
     // Destination rectangle in world space.
-    // This shuld be transformed by the camera before rendering.
+    // This remains world-space until it is projected into a ScreenRenderCommand.
     Rect command_rect{};
 
     Uint8 alpha = 255;
@@ -46,6 +46,23 @@ struct RenderCommand
     // (0.5, 0.5) -> center, (0, 0) -> top-left
     Vector2 rotation_origin = Vector2(0.5f, 0.5f);
 
+    SpriteFlip flip = SpriteFlip::None;
+};
+
+struct ScreenRenderCommand
+{
+    SDL_Texture* texture = nullptr;
+
+    // Destination rectangle in screen space.
+    Rect screen_rect{};
+
+    Uint8 alpha = 255;
+
+    bool use_src_rect = false;
+    Rect src_rect{};
+
+    double rotation_degrees = 0.0;
+    Vector2 rotation_origin = Vector2(0.5f, 0.5f);
     SpriteFlip flip = SpriteFlip::None;
 };
 

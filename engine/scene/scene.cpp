@@ -3,6 +3,7 @@
 #include "scene_input_order.h"
 
 #include "../core/interface/updatable.h"
+#include "../core/render/render_command_projection.h"
 #include "../core/render/sdl_render_command_executor.h"
 
 #include "../input/contracts/raw_input_event_receiver.h"
@@ -76,6 +77,12 @@ void Scene::on_update(double delta)
         _collision_system.dispatch_events(_collider_entries);
     }
 
+	if (_camera_controller)
+	{
+		_camera_controller->set_focus_rect(resolve_camera_focus_rect());
+		_camera_controller->update(delta);
+	}
+
 	remove_destroyed_objects();
 }
 
@@ -85,13 +92,16 @@ void Scene::on_render(SDL_Renderer* renderer)
 		return;
 
 	std::vector<elysia::core::RenderCommand> render_commands;
+	std::vector<elysia::core::ScreenRenderCommand> projected_render_commands;
 	std::vector<elysia::core::UiRenderCommand> ui_render_commands;
 	render_commands.reserve(256);
+	projected_render_commands.reserve(256);
 	ui_render_commands.reserve(256);
 
 	for (const auto& layer : _object_layers)
 	{
 		render_commands.clear();
+		projected_render_commands.clear();
 
 		for (const std::unique_ptr<elysia::core::GameObject>& obj : layer)
 		{
@@ -101,7 +111,12 @@ void Scene::on_render(SDL_Renderer* renderer)
 			obj->submit_render_commands(render_commands);
 		}
 
-		elysia::core::execute_render_commands(renderer, render_commands);
+		elysia::core::project_render_commands_to_screen(
+			render_commands,
+			_camera,
+			projected_render_commands
+		);
+		elysia::core::execute_render_commands(renderer, projected_render_commands);
 	}
 
 
@@ -221,6 +236,32 @@ void Scene::request_quit()
 void Scene::on_scene_object_registered(elysia::core::SceneObject& object)
 {
 	(void)object;
+}
+
+elysia::camera::CameraController* Scene::emplace_camera_controller()
+{
+	_camera_controller = std::make_unique<elysia::camera::CameraController>(_camera);
+	return _camera_controller.get();
+}
+
+void Scene::clear_camera_controller() noexcept
+{
+	_camera_controller.reset();
+}
+
+void Scene::set_camera_viewport_size(const elysia::core::Vector2& viewport_size) noexcept
+{
+	_camera.set_viewport_size(viewport_size);
+
+	if (_camera_controller)
+	{
+		_camera_controller->set_viewport_size(viewport_size);
+	}
+}
+
+std::optional<elysia::core::Rect> Scene::resolve_camera_focus_rect() const
+{
+	return std::nullopt;
 }
 
 bool Scene::add_game_object(std::unique_ptr<elysia::core::GameObject> object)

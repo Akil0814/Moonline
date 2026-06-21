@@ -74,12 +74,12 @@ inline void execute_textured_render_command(
     SDL_SetTextureAlphaMod(texture, previous_alpha);
 }
 
-inline void execute_render_command(SDL_Renderer* renderer, const RenderCommand& render_command) noexcept
+inline void execute_render_command(SDL_Renderer* renderer, const ScreenRenderCommand& render_command) noexcept
 {
     execute_textured_render_command(
         renderer,
         render_command.texture,
-        render_command.command_rect,
+        render_command.screen_rect,
         render_command.alpha,
         render_command.use_src_rect,
         render_command.src_rect,
@@ -192,10 +192,10 @@ inline void execute_render_command(SDL_Renderer* renderer, const UiRenderCommand
 
 inline void execute_render_commands(
     SDL_Renderer* renderer,
-    const std::vector<RenderCommand>& render_commands
+    const std::vector<ScreenRenderCommand>& render_commands
 ) noexcept
 {
-    for (const RenderCommand& render_command : render_commands)
+    for (const ScreenRenderCommand& render_command : render_commands)
         execute_render_command(renderer, render_command);
 }
 
