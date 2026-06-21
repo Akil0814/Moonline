@@ -17,6 +17,13 @@ enum class UiButtonVisualMode
     Textured
 };
 
+struct UiButtonSounds
+{
+    std::string focus;
+    std::string press;
+    std::string click;
+};
+
 struct UiButtonTextures
 {
     SDL_Texture* idle = nullptr;
@@ -76,6 +83,10 @@ public:
     [[nodiscard]] bool has_state_textures() const noexcept;
     [[nodiscard]] UiButtonVisualMode visual_mode() const noexcept;
 
+    void set_sounds(const UiButtonSounds& sounds);
+    void clear_sounds();
+    [[nodiscard]] const UiButtonSounds& sounds() const noexcept;
+
     void set_on_click(ClickCallback on_click);
 
     void set_idle_color(elysia::core::Color color);
@@ -109,9 +120,11 @@ private:
     [[nodiscard]] elysia::core::Rect content_rect() const noexcept;
     [[nodiscard]] elysia::core::Rect text_render_rect(SDL_Texture* text_texture) const noexcept;
     void clear_pushed_state() noexcept;
+    void play_sound_if_set(std::string_view sound_key) const;
 
 private:
     std::string _text_key;
+    UiButtonSounds _sounds;
     UiButtonTextures _state_textures;
     ClickCallback _on_click;
     UiButtonVisualMode _visual_mode = UiButtonVisualMode::Text;

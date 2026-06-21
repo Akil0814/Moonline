@@ -1,5 +1,6 @@
 #include "ui_button.h"
 
+#include "../../audio/audio_service.h"
 #include "../../core/render/colors.h"
 #include "../../core/render/render_command.h"
 #include "../../localization/localization_manager.h"
@@ -66,6 +67,7 @@ void UiButton::reset() noexcept
     set_use_theme(false);
 
     _text_key.clear();
+    _sounds = UiButtonSounds{};
     _state_textures = UiButtonTextures{};
     _on_click = nullptr;
     _visual_mode = UiButtonVisualMode::Text;
@@ -91,10 +93,16 @@ void UiButton::set_enabled(bool enabled)
 
 void UiButton::set_focused(bool focused)
 {
+    const bool was_focused = is_focused();
     UiControl::set_focused(focused);
-    if (!focused)
+    if (!is_focused())
     {
         clear_pushed_state();
+    }
+
+    if (!was_focused && is_focused())
+    {
+        play_sound_if_set(_sounds.focus);
     }
 }
 
@@ -114,17 +122,23 @@ bool UiButton::on_ui_input_event(const UiInputEvent& event)
     if (event.type == UiInputEventType::ActionPressed)
     {
         _is_pushed = true;
+        play_sound_if_set(_sounds.press);
         return true;
     }
 
     if (event.type == UiInputEventType::ActionReleased)
     {
         const bool should_click = _is_pushed;
+        const ClickCallback on_click = _on_click;
         clear_pushed_state();
 
-        if (should_click && _on_click)
+        if (should_click)
         {
-            _on_click();
+            play_sound_if_set(_sounds.click);
+            if (on_click)
+            {
+                on_click();
+            }
         }
 
         return should_click;
@@ -230,6 +244,21 @@ bool UiButton::has_state_textures() const noexcept
 UiButtonVisualMode UiButton::visual_mode() const noexcept
 {
     return _visual_mode;
+}
+
+void UiButton::set_sounds(const UiButtonSounds& sounds)
+{
+    _sounds = sounds;
+}
+
+void UiButton::clear_sounds()
+{
+    _sounds = UiButtonSounds{};
+}
+
+const UiButtonSounds& UiButton::sounds() const noexcept
+{
+    return _sounds;
 }
 
 void UiButton::set_on_click(ClickCallback on_click)
@@ -419,6 +448,16 @@ elysia::core::Rect UiButton::text_render_rect(SDL_Texture* text_texture) const n
 void UiButton::clear_pushed_state() noexcept
 {
     _is_pushed = false;
+}
+
+void UiButton::play_sound_if_set(std::string_view sound_key) const
+{
+    if (sound_key.empty())
+    {
+        return;
+    }
+
+    elysia::audio::AudioService::instance()->play_sound(sound_key);
 }
 
 }
