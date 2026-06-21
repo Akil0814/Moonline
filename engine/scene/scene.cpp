@@ -70,6 +70,12 @@ void Scene::on_update(double delta)
 		entry.updatable->update(delta);
 	}
 
+    if (!_paused)
+    {
+        _physics_system.step(_physics_body_entries, delta);
+        _collision_system.dispatch_events(_collider_entries);
+    }
+
 	remove_destroyed_objects();
 }
 
@@ -130,6 +136,31 @@ void Scene::register_scene_object_interfaces(elysia::core::SceneObject* object)
 		);
 	}
 
+    elysia::core::GameObject* game_object = dynamic_cast<elysia::core::GameObject*>(object);
+    if (game_object)
+    {
+        if (elysia::physics::PhysicsBodyProvider* body_provider =
+            dynamic_cast<elysia::physics::PhysicsBodyProvider*>(object))
+        {
+            _physics_body_entries.push_back(PhysicsBodyEntry{
+                object,
+                game_object,
+                body_provider
+            });
+        }
+
+        if (elysia::physics::ColliderProvider* collider_provider =
+            dynamic_cast<elysia::physics::ColliderProvider*>(object))
+        {
+            _collider_entries.push_back(ColliderEntry{
+                object,
+                game_object,
+                collider_provider,
+                dynamic_cast<elysia::physics::CollisionListener*>(object)
+            });
+        }
+    }
+
 	on_scene_object_registered(*object);
 }
 
@@ -138,6 +169,8 @@ void Scene::remove_destroyed_objects()
 	erase_destroyed_entries(_updatables);
 	erase_destroyed_entries(_frame_receivers);
 	erase_destroyed_entries(_event_receivers);
+    erase_destroyed_entries(_physics_body_entries);
+    erase_destroyed_entries(_collider_entries);
 
 	for (auto& layer : _object_layers)
 	{

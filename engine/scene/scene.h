@@ -15,6 +15,11 @@
 #include "../core/game_object.h"
 #include "../core/event/subject.h"
 #include "../core/interface/updatable.h"
+#include "../physics/collider_provider.h"
+#include "../physics/collision_listener.h"
+#include "../physics/collision_system.h"
+#include "../physics/physics_body_provider.h"
+#include "../physics/physics_system.h"
 #include "../input/contracts/raw_input_event_receiver.h"
 #include "../input/contracts/raw_input_frame_receiver.h"
 #include "../input/raw_input_frame.h"
@@ -128,6 +133,21 @@ private:
 		elysia::input::RawInputEventReceiver* receiver = nullptr;
 	};
 
+    struct PhysicsBodyEntry
+    {
+        elysia::core::SceneObject* object = nullptr;
+        elysia::core::GameObject* game_object = nullptr;
+        elysia::physics::PhysicsBodyProvider* body_provider = nullptr;
+    };
+
+    struct ColliderEntry
+    {
+        elysia::core::SceneObject* object = nullptr;
+        elysia::core::GameObject* game_object = nullptr;
+        elysia::physics::ColliderProvider* collider_provider = nullptr;
+        elysia::physics::CollisionListener* collision_listener = nullptr;
+    };
+
 private:
 
 	std::array<std::vector<std::unique_ptr<elysia::core::GameObject>>,
@@ -137,6 +157,11 @@ private:
 	std::vector<UpdatableEntry> _updatables;
 	std::vector<RawInputFrameReceiverEntry> _frame_receivers;
 	std::vector<RawInputEventReceiverEntry> _event_receivers;
+    std::vector<PhysicsBodyEntry> _physics_body_entries;
+    std::vector<ColliderEntry> _collider_entries;
+
+    elysia::physics::PhysicsSystem _physics_system;
+    elysia::physics::CollisionSystem _collision_system;
 };
 
 }
