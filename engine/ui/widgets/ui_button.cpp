@@ -5,6 +5,8 @@
 #include "../../localization/localization_manager.h"
 #include "../../localization/localized_text_style.h"
 
+#include <SDL.h>
+
 #include <algorithm>
 #include <utility>
 
@@ -29,12 +31,44 @@ UiButton::UiButton(
     set_use_theme(false);
 }
 
+UiButton::UiButton(
+    SDL_Texture* idle,
+    SDL_Texture* focused,
+    SDL_Texture* pushed,
+    SDL_Texture* disabled,
+    const elysia::core::Rect& rect,
+    int order
+) noexcept
+    : UiControl(rect.position(), rect.size(), order)
+{
+    set_use_theme(false);
+    set_state_textures(UiButtonTextures{ idle, focused, pushed, disabled });
+}
+
+UiButton::UiButton(
+    SDL_Texture* idle,
+    SDL_Texture* focused,
+    SDL_Texture* pushed,
+    SDL_Texture* disabled,
+    const elysia::core::Vector2& position,
+    const elysia::core::Vector2& size,
+    int order
+) noexcept
+    : UiControl(position, size, order)
+{
+    set_use_theme(false);
+    set_state_textures(UiButtonTextures{ idle, focused, pushed, disabled });
+}
+
 void UiButton::reset() noexcept
 {
     UiControl::reset();
     set_use_theme(false);
 
+    _text_key.clear();
+    _state_textures = UiButtonTextures{};
     _on_click = nullptr;
+    _visual_mode = UiButtonVisualMode::Text;
     _idle_color = elysia::core::colors::loading_blue_button_idle;
     _focused_color = elysia::core::colors::loading_blue_button_hovered;
     _pushed_color = elysia::core::colors::loading_blue_button_pushed;
@@ -112,6 +146,18 @@ void UiButton::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
         return;
     }
 
+    if (_visual_mode == UiButtonVisualMode::Textured)
+    {
+        SDL_Texture* state_texture = current_state_texture();
+        if (!state_texture)
+        {
+            return;
+        }
+
+        out_commands.push_back(elysia::core::make_ui_texture_command(state_texture, button_rect));
+        return;
+    }
+
     out_commands.push_back(elysia::core::make_ui_fill_rect_command(button_rect, current_background_color()));
 
     if (_draw_border)
@@ -153,11 +199,37 @@ void UiButton::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
 void UiButton::set_text_key(std::string text_key)
 {
     _text_key = std::move(text_key);
+    _visual_mode = UiButtonVisualMode::Text;
 }
 
 const std::string& UiButton::text_key() const noexcept
 {
     return _text_key;
+}
+
+void UiButton::set_state_textures(const UiButtonTextures& textures)
+{
+    _state_textures = textures;
+    _visual_mode = UiButtonVisualMode::Textured;
+}
+
+void UiButton::clear_state_textures()
+{
+    _state_textures = UiButtonTextures{};
+    _visual_mode = UiButtonVisualMode::Text;
+}
+
+bool UiButton::has_state_textures() const noexcept
+{
+    return _state_textures.idle
+        || _state_textures.focused
+        || _state_textures.pushed
+        || _state_textures.disabled;
+}
+
+UiButtonVisualMode UiButton::visual_mode() const noexcept
+{
+    return _visual_mode;
 }
 
 void UiButton::set_on_click(ClickCallback on_click)
@@ -173,6 +245,28 @@ void UiButton::set_idle_color(elysia::core::Color color)
 elysia::core::Color UiButton::idle_color() const noexcept
 {
     return _idle_color;
+}
+
+SDL_Texture* UiButton::current_state_texture() const noexcept
+{
+    if (!is_enabled())
+    {
+        return _state_textures.disabled
+            ? _state_textures.disabled
+            : _state_textures.idle;
+    }
+
+    if (_is_pushed)
+    {
+        return _state_textures.pushed;
+    }
+
+    if (is_focused())
+    {
+        return _state_textures.focused;
+    }
+
+    return _state_textures.idle;
 }
 
 void UiButton::set_focused_color(elysia::core::Color color)

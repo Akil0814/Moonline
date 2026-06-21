@@ -4,21 +4,20 @@
 {
     if (style._use_state_textures)
     {
-        button.set_themed_state_textures(
+        button.set_state_textures(UiButtonTextures{
             style._idle_texture,
             style._hovered_texture,
-            style._pushed_texture
-        );
+            style._pushed_texture,
+            style._disabled_texture
+        });
         return;
     }
 
     button.clear_state_textures();
-    button.set_themed_state_colors(
-        style._idle_color,
-        style._hovered_color,
-        style._pushed_color,
-        style._frame_color
-    );
+    button.set_idle_color(style._idle_color);
+    button.set_focused_color(style._hovered_color);
+    button.set_pushed_color(style._pushed_color);
+    button.set_border_color(style._frame_color);
 }
 
 void UiStyle::apply_label(UiLabel& label, const LabelStyle& style)

@@ -21,6 +21,7 @@ struct ButtonStyle
     SDL_Texture* _idle_texture = nullptr;
     SDL_Texture* _hovered_texture = nullptr;
     SDL_Texture* _pushed_texture = nullptr;
+    SDL_Texture* _disabled_texture = nullptr;
 
     bool _use_state_textures = false;
 };
