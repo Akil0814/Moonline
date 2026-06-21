@@ -24,7 +24,10 @@ public:
 private:
 	elysia::ui::UiBar* _loading_bar = nullptr;
 	elysia::ui::UiFadeImage* _akil_icon = nullptr;
+	elysia::ui::UiFadeImage* _engine_icon = nullptr;
 	elysia::loading::GameContentLoader _content_loader;
+
+	bool _icon_updateing = false;
 	bool _has_logged_load_failure = false;
 };
 }
