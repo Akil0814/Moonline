@@ -14,7 +14,7 @@ void StartupLoadingScene::on_enter(const elysia::scene::ScenePayload& payload)
 
 
 	SDL_Texture* akil_tex = elysia::bootstrap::Bootstrapper::instance()->get_preload_texture("Akil.png");
-	SDL_Texture* engine_tex = elysia::bootstrap::Bootstrapper::instance()->get_preload_texture("Akil.png");
+	SDL_Texture* engine_tex = elysia::bootstrap::Bootstrapper::instance()->get_preload_texture("elysia_1024.png");
 
 	_akil_icon = elysia::scene::Scene::create_and_add_object<elysia::ui::UiFadeImage>(akil_tex, elysia::core::Rect{ 540, 260, 200, 200 });
 	_engine_icon = elysia::scene::Scene::create_and_add_object<elysia::ui::UiFadeImage>(engine_tex, elysia::core::Rect{ 540, 260, 200, 200 });
@@ -29,8 +29,8 @@ void StartupLoadingScene::on_enter(const elysia::scene::ScenePayload& payload)
 		_icon_updateing = false;
 		});
 
-	_akil_icon->configure_playback(elysia::ui::UiFadeImageMode::FadeInOut, 1, 1, 1);
-	_engine_icon->configure_playback(elysia::ui::UiFadeImageMode::FadeInOut, 1, 1, 1);
+	_akil_icon->configure_playback(elysia::ui::UiFadeImageMode::FadeInOut, 2, 1, 2);
+	_engine_icon->configure_playback(elysia::ui::UiFadeImageMode::FadeInOut, 2, 1, 2);
 
 	_loading_bar = elysia::scene::Scene::create_and_add_object<elysia::ui::UiBar>(elysia::core::Rect{ 700, 700, 200, 5 });
 	_loading_bar->set_draw_border(true);
