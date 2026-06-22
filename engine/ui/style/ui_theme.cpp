@@ -4,13 +4,13 @@ UiTheme make_loading_blue_theme()
 {
     UiTheme theme;
 
-    theme._default_panel._background_color = elysia::core::colors::loading_blue_panel_default;
+    theme._default_panel._background_color = elysia::core::colors::slate_blue;
     theme._default_panel._border_color = elysia::core::Color{ 106, 148, 196, 255 };
     theme._default_panel._draw_background = true;
     theme._default_panel._draw_border = false;
 
     theme._screen_panel = theme._default_panel;
-    theme._screen_panel._background_color = elysia::core::colors::loading_blue_panel_screen;
+    theme._screen_panel._background_color = elysia::core::colors::abyss_blue;
 
     theme._dialog_panel = theme._default_panel;
     theme._dialog_panel._background_color = elysia::core::Color{ 14, 24, 40, 245 };
@@ -36,10 +36,10 @@ UiTheme make_loading_blue_theme()
     theme._muted_label._horizontal_align = TextHorizontalAlign::Center;
     theme._muted_label._vertical_align = TextVerticalAlign::Center;
 
-    theme._default_button._idle_color = elysia::core::colors::loading_blue_button_idle;
-    theme._default_button._hovered_color = elysia::core::colors::loading_blue_button_hovered;
-    theme._default_button._pushed_color = elysia::core::colors::loading_blue_button_pushed;
-    theme._default_button._frame_color = elysia::core::colors::loading_blue_button_frame;
+    theme._default_button._idle_color = elysia::core::colors::cobalt_blue;
+    theme._default_button._hovered_color = elysia::core::colors::royal_blue;
+    theme._default_button._pushed_color = elysia::core::colors::midnight_blue;
+    theme._default_button._frame_color = elysia::core::colors::sky_blue;
 
     theme._primary_button = theme._default_button;
     theme._primary_button._idle_color = elysia::core::Color{ 24, 62, 118, 255 };
@@ -52,8 +52,8 @@ UiTheme make_loading_blue_theme()
     theme._danger_button._pushed_color = elysia::core::Color{ 84, 24, 32, 255 };
     theme._danger_button._frame_color = elysia::core::Color{ 222, 158, 166, 255 };
 
-    theme._default_bar._background_color = elysia::core::colors::loading_blue_bar_background;
-    theme._default_bar._fill_color = elysia::core::colors::loading_blue_bar_fill;
+    theme._default_bar._background_color = elysia::core::colors::deep_cobalt_blue;
+    theme._default_bar._fill_color = elysia::core::colors::glacial_white;
     theme._default_bar._border_color = elysia::core::Color{ 106, 148, 196, 255 };
     theme._default_bar._draw_border = true;
     theme._default_bar._padding = 2;

@@ -71,10 +71,10 @@ void UiButton::reset() noexcept
     _state_textures = UiButtonTextures{};
     _on_click = nullptr;
     _visual_mode = UiButtonVisualMode::Text;
-    _idle_color = elysia::core::colors::loading_blue_button_idle;
-    _focused_color = elysia::core::colors::loading_blue_button_hovered;
-    _pushed_color = elysia::core::colors::loading_blue_button_pushed;
-    _border_color = elysia::core::colors::loading_blue_button_frame;
+    _idle_color = elysia::core::colors::cobalt_blue;
+    _focused_color = elysia::core::colors::royal_blue;
+    _pushed_color = elysia::core::colors::midnight_blue;
+    _border_color = elysia::core::colors::sky_blue;
     _text_color = elysia::core::colors::white;
     _text_point_size = 24;
     _padding = 10;

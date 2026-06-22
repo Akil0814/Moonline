@@ -129,10 +129,10 @@ private:
     ClickCallback _on_click;
     UiButtonVisualMode _visual_mode = UiButtonVisualMode::Text;
 
-    elysia::core::Color _idle_color = elysia::core::colors::loading_blue_button_idle;
-    elysia::core::Color _focused_color = elysia::core::colors::loading_blue_button_hovered;
-    elysia::core::Color _pushed_color = elysia::core::colors::loading_blue_button_pushed;
-    elysia::core::Color _border_color = elysia::core::colors::loading_blue_button_frame;
+    elysia::core::Color _idle_color = elysia::core::colors::cobalt_blue;
+    elysia::core::Color _focused_color = elysia::core::colors::royal_blue;
+    elysia::core::Color _pushed_color = elysia::core::colors::midnight_blue;
+    elysia::core::Color _border_color = elysia::core::colors::sky_blue;
     elysia::core::Color _text_color = elysia::core::colors::white;
 
     int _text_point_size = 24;

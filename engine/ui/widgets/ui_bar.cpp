@@ -27,8 +27,8 @@ void UiBar::reset() noexcept
     _min_value = 0.0f;
     _max_value = 1.0f;
     _value = 0.0f;
-    _background_color = elysia::core::colors::loading_blue_bar_background;
-    _fill_color = elysia::core::colors::loading_blue_bar_fill;
+    _background_color = elysia::core::colors::deep_cobalt_blue;
+    _fill_color = elysia::core::colors::glacial_white;
     _border_color = elysia::core::colors::black;
     _fill_direction = BarFillDirection::LeftToRight;
     _draw_border = false;

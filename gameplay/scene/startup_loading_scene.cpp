@@ -32,7 +32,7 @@ void StartupLoadingScene::on_enter(const elysia::scene::ScenePayload& payload)
 	_akil_icon->configure_playback(elysia::ui::UiFadeImageMode::FadeInOut, 2, 1, 2);
 	_engine_icon->configure_playback(elysia::ui::UiFadeImageMode::FadeInOut, 2, 1, 2);
 
-	_loading_bar = elysia::scene::Scene::create_and_add_object<elysia::ui::UiBar>(elysia::core::Rect{ 700, 700, 200, 5 });
+	_loading_bar = elysia::scene::Scene::create_and_add_object<elysia::ui::UiBar>(elysia::core::Rect{ 20, 700, 1240, 5 });
 	_loading_bar->set_draw_border(true);
 	_loading_bar->set_ratio(0.0);
 

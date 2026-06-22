@@ -47,8 +47,8 @@ struct PanelStyle
 
 struct BarStyle
 {
-    elysia::core::Color _background_color = elysia::core::colors::loading_blue_bar_background;
-    elysia::core::Color _fill_color = elysia::core::colors::loading_blue_bar_fill;
+    elysia::core::Color _background_color = elysia::core::colors::deep_cobalt_blue;
+    elysia::core::Color _fill_color = elysia::core::colors::glacial_white;
     elysia::core::Color _border_color = elysia::core::colors::black;
     BarFillDirection _fill_direction = BarFillDirection::LeftToRight;
     bool _draw_border = false;
