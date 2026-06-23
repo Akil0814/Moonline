@@ -13,8 +13,9 @@ void StartupLoadingScene::on_enter(const elysia::scene::ScenePayload& payload)
 	_has_logged_load_failure = false;
 
 
-	SDL_Texture* akil_tex = elysia::bootstrap::Bootstrapper::instance()->get_preload_texture("Akil.png");
-	SDL_Texture* engine_tex = elysia::bootstrap::Bootstrapper::instance()->get_preload_texture("elysia_1024.png");
+	SDL_Texture* akil_tex = elysia::bootstrap::Bootstrapper::instance()->get_preload_texture("Akil_icon_1024.png");
+	SDL_Texture* engine_tex = elysia::bootstrap::Bootstrapper::instance()->get_preload_texture("elysia_white_1024.png");
+	//SDL_Texture* engine_tex = elysia::bootstrap::Bootstrapper::instance()->get_preload_texture("elysia_1024.png");
 
 	_akil_icon = elysia::scene::Scene::create_and_add_object<elysia::ui::UiFadeImage>(akil_tex, elysia::core::Rect{ 540, 260, 200, 200 });
 	_engine_icon = elysia::scene::Scene::create_and_add_object<elysia::ui::UiFadeImage>(engine_tex, elysia::core::Rect{ 540, 260, 200, 200 });
