@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "../../core/render/colors.h"
 #include "../core/ui_control.h"
@@ -115,10 +115,13 @@ public:
 
 private:
     [[nodiscard]] bool can_interact() const noexcept;
+    [[nodiscard]] bool can_receive_pointer() const noexcept;
     [[nodiscard]] elysia::core::Color current_background_color() const noexcept;
     [[nodiscard]] SDL_Texture* current_state_texture() const noexcept;
     [[nodiscard]] elysia::core::Rect content_rect() const noexcept;
     [[nodiscard]] elysia::core::Rect text_render_rect(SDL_Texture* text_texture) const noexcept;
+    [[nodiscard]] bool contains_pointer(int mouse_x, int mouse_y) const noexcept;
+    [[nodiscard]] bool is_primary_pointer_event(const UiInputEvent& event) const noexcept;
     void clear_pushed_state() noexcept;
     void play_sound_if_set(std::string_view sound_key) const;
 

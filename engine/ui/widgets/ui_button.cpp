@@ -1,4 +1,4 @@
-#include "ui_button.h"
+﻿#include "ui_button.h"
 
 #include "../../audio/audio_service.h"
 #include "../../core/render/colors.h"
@@ -108,6 +108,63 @@ void UiButton::set_focused(bool focused)
 
 bool UiButton::on_ui_input_event(const UiInputEvent& event)
 {
+    if (event.type == UiInputEventType::MouseMoved)
+    {
+        if (!can_receive_pointer())
+        {
+            set_focused(false);
+            clear_pushed_state();
+            return false;
+        }
+
+        set_focused(contains_pointer(event.mouse_x, event.mouse_y));
+        return false;
+    }
+
+    if (event.type == UiInputEventType::PointerPressed)
+    {
+        if (!is_primary_pointer_event(event) || !can_receive_pointer())
+        {
+            return false;
+        }
+
+        if (!contains_pointer(event.mouse_x, event.mouse_y))
+        {
+            return false;
+        }
+
+        set_focused(true);
+        _is_pushed = true;
+        play_sound_if_set(_sounds.press);
+        return true;
+    }
+
+    if (event.type == UiInputEventType::PointerReleased)
+    {
+        if (!is_primary_pointer_event(event))
+        {
+            return false;
+        }
+
+        const bool was_pushed = _is_pushed;
+        const bool is_inside = can_receive_pointer() && contains_pointer(event.mouse_x, event.mouse_y);
+        const ClickCallback on_click = _on_click;
+        set_focused(is_inside);
+        clear_pushed_state();
+
+        if (was_pushed && is_inside)
+        {
+            play_sound_if_set(_sounds.click);
+            if (on_click)
+            {
+                on_click();
+            }
+            return true;
+        }
+
+        return was_pushed;
+    }
+
     if (event.action != UiAction::Confirm)
     {
         return false;
@@ -377,6 +434,11 @@ bool UiButton::can_interact() const noexcept
     return is_enabled() && is_focused() && is_active() && is_visible();
 }
 
+bool UiButton::can_receive_pointer() const noexcept
+{
+    return is_enabled() && is_active() && is_visible();
+}
+
 elysia::core::Color UiButton::current_background_color() const noexcept
 {
     if (_is_pushed)
@@ -447,6 +509,20 @@ elysia::core::Rect UiButton::text_render_rect(SDL_Texture* text_texture) const n
     );
 
     return elysia::core::Rect::from_center(available_rect.center(), render_size);
+}
+
+bool UiButton::contains_pointer(int mouse_x, int mouse_y) const noexcept
+{
+    return screen_rect().contains(elysia::core::Vector2(
+        static_cast<float>(mouse_x),
+        static_cast<float>(mouse_y)
+    ));
+}
+
+bool UiButton::is_primary_pointer_event(const UiInputEvent& event) const noexcept
+{
+    return event.device == elysia::input::InputDevice::Mouse
+        && event.control == elysia::input::RawInputControl::MouseLeft;
 }
 
 void UiButton::clear_pushed_state() noexcept

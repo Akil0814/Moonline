@@ -1,4 +1,4 @@
-#include "ui_input_router.h"
+﻿#include "ui_input_router.h"
 
 namespace
 {
@@ -65,6 +65,21 @@ std::vector<elysia::ui::UiInputEvent> UiInputRouter::route_event(const elysia::i
     case elysia::input::RawInputEventType::ControlPressed:
     case elysia::input::RawInputEventType::ControlReleased:
     {
+        if (raw_event.device == elysia::input::InputDevice::Mouse
+            && raw_event.control == elysia::input::RawInputControl::MouseLeft)
+        {
+            elysia::ui::UiInputEvent event;
+            event.type = raw_event.type == elysia::input::RawInputEventType::ControlPressed
+                ? elysia::ui::UiInputEventType::PointerPressed
+                : elysia::ui::UiInputEventType::PointerReleased;
+            event.device = raw_event.device;
+            event.control = raw_event.control;
+            event.mouse_x = raw_event.mouse_x;
+            event.mouse_y = raw_event.mouse_y;
+            events.push_back(event);
+            break;
+        }
+
         const elysia::ui::UiAction action = action_from_control(raw_event.control);
         if (action == elysia::ui::UiAction::None)
         {
@@ -77,6 +92,18 @@ std::vector<elysia::ui::UiInputEvent> UiInputRouter::route_event(const elysia::i
             ? elysia::ui::UiInputEventType::ActionPressed
             : elysia::ui::UiInputEventType::ActionReleased;
         event.device = raw_event.device;
+        event.control = raw_event.control;
+        events.push_back(event);
+        break;
+    }
+
+    case elysia::input::RawInputEventType::MouseMoved:
+    {
+        elysia::ui::UiInputEvent event;
+        event.type = elysia::ui::UiInputEventType::MouseMoved;
+        event.device = raw_event.device;
+        event.mouse_x = raw_event.mouse_x;
+        event.mouse_y = raw_event.mouse_y;
         events.push_back(event);
         break;
     }
