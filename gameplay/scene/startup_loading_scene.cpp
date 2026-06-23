@@ -13,8 +13,7 @@ void StartupLoadingScene::on_enter(const elysia::scene::ScenePayload& payload)
 	(void)payload;
 	_paused = false;
 	_has_logged_load_failure = false;
-	_finished_loading = false;
-	_can_switch_scene = false;
+	_phase = StartupPhase::LoadingAndIntro;
 
 
 	//icon
@@ -32,8 +31,8 @@ void StartupLoadingScene::on_enter(const elysia::scene::ScenePayload& payload)
 		_engine_icon->play(); });
 
 	_engine_icon->set_on_end([this] {
-		_icon_updateing = false;
-		});
+		on_intro_sequence_finished();
+	});
 
 	_akil_icon->configure_playback(elysia::ui::UiFadeImageMode::FadeInOut, 1, 1, 1);
 	_engine_icon->configure_playback(elysia::ui::UiFadeImageMode::FadeInOut, 1, 1, 1);
@@ -61,12 +60,10 @@ void StartupLoadingScene::on_enter(const elysia::scene::ScenePayload& payload)
 	);
 
 	_start_text->set_visible(false);
-	_start_text->play();
 
 
 	//starting
 	_akil_icon->play();
-	_icon_updateing = true;
 
 	(void)_content_loader.start(Application::instance()->renderer());
 }
@@ -81,13 +78,7 @@ void StartupLoadingScene::on_update(double delta)
 
 	if (_content_loader.is_finished())
 	{
-		_finished_loading = true;
-		_loading_bar->destroy();
-	}
-
-	if (_finished_loading && !_icon_updateing)
-	{
-		_start_text->set_visible(true);
+		on_loading_finished();
 	}
 
 	if (_content_loader.has_failed() && !_has_logged_load_failure)
@@ -103,7 +94,6 @@ void StartupLoadingScene::on_update(double delta)
 		return;
 	}
 
-	//request_scene_switch(AppSceneKeys::MainMenu);
 
 }
 
@@ -115,9 +105,21 @@ void StartupLoadingScene::on_render(SDL_Renderer* renderer)
 void StartupLoadingScene::on_input(const elysia::input::RawInputFrame& input, const std::vector<elysia::input::RawInputEvent>& events)
 {
 	ApplicationScene::on_input(input, events);
-	if (input.state.is_pressed())
-	{
 
+	if (_phase != StartupPhase::WaitingForStartInput)
+		return;
+
+	for (const elysia::input::RawInputEvent& event : events)
+	{
+		if (event.type == elysia::input::RawInputEventType::ControlPressed
+			&& elysia::input::matches_control(
+				elysia::input::RawInputControl::AnyControl,
+				event.control))
+		{
+			_phase = StartupPhase::Transitioning;
+			request_scene_switch(AppSceneKeys::MainMenu);
+			break;
+		}
 	}
 }
 
@@ -130,12 +132,62 @@ void StartupLoadingScene::on_exit()
 void StartupLoadingScene::reset()
 {
 	_paused = false;
-	_finished_loading = false;
-	_icon_updateing = false;
+	_phase = StartupPhase::LoadingAndIntro;
 	_has_logged_load_failure = false;
-	_can_switch_scene = false;
 
 	_content_loader.reset();
+}
+
+
+void StartupLoadingScene::on_loading_finished()
+{
+	if (_loading_bar)
+	{
+		_loading_bar->destroy();
+		_loading_bar = nullptr;
+	}
+
+	switch (_phase)
+	{
+	case StartupPhase::LoadingAndIntro:
+		_phase = StartupPhase::IntroOnly;
+		break;
+	case StartupPhase::LoadingOnly:
+		enter_waiting_for_start_input();
+		break;
+	case StartupPhase::IntroOnly:
+	case StartupPhase::WaitingForStartInput:
+	case StartupPhase::Transitioning:
+		break;
+	}
+}
+
+void StartupLoadingScene::on_intro_sequence_finished()
+{
+	switch (_phase)
+	{
+	case StartupPhase::LoadingAndIntro:
+		_phase = StartupPhase::LoadingOnly;
+		break;
+	case StartupPhase::IntroOnly:
+		enter_waiting_for_start_input();
+		break;
+	case StartupPhase::LoadingOnly:
+	case StartupPhase::WaitingForStartInput:
+	case StartupPhase::Transitioning:
+		break;
+	}
+}
+
+void StartupLoadingScene::enter_waiting_for_start_input()
+{
+	if (_start_text)
+	{
+		_start_text->set_visible(true);
+		_start_text->play();
+	}
+
+	_phase = StartupPhase::WaitingForStartInput;
 }
 }
 

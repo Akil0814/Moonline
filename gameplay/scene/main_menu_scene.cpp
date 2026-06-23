@@ -61,7 +61,9 @@ void MainMenuScene::on_input(const elysia::input::RawInputFrame& input, const st
 	for (const elysia::input::RawInputEvent& event : events)
 	{
 		if (event.type == elysia::input::RawInputEventType::ControlPressed
-			&& event.control == elysia::input::RawInputControl::KeyF6)
+			&& elysia::input::matches_control(
+				elysia::input::RawInputControl::KeyF6,
+				event.control))
 		{
 			cycle_language();
 			break;

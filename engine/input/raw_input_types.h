@@ -126,8 +126,53 @@ enum class RawInputControl
     GamepadPaddle4,
     GamepadTouchpad,
 
+    AnyKey,
+    AnyMouseButton,
+    AnyGamepadButton,
+    AnyControl,
+
     Count
 };
+
+[[nodiscard]] constexpr bool is_keyboard_control(RawInputControl control) noexcept
+{
+    return control >= RawInputControl::KeyA
+        && control <= RawInputControl::KeyF12;
+}
+
+[[nodiscard]] constexpr bool is_mouse_button_control(RawInputControl control) noexcept
+{
+    return control >= RawInputControl::MouseLeft
+        && control <= RawInputControl::MouseX2;
+}
+
+[[nodiscard]] constexpr bool is_gamepad_button_control(RawInputControl control) noexcept
+{
+    return control >= RawInputControl::GamepadSouth
+        && control <= RawInputControl::GamepadTouchpad;
+}
+
+[[nodiscard]] constexpr bool matches_control(
+    RawInputControl expected,
+    RawInputControl actual
+) noexcept
+{
+    switch (expected)
+    {
+    case RawInputControl::AnyKey:
+        return is_keyboard_control(actual);
+    case RawInputControl::AnyMouseButton:
+        return is_mouse_button_control(actual);
+    case RawInputControl::AnyGamepadButton:
+        return is_gamepad_button_control(actual);
+    case RawInputControl::AnyControl:
+        return is_keyboard_control(actual)
+            || is_mouse_button_control(actual)
+            || is_gamepad_button_control(actual);
+    default:
+        return expected == actual;
+    }
+}
 
 enum class RawInputAxis
 {

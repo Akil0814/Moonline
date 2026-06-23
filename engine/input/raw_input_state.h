@@ -87,7 +87,9 @@ public:
 private:
     static constexpr bool is_trackable_control(RawInputControl control)
     {
-        return control != RawInputControl::None && control != RawInputControl::Count;
+        return is_keyboard_control(control)
+            || is_mouse_button_control(control)
+            || is_gamepad_button_control(control);
     }
 
     static constexpr bool is_trackable_axis(RawInputAxis axis)
