@@ -68,28 +68,19 @@ void UiImage::clear_source_rect()
     _source_rect = elysia::core::Rect::zero();
 }
 
-void UiImage::set_alpha(std::uint8_t alpha)
-{
-    _alpha = alpha;
-}
-
-std::uint8_t UiImage::alpha() const
-{
-    return _alpha;
-}
-
 void UiImage::submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const
 {
     if (!_texture || !is_visible())
         return;
 
-    elysia::core::UiRenderCommand command = elysia::core::make_ui_texture_command(_texture, screen_rect(), _alpha);
+    elysia::core::UiRenderCommand command = elysia::core::make_ui_texture_command(_texture, screen_rect());
     if (_has_source_rect)
     {
         command.use_src_rect = true;
         command.src_rect = _source_rect;
     }
 
+    apply_opacity(command);
     out_commands.push_back(command);
 }
 

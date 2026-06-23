@@ -157,17 +157,17 @@ void UiBar::submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>
         return;
     }
 
-    out_commands.push_back(elysia::core::make_ui_fill_rect_command(bar_rect, _background_color));
+    out_commands.push_back(elysia::core::make_ui_fill_rect_command(bar_rect, apply_opacity(_background_color)));
 
     const elysia::core::Rect fill = fill_rect(bar_rect);
     if (!fill.is_empty())
     {
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(fill, _fill_color));
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(fill, apply_opacity(_fill_color)));
     }
 
     if (_draw_border)
     {
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(bar_rect, _border_color));
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(bar_rect, apply_opacity(_border_color)));
     }
 }
 

@@ -168,15 +168,17 @@ void UiButton::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
             return;
         }
 
-        out_commands.push_back(elysia::core::make_ui_texture_command(state_texture, button_rect));
+        elysia::core::UiRenderCommand command = elysia::core::make_ui_texture_command(state_texture, button_rect);
+        apply_opacity(command);
+        out_commands.push_back(command);
         return;
     }
 
-    out_commands.push_back(elysia::core::make_ui_fill_rect_command(button_rect, current_background_color()));
+    out_commands.push_back(elysia::core::make_ui_fill_rect_command(button_rect, apply_opacity(current_background_color())));
 
     if (_draw_border)
     {
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(button_rect, _border_color));
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(button_rect, apply_opacity(_border_color)));
     }
 
     if (_text_key.empty())
@@ -207,7 +209,9 @@ void UiButton::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
         return;
     }
 
-    out_commands.push_back(elysia::core::make_ui_texture_command(text_texture, text_rect));
+    elysia::core::UiRenderCommand command = elysia::core::make_ui_texture_command(text_texture, text_rect);
+    apply_opacity(command);
+    out_commands.push_back(command);
 }
 
 void UiButton::set_text_key(std::string text_key)

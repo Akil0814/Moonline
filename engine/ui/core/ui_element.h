@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <vector>
 
 #include "../../core/scene_object.h"
@@ -43,6 +44,7 @@ public:
     {
         elysia::core::SceneObject::reset();
         _use_theme = true;
+        _opacity = 255;
     }
 
     void set_screen_rect(const elysia::core::Rect& rect) noexcept { _screen_rect = rect; }
@@ -60,6 +62,9 @@ public:
     void set_use_theme(bool use_theme) noexcept { _use_theme = use_theme; }
     [[nodiscard]] bool uses_theme() const noexcept { return _use_theme; }
 
+    void set_opacity(std::uint8_t opacity) noexcept { _opacity = opacity; }
+    [[nodiscard]] std::uint8_t opacity() const noexcept { return _opacity; }
+
     [[nodiscard]] bool update_when_paused() const override{ return true;}
 
     [[nodiscard]] bool receive_input_when_paused() const override{ return true;}
@@ -67,9 +72,38 @@ public:
 protected:
     virtual void apply_theme(const UiTheme& theme) { (void)theme; }
 
+    void apply_opacity(elysia::core::UiRenderCommand& command) const noexcept
+    {
+        switch (command.type)
+        {
+        case elysia::core::UiRenderCommandType::Texture:
+            command.alpha = multiply_alpha(command.alpha, _opacity);
+            break;
+        case elysia::core::UiRenderCommandType::FillRect:
+        case elysia::core::UiRenderCommandType::DrawRect:
+        case elysia::core::UiRenderCommandType::DrawLine:
+            command.color = apply_opacity(command.color);
+            break;
+        default:
+            break;
+        }
+    }
+
+    [[nodiscard]] elysia::core::Color apply_opacity(elysia::core::Color color) const noexcept
+    {
+        color.a = multiply_alpha(color.a, _opacity);
+        return color;
+    }
+
 private:
+    static std::uint8_t multiply_alpha(std::uint8_t a, std::uint8_t b) noexcept
+    {
+        return static_cast<std::uint8_t>((static_cast<unsigned int>(a) * static_cast<unsigned int>(b)) / 255U);
+    }
+
     elysia::core::Rect _screen_rect{};
     int _order = 0;
     bool _use_theme = true;
+    std::uint8_t _opacity = 255;
 };
 }

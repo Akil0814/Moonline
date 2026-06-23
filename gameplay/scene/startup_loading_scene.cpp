@@ -4,6 +4,8 @@
 #include "../../application/scene/scene_keys.h"
 #include "../../engine/bootstrap/bootstrapper.h"
 
+#include <iostream>
+
 namespace arcneco::scene
 {
 void StartupLoadingScene::on_enter(const elysia::scene::ScenePayload& payload)
@@ -12,8 +14,10 @@ void StartupLoadingScene::on_enter(const elysia::scene::ScenePayload& payload)
 	_paused = false;
 	_has_logged_load_failure = false;
 	_finished_loading = false;
+	_can_switch_scene = false;
 
 
+	//icon
 	SDL_Texture* akil_tex = elysia::bootstrap::Bootstrapper::instance()->get_preload_texture("Akil_icon_1024.png");
 	SDL_Texture* engine_tex = elysia::bootstrap::Bootstrapper::instance()->get_preload_texture("elysia_white_1024.png");
 	//SDL_Texture* engine_tex = elysia::bootstrap::Bootstrapper::instance()->get_preload_texture("elysia_1024.png");
@@ -31,14 +35,36 @@ void StartupLoadingScene::on_enter(const elysia::scene::ScenePayload& payload)
 		_icon_updateing = false;
 		});
 
-	_akil_icon->configure_playback(elysia::ui::UiFadeImageMode::FadeInOut, 2, 1, 2);
-	_engine_icon->configure_playback(elysia::ui::UiFadeImageMode::FadeInOut, 2, 1, 2);
+	_akil_icon->configure_playback(elysia::ui::UiFadeImageMode::FadeInOut, 1, 1, 1);
+	_engine_icon->configure_playback(elysia::ui::UiFadeImageMode::FadeInOut, 1, 1, 1);
 
-	_loading_bar = elysia::scene::Scene::create_and_add_object<elysia::ui::UiBar>(elysia::core::Rect{ 20, 700, 1240, 5 });
+	//loading bar
+	_loading_bar = elysia::scene::Scene::create_and_add_object<elysia::ui::UiBar>(elysia::core::Rect{ 20, 695, 1240, 5 });
 	_loading_bar->set_draw_border(true);
 	_loading_bar->set_ratio(0.0);
 
-	_akil_icon->configure_playback(elysia::ui::UiFadeImageMode::FadeInOut, 1, 1, 1);
+
+	//starting text
+	SDL_Texture* start_tex = elysia::bootstrap::Bootstrapper::instance()->get_preload_texture("start.png");
+	_start_text = elysia::scene::Scene::create_and_add_object<elysia::ui::UiBlinkImage>(
+		start_tex,
+		elysia::core::Vector2{ 640, 690 },
+		elysia::core::Vector2{ 300, 32 },
+		elysia::ui::k_ui_image_centered
+	);
+	_start_text->configure_playback(
+		elysia::ui::UiBlinkImageMode::VisibleFirst,
+		0.0,
+		0.45,
+		0.45,
+		-1
+	);
+
+	_start_text->set_visible(false);
+	_start_text->play();
+
+
+	//starting
 	_akil_icon->play();
 	_icon_updateing = true;
 
@@ -56,8 +82,12 @@ void StartupLoadingScene::on_update(double delta)
 	if (_content_loader.is_finished())
 	{
 		_finished_loading = true;
-		_loading_bar->set_visible(false);
-		return;
+		_loading_bar->destroy();
+	}
+
+	if (_finished_loading && !_icon_updateing)
+	{
+		_start_text->set_visible(true);
 	}
 
 	if (_content_loader.has_failed() && !_has_logged_load_failure)
@@ -85,6 +115,10 @@ void StartupLoadingScene::on_render(SDL_Renderer* renderer)
 void StartupLoadingScene::on_input(const elysia::input::RawInputFrame& input, const std::vector<elysia::input::RawInputEvent>& events)
 {
 	ApplicationScene::on_input(input, events);
+	if (input.state.is_pressed())
+	{
+
+	}
 }
 
 void StartupLoadingScene::on_exit()
@@ -99,6 +133,9 @@ void StartupLoadingScene::reset()
 	_finished_loading = false;
 	_icon_updateing = false;
 	_has_logged_load_failure = false;
+	_can_switch_scene = false;
+
 	_content_loader.reset();
 }
 }
+

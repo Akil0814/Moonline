@@ -44,7 +44,7 @@ void UiFadeImage::reset() noexcept
     UiImage::reset();
     _state = FadeState::Idle;
     _elapsed = 0.0;
-    set_alpha(255);
+    set_opacity(255);
     _timer.restart();
     _timer.pause();
 }
@@ -92,12 +92,12 @@ void UiFadeImage::play()
     {
     case UiFadeImageMode::FadeIn:
     case UiFadeImageMode::FadeInOut:
-        set_alpha(0);
+        set_opacity(0);
         _state = FadeState::FadingIn;
         break;
 
     case UiFadeImageMode::FadeOut:
-        set_alpha(255);
+        set_opacity(255);
         start_hold();
         break;
 
@@ -146,12 +146,12 @@ void UiFadeImage::update_fade_in(double delta)
     _elapsed += delta;
 
     double t = ratio(_elapsed, _fade_in_duration);
-    set_alpha(static_cast<std::uint8_t>(255.0 * t));
+    set_opacity(static_cast<std::uint8_t>(255.0 * t));
 
     if (t >= 1.0)
     {
         _elapsed = 0.0;
-        set_alpha(255);
+        set_opacity(255);
         start_hold();
     }
 }
@@ -161,11 +161,11 @@ void UiFadeImage::update_fade_out(double delta)
     _elapsed += delta;
 
     double t = ratio(_elapsed, _fade_out_duration);
-    set_alpha(static_cast<std::uint8_t>(255.0 * (1.0 - t)));
+    set_opacity(static_cast<std::uint8_t>(255.0 * (1.0 - t)));
 
     if (t >= 1.0)
     {
-        set_alpha(0);
+        set_opacity(0);
         _state = FadeState::Finished;
     }
 }

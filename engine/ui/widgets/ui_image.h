@@ -42,9 +42,6 @@ public:
     void set_source_rect(const elysia::core::Rect& rect);
     void clear_source_rect();
 
-    void set_alpha(std::uint8_t alpha);
-    [[nodiscard]] std::uint8_t alpha() const;
-
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
 
 private:
@@ -52,8 +49,6 @@ private:
 
     bool _has_source_rect = false;
     elysia::core::Rect _source_rect{};
-
-    std::uint8_t _alpha = 255;
 };
 
 }
