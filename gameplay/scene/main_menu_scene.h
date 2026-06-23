@@ -2,7 +2,7 @@
 
 #include "../../application/scene/application_scene.h"
 
-#include "../../engine/localization/localized_text_style.h"
+#include "../../engine/ui/widgets/ui_button.h"
 
 #include <SDL.h>
 
@@ -26,19 +26,21 @@ public:
 	void reset() override;
 
 private:
-	struct MenuTextEntry
+	struct MenuButtonEntry
 	{
 		std::string key;
-		elysia::localization::LocalizedTextStyle style;
-		SDL_Texture* texture = nullptr;
-		SDL_Rect destination{ 0, 0, 0, 0 };
+		elysia::ui::UiButton* button = nullptr;
 	};
 
-	void rebuild_menu_textures();
-	void clear_menu_textures();
+	[[nodiscard]] elysia::input::InputContext input_context() const override;
+	void rebuild_menu_buttons();
+	void clear_menu_buttons();
 	void cycle_language();
+	void set_focused_button(size_t index);
+	void move_focus(int direction);
 
 private:
-	std::vector<MenuTextEntry> _menu_text_entries;
+	std::vector<MenuButtonEntry> _menu_button_entries;
+	size_t _focused_button_index = 0;
 };
 }
