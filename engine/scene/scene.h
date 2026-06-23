@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <SDL.h>
 
@@ -28,122 +28,137 @@
 #include "../input/raw_input_frame.h"
 #include "../input/raw_input_types.h"
 #include "../ui/core/ui_element.h"
+#include "../ui/input/contracts/ui_input_event_receiver.h"
+#include "../ui/input/contracts/ui_input_frame_receiver.h"
+#include "../ui/input/ui_input_router.h"
 
 namespace elysia::scene
 {
 class Scene : public elysia::core::Subject<SceneRequestObserver>
 {
 public:
-	Scene() = default;
-	virtual ~Scene() = default;
+    Scene() = default;
+    virtual ~Scene() = default;
 
-	Scene(const Scene&) = delete;
-	Scene& operator=(const Scene&) = delete;
+    Scene(const Scene&) = delete;
+    Scene& operator=(const Scene&) = delete;
 
-	Scene(Scene&&) = delete;
-	Scene& operator=(Scene&&) = delete;
+    Scene(Scene&&) = delete;
+    Scene& operator=(Scene&&) = delete;
 
-	virtual void on_enter(const ScenePayload& payload) = 0;
-	virtual void on_exit() = 0;
-	virtual void reset() = 0;
+    virtual void on_enter(const ScenePayload& payload) = 0;
+    virtual void on_exit() = 0;
+    virtual void reset() = 0;
 
-	virtual void on_update(double delta);
+    virtual void on_update(double delta);
+    virtual void on_render(SDL_Renderer* renderer);
+    virtual void on_input(const elysia::input::RawInputFrame& input, const std::vector<elysia::input::RawInputEvent>& events);
 
-	virtual void on_render(SDL_Renderer* renderer);
+    void pause() { _paused = true; }
+    void resume() { _paused = false; }
+    [[nodiscard]] bool is_paused() const { return _paused; }
+    [[nodiscard]] elysia::camera::Camera& camera() noexcept { return _camera; }
+    [[nodiscard]] const elysia::camera::Camera& camera() const noexcept { return _camera; }
+    [[nodiscard]] elysia::camera::CameraController* camera_controller() noexcept { return _camera_controller.get(); }
+    [[nodiscard]] const elysia::camera::CameraController* camera_controller() const noexcept { return _camera_controller.get(); }
 
-	virtual void on_input(const elysia::input::RawInputFrame& input,const std::vector<elysia::input::RawInputEvent>& events);
+    elysia::camera::CameraController* emplace_camera_controller();
+    void clear_camera_controller() noexcept;
 
-	void pause() { _paused = true; }
-	void resume() { _paused = false; }
-	[[nodiscard]] bool is_paused()const { return _paused; }
-	[[nodiscard]] elysia::camera::Camera& camera() noexcept { return _camera; }
-	[[nodiscard]] const elysia::camera::Camera& camera() const noexcept { return _camera; }
-	[[nodiscard]] elysia::camera::CameraController* camera_controller() noexcept { return _camera_controller.get(); }
-	[[nodiscard]] const elysia::camera::CameraController* camera_controller() const noexcept { return _camera_controller.get(); }
+    template <typename T, typename... Args>
+    T* create_and_add_object(Args&&... args)
+    {
+        static_assert(
+            std::is_base_of_v<elysia::core::GameObject, T> || std::is_base_of_v<elysia::ui::UiElement, T>,
+            "T must derive from elysia::core::GameObject or elysia::ui::UiElement.");
 
-	elysia::camera::CameraController* emplace_camera_controller();
-	void clear_camera_controller() noexcept;
+        return add_object(
+            std::make_unique<T>(std::forward<Args>(args)...)
+        );
+    }
 
-	template <typename T, typename... Args>
-	T* create_and_add_object(Args&&... args)
-	{
-		static_assert(
-			std::is_base_of_v<elysia::core::GameObject, T> || std::is_base_of_v<elysia::ui::UiElement, T>,
-			"T must derive from elysia::core::GameObject or elysia::ui::UiElement.");
+    template <typename T>
+    T* add_object(std::unique_ptr<T> object)
+    {
+        static_assert(
+            std::is_base_of_v<elysia::core::SceneObject, T>,
+            "T must derive from elysia::core::SceneObject.");
 
-		return add_object(
-			std::make_unique<T>(std::forward<Args>(args)...)
-		);
-	}
+        static_assert(
+            std::is_base_of_v<elysia::core::GameObject, T> || std::is_base_of_v<elysia::ui::UiElement, T>,
+            "T must derive from elysia::core::GameObject or elysia::ui::UiElement.");
 
-	template <typename T>
-	T* add_object(std::unique_ptr<T> object)
-	{
-		static_assert(
-			std::is_base_of_v<elysia::core::SceneObject, T>,
-			"T must derive from elysia::core::SceneObject.");
+        if (!object)
+            return nullptr;
 
-		static_assert(
-			std::is_base_of_v<elysia::core::GameObject, T> || std::is_base_of_v<elysia::ui::UiElement, T>,
-			"T must derive from elysia::core::GameObject or elysia::ui::UiElement.");
+        T* raw_object = object.get();
+        bool added = false;
 
-		if (!object)
-			return nullptr;
+        if constexpr (std::is_base_of_v<elysia::core::GameObject, T>)
+            added = add_game_object(std::move(object));
+        else if constexpr (std::is_base_of_v<elysia::ui::UiElement, T>)
+            added = add_ui_root(std::move(object));
 
-		T* raw_object = object.get();
-		bool added = false;
+        if (!added)
+            return nullptr;
 
-		if constexpr (std::is_base_of_v<elysia::core::GameObject, T>)
-			added = add_game_object(std::move(object));
-		else if constexpr (std::is_base_of_v<elysia::ui::UiElement, T>)
-			added = add_ui_root(std::move(object));
+        register_scene_object_interfaces(raw_object);
 
-		if (!added)
-			return nullptr;
-
-		register_scene_object_interfaces(raw_object);
-
-		return raw_object;
-	}
+        return raw_object;
+    }
 
 protected:
-	void notify_scene_request(const SceneRequest& request);
-	void request_scene_switch(
-		SceneKey target,
-		const ScenePayload& payload = {},
-		SceneReloadMode reload_mode = SceneReloadMode::Reuse
-	);
-	void request_quit();
-	void set_camera_viewport_size(const elysia::core::Vector2& viewport_size) noexcept;
-	virtual void on_scene_object_registered(elysia::core::SceneObject& object);
-	[[nodiscard]] virtual std::optional<elysia::core::Rect> resolve_camera_focus_rect() const;
+    void notify_scene_request(const SceneRequest& request);
+    void request_scene_switch(
+        SceneKey target,
+        const ScenePayload& payload = {},
+        SceneReloadMode reload_mode = SceneReloadMode::Reuse
+    );
+    void request_quit();
+    void set_camera_viewport_size(const elysia::core::Vector2& viewport_size) noexcept;
+    virtual void on_scene_object_registered(elysia::core::SceneObject& object);
+    [[nodiscard]] virtual std::optional<elysia::core::Rect> resolve_camera_focus_rect() const;
 
 protected:
-	bool _paused = false;
+    bool _paused = false;
 
 private:
-	void register_scene_object_interfaces(elysia::core::SceneObject* object);
-	void remove_destroyed_objects();
-	bool add_game_object(std::unique_ptr<elysia::core::GameObject> object);
-	bool add_ui_root(std::unique_ptr<elysia::ui::UiElement> object);
+    void register_scene_object_interfaces(elysia::core::SceneObject* object);
+    void dispatch_ui_frame(const elysia::ui::UiInputFrame& input);
+    void dispatch_ui_events(const std::vector<elysia::ui::UiInputEvent>& events);
+    void remove_destroyed_objects();
+    bool add_game_object(std::unique_ptr<elysia::core::GameObject> object);
+    bool add_ui_root(std::unique_ptr<elysia::ui::UiElement> object);
 
-	struct UpdatableEntry
-	{
-		elysia::core::SceneObject* object = nullptr;
-		elysia::core::Updatable* updatable = nullptr;
-	};
+    struct UpdatableEntry
+    {
+        elysia::core::SceneObject* object = nullptr;
+        elysia::core::Updatable* updatable = nullptr;
+    };
 
-	struct RawInputFrameReceiverEntry
-	{
-		elysia::core::SceneObject* object = nullptr;
-		elysia::input::RawInputFrameReceiver* receiver = nullptr;
-	};
+    struct RawInputFrameReceiverEntry
+    {
+        elysia::core::SceneObject* object = nullptr;
+        elysia::input::RawInputFrameReceiver* receiver = nullptr;
+    };
 
-	struct RawInputEventReceiverEntry
-	{
-		elysia::core::SceneObject* object = nullptr;
-		elysia::input::RawInputEventReceiver* receiver = nullptr;
-	};
+    struct RawInputEventReceiverEntry
+    {
+        elysia::core::SceneObject* object = nullptr;
+        elysia::input::RawInputEventReceiver* receiver = nullptr;
+    };
+
+    struct UiInputFrameReceiverEntry
+    {
+        elysia::core::SceneObject* object = nullptr;
+        elysia::ui::UiInputFrameReceiver* receiver = nullptr;
+    };
+
+    struct UiInputEventReceiverEntry
+    {
+        elysia::core::SceneObject* object = nullptr;
+        elysia::ui::UiInputEventReceiver* receiver = nullptr;
+    };
 
     struct PhysicsBodyEntry
     {
@@ -161,21 +176,22 @@ private:
     };
 
 private:
+    std::array<std::vector<std::unique_ptr<elysia::core::GameObject>>,
+        static_cast<size_t>(elysia::core::DepthLayer::Count)> _object_layers;
+    std::vector<std::unique_ptr<elysia::ui::UiElement>> _ui_roots;
 
-	std::array<std::vector<std::unique_ptr<elysia::core::GameObject>>,
-		static_cast<size_t>(elysia::core::DepthLayer::Count)> _object_layers;
-	std::vector<std::unique_ptr<elysia::ui::UiElement>> _ui_roots;
-
-	std::vector<UpdatableEntry> _updatables;
-	std::vector<RawInputFrameReceiverEntry> _frame_receivers;
-	std::vector<RawInputEventReceiverEntry> _event_receivers;
+    std::vector<UpdatableEntry> _updatables;
+    std::vector<RawInputFrameReceiverEntry> _frame_receivers;
+    std::vector<RawInputEventReceiverEntry> _event_receivers;
+    std::vector<UiInputFrameReceiverEntry> _ui_frame_receivers;
+    std::vector<UiInputEventReceiverEntry> _ui_event_receivers;
     std::vector<PhysicsBodyEntry> _physics_body_entries;
     std::vector<ColliderEntry> _collider_entries;
 
+    elysia::ui::UiInputRouter _ui_input_router;
     elysia::camera::Camera _camera;
     std::unique_ptr<elysia::camera::CameraController> _camera_controller;
     elysia::physics::PhysicsSystem _physics_system;
     elysia::physics::CollisionSystem _collision_system;
 };
-
 }

@@ -22,10 +22,10 @@ UiImage::UiImage(
     SDL_Texture* texture,
     elysia::core::Vector2 center,
     elysia::core::Vector2 image_size,
-    UiImageCenterTag,
+    UiFromCenterTag,
     int order
 )
-    : UiElement(elysia::core::Rect::from_center(center, image_size), order)
+    : UiElement(center, image_size, from_center, order)
 {
     set_texture(texture);
 }
@@ -35,10 +35,10 @@ UiImage::UiImage(
     elysia::core::Vector2 center,
     elysia::core::Vector2 source_size,
     elysia::core::Vector2 render_size,
-    UiImageCenterTag,
+    UiFromCenterTag,
     int order
 )
-    : UiElement(elysia::core::Rect::from_center(center, render_size), order)
+    : UiElement(center, render_size, from_center, order)
 {
     set_texture(texture);
     set_source_rect(elysia::core::Rect(0.0f, 0.0f, source_size.x, source_size.y));

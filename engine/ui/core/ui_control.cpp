@@ -7,6 +7,15 @@ UiControl::UiControl(elysia::core::Vector2 position, elysia::core::Vector2 size,
 {
 }
 
+UiControl::UiControl(
+    const elysia::core::Vector2& center,
+    const elysia::core::Vector2& size,
+    UiFromCenterTag,
+    int order)
+    : UiElement(center, size, from_center, order)
+{
+}
+
 void UiControl::reset() noexcept
 {
     UiElement::reset();

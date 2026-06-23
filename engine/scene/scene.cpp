@@ -1,11 +1,10 @@
-#include "scene.h"
+﻿#include "scene.h"
 
 #include "scene_input_order.h"
 
 #include "../core/interface/updatable.h"
 #include "../core/render/render_command_projection.h"
 #include "../core/render/sdl_render_command_executor.h"
-
 #include "../input/contracts/raw_input_event_receiver.h"
 #include "../input/contracts/raw_input_frame_receiver.h"
 
@@ -18,58 +17,70 @@ namespace
 template <typename Entry>
 void erase_destroyed_entries(std::vector<Entry>& entries)
 {
-	std::erase_if(entries, [](const Entry& entry)
-	{return !entry.object || entry.object->is_destroyed();});
+    std::erase_if(entries, [](const Entry& entry)
+    {
+        return !entry.object || entry.object->is_destroyed();
+    });
 }
 }
 
-void Scene::on_input(const elysia::input::RawInputFrame& input,const std::vector<elysia::input::RawInputEvent>& events)
+void Scene::on_input(const elysia::input::RawInputFrame& input, const std::vector<elysia::input::RawInputEvent>& events)
 {
-	for (const RawInputFrameReceiverEntry& entry : _frame_receivers)
-	{
-		elysia::core::SceneObject* object = entry.object;
+    for (const RawInputFrameReceiverEntry& entry : _frame_receivers)
+    {
+        elysia::core::SceneObject* object = entry.object;
 
-		if (!object || object->is_destroyed() || !object->is_active())
-			continue;
+        if (!object || object->is_destroyed() || !object->is_active())
+            continue;
 
-		if (_paused && !object->receive_input_when_paused())
-			continue;
+        if (_paused && !object->receive_input_when_paused())
+            continue;
 
-		entry.receiver->on_raw_input_frame(input);
-	}
+        entry.receiver->on_raw_input_frame(input);
+    }
 
-	for (const elysia::input::RawInputEvent& input_event : events)
-	{
-		for (const RawInputEventReceiverEntry& entry : _event_receivers)
-		{
-			elysia::core::SceneObject* object = entry.object;
+    for (const elysia::input::RawInputEvent& input_event : events)
+    {
+        for (const RawInputEventReceiverEntry& entry : _event_receivers)
+        {
+            elysia::core::SceneObject* object = entry.object;
 
-			if (!object || object->is_destroyed() || !object->is_active())
-				continue;
+            if (!object || object->is_destroyed() || !object->is_active())
+                continue;
 
-			if (_paused && !object->receive_input_when_paused())
-				continue;
+            if (_paused && !object->receive_input_when_paused())
+                continue;
 
-			if (entry.receiver->on_raw_input_event(input_event))
-				break;
-		}
-	}
+            if (entry.receiver->on_raw_input_event(input_event))
+                break;
+        }
+    }
+
+    const elysia::ui::UiInputFrame ui_input = _ui_input_router.route_frame(input);
+    dispatch_ui_frame(ui_input);
+
+    for (const elysia::input::RawInputEvent& raw_event : events)
+    {
+        dispatch_ui_events(_ui_input_router.route_event(raw_event));
+    }
+
+    dispatch_ui_events(_ui_input_router.synthesize_events(input));
 }
 
 void Scene::on_update(double delta)
 {
-	for (const UpdatableEntry& entry : _updatables)
-	{
-		elysia::core::SceneObject* object = entry.object;
+    for (const UpdatableEntry& entry : _updatables)
+    {
+        elysia::core::SceneObject* object = entry.object;
 
-		if (!object || object->is_destroyed() || !object->is_active())
-			continue;
+        if (!object || object->is_destroyed() || !object->is_active())
+            continue;
 
-		if (_paused && !object->update_when_paused())
-			continue;
+        if (_paused && !object->update_when_paused())
+            continue;
 
-		entry.updatable->update(delta);
-	}
+        entry.updatable->update(delta);
+    }
 
     if (!_paused)
     {
@@ -77,79 +88,94 @@ void Scene::on_update(double delta)
         _collision_system.dispatch_events(_collider_entries);
     }
 
-	if (_camera_controller)
-	{
-		_camera_controller->set_focus_rect(resolve_camera_focus_rect());
-		_camera_controller->update(delta);
-	}
+    if (_camera_controller)
+    {
+        _camera_controller->set_focus_rect(resolve_camera_focus_rect());
+        _camera_controller->update(delta);
+    }
 
-	remove_destroyed_objects();
+    remove_destroyed_objects();
 }
 
 void Scene::on_render(SDL_Renderer* renderer)
 {
-	if (!renderer)
-		return;
+    if (!renderer)
+        return;
 
-	std::vector<elysia::core::RenderCommand> render_commands;
-	std::vector<elysia::core::ScreenRenderCommand> projected_render_commands;
-	std::vector<elysia::core::UiRenderCommand> ui_render_commands;
-	render_commands.reserve(256);
-	projected_render_commands.reserve(256);
-	ui_render_commands.reserve(256);
+    std::vector<elysia::core::RenderCommand> render_commands;
+    std::vector<elysia::core::ScreenRenderCommand> projected_render_commands;
+    std::vector<elysia::core::UiRenderCommand> ui_render_commands;
+    render_commands.reserve(256);
+    projected_render_commands.reserve(256);
+    ui_render_commands.reserve(256);
 
-	for (const auto& layer : _object_layers)
-	{
-		render_commands.clear();
-		projected_render_commands.clear();
+    for (const auto& layer : _object_layers)
+    {
+        render_commands.clear();
+        projected_render_commands.clear();
 
-		for (const std::unique_ptr<elysia::core::GameObject>& obj : layer)
-		{
-			if (!obj || obj->is_destroyed() || !obj->is_visible())
-				continue;
+        for (const std::unique_ptr<elysia::core::GameObject>& obj : layer)
+        {
+            if (!obj || obj->is_destroyed() || !obj->is_visible())
+                continue;
 
-			obj->submit_render_commands(render_commands);
-		}
+            obj->submit_render_commands(render_commands);
+        }
 
-		elysia::core::project_render_commands_to_screen(
-			render_commands,
-			_camera,
-			projected_render_commands
-		);
-		elysia::core::execute_render_commands(renderer, projected_render_commands);
-	}
+        elysia::core::project_render_commands_to_screen(
+            render_commands,
+            _camera,
+            projected_render_commands
+        );
+        elysia::core::execute_render_commands(renderer, projected_render_commands);
+    }
 
+    ui_render_commands.clear();
+    for (const auto& ui_root : _ui_roots)
+    {
+        if (!ui_root || ui_root->is_destroyed() || !ui_root->is_visible())
+            continue;
 
-	ui_render_commands.clear();
-	for (const auto& ui_root : _ui_roots)
-	{
-		if (!ui_root || ui_root->is_destroyed() || !ui_root->is_visible())
-			continue;
+        ui_root->submit_ui_render_commands(ui_render_commands);
+    }
 
-		ui_root->submit_ui_render_commands(ui_render_commands);
-	}
-
-	elysia::core::execute_render_commands(renderer, ui_render_commands);
+    elysia::core::execute_render_commands(renderer, ui_render_commands);
 }
 
 void Scene::register_scene_object_interfaces(elysia::core::SceneObject* object)
 {
-	if (!object)
-		return;
+    if (!object)
+        return;
 
-	if (elysia::core::Updatable* updatable = dynamic_cast<elysia::core::Updatable*>(object))
-		_updatables.push_back(UpdatableEntry{ object,updatable });
+    if (elysia::core::Updatable* updatable = dynamic_cast<elysia::core::Updatable*>(object))
+        _updatables.push_back(UpdatableEntry{ object, updatable });
 
-	if (elysia::input::RawInputFrameReceiver* receiver = dynamic_cast<elysia::input::RawInputFrameReceiver*>(object))
-		_frame_receivers.push_back(RawInputFrameReceiverEntry{ object,receiver });
+    if (elysia::input::RawInputFrameReceiver* receiver = dynamic_cast<elysia::input::RawInputFrameReceiver*>(object))
+        _frame_receivers.push_back(RawInputFrameReceiverEntry{ object, receiver });
 
-	if (elysia::input::RawInputEventReceiver* receiver = dynamic_cast<elysia::input::RawInputEventReceiver*>(object))
-	{
-		scene_input_order::insert_receiver_entry_sorted(
-			_event_receivers,
-			RawInputEventReceiverEntry{ object,receiver }
-		);
-	}
+    if (elysia::input::RawInputEventReceiver* receiver = dynamic_cast<elysia::input::RawInputEventReceiver*>(object))
+    {
+        scene_input_order::insert_receiver_entry_sorted(
+            _event_receivers,
+            RawInputEventReceiverEntry{ object, receiver }
+        );
+    }
+
+    if (elysia::ui::UiInputFrameReceiver* receiver = dynamic_cast<elysia::ui::UiInputFrameReceiver*>(object))
+    {
+        scene_input_order::insert_receiver_entry_sorted(
+            _ui_frame_receivers,
+            UiInputFrameReceiverEntry{ object, receiver }
+        );
+    }
+
+    if (elysia::ui::UiInputEventReceiver* receiver = dynamic_cast<elysia::ui::UiInputEventReceiver*>(object))
+    {
+        scene_input_order::insert_receiver_entry_sorted(
+            _ui_event_receivers,
+            UiInputEventReceiverEntry{ object, receiver }
+        );
+    }
 
     elysia::core::GameObject* game_object = dynamic_cast<elysia::core::GameObject*>(object);
     if (game_object)
@@ -176,137 +202,174 @@ void Scene::register_scene_object_interfaces(elysia::core::SceneObject* object)
         }
     }
 
-	on_scene_object_registered(*object);
+    on_scene_object_registered(*object);
+}
+
+void Scene::dispatch_ui_frame(const elysia::ui::UiInputFrame& input)
+{
+    for (const UiInputFrameReceiverEntry& entry : _ui_frame_receivers)
+    {
+        elysia::core::SceneObject* object = entry.object;
+
+        if (!object || object->is_destroyed() || !object->is_active())
+            continue;
+
+        if (_paused && !object->receive_input_when_paused())
+            continue;
+
+        entry.receiver->on_ui_input_frame(input);
+    }
+}
+
+void Scene::dispatch_ui_events(const std::vector<elysia::ui::UiInputEvent>& events)
+{
+    for (const elysia::ui::UiInputEvent& ui_event : events)
+    {
+        for (const UiInputEventReceiverEntry& entry : _ui_event_receivers)
+        {
+            elysia::core::SceneObject* object = entry.object;
+
+            if (!object || object->is_destroyed() || !object->is_active())
+                continue;
+
+            if (_paused && !object->receive_input_when_paused())
+                continue;
+
+            if (entry.receiver->on_ui_input_event(ui_event))
+                break;
+        }
+    }
 }
 
 void Scene::remove_destroyed_objects()
 {
-	erase_destroyed_entries(_updatables);
-	erase_destroyed_entries(_frame_receivers);
-	erase_destroyed_entries(_event_receivers);
+    erase_destroyed_entries(_updatables);
+    erase_destroyed_entries(_frame_receivers);
+    erase_destroyed_entries(_event_receivers);
+    erase_destroyed_entries(_ui_frame_receivers);
+    erase_destroyed_entries(_ui_event_receivers);
     erase_destroyed_entries(_physics_body_entries);
     erase_destroyed_entries(_collider_entries);
 
-	for (auto& layer : _object_layers)
-	{
-		std::erase_if(layer, [](const std::unique_ptr<elysia::core::GameObject>& object)
-			{
-				return !object || object->is_destroyed();
-			});
-	}
+    for (auto& layer : _object_layers)
+    {
+        std::erase_if(layer, [](const std::unique_ptr<elysia::core::GameObject>& object)
+        {
+            return !object || object->is_destroyed();
+        });
+    }
 
-	std::erase_if(_ui_roots, [](const std::unique_ptr<elysia::ui::UiElement>& object)
-		{
-			return !object || object->is_destroyed();
-		});
+    std::erase_if(_ui_roots, [](const std::unique_ptr<elysia::ui::UiElement>& object)
+    {
+        return !object || object->is_destroyed();
+    });
 }
 
 void Scene::notify_scene_request(const SceneRequest& request)
 {
-	notify_observers(
-		[&](SceneRequestObserver& observer)
-		{
-			observer.on_scene_request(request);
-		}
-	);
+    notify_observers(
+        [&](SceneRequestObserver& observer)
+        {
+            observer.on_scene_request(request);
+        }
+    );
 }
-void Scene::request_scene_switch(
-	SceneKey target,
-	const ScenePayload& payload,
-	SceneReloadMode reload_mode
-)
-{
-	SceneRequest request;
-	request.type = SceneRequestType::Switch;
-	request.target = target;
-	request.payload = payload;
-	request.reload_mode = reload_mode;
 
-	notify_scene_request(request);
+void Scene::request_scene_switch(
+    SceneKey target,
+    const ScenePayload& payload,
+    SceneReloadMode reload_mode)
+{
+    SceneRequest request;
+    request.type = SceneRequestType::Switch;
+    request.target = target;
+    request.payload = payload;
+    request.reload_mode = reload_mode;
+
+    notify_scene_request(request);
 }
 
 void Scene::request_quit()
 {
-	SceneRequest request;
-	request.type = SceneRequestType::Quit;
+    SceneRequest request;
+    request.type = SceneRequestType::Quit;
 
-	notify_scene_request(request);
+    notify_scene_request(request);
 }
 
 void Scene::on_scene_object_registered(elysia::core::SceneObject& object)
 {
-	(void)object;
+    (void)object;
 }
 
 elysia::camera::CameraController* Scene::emplace_camera_controller()
 {
-	_camera_controller = std::make_unique<elysia::camera::CameraController>(_camera);
-	return _camera_controller.get();
+    _camera_controller = std::make_unique<elysia::camera::CameraController>(_camera);
+    return _camera_controller.get();
 }
 
 void Scene::clear_camera_controller() noexcept
 {
-	_camera_controller.reset();
+    _camera_controller.reset();
 }
 
 void Scene::set_camera_viewport_size(const elysia::core::Vector2& viewport_size) noexcept
 {
-	_camera.set_viewport_size(viewport_size);
+    _camera.set_viewport_size(viewport_size);
 
-	if (_camera_controller)
-	{
-		_camera_controller->set_viewport_size(viewport_size);
-	}
+    if (_camera_controller)
+    {
+        _camera_controller->set_viewport_size(viewport_size);
+    }
 }
 
 std::optional<elysia::core::Rect> Scene::resolve_camera_focus_rect() const
 {
-	return std::nullopt;
+    return std::nullopt;
 }
 
 bool Scene::add_game_object(std::unique_ptr<elysia::core::GameObject> object)
 {
-	if (!object)
-		return false;
+    if (!object)
+        return false;
 
-	const size_t layer_index = static_cast<size_t>(object->depth_layer());
+    const size_t layer_index = static_cast<size_t>(object->depth_layer());
 
-	if (layer_index >= _object_layers.size())
-		return false;
+    if (layer_index >= _object_layers.size())
+        return false;
 
-	std::vector<std::unique_ptr<elysia::core::GameObject>>& layer = _object_layers[layer_index];
+    std::vector<std::unique_ptr<elysia::core::GameObject>>& layer = _object_layers[layer_index];
 
-	auto iter = std::upper_bound(
-		layer.begin(),
-		layer.end(),
-		object->order_in_layer(),
-		[](int order, const std::unique_ptr<elysia::core::GameObject>& existing)
-		{
-			return order < existing->order_in_layer();
-		}
-	);
+    auto iter = std::upper_bound(
+        layer.begin(),
+        layer.end(),
+        object->order_in_layer(),
+        [](int order, const std::unique_ptr<elysia::core::GameObject>& existing)
+        {
+            return order < existing->order_in_layer();
+        }
+    );
 
-	layer.insert(iter, std::move(object));
-	return true;
+    layer.insert(iter, std::move(object));
+    return true;
 }
 
 bool Scene::add_ui_root(std::unique_ptr<elysia::ui::UiElement> object)
 {
-	if (!object)
-		return false;
+    if (!object)
+        return false;
 
-	auto iter = std::upper_bound(
-		_ui_roots.begin(),
-		_ui_roots.end(),
-		object->order(),
-		[](int order, const std::unique_ptr<elysia::ui::UiElement>& existing)
-		{
-			return order < existing->order();
-		}
-	);
+    auto iter = std::upper_bound(
+        _ui_roots.begin(),
+        _ui_roots.end(),
+        object->order(),
+        [](int order, const std::unique_ptr<elysia::ui::UiElement>& existing)
+        {
+            return order < existing->order();
+        }
+    );
 
-	_ui_roots.insert(iter, std::move(object));
-	return true;
+    _ui_roots.insert(iter, std::move(object));
+    return true;
 }
-
 }

@@ -11,6 +11,12 @@
 namespace elysia::ui
 {
 struct UiTheme;
+struct UiFromCenterTag
+{
+    explicit constexpr UiFromCenterTag() noexcept = default;
+};
+
+inline constexpr UiFromCenterTag from_center{};
 
 class UiElement : public elysia::core::SceneObject
 {
@@ -27,6 +33,13 @@ public:
         const elysia::core::Vector2& size,
         int order = 0
     ) noexcept : _screen_rect(position, size), _order(order) {}
+
+    UiElement(
+        const elysia::core::Vector2& center,
+        const elysia::core::Vector2& size,
+        UiFromCenterTag,
+        int order = 0
+    ) noexcept : _screen_rect(elysia::core::Rect::from_center(center, size)), _order(order) {}
 
     virtual ~UiElement() = default;
 

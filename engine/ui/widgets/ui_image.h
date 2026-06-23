@@ -8,13 +8,6 @@ struct SDL_Texture;
 
 namespace elysia::ui
 {
-struct UiImageCenterTag
-{
-    explicit constexpr UiImageCenterTag() noexcept = default;
-};
-
-inline constexpr UiImageCenterTag k_ui_image_centered{};
-
 class UiImage : public UiElement
 {
 public:
@@ -24,7 +17,7 @@ public:
         SDL_Texture* texture,
         elysia::core::Vector2 center,
         elysia::core::Vector2 image_size,
-        UiImageCenterTag,
+        UiFromCenterTag,
         int order = 0
     );
     UiImage(
@@ -32,7 +25,7 @@ public:
         elysia::core::Vector2 center,
         elysia::core::Vector2 source_size,
         elysia::core::Vector2 render_size,
-        UiImageCenterTag,
+        UiFromCenterTag,
         int order = 0
     );
 

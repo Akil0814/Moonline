@@ -179,19 +179,16 @@ int  Application::run(int argc, char** argv)
 		_input_system.begin_frame();
 		while (SDL_PollEvent(&_event))
 		{
+			_input_system.process_event(_event);
 			if (_event.type == SDL_QUIT)
 				_active = false;
-			_input_system.process_event(_event);
 		}
 
 		_input_system.end_frame();
 
-		_scene_manager.on_input(
-			_input_system.frame(),
-			_input_system.events()
-		);
+		_scene_manager.on_input(_input_system.frame(), _input_system.events());
 
-		Uint64 current_counter = SDL_GetPerformanceCounter();//å®žçŽ°åŠ¨æ€å»¶æ—¶
+		Uint64 current_counter = SDL_GetPerformanceCounter();
 		double delta = (double)(current_counter - last_counter) / counter_freq;
 		last_counter = current_counter;
 		elysia::core::Time::instance()->begin_frame(delta);

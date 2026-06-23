@@ -101,11 +101,6 @@ void MainMenuScene::reset()
     clear_menu_buttons();
 }
 
-elysia::input::InputContext MainMenuScene::input_context() const
-{
-    return elysia::input::InputContext::UI;
-}
-
 void MainMenuScene::rebuild_menu_buttons()
 {
     clear_menu_buttons();

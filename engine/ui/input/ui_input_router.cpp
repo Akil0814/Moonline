@@ -34,17 +34,19 @@ constexpr UiBinding k_ui_bindings[] = {
 };
 }
 
-elysia::ui::UiInputFrame UiInputRouter::route_frame(const elysia::input::RawInputFrame& raw_input) const
+namespace elysia::ui
 {
-    elysia::ui::UiInputFrame ui_input;
+UiInputFrame UiInputRouter::route_frame(const elysia::input::RawInputFrame& raw_input) const
+{
+    UiInputFrame ui_input;
     ui_input.active_device = raw_input.active_device;
     ui_input.device_switched_this_frame = raw_input.device_switched_this_frame;
 
-    for (int action_index = static_cast<int>(elysia::ui::UiAction::None) + 1;
-        action_index < static_cast<int>(elysia::ui::UiAction::Count);
+    for (int action_index = static_cast<int>(UiAction::None) + 1;
+        action_index < static_cast<int>(UiAction::Count);
         ++action_index)
     {
-        const elysia::ui::UiAction action = static_cast<elysia::ui::UiAction>(action_index);
+        const UiAction action = static_cast<UiAction>(action_index);
         ui_input.state.set(
             action,
             is_action_pressed(raw_input.state, action),
@@ -56,9 +58,9 @@ elysia::ui::UiInputFrame UiInputRouter::route_frame(const elysia::input::RawInpu
     return ui_input;
 }
 
-std::vector<elysia::ui::UiInputEvent> UiInputRouter::route_event(const elysia::input::RawInputEvent& raw_event) const
+std::vector<UiInputEvent> UiInputRouter::route_event(const elysia::input::RawInputEvent& raw_event) const
 {
-    std::vector<elysia::ui::UiInputEvent> events;
+    std::vector<UiInputEvent> events;
 
     switch (raw_event.type)
     {
@@ -68,10 +70,10 @@ std::vector<elysia::ui::UiInputEvent> UiInputRouter::route_event(const elysia::i
         if (raw_event.device == elysia::input::InputDevice::Mouse
             && raw_event.control == elysia::input::RawInputControl::MouseLeft)
         {
-            elysia::ui::UiInputEvent event;
+            UiInputEvent event;
             event.type = raw_event.type == elysia::input::RawInputEventType::ControlPressed
-                ? elysia::ui::UiInputEventType::PointerPressed
-                : elysia::ui::UiInputEventType::PointerReleased;
+                ? UiInputEventType::PointerPressed
+                : UiInputEventType::PointerReleased;
             event.device = raw_event.device;
             event.control = raw_event.control;
             event.mouse_x = raw_event.mouse_x;
@@ -80,17 +82,17 @@ std::vector<elysia::ui::UiInputEvent> UiInputRouter::route_event(const elysia::i
             break;
         }
 
-        const elysia::ui::UiAction action = action_from_control(raw_event.control);
-        if (action == elysia::ui::UiAction::None)
+        const UiAction action = action_from_control(raw_event.control);
+        if (action == UiAction::None)
         {
             return events;
         }
 
-        elysia::ui::UiInputEvent event;
+        UiInputEvent event;
         event.action = action;
         event.type = raw_event.type == elysia::input::RawInputEventType::ControlPressed
-            ? elysia::ui::UiInputEventType::ActionPressed
-            : elysia::ui::UiInputEventType::ActionReleased;
+            ? UiInputEventType::ActionPressed
+            : UiInputEventType::ActionReleased;
         event.device = raw_event.device;
         event.control = raw_event.control;
         events.push_back(event);
@@ -99,8 +101,8 @@ std::vector<elysia::ui::UiInputEvent> UiInputRouter::route_event(const elysia::i
 
     case elysia::input::RawInputEventType::MouseMoved:
     {
-        elysia::ui::UiInputEvent event;
-        event.type = elysia::ui::UiInputEventType::MouseMoved;
+        UiInputEvent event;
+        event.type = UiInputEventType::MouseMoved;
         event.device = raw_event.device;
         event.mouse_x = raw_event.mouse_x;
         event.mouse_y = raw_event.mouse_y;
@@ -110,8 +112,8 @@ std::vector<elysia::ui::UiInputEvent> UiInputRouter::route_event(const elysia::i
 
     case elysia::input::RawInputEventType::MouseWheel:
     {
-        elysia::ui::UiInputEvent event;
-        event.type = elysia::ui::UiInputEventType::MouseWheel;
+        UiInputEvent event;
+        event.type = UiInputEventType::MouseWheel;
         event.device = raw_event.device;
         event.wheel_x = raw_event.wheel_x;
         event.wheel_y = raw_event.wheel_y;
@@ -121,8 +123,8 @@ std::vector<elysia::ui::UiInputEvent> UiInputRouter::route_event(const elysia::i
 
     case elysia::input::RawInputEventType::TextInput:
     {
-        elysia::ui::UiInputEvent event;
-        event.type = elysia::ui::UiInputEventType::TextInput;
+        UiInputEvent event;
+        event.type = UiInputEventType::TextInput;
         event.device = raw_event.device;
         event.text = raw_event.text;
         events.push_back(event);
@@ -131,8 +133,8 @@ std::vector<elysia::ui::UiInputEvent> UiInputRouter::route_event(const elysia::i
 
     case elysia::input::RawInputEventType::TextEditing:
     {
-        elysia::ui::UiInputEvent event;
-        event.type = elysia::ui::UiInputEventType::TextEditing;
+        UiInputEvent event;
+        event.type = UiInputEventType::TextEditing;
         event.device = raw_event.device;
         event.text = raw_event.text;
         events.push_back(event);
@@ -141,8 +143,8 @@ std::vector<elysia::ui::UiInputEvent> UiInputRouter::route_event(const elysia::i
 
     case elysia::input::RawInputEventType::AxisChanged:
     {
-        elysia::ui::UiInputEvent event;
-        event.type = elysia::ui::UiInputEventType::AxisChanged;
+        UiInputEvent event;
+        event.type = UiInputEventType::AxisChanged;
         event.device = raw_event.device;
         event.axis = raw_event.axis;
         event.axis_value = raw_event.axis_value;
@@ -158,9 +160,9 @@ std::vector<elysia::ui::UiInputEvent> UiInputRouter::route_event(const elysia::i
     return events;
 }
 
-std::vector<elysia::ui::UiInputEvent> UiInputRouter::synthesize_events(const elysia::input::RawInputFrame& raw_input)
+std::vector<UiInputEvent> UiInputRouter::synthesize_events(const elysia::input::RawInputFrame& raw_input)
 {
-    std::vector<elysia::ui::UiInputEvent> events;
+    std::vector<UiInputEvent> events;
 
     const auto synthesized_event = _gamepad_scroll_synthesizer.synthesize(raw_input);
     if (synthesized_event)
@@ -176,7 +178,7 @@ void UiInputRouter::reset_transient_state()
     _gamepad_scroll_synthesizer.reset();
 }
 
-bool UiInputRouter::is_action_pressed(const elysia::input::RawInputState& state, elysia::ui::UiAction action) const
+bool UiInputRouter::is_action_pressed(const elysia::input::RawInputState& state, UiAction action) const
 {
     for (const UiBinding& binding : k_ui_bindings)
     {
@@ -189,7 +191,7 @@ bool UiInputRouter::is_action_pressed(const elysia::input::RawInputState& state,
     return false;
 }
 
-bool UiInputRouter::is_action_just_pressed(const elysia::input::RawInputState& state, elysia::ui::UiAction action) const
+bool UiInputRouter::is_action_just_pressed(const elysia::input::RawInputState& state, UiAction action) const
 {
     for (const UiBinding& binding : k_ui_bindings)
     {
@@ -202,7 +204,7 @@ bool UiInputRouter::is_action_just_pressed(const elysia::input::RawInputState& s
     return false;
 }
 
-bool UiInputRouter::is_action_just_released(const elysia::input::RawInputState& state, elysia::ui::UiAction action) const
+bool UiInputRouter::is_action_just_released(const elysia::input::RawInputState& state, UiAction action) const
 {
     for (const UiBinding& binding : k_ui_bindings)
     {
@@ -215,7 +217,7 @@ bool UiInputRouter::is_action_just_released(const elysia::input::RawInputState& 
     return false;
 }
 
-elysia::ui::UiAction UiInputRouter::action_from_control(elysia::input::RawInputControl control) const
+UiAction UiInputRouter::action_from_control(elysia::input::RawInputControl control) const
 {
     for (const UiBinding& binding : k_ui_bindings)
     {
@@ -225,5 +227,6 @@ elysia::ui::UiAction UiInputRouter::action_from_control(elysia::input::RawInputC
         }
     }
 
-    return elysia::ui::UiAction::None;
+    return UiAction::None;
+}
 }

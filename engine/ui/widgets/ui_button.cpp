@@ -14,45 +14,30 @@
 namespace elysia::ui
 {
 UiButton::UiButton(const elysia::core::Rect& rect, int order, std::string text_key) noexcept
-    : UiControl(rect.position(), rect.size(), order),
-      _text_key(std::move(text_key))
+    : UiControl(rect.position(), rect.size(), order),_text_key(std::move(text_key))
 {
     set_use_theme(false);
 }
 
 UiButton::UiButton(
-    const elysia::core::Vector2& position,
-    const elysia::core::Vector2& size,
-    int order,
-    std::string text_key
-) noexcept
-    : UiControl(position, size, order),
-      _text_key(std::move(text_key))
+    const elysia::core::Vector2& position,const elysia::core::Vector2& size,
+    int order, std::string text_key
+) noexcept : UiControl(position, size, order),  _text_key(std::move(text_key))
 {
     set_use_theme(false);
 }
 
 UiButton::UiButton(
-    SDL_Texture* idle,
-    SDL_Texture* focused,
-    SDL_Texture* pushed,
-    SDL_Texture* disabled,
-    const elysia::core::Rect& rect,
-    int order
-) noexcept
-    : UiControl(rect.position(), rect.size(), order)
+    SDL_Texture* idle,SDL_Texture* focused,SDL_Texture* pushed,SDL_Texture* disabled,
+    const elysia::core::Rect& rect,int order
+) noexcept : UiControl(rect.position(), rect.size(), order)
 {
     set_use_theme(false);
     set_state_textures(UiButtonTextures{ idle, focused, pushed, disabled });
 }
 
-UiButton::UiButton(
-    SDL_Texture* idle,
-    SDL_Texture* focused,
-    SDL_Texture* pushed,
-    SDL_Texture* disabled,
-    const elysia::core::Vector2& position,
-    const elysia::core::Vector2& size,
+UiButton::UiButton(SDL_Texture* idle, SDL_Texture* focused, SDL_Texture* pushed, SDL_Texture* disabled,
+    const elysia::core::Vector2& position, const elysia::core::Vector2& size,
     int order
 ) noexcept
     : UiControl(position, size, order)

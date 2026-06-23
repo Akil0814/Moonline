@@ -8,7 +8,17 @@ namespace elysia::ui
 class UiControl : public UiElement, public UiFocusable
 {
 public:
-    explicit UiControl(elysia::core::Vector2 position = elysia::core::Vector2::zero(), elysia::core::Vector2 size = elysia::core::Vector2::zero(), int order = 0);
+    explicit UiControl(
+        elysia::core::Vector2 position = elysia::core::Vector2::zero(),
+        elysia::core::Vector2 size = elysia::core::Vector2::zero(),
+        int order = 0
+    );
+    UiControl(
+        const elysia::core::Vector2& center,
+        const elysia::core::Vector2& size,
+        UiFromCenterTag,
+        int order = 0
+    );
 
     void reset() noexcept override;
 

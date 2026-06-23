@@ -18,10 +18,10 @@ UiFadeImage::UiFadeImage(
     SDL_Texture* texture,
     elysia::core::Vector2 center,
     elysia::core::Vector2 image_size,
-    UiImageCenterTag tag,
+    UiFromCenterTag,
     int order
 )
-    : UiImage(texture, center, image_size, tag, order)
+    : UiImage(texture, center, image_size, from_center, order)
 {
     _timer.set_one_shot(true);
 }
@@ -31,10 +31,10 @@ UiFadeImage::UiFadeImage(
     elysia::core::Vector2 center,
     elysia::core::Vector2 source_size,
     elysia::core::Vector2 render_size,
-    UiImageCenterTag tag,
+    UiFromCenterTag,
     int order
 )
-    : UiImage(texture, center, source_size, render_size, tag, order)
+    : UiImage(texture, center, source_size, render_size, from_center, order)
 {
     _timer.set_one_shot(true);
 }
