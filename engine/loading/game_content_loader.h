@@ -102,6 +102,8 @@ private:
 	std::size_t _prepared_atlas_frame_count = 0;
 	std::size_t _committed_texture_count = 0;
 	std::size_t _committed_atlas_frame_count = 0;
+	std::size_t _next_sound_request_index = 0;
+	std::size_t _next_music_request_index = 0;
 };
 
 }

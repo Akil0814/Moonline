@@ -11,6 +11,7 @@ void StartupLoadingScene::on_enter(const elysia::scene::ScenePayload& payload)
 	(void)payload;
 	_paused = false;
 	_has_logged_load_failure = false;
+	_finished_loading = false;
 
 
 	SDL_Texture* akil_tex = elysia::bootstrap::Bootstrapper::instance()->get_preload_texture("Akil.png");
@@ -51,9 +52,10 @@ void StartupLoadingScene::on_update(double delta)
 	if (_loading_bar)
 		_loading_bar->set_ratio(_content_loader.progress());
 
-	if (_content_loader.is_finished()&& !_icon_updateing)
+	if (_content_loader.is_finished())
 	{
-		request_scene_switch(AppSceneKeys::MainMenu);
+		_finished_loading = true;
+		_loading_bar->set_visible(false);
 		return;
 	}
 
@@ -69,6 +71,9 @@ void StartupLoadingScene::on_update(double delta)
 		request_quit();
 		return;
 	}
+
+	//request_scene_switch(AppSceneKeys::MainMenu);
+
 }
 
 void StartupLoadingScene::on_render(SDL_Renderer* renderer)
@@ -90,6 +95,7 @@ void StartupLoadingScene::on_exit()
 void StartupLoadingScene::reset()
 {
 	_paused = false;
+	_finished_loading = false;
 	_icon_updateing = false;
 	_has_logged_load_failure = false;
 	_content_loader.reset();

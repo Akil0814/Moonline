@@ -28,6 +28,7 @@ private:
 	elysia::loading::GameContentLoader _content_loader;
 
 	bool _icon_updateing = false;
+	bool _finished_loading = false;
 	bool _has_logged_load_failure = false;
 };
 }

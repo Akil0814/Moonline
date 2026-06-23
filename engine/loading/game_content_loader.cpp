@@ -21,6 +21,7 @@ namespace
 constexpr std::size_t kMaxInFlightPrepareJobs = 16;
 constexpr std::size_t kTextureCommitBudgetPerUpdate = 4;
 constexpr std::size_t kAtlasFrameCommitBudgetPerUpdate = 8;
+constexpr std::size_t kAudioLoadBudgetPerUpdate = 8;
 
 std::size_t resolve_worker_count(std::size_t total_prepare_jobs)
 {
@@ -265,6 +266,8 @@ void GameContentLoader::reset_streaming_state()
 	_prepared_atlas_frame_count = 0;
 	_committed_texture_count = 0;
 	_committed_atlas_frame_count = 0;
+	_next_sound_request_index = 0;
+	_next_music_request_index = 0;
 }
 
 void GameContentLoader::start_worker_threads()
@@ -556,29 +559,43 @@ bool GameContentLoader::load_fonts()
 bool GameContentLoader::load_audio()
 {
 	elysia::resources::ResourceManager* resource_manager = elysia::resources::ResourceManager::instance();
-	for (const elysia::resources::SoundLoadRequest& request : _load_plan.sound_requests())
+	std::size_t loaded_this_update = 0;
+
+	while (_next_sound_request_index < _load_plan.sound_requests().size()
+		&& loaded_this_update < kAudioLoadBudgetPerUpdate)
 	{
+		const elysia::resources::SoundLoadRequest& request =
+			_load_plan.sound_requests()[_next_sound_request_index];
 		if (!resource_manager->audio_manager().load_sound(request.key, request.file_path))
 		{
 			fail("GameContentLoader sound load failed.");
 			return false;
 		}
 
+		++_next_sound_request_index;
+		++loaded_this_update;
 		++_completed_work_units;
 	}
 
-	for (const elysia::resources::MusicLoadRequest& request : _load_plan.music_requests())
+	while (_next_music_request_index < _load_plan.music_requests().size()
+		&& loaded_this_update < kAudioLoadBudgetPerUpdate)
 	{
+		const elysia::resources::MusicLoadRequest& request =
+			_load_plan.music_requests()[_next_music_request_index];
 		if (!resource_manager->audio_manager().load_music(request))
 		{
 			fail("GameContentLoader music load failed.");
 			return false;
 		}
 
+		++_next_music_request_index;
+		++loaded_this_update;
 		++_completed_work_units;
 	}
 
-	return true;
+	update_progress_value();
+	return _next_sound_request_index == _load_plan.sound_requests().size()
+		&& _next_music_request_index == _load_plan.music_requests().size();
 }
 
 bool GameContentLoader::register_animations()
