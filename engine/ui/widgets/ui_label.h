@@ -37,6 +37,13 @@ public:
         int order = 0,
         std::string text_key = {}
     ) noexcept;
+    UiLabel(
+        const elysia::core::Vector2& center,
+        const elysia::core::Vector2& size,
+        UiFromCenterTag,
+        int order = 0,
+        std::string text_key = {}
+    ) noexcept;
     ~UiLabel() override = default;
 
     void reset() noexcept override;

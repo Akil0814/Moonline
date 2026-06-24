@@ -27,7 +27,7 @@ public:
         SDL_Texture* texture,
         elysia::core::Vector2 center,
         elysia::core::Vector2 image_size,
-        UiImageCenterTag,
+        UiFromCenterTag,
         int order = 0
     );
     UiBlinkImage(
@@ -35,7 +35,7 @@ public:
         elysia::core::Vector2 center,
         elysia::core::Vector2 source_size,
         elysia::core::Vector2 render_size,
-        UiImageCenterTag,
+        UiFromCenterTag,
         int order = 0
     );
 

@@ -23,23 +23,14 @@ class UiElement : public elysia::core::SceneObject
 public:
 
     // Higher UI order values are rendered on top and receive input first.
-    explicit UiElement(
-        const elysia::core::Rect& rect = elysia::core::Rect::zero(),
-        int order = 0
-    ) noexcept : _screen_rect(rect), _order(order) {}
+    explicit UiElement(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0) 
+        noexcept : _screen_rect(rect), _order(order) {}
 
-    UiElement(
-        const elysia::core::Vector2& position,
-        const elysia::core::Vector2& size,
-        int order = 0
-    ) noexcept : _screen_rect(position, size), _order(order) {}
+    UiElement( const elysia::core::Vector2& position, const elysia::core::Vector2& size, int order = 0)
+        noexcept : _screen_rect(position, size), _order(order) {}
 
-    UiElement(
-        const elysia::core::Vector2& center,
-        const elysia::core::Vector2& size,
-        UiFromCenterTag,
-        int order = 0
-    ) noexcept : _screen_rect(elysia::core::Rect::from_center(center, size)), _order(order) {}
+    UiElement(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag, int order = 0 )
+        noexcept : _screen_rect(elysia::core::Rect::from_center(center, size)), _order(order) {}
 
     virtual ~UiElement() = default;
 
@@ -56,7 +47,7 @@ public:
     void reset() noexcept override
     {
         elysia::core::SceneObject::reset();
-        _use_theme = true;
+        _use_theme = false;
         _opacity = 255;
     }
 
@@ -116,7 +107,7 @@ private:
 
     elysia::core::Rect _screen_rect{};
     int _order = 0;
-    bool _use_theme = true;
+    bool _use_theme = false;
     std::uint8_t _opacity = 255;
 };
 }

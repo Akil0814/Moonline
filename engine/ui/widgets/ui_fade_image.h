@@ -56,7 +56,6 @@ private:
     void update_fade_out(double delta);
 
     void start_hold();
-    double ratio(double value, double max_value) const;
 
 private:
     enum class FadeState

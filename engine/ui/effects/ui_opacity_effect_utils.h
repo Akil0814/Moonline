@@ -1,0 +1,44 @@
+#pragma once
+
+#include <algorithm>
+#include <cmath>
+#include <cstdint>
+
+namespace elysia::ui::effects
+{
+inline double clamp_unit(double t) noexcept
+{
+    return std::clamp(t, 0.0, 1.0);
+}
+
+inline double ratio(double value,double max_value) noexcept
+{
+    if (max_value <= 0.0)
+        return 1.0;
+
+    return clamp_unit(value / max_value);
+}
+
+inline double ease_in_out(double t) noexcept
+{
+    constexpr double k_pi = 3.14159265358979323846;
+    return 0.5 - 0.5 * std::cos(k_pi * clamp_unit(t));
+}
+
+inline std::uint8_t lerp_opacity(std::uint8_t from,std::uint8_t to,double t) noexcept
+{
+    const double alpha = static_cast<double>(from)
+        + (static_cast<double>(to) - static_cast<double>(from)) * clamp_unit(t);
+    return static_cast<std::uint8_t>(alpha);
+}
+
+inline std::uint8_t fade_in_opacity(double elapsed,double duration) noexcept
+{
+    return lerp_opacity(0, 255, ratio(elapsed, duration));
+}
+
+inline std::uint8_t fade_out_opacity(double elapsed,double duration) noexcept
+{
+    return lerp_opacity(255, 0, ratio(elapsed, duration));
+}
+}

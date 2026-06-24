@@ -7,38 +7,17 @@
 namespace elysia::ui
 {
 UiImage::UiImage(SDL_Texture* texture, elysia::core::Vector2 pos, elysia::core::Vector2 size, int order)
-    : UiElement(pos, size, order)
-{
-    set_texture(texture);
-}
+    : UiElement(pos, size, order) { set_texture(texture);}
 
 UiImage::UiImage(SDL_Texture* texture, elysia::core::Rect rect, int order)
-    : UiElement(rect, order)
-{
-    set_texture(texture);
-}
+    : UiElement(rect, order) { set_texture(texture);}
+
+UiImage::UiImage(SDL_Texture* texture, elysia::core::Vector2 center,elysia::core::Vector2 image_size,
+    UiFromCenterTag,int order): UiElement(center, image_size, from_center, order) {set_texture(texture);}
 
 UiImage::UiImage(
-    SDL_Texture* texture,
-    elysia::core::Vector2 center,
-    elysia::core::Vector2 image_size,
-    UiFromCenterTag,
-    int order
-)
-    : UiElement(center, image_size, from_center, order)
-{
-    set_texture(texture);
-}
-
-UiImage::UiImage(
-    SDL_Texture* texture,
-    elysia::core::Vector2 center,
-    elysia::core::Vector2 source_size,
-    elysia::core::Vector2 render_size,
-    UiFromCenterTag,
-    int order
-)
-    : UiElement(center, render_size, from_center, order)
+    SDL_Texture* texture, elysia::core::Vector2 center, elysia::core::Vector2 source_size,elysia::core::Vector2 render_size,
+    UiFromCenterTag, int order): UiElement(center, render_size, from_center, order)
 {
     set_texture(texture);
     set_source_rect(elysia::core::Rect(0.0f, 0.0f, source_size.x, source_size.y));

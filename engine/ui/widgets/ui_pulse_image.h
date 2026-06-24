@@ -27,7 +27,7 @@ public:
         SDL_Texture* texture,
         elysia::core::Vector2 center,
         elysia::core::Vector2 image_size,
-        UiImageCenterTag,
+        UiFromCenterTag,
         int order = 0
     );
     UiPulseImage(
@@ -35,7 +35,7 @@ public:
         elysia::core::Vector2 center,
         elysia::core::Vector2 source_size,
         elysia::core::Vector2 render_size,
-        UiImageCenterTag,
+        UiFromCenterTag,
         int order = 0
     );
 
@@ -75,9 +75,6 @@ private:
 
     [[nodiscard]] bool started_from_min() const;
     [[nodiscard]] bool complete_cycle_if_needed(bool reached_max);
-    [[nodiscard]] double ratio(double value, double max_value) const;
-    [[nodiscard]] double ease_in_out(double t) const;
-    [[nodiscard]] std::uint8_t lerp_opacity(std::uint8_t from, std::uint8_t to, double t) const;
 
 private:
     UiPulseImageMode _mode = UiPulseImageMode::MinToMax;

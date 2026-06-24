@@ -1,14 +1,9 @@
 #include "ui_pulse_image.h"
 
-#include <cmath>
+#include "../effects/ui_opacity_effect_utils.h"
 
 namespace elysia::ui
 {
-namespace
-{
-constexpr double k_pi = 3.14159265358979323846;
-}
-
 UiPulseImage::UiPulseImage(SDL_Texture* texture, elysia::core::Vector2 pos, elysia::core::Vector2 size, int order)
     : UiImage(texture, pos, size, order)
 {
@@ -25,10 +20,10 @@ UiPulseImage::UiPulseImage(
     SDL_Texture* texture,
     elysia::core::Vector2 center,
     elysia::core::Vector2 image_size,
-    UiImageCenterTag tag,
+    UiFromCenterTag,
     int order
 )
-    : UiImage(texture, center, image_size, tag, order)
+    : UiImage(texture, center, image_size, from_center, order)
 {
     _timer.set_one_shot(true);
 }
@@ -38,10 +33,10 @@ UiPulseImage::UiPulseImage(
     elysia::core::Vector2 center,
     elysia::core::Vector2 source_size,
     elysia::core::Vector2 render_size,
-    UiImageCenterTag tag,
+    UiFromCenterTag,
     int order
 )
-    : UiImage(texture, center, source_size, render_size, tag, order)
+    : UiImage(texture, center, source_size, render_size, from_center, order)
 {
     _timer.set_one_shot(true);
 }
@@ -160,8 +155,9 @@ void UiPulseImage::update_pulse_up(double delta)
 {
     _elapsed += delta;
 
-    const double t = ease_in_out(ratio(_elapsed, _pulse_in_duration));
-    set_opacity(lerp_opacity(_min_alpha, _max_alpha, t));
+    const double t = elysia::ui::effects::ease_in_out(
+        elysia::ui::effects::ratio(_elapsed, _pulse_in_duration));
+    set_opacity(elysia::ui::effects::lerp_opacity(_min_alpha, _max_alpha, t));
 
     if (t < 1.0)
         return;
@@ -182,8 +178,9 @@ void UiPulseImage::update_pulse_down(double delta)
 {
     _elapsed += delta;
 
-    const double t = ease_in_out(ratio(_elapsed, _pulse_out_duration));
-    set_opacity(lerp_opacity(_max_alpha, _min_alpha, t));
+    const double t = elysia::ui::effects::ease_in_out(
+        elysia::ui::effects::ratio(_elapsed, _pulse_out_duration));
+    set_opacity(elysia::ui::effects::lerp_opacity(_max_alpha, _min_alpha, t));
 
     if (t < 1.0)
         return;
@@ -234,30 +231,6 @@ bool UiPulseImage::complete_cycle_if_needed(bool reached_max)
 
     ++_completed_cycles;
     return _completed_cycles >= _pulse_cycles;
-}
-
-double UiPulseImage::ratio(double value, double max_value) const
-{
-    if (max_value <= 0.0)
-        return 1.0;
-
-    double t = value / max_value;
-    if (t < 0.0)
-        return 0.0;
-    if (t > 1.0)
-        return 1.0;
-    return t;
-}
-
-double UiPulseImage::ease_in_out(double t) const
-{
-    return 0.5 - 0.5 * std::cos(k_pi * t);
-}
-
-std::uint8_t UiPulseImage::lerp_opacity(std::uint8_t from, std::uint8_t to, double t) const
-{
-    const double alpha = static_cast<double>(from) + (static_cast<double>(to) - static_cast<double>(from)) * t;
-    return static_cast<std::uint8_t>(alpha);
 }
 
 }

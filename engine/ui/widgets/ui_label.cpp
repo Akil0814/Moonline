@@ -30,6 +30,19 @@ UiLabel::UiLabel(
     set_use_theme(false);
 }
 
+UiLabel::UiLabel(
+    const elysia::core::Vector2& center,
+    const elysia::core::Vector2& size,
+    UiFromCenterTag,
+    int order,
+    std::string text_key
+) noexcept
+    : UiElement(center, size, from_center, order),
+      _text_key(std::move(text_key))
+{
+    set_use_theme(false);
+}
+
 void UiLabel::reset() noexcept
 {
     UiElement::reset();

@@ -49,7 +49,7 @@ void StartupLoadingScene::on_enter(const elysia::scene::ScenePayload& payload)
 		start_tex,
 		elysia::core::Vector2{ 640, 690 },
 		elysia::core::Vector2{ 300, 32 },
-		elysia::ui::k_ui_image_centered
+		elysia::ui::from_center
 	);
 	_start_text->configure_playback(
 		elysia::ui::UiBlinkImageMode::VisibleFirst,

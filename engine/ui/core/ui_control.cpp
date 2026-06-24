@@ -2,19 +2,15 @@
 
 namespace elysia::ui
 {
-UiControl::UiControl(elysia::core::Vector2 position, elysia::core::Vector2 size, int order)
-    : UiElement(position, size, order)
-{
-}
+UiControl::UiControl(const elysia::core::Rect& rect,int order)
+    : UiElement(rect, order){}
 
-UiControl::UiControl(
-    const elysia::core::Vector2& center,
-    const elysia::core::Vector2& size,
-    UiFromCenterTag,
-    int order)
-    : UiElement(center, size, from_center, order)
-{
-}
+UiControl::UiControl(elysia::core::Vector2 position,elysia::core::Vector2 size,int order)
+    : UiElement(position, size, order){}
+
+UiControl::UiControl(const elysia::core::Vector2& center,const elysia::core::Vector2& size,
+    UiFromCenterTag,int order)
+    : UiElement(center, size, from_center, order){}
 
 void UiControl::reset() noexcept
 {

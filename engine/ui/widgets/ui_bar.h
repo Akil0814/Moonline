@@ -16,13 +16,14 @@ enum class BarFillDirection
 class UiBar : public UiElement
 {
 public:
-    explicit UiBar(const elysia::core::Rect& rect = elysia::core::Rect::zero(), int order = 0) noexcept;
-    UiBar(const elysia::core::Vector2& position, const elysia::core::Vector2& size, int order = 0) noexcept;
+    explicit UiBar(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0) noexcept;
+    UiBar(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order = 0) noexcept;
+    UiBar(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order = 0) noexcept;
     ~UiBar() override = default;
 
     void reset() noexcept override;
 
-    void set_range(float min_value, float max_value);
+    void set_range(float min_value,float max_value);
     void set_value(float value);
     void set_ratio(float ratio);
 

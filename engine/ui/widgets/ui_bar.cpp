@@ -7,22 +7,18 @@
 
 namespace elysia::ui
 {
-UiBar::UiBar(const elysia::core::Rect& rect, int order) noexcept
-    : UiElement(rect, order)
-{
-    set_use_theme(false);
-}
+UiBar::UiBar(const elysia::core::Rect& rect,int order) noexcept
+    : UiElement(rect, order){}
 
-UiBar::UiBar(const elysia::core::Vector2& position, const elysia::core::Vector2& size, int order) noexcept
-    : UiElement(position, size, order)
-{
-    set_use_theme(false);
-}
+UiBar::UiBar(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order) noexcept
+    : UiElement(position, size, order){}
+
+UiBar::UiBar(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order) noexcept
+    : UiElement(center, size, from_center, order){}
 
 void UiBar::reset() noexcept
 {
     UiElement::reset();
-    set_use_theme(false);
 
     _min_value = 0.0f;
     _max_value = 1.0f;
@@ -35,7 +31,7 @@ void UiBar::reset() noexcept
     _padding = 0;
 }
 
-void UiBar::set_range(float min_value, float max_value)
+void UiBar::set_range(float min_value,float max_value)
 {
     if (max_value < min_value)
     {

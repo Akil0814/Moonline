@@ -1,5 +1,7 @@
 #include "ui_fade_image.h"
 
+#include "../effects/ui_opacity_effect_utils.h"
+
 namespace elysia::ui
 {
 UiFadeImage::UiFadeImage(SDL_Texture* texture, elysia::core::Vector2 pos, elysia::core::Vector2 size,int order)
@@ -49,7 +51,6 @@ void UiFadeImage::reset() noexcept
     _timer.pause();
 }
 
-
 void UiFadeImage::configure_playback(
     UiFadeImageMode mode,
     double hold_time,
@@ -74,11 +75,11 @@ void UiFadeImage::configure_playback(
         case UiFadeImageMode::FadeInOut:
             _elapsed = 0.0;
             _state = FadeState::FadingOut;
-                break;
+            break;
         default:
             break;
         }
-        });
+    });
 
     _fade_in_duration = fade_in_duration;
     _fade_out_duration = fade_out_duration;
@@ -137,16 +138,17 @@ void UiFadeImage::update(double delta)
     }
 }
 
-void  UiFadeImage::set_on_end(FadeImageOnEnd on_end)
+void UiFadeImage::set_on_end(FadeImageOnEnd on_end)
 {
     _on_end = on_end;
 }
+
 void UiFadeImage::update_fade_in(double delta)
 {
     _elapsed += delta;
 
-    double t = ratio(_elapsed, _fade_in_duration);
-    set_opacity(static_cast<std::uint8_t>(255.0 * t));
+    const double t = elysia::ui::effects::ratio(_elapsed, _fade_in_duration);
+    set_opacity(elysia::ui::effects::fade_in_opacity(_elapsed, _fade_in_duration));
 
     if (t >= 1.0)
     {
@@ -160,30 +162,14 @@ void UiFadeImage::update_fade_out(double delta)
 {
     _elapsed += delta;
 
-    double t = ratio(_elapsed, _fade_out_duration);
-    set_opacity(static_cast<std::uint8_t>(255.0 * (1.0 - t)));
+    const double t = elysia::ui::effects::ratio(_elapsed, _fade_out_duration);
+    set_opacity(elysia::ui::effects::fade_out_opacity(_elapsed, _fade_out_duration));
 
     if (t >= 1.0)
     {
         set_opacity(0);
         _state = FadeState::Finished;
     }
-}
-
-double UiFadeImage::ratio(double value, double max_value) const
-{
-    if (max_value <= 0.0)
-        return 1.0;
-
-    double t = value / max_value;
-
-    if (t < 0.0)
-        return 0.0;
-
-    if (t > 1.0)
-        return 1.0;
-
-    return t;
 }
 
 void UiFadeImage::start_hold()

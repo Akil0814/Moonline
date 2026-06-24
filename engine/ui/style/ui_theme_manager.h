@@ -1,5 +1,8 @@
 /*#pragma once
 
+
+后期实现 每个ui组件可以加入容器 实现位置锚点与显示状态的托管，也可以选择将组件或容器向UiThemeManager注册，实现主题的托管
+
 #include "ui_theme.h"
 
 #include <vector>

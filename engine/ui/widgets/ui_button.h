@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "../../core/render/colors.h"
 #include "../core/ui_control.h"
@@ -37,28 +37,78 @@ class UiButton : public UiControl
 public:
     using ClickCallback = std::function<void()>;
 
-    explicit UiButton( const elysia::core::Rect& rect, 
-            std::string text_key = {},int order = 0) noexcept;
-
-    UiButton(const elysia::core::Vector2& position, const elysia::core::Vector2& size,
-            std::string text_key = {},int order = 0) noexcept;
-
-    UiButton(UiButtonTextures textur_set, const elysia::core::Rect& rect, int order = 0 ) noexcept;
-
-    UiButton(SDL_Texture* idle,
-        const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order = 0 ) noexcept;
-
+    explicit UiButton(
+        const elysia::core::Rect& rect = elysia::core::Rect::zero(),
+        int order = 0,
+        std::string text_key = {}
+    ) noexcept;
+    UiButton(
+        const elysia::core::Vector2& position,
+        const elysia::core::Vector2& size,
+        int order = 0,
+        std::string text_key = {}
+    ) noexcept;
+    UiButton(
+        const elysia::core::Vector2& center,
+        const elysia::core::Vector2& size,
+        UiFromCenterTag,
+        int order = 0,
+        std::string text_key = {}
+    ) noexcept;
+    UiButton(
+        const UiButtonTextures& textures,
+        const elysia::core::Rect& rect,
+        int order = 0
+    ) noexcept;
+    UiButton(
+        const UiButtonTextures& textures,
+        const elysia::core::Vector2& position,
+        const elysia::core::Vector2& size,
+        int order = 0
+    ) noexcept;
+    UiButton(
+        const UiButtonTextures& textures,
+        const elysia::core::Vector2& center,
+        const elysia::core::Vector2& size,
+        UiFromCenterTag,
+        int order = 0
+    ) noexcept;
+    UiButton(
+        SDL_Texture* idle,
+        SDL_Texture* focused,
+        SDL_Texture* pushed,
+        SDL_Texture* disabled,
+        const elysia::core::Rect& rect,
+        int order = 0
+    ) noexcept;
+    UiButton(
+        SDL_Texture* idle,
+        SDL_Texture* focused,
+        SDL_Texture* pushed,
+        SDL_Texture* disabled,
+        const elysia::core::Vector2& position,
+        const elysia::core::Vector2& size,
+        int order = 0
+    ) noexcept;
+    UiButton(
+        SDL_Texture* idle,
+        SDL_Texture* focused,
+        SDL_Texture* pushed,
+        SDL_Texture* disabled,
+        const elysia::core::Vector2& center,
+        const elysia::core::Vector2& size,
+        UiFromCenterTag,
+        int order = 0
+    ) noexcept;
     ~UiButton() override = default;
 
     void reset() noexcept override;
 
-
+    void set_enabled(bool enabled);
+    void set_focused(bool focused);
 
     bool on_ui_input_event(const UiInputEvent& event) override;
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
-
-    void set_enabled(bool enabled);
-    void set_focused(bool focused);
 
     void set_text_key(std::string text_key);
     [[nodiscard]] const std::string& text_key() const noexcept;
@@ -68,16 +118,12 @@ public:
     [[nodiscard]] bool has_state_textures() const noexcept;
     [[nodiscard]] UiButtonVisualMode visual_mode() const noexcept;
 
-
-    //音频相关
     void set_sounds(const UiButtonSounds& sounds);
     void clear_sounds();
     [[nodiscard]] const UiButtonSounds& sounds() const noexcept;
 
-    //按键回调
     void set_on_click(ClickCallback on_click);
 
-    //颜色设置
     void set_idle_color(elysia::core::Color color);
     [[nodiscard]] elysia::core::Color idle_color() const noexcept;
 
