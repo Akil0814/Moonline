@@ -9,110 +9,36 @@
 #include <SDL.h>
 
 #include <algorithm>
+#include <type_traits>
 #include <utility>
 
 namespace elysia::ui
 {
-UiButton::UiButton(const elysia::core::Rect& rect, int order, std::string text_key) noexcept
-    : UiControl(rect, order),_text_key(std::move(text_key))
+UiButton::UiButton(const elysia::core::Rect& rect,int order) noexcept
+    : UiControl(rect,order)
 {
     set_use_theme(false);
 }
 
-UiButton::UiButton(const elysia::core::Vector2& position,const elysia::core::Vector2& size,
-    int order,
-    std::string text_key
-) noexcept
-    : UiControl(position, size, order),
-      _text_key(std::move(text_key))
+UiButton::UiButton(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order) noexcept
+    : UiButton(elysia::core::Rect(position.x,position.y,size.x,size.y),order) {}
+
+UiButton::UiButton(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order) noexcept
+    : UiButton(elysia::core::Rect::from_center(center,size),order) {}
+
+UiButton::UiButton(const elysia::core::Rect& rect,const UiButtonConfig& config,int order) noexcept
+    : UiButton(rect,order)
 {
-    set_use_theme(false);
+    set_button_config(config);
 }
 
-UiButton::UiButton(
-    const elysia::core::Vector2& center,
-    const elysia::core::Vector2& size,
-    UiFromCenterTag,
-    int order,
-    std::string text_key
-) noexcept
-    : UiControl(center, size, from_center, order),
-      _text_key(std::move(text_key))
-{
-    set_use_theme(false);
-}
+UiButton::UiButton(const elysia::core::Vector2& position,const elysia::core::Vector2& size,const UiButtonConfig& config,int order) noexcept
+    : UiButton(elysia::core::Rect(position.x,position.y,size.x,size.y),config,order) {}
 
 UiButton::UiButton(
-    const UiButtonTextures& textures,
-    const elysia::core::Rect& rect,
-    int order
-) noexcept
-    : UiButton(rect, order)
-{
-    set_state_textures(textures);
-}
-
-UiButton::UiButton(
-    const UiButtonTextures& textures,
-    const elysia::core::Vector2& position,
-    const elysia::core::Vector2& size,
-    int order
-) noexcept
-    : UiButton(position, size, order)
-{
-    set_state_textures(textures);
-}
-
-UiButton::UiButton(
-    const UiButtonTextures& textures,
-    const elysia::core::Vector2& center,
-    const elysia::core::Vector2& size,
-    UiFromCenterTag,
-    int order
-) noexcept
-    : UiButton(center, size, from_center, order)
-{
-    set_state_textures(textures);
-}
-
-UiButton::UiButton(
-    SDL_Texture* idle,
-    SDL_Texture* focused,
-    SDL_Texture* pushed,
-    SDL_Texture* disabled,
-    const elysia::core::Rect& rect,
-    int order
-) noexcept
-    : UiButton(UiButtonTextures{ idle, focused, pushed, disabled }, rect, order)
-{
-}
-
-UiButton::UiButton(
-    SDL_Texture* idle,
-    SDL_Texture* focused,
-    SDL_Texture* pushed,
-    SDL_Texture* disabled,
-    const elysia::core::Vector2& position,
-    const elysia::core::Vector2& size,
-    int order
-) noexcept
-    : UiButton(UiButtonTextures{ idle, focused, pushed, disabled }, position, size, order)
-{
-}
-
-UiButton::UiButton(
-    SDL_Texture* idle,
-    SDL_Texture* focused,
-    SDL_Texture* pushed,
-    SDL_Texture* disabled,
-    const elysia::core::Vector2& center,
-    const elysia::core::Vector2& size,
-    UiFromCenterTag,
-    int order
-) noexcept
-    : UiButton(UiButtonTextures{ idle, focused, pushed, disabled }, center, size, from_center, order)
-{
-}
+    const elysia::core::Vector2& center,const elysia::core::Vector2& size,
+    UiFromCenterTag,const UiButtonConfig& config,int order
+) noexcept : UiButton(elysia::core::Rect::from_center(center,size),config,order) {}
 
 void UiButton::reset() noexcept
 {
@@ -123,14 +49,18 @@ void UiButton::reset() noexcept
     _sounds = UiButtonSounds{};
     _state_textures = UiButtonTextures{};
     _on_click = nullptr;
-    _visual_mode = UiButtonVisualMode::Text;
+    _visual_mode = UiButtonVisualMode::None;
     _idle_color = elysia::core::colors::cobalt_blue;
     _focused_color = elysia::core::colors::royal_blue;
     _pushed_color = elysia::core::colors::midnight_blue;
+    _disabled_background_color = elysia::core::colors::gray_700;
     _border_color = elysia::core::colors::sky_blue;
+    _disabled_border_color = elysia::core::colors::gray_500;
     _text_color = elysia::core::colors::white;
+    _disabled_text_color = elysia::core::colors::gray_300;
     _text_point_size = 24;
     _padding = 10;
+    _draw_background = true;
     _draw_border = true;
     _is_pushed = false;
 }
@@ -139,9 +69,7 @@ void UiButton::set_enabled(bool enabled)
 {
     UiControl::set_enabled(enabled);
     if (!enabled)
-    {
         clear_pushed_state();
-    }
 }
 
 void UiButton::set_focused(bool focused)
@@ -149,14 +77,9 @@ void UiButton::set_focused(bool focused)
     const bool was_focused = is_focused();
     UiControl::set_focused(focused);
     if (!is_focused())
-    {
         clear_pushed_state();
-    }
-
     if (!was_focused && is_focused())
-    {
         play_sound_if_set(_sounds.focus);
-    }
 }
 
 bool UiButton::on_ui_input_event(const UiInputEvent& event)
@@ -170,21 +93,16 @@ bool UiButton::on_ui_input_event(const UiInputEvent& event)
             return false;
         }
 
-        set_focused(contains_pointer(event.mouse_x, event.mouse_y));
+        set_focused(contains_pointer(event.mouse_x,event.mouse_y));
         return false;
     }
 
     if (event.type == UiInputEventType::PointerPressed)
     {
         if (!is_primary_pointer_event(event) || !can_receive_pointer())
-        {
             return false;
-        }
-
-        if (!contains_pointer(event.mouse_x, event.mouse_y))
-        {
+        if (!contains_pointer(event.mouse_x,event.mouse_y))
             return false;
-        }
 
         set_focused(true);
         _is_pushed = true;
@@ -195,12 +113,10 @@ bool UiButton::on_ui_input_event(const UiInputEvent& event)
     if (event.type == UiInputEventType::PointerReleased)
     {
         if (!is_primary_pointer_event(event))
-        {
             return false;
-        }
 
         const bool was_pushed = _is_pushed;
-        const bool is_inside = can_receive_pointer() && contains_pointer(event.mouse_x, event.mouse_y);
+        const bool is_inside = can_receive_pointer() && contains_pointer(event.mouse_x,event.mouse_y);
         const ClickCallback on_click = _on_click;
         set_focused(is_inside);
         clear_pushed_state();
@@ -209,9 +125,7 @@ bool UiButton::on_ui_input_event(const UiInputEvent& event)
         {
             play_sound_if_set(_sounds.click);
             if (on_click)
-            {
                 on_click();
-            }
             return true;
         }
 
@@ -219,9 +133,7 @@ bool UiButton::on_ui_input_event(const UiInputEvent& event)
     }
 
     if (event.action != UiAction::Confirm)
-    {
         return false;
-    }
 
     if (!can_interact())
     {
@@ -246,9 +158,7 @@ bool UiButton::on_ui_input_event(const UiInputEvent& event)
         {
             play_sound_if_set(_sounds.click);
             if (on_click)
-            {
                 on_click();
-            }
         }
 
         return should_click;
@@ -260,74 +170,80 @@ bool UiButton::on_ui_input_event(const UiInputEvent& event)
 void UiButton::submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const
 {
     if (!is_visible())
-    {
         return;
-    }
 
     const elysia::core::Rect& button_rect = screen_rect();
     if (button_rect.is_empty())
-    {
         return;
-    }
 
     if (_visual_mode == UiButtonVisualMode::Textured)
     {
         SDL_Texture* state_texture = current_state_texture();
         if (!state_texture)
-        {
             return;
-        }
 
-        elysia::core::UiRenderCommand command = elysia::core::make_ui_texture_command(state_texture, button_rect);
+        elysia::core::UiRenderCommand command = elysia::core::make_ui_texture_command(state_texture,button_rect);
         apply_opacity(command);
         out_commands.push_back(command);
         return;
     }
 
-    out_commands.push_back(elysia::core::make_ui_fill_rect_command(button_rect, apply_opacity(current_background_color())));
-
+    if (_draw_background)
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(button_rect,apply_opacity(current_background_color())));
     if (_draw_border)
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(button_rect,apply_opacity(current_border_color())));
+
+    if (_visual_mode == UiButtonVisualMode::Icon)
     {
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(button_rect, apply_opacity(_border_color)));
+        SDL_Texture* icon_texture = current_state_texture();
+        if (!icon_texture)
+            return;
+
+        const elysia::core::Rect icon_rect = text_render_rect(icon_texture);
+        if (icon_rect.is_empty())
+            return;
+
+        elysia::core::UiRenderCommand command = elysia::core::make_ui_texture_command(icon_texture,icon_rect);
+        apply_opacity(command);
+        out_commands.push_back(command);
+        return;
     }
 
     if (_text_key.empty())
-    {
         return;
-    }
 
     elysia::localization::LocalizationManager* localization_manager = elysia::localization::LocalizationManager::instance();
     if (!localization_manager)
-    {
         return;
-    }
 
     elysia::localization::LocalizedTextStyle text_style;
     text_style.point_size = _text_point_size;
-    text_style.color = _text_color;
-    text_style.wrap_width = std::max(0, static_cast<int>(content_rect().width()));
+    text_style.color = current_text_color();
+    text_style.wrap_width = std::max(0,static_cast<int>(content_rect().width()));
 
-    SDL_Texture* text_texture = localization_manager->get_text_texture(_text_key, text_style);
+    SDL_Texture* text_texture = localization_manager->get_text_texture(_text_key,text_style);
     if (!text_texture)
-    {
         return;
-    }
 
     const elysia::core::Rect text_rect = text_render_rect(text_texture);
     if (text_rect.is_empty())
-    {
         return;
-    }
 
-    elysia::core::UiRenderCommand command = elysia::core::make_ui_texture_command(text_texture, text_rect);
+    elysia::core::UiRenderCommand command = elysia::core::make_ui_texture_command(text_texture,text_rect);
     apply_opacity(command);
     out_commands.push_back(command);
 }
 
+void UiButton::set_button_config(const UiButtonConfig& config)
+{
+    apply_button_config(config);
+}
+
 void UiButton::set_text_key(std::string text_key)
 {
+    clear_content();
     _text_key = std::move(text_key);
-    _visual_mode = UiButtonVisualMode::Text;
+    _visual_mode = _text_key.empty() ? UiButtonVisualMode::None : UiButtonVisualMode::Text;
 }
 
 const std::string& UiButton::text_key() const noexcept
@@ -337,14 +253,16 @@ const std::string& UiButton::text_key() const noexcept
 
 void UiButton::set_state_textures(const UiButtonTextures& textures)
 {
+    clear_content();
     _state_textures = textures;
-    _visual_mode = UiButtonVisualMode::Textured;
+    _visual_mode = has_state_textures() ? UiButtonVisualMode::Textured : UiButtonVisualMode::None;
 }
 
 void UiButton::clear_state_textures()
 {
     _state_textures = UiButtonTextures{};
-    _visual_mode = UiButtonVisualMode::Text;
+    if (_visual_mode == UiButtonVisualMode::Textured || _visual_mode == UiButtonVisualMode::Icon)
+        _visual_mode = UiButtonVisualMode::None;
 }
 
 bool UiButton::has_state_textures() const noexcept
@@ -355,7 +273,7 @@ bool UiButton::has_state_textures() const noexcept
         || _state_textures.disabled;
 }
 
-UiButtonVisualMode UiButton::visual_mode() const noexcept
+UiButton::UiButtonVisualMode UiButton::visual_mode() const noexcept
 {
     return _visual_mode;
 }
@@ -390,28 +308,6 @@ elysia::core::Color UiButton::idle_color() const noexcept
     return _idle_color;
 }
 
-SDL_Texture* UiButton::current_state_texture() const noexcept
-{
-    if (!is_enabled())
-    {
-        return _state_textures.disabled
-            ? _state_textures.disabled
-            : _state_textures.idle;
-    }
-
-    if (_is_pushed)
-    {
-        return _state_textures.pushed;
-    }
-
-    if (is_focused())
-    {
-        return _state_textures.focused;
-    }
-
-    return _state_textures.idle;
-}
-
 void UiButton::set_focused_color(elysia::core::Color color)
 {
     _focused_color = color;
@@ -432,6 +328,16 @@ elysia::core::Color UiButton::pushed_color() const noexcept
     return _pushed_color;
 }
 
+void UiButton::set_disabled_background_color(elysia::core::Color color)
+{
+    _disabled_background_color = color;
+}
+
+elysia::core::Color UiButton::disabled_background_color() const noexcept
+{
+    return _disabled_background_color;
+}
+
 void UiButton::set_border_color(elysia::core::Color color)
 {
     _border_color = color;
@@ -440,6 +346,16 @@ void UiButton::set_border_color(elysia::core::Color color)
 elysia::core::Color UiButton::border_color() const noexcept
 {
     return _border_color;
+}
+
+void UiButton::set_disabled_border_color(elysia::core::Color color)
+{
+    _disabled_border_color = color;
+}
+
+elysia::core::Color UiButton::disabled_border_color() const noexcept
+{
+    return _disabled_border_color;
 }
 
 void UiButton::set_text_color(elysia::core::Color color)
@@ -452,9 +368,19 @@ elysia::core::Color UiButton::text_color() const noexcept
     return _text_color;
 }
 
+void UiButton::set_disabled_text_color(elysia::core::Color color)
+{
+    _disabled_text_color = color;
+}
+
+elysia::core::Color UiButton::disabled_text_color() const noexcept
+{
+    return _disabled_text_color;
+}
+
 void UiButton::set_text_point_size(int point_size)
 {
-    _text_point_size = std::max(0, point_size);
+    _text_point_size = std::max(0,point_size);
 }
 
 int UiButton::text_point_size() const noexcept
@@ -464,12 +390,22 @@ int UiButton::text_point_size() const noexcept
 
 void UiButton::set_padding(int padding)
 {
-    _padding = std::max(0, padding);
+    _padding = std::max(0,padding);
 }
 
 int UiButton::padding() const noexcept
 {
     return _padding;
+}
+
+void UiButton::set_draw_background(bool draw_background)
+{
+    _draw_background = draw_background;
+}
+
+bool UiButton::draws_background() const noexcept
+{
+    return _draw_background;
 }
 
 void UiButton::set_draw_border(bool draw_border)
@@ -480,6 +416,50 @@ void UiButton::set_draw_border(bool draw_border)
 bool UiButton::draws_border() const noexcept
 {
     return _draw_border;
+}
+
+void UiButton::apply_button_config(const UiButtonConfig& config)
+{
+    if (config.sounds)
+        set_sounds(*config.sounds);
+    else
+        clear_sounds();
+
+    set_draw_background(config.draw_background);
+    set_draw_border(config.draw_border);
+    apply_button_content(config.content);
+}
+
+void UiButton::apply_button_content(const UiButtonContent& content)
+{
+    std::visit([this](const auto& value) {
+        using T = std::decay_t<decltype(value)>;
+        if constexpr (std::is_same_v<T,std::monostate>)
+            clear_content();
+        else if constexpr (std::is_same_v<T,UiButtonTextContent>)
+            set_text_key(value.text_key);
+        else if constexpr (std::is_same_v<T,UiButtonIconContent>)
+            set_icon_texture(value.texture);
+        else if constexpr (std::is_same_v<T,UiButtonTextureSetContent>)
+            set_state_textures(value.textures);
+    },content);
+}
+
+void UiButton::set_icon_texture(SDL_Texture* texture) noexcept
+{
+    clear_content();
+    if (!texture)
+        return;
+
+    _state_textures = UiButtonTextures{ texture,texture,texture,texture };
+    _visual_mode = UiButtonVisualMode::Icon;
+}
+
+void UiButton::clear_content() noexcept
+{
+    _text_key.clear();
+    _state_textures = UiButtonTextures{};
+    _visual_mode = UiButtonVisualMode::None;
 }
 
 bool UiButton::can_interact() const noexcept
@@ -494,28 +474,44 @@ bool UiButton::can_receive_pointer() const noexcept
 
 elysia::core::Color UiButton::current_background_color() const noexcept
 {
+    if (!is_enabled())
+        return _disabled_background_color;
     if (_is_pushed)
-    {
         return _pushed_color;
-    }
-
     if (is_focused())
-    {
         return _focused_color;
-    }
-
     return _idle_color;
+}
+
+elysia::core::Color UiButton::current_border_color() const noexcept
+{
+    return is_enabled() ? _border_color : _disabled_border_color;
+}
+
+elysia::core::Color UiButton::current_text_color() const noexcept
+{
+    return is_enabled() ? _text_color : _disabled_text_color;
+}
+
+SDL_Texture* UiButton::current_state_texture() const noexcept
+{
+    if (!is_enabled())
+        return _state_textures.disabled ? _state_textures.disabled : _state_textures.idle;
+    if (_is_pushed)
+        return _state_textures.pushed ? _state_textures.pushed : _state_textures.idle;
+    if (is_focused())
+        return _state_textures.focused ? _state_textures.focused : _state_textures.idle;
+    return _state_textures.idle;
 }
 
 elysia::core::Rect UiButton::content_rect() const noexcept
 {
     const elysia::core::Rect& button_rect = screen_rect();
-    const float width = std::max(0.0f, button_rect.width());
-    const float height = std::max(0.0f, button_rect.height());
-
+    const float width = std::max(0.0f,button_rect.width());
+    const float height = std::max(0.0f,button_rect.height());
     const float padding = static_cast<float>(_padding);
-    const float pad_x = std::min(padding, width * 0.5f);
-    const float pad_y = std::min(padding, height * 0.5f);
+    const float pad_x = std::min(padding,width * 0.5f);
+    const float pad_y = std::min(padding,height * 0.5f);
 
     elysia::core::Rect content = button_rect;
     content.set_x(button_rect.x() + pad_x);
@@ -528,48 +524,34 @@ elysia::core::Rect UiButton::content_rect() const noexcept
 elysia::core::Rect UiButton::text_render_rect(SDL_Texture* text_texture) const noexcept
 {
     if (!text_texture)
-    {
         return elysia::core::Rect::zero();
-    }
 
     int texture_width = 0;
     int texture_height = 0;
-    if (SDL_QueryTexture(text_texture, nullptr, nullptr, &texture_width, &texture_height) != 0)
-    {
+    if (SDL_QueryTexture(text_texture,nullptr,nullptr,&texture_width,&texture_height) != 0)
         return elysia::core::Rect::zero();
-    }
-
     if (texture_width <= 0 || texture_height <= 0)
-    {
         return elysia::core::Rect::zero();
-    }
 
     const elysia::core::Rect available_rect = content_rect();
     if (available_rect.is_empty())
-    {
         return elysia::core::Rect::zero();
-    }
 
     const float available_width = available_rect.width();
     const float available_height = available_rect.height();
     const float width_scale = available_width / static_cast<float>(texture_width);
     const float height_scale = available_height / static_cast<float>(texture_height);
-    const float scale = std::min(1.0f, std::min(width_scale, height_scale));
-
+    const float scale = std::min(1.0f,std::min(width_scale,height_scale));
     const elysia::core::Vector2 render_size(
         static_cast<float>(texture_width) * scale,
         static_cast<float>(texture_height) * scale
     );
-
-    return elysia::core::Rect::from_center(available_rect.center(), render_size);
+    return elysia::core::Rect::from_center(available_rect.center(),render_size);
 }
 
-bool UiButton::contains_pointer(int mouse_x, int mouse_y) const noexcept
+bool UiButton::contains_pointer(int mouse_x,int mouse_y) const noexcept
 {
-    return screen_rect().contains(elysia::core::Vector2(
-        static_cast<float>(mouse_x),
-        static_cast<float>(mouse_y)
-    ));
+    return screen_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
 }
 
 bool UiButton::is_primary_pointer_event(const UiInputEvent& event) const noexcept
@@ -586,11 +568,7 @@ void UiButton::clear_pushed_state() noexcept
 void UiButton::play_sound_if_set(std::string_view sound_key) const
 {
     if (sound_key.empty())
-    {
         return;
-    }
-
     elysia::audio::AudioService::instance()->play_sound(sound_key);
 }
-
 }

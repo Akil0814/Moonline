@@ -5,7 +5,7 @@
     "sound_volume": 100
   },
   "localization": {
-    "language": "en"
+    "language": "zh_cn"
   },
   "render": {
     "fps": 60.0,

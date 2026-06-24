@@ -1,4 +1,4 @@
-﻿#include "main_menu_scene.h"
+#include "main_menu_scene.h"
 
 #include "../../application/scene/scene_payloads.h"
 #include "../../engine/audio/audio_service.h"
@@ -116,8 +116,11 @@ void MainMenuScene::rebuild_menu_buttons()
                 kMenuButtonWidth,
                 kMenuButtonHeight
             },
-            static_cast<int>(index),
-            key);
+            elysia::ui::UiButtonConfig{ .content = elysia::ui::UiButtonTextContent{ key } },
+            static_cast<int>(index));
+
+        if (index == 1)
+            button->set_enabled(false);
 
         button->set_text_point_size(kMenuTextPointSize);
         button->set_on_click([key]()
