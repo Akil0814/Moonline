@@ -1,65 +1,65 @@
-# UI 系统说明与工作流
+# UI ç³»ç»Ÿè¯´æ˜Žä¸Žå·¥ä½œæµ
 
-## 1. 当前 UI 系统的定位
+## 1. å½“å‰ UI ç³»ç»Ÿçš„å®šä½
 
-当前项目的 UI 系统已经不是零散控件集合了，而是一套可以继续扩展的 2D UI 框架。
+å½“å‰é¡¹ç›®çš„ UI ç³»ç»Ÿå·²ç»ä¸æ˜¯é›¶æ•£æŽ§ä»¶é›†åˆäº†ï¼Œè€Œæ˜¯ä¸€å¥—å¯ä»¥ç»§ç»­æ‰©å±•çš„ 2D UI æ¡†æž¶ã€‚
 
-它现在已经覆盖了这些能力：
+å®ƒçŽ°åœ¨å·²ç»è¦†ç›–äº†è¿™äº›èƒ½åŠ›ï¼š
 
-- 页面容器与页面切换动画
-- 线性布局、滚动容器、基础网格布局
-- 通用焦点与可交互控件体系
-- 键盘、鼠标、手柄共用的 UI 输入动作
-- 基础控件、复合控件、表单控件
-- 统一主题与样式入口
-- 主菜单、选项页、表单演示页这类真实页面
+- é¡µé¢å®¹å™¨ä¸Žé¡µé¢åˆ‡æ¢åŠ¨ç”»
+- çº¿æ€§å¸ƒå±€ã€æ»šåŠ¨å®¹å™¨ã€åŸºç¡€ç½‘æ ¼å¸ƒå±€
+- é€šç”¨ç„¦ç‚¹ä¸Žå¯äº¤äº’æŽ§ä»¶ä½“ç³»
+- é”®ç›˜ã€é¼ æ ‡ã€æ‰‹æŸ„å…±ç”¨çš„ UI è¾“å…¥åŠ¨ä½œ
+- åŸºç¡€æŽ§ä»¶ã€å¤åˆæŽ§ä»¶ã€è¡¨å•æŽ§ä»¶
+- ç»Ÿä¸€ä¸»é¢˜ä¸Žæ ·å¼å…¥å£
+- ä¸»èœå•ã€é€‰é¡¹é¡µã€è¡¨å•æ¼”ç¤ºé¡µè¿™ç±»çœŸå®žé¡µé¢
 
-它还不是完全封箱的最终 UI 框架，但已经足够稳定，可以继续承载菜单、设置页、弹窗、简单 HUD 和表单页开发。
+å®ƒè¿˜ä¸æ˜¯å®Œå…¨å°ç®±çš„æœ€ç»ˆ UI æ¡†æž¶ï¼Œä½†å·²ç»è¶³å¤Ÿç¨³å®šï¼Œå¯ä»¥ç»§ç»­æ‰¿è½½èœå•ã€è®¾ç½®é¡µã€å¼¹çª—ã€ç®€å• HUD å’Œè¡¨å•é¡µå¼€å‘ã€‚
 
-## 2. 当前架构分层
+## 2. å½“å‰æž¶æž„åˆ†å±‚
 
 ### 2.1 `GameObject`
 
-UI 系统最底层仍然建立在 [game_object.h](/G:/Coding/Projects/Moonline/engine/core/game_object.h) 上。
+UI ç³»ç»Ÿæœ€åº•å±‚ä»ç„¶å»ºç«‹åœ¨ [game_object.h](/G:/Coding/Projects/Moonline/engine/core/game_object.h) ä¸Šã€‚
 
-`GameObject` 负责：
+`GameObject` è´Ÿè´£ï¼š
 
-- 世界坐标
-- 尺寸
+- ä¸–ç•Œåæ ‡
+- å°ºå¯¸
 - `SDL_Rect`
 - `on_update`
 - `on_render`
 - `on_input`
 - `on_input_event`
 
-也就是说，UI 没有另起一套完全独立的生命周期，而是复用了引擎对象系统。
+ä¹Ÿå°±æ˜¯è¯´ï¼ŒUI æ²¡æœ‰å¦èµ·ä¸€å¥—å®Œå…¨ç‹¬ç«‹çš„ç”Ÿå‘½å‘¨æœŸï¼Œè€Œæ˜¯å¤ç”¨äº†å¼•æ“Žå¯¹è±¡ç³»ç»Ÿã€‚
 
 ### 2.2 `UiElement`
 
-新的 UI 共同基类是 [ui_element.h](/G:/Coding/Projects/Moonline/engine/ui/base/ui_element.h)。
+æ–°çš„ UI å…±åŒåŸºç±»æ˜¯ [ui_element.h](/G:/Coding/Projects/Moonline/engine/ui/base/ui_element.h)ã€‚
 
-它在 `GameObject` 之上补了这些 UI 共性：
+å®ƒåœ¨ `GameObject` ä¹‹ä¸Šè¡¥äº†è¿™äº› UI å…±æ€§ï¼š
 
-- 自动向 `UiThemeManager` 注册和注销
+- è‡ªåŠ¨å‘ `UiThemeManager` æ³¨å†Œå’Œæ³¨é”€
 - `use_theme`
 - `theme_dirty`
 - `mark_theme_dirty()`
 - `refresh_theme_if_needed()`
 - `apply_theme(const UiTheme&)`
 
-这意味着绝大多数 UI 元素都可以在下一帧自动响应主题切换。
+è¿™æ„å‘³ç€ç»å¤§å¤šæ•° UI å…ƒç´ éƒ½å¯ä»¥åœ¨ä¸‹ä¸€å¸§è‡ªåŠ¨å“åº”ä¸»é¢˜åˆ‡æ¢ã€‚
 
 ### 2.3 `UiControl`
 
-可交互 UI 的共同基类是 [ui_control.h](/G:/Coding/Projects/Moonline/engine/ui/base/ui_control.h)。
+å¯äº¤äº’ UI çš„å…±åŒåŸºç±»æ˜¯ [ui_control.h](/G:/Coding/Projects/Moonline/engine/ui/base/ui_control.h)ã€‚
 
-它继承 `UiElement + UiFocusable`，统一收口了：
+å®ƒç»§æ‰¿ `UiElement + UiFocusable`ï¼Œç»Ÿä¸€æ”¶å£äº†ï¼š
 
 - `set_enabled / is_enabled`
 - `set_focused / is_focused`
 - `game_object()`
 
-第一批直接继承 `UiControl` 的叶子控件有：
+ç¬¬ä¸€æ‰¹ç›´æŽ¥ç»§æ‰¿ `UiControl` çš„å¶å­æŽ§ä»¶æœ‰ï¼š
 
 - `UiButton`
 - `UiSlider`
@@ -68,9 +68,9 @@ UI 系统最底层仍然建立在 [game_object.h](/G:/Coding/Projects/Moonline/e
 
 ### 2.4 `UiFocusable`
 
-[ui_focusable.h](/G:/Coding/Projects/Moonline/engine/ui/base/ui_focusable.h) 是焦点系统的最小契约。
+[ui_focusable.h](/G:/Coding/Projects/Moonline/engine/ui/base/ui_focusable.h) æ˜¯ç„¦ç‚¹ç³»ç»Ÿçš„æœ€å°å¥‘çº¦ã€‚
 
-它要求交互控件至少实现：
+å®ƒè¦æ±‚äº¤äº’æŽ§ä»¶è‡³å°‘å®žçŽ°ï¼š
 
 - `set_focused(bool)`
 - `is_focused() const`
@@ -79,48 +79,48 @@ UI 系统最底层仍然建立在 [game_object.h](/G:/Coding/Projects/Moonline/e
 - `handle_focused_input_event(const InputEvent&)`
 - `game_object()`
 
-这层的意义是：
+è¿™å±‚çš„æ„ä¹‰æ˜¯ï¼š
 
-- `UiScreen` 不再只认识按钮
-- 焦点系统可以统一驱动按钮、列表、开关、滑条、输入框
+- `UiScreen` ä¸å†åªè®¤è¯†æŒ‰é’®
+- ç„¦ç‚¹ç³»ç»Ÿå¯ä»¥ç»Ÿä¸€é©±åŠ¨æŒ‰é’®ã€åˆ—è¡¨ã€å¼€å…³ã€æ»‘æ¡ã€è¾“å…¥æ¡†
 
-## 3. 主要容器
+## 3. ä¸»è¦å®¹å™¨
 
 ### 3.1 `UiLayout`
 
 [ui_layout.h](/G:/Coding/Projects/Moonline/engine/ui/ui_layout.h)
 
-这是最核心的 UI 容器基类，负责：
+è¿™æ˜¯æœ€æ ¸å¿ƒçš„ UI å®¹å™¨åŸºç±»ï¼Œè´Ÿè´£ï¼š
 
-- child 管理
-- `Horizontal / Vertical` 排列
-- 锚点
-- 副轴对齐
+- child ç®¡ç†
+- `Horizontal / Vertical` æŽ’åˆ—
+- é”šç‚¹
+- å‰¯è½´å¯¹é½
 - spacing
 - padding
 - child margin
-- child 尺寸覆盖
+- child å°ºå¯¸è¦†ç›–
 - `fill_cross_axis`
-- 容器 transform
+- å®¹å™¨ transform
 - `content_offset`
 - auto size
 
-它不是通用场景树，只负责自己内部 child 的更新、渲染和输入转发。
+å®ƒä¸æ˜¯é€šç”¨åœºæ™¯æ ‘ï¼Œåªè´Ÿè´£è‡ªå·±å†…éƒ¨ child çš„æ›´æ–°ã€æ¸²æŸ“å’Œè¾“å…¥è½¬å‘ã€‚
 
 ### 3.2 `UiPanel`
 
 [ui_panel.h](/G:/Coding/Projects/Moonline/engine/ui/containers/ui_panel.h)
 
-`UiPanel` 在 `UiLayout` 上再补：
+`UiPanel` åœ¨ `UiLayout` ä¸Šå†è¡¥ï¼š
 
-- 背景色
-- 边框
-- 背景贴图
-- 背景 alpha
-- child 裁剪
+- èƒŒæ™¯è‰²
+- è¾¹æ¡†
+- èƒŒæ™¯è´´å›¾
+- èƒŒæ™¯ alpha
+- child è£å‰ª
 - `UiPanelThemeRole`
 
-当前主题角色有：
+å½“å‰ä¸»é¢˜è§’è‰²æœ‰ï¼š
 
 - `Default`
 - `Screen`
@@ -131,72 +131,72 @@ UI 系统最底层仍然建立在 [game_object.h](/G:/Coding/Projects/Moonline/e
 
 [ui_screen.h](/G:/Coding/Projects/Moonline/engine/ui/containers/ui_screen.h)
 
-`UiScreen` 是页面级根容器，负责：
+`UiScreen` æ˜¯é¡µé¢çº§æ ¹å®¹å™¨ï¼Œè´Ÿè´£ï¼š
 
 - open / close
-- 是否接收输入
-- 页面过渡动画
-- 焦点控件注册
-- 线性焦点导航
+- æ˜¯å¦æŽ¥æ”¶è¾“å…¥
+- é¡µé¢è¿‡æ¸¡åŠ¨ç”»
+- ç„¦ç‚¹æŽ§ä»¶æ³¨å†Œ
+- çº¿æ€§ç„¦ç‚¹å¯¼èˆª
 
-当前导航规则：
+å½“å‰å¯¼èˆªè§„åˆ™ï¼š
 
-- 竖向页面默认 `Up / Down`
-- 横向页面默认 `Left / Right`
-- `Confirm` 触发当前控件主行为
-- `Cancel` 由页面或弹窗自己处理
+- ç«–å‘é¡µé¢é»˜è®¤ `Up / Down`
+- æ¨ªå‘é¡µé¢é»˜è®¤ `Left / Right`
+- `Confirm` è§¦å‘å½“å‰æŽ§ä»¶ä¸»è¡Œä¸º
+- `Cancel` ç”±é¡µé¢æˆ–å¼¹çª—è‡ªå·±å¤„ç†
 
 ### 3.4 `UiScrollPanel`
 
 [ui_scroll_panel.h](/G:/Coding/Projects/Moonline/engine/ui/containers/ui_scroll_panel.h)
 
-它在 `UiPanel` 上补了：
+å®ƒåœ¨ `UiPanel` ä¸Šè¡¥äº†ï¼š
 
 - `scroll_offset`
 - `scroll_step`
-- 横向/纵向滚动开关
-- 滚动范围夹紧
+- æ¨ªå‘/çºµå‘æ»šåŠ¨å¼€å…³
+- æ»šåŠ¨èŒƒå›´å¤¹ç´§
 - `ensure_child_visible()`
-- 鼠标滚轮滚动
+- é¼ æ ‡æ»šè½®æ»šåŠ¨
 
 ### 3.5 `UiGridLayout`
 
 [ui_grid_layout.h](/G:/Coding/Projects/Moonline/engine/ui/layout/ui_grid_layout.h)
 
-当前支持：
+å½“å‰æ”¯æŒï¼š
 
-- 指定列数
-- 自动换行
-- 行列间距
+- æŒ‡å®šåˆ—æ•°
+- è‡ªåŠ¨æ¢è¡Œ
+- è¡Œåˆ—é—´è·
 - padding
-- 单元格内对齐
+- å•å…ƒæ ¼å†…å¯¹é½
 
-这是目前最基础的二维布局能力。
+è¿™æ˜¯ç›®å‰æœ€åŸºç¡€çš„äºŒç»´å¸ƒå±€èƒ½åŠ›ã€‚
 
-## 4. 基础控件
+## 4. åŸºç¡€æŽ§ä»¶
 
-### 4.1 展示控件
+### 4.1 å±•ç¤ºæŽ§ä»¶
 
-- [ui_label.h](/G:/Coding/Projects/Moonline/engine/ui/widgets/ui_label.h)
+- [ui_label.h](/G:/Coding/Projects/Moonline/engine/ui/widgets/label/ui_label.h)
 - [ui_image_view.h](/G:/Coding/Projects/Moonline/engine/ui/widgets/ui_image_view.h)
 - [ui_progress_bar.h](/G:/Coding/Projects/Moonline/engine/ui/widgets/ui_progress_bar.h)
 - [ui_bar.h](/G:/Coding/Projects/Moonline/engine/ui/ui_bar.h)
 
-职责分别是：
+èŒè´£åˆ†åˆ«æ˜¯ï¼š
 
-- `UiLabel`：文本、字体、颜色、换行、padding、对齐
-- `UiImageView`：贴图显示、裁剪、缩放模式、tint、alpha
-- `UiBar`：纯数值条渲染逻辑
-- `UiProgressBar`：把 `UiBar` 包装成可挂进 scene 的 UI 元素
+- `UiLabel`ï¼šæ–‡æœ¬ã€å­—ä½“ã€é¢œè‰²ã€æ¢è¡Œã€paddingã€å¯¹é½
+- `UiImageView`ï¼šè´´å›¾æ˜¾ç¤ºã€è£å‰ªã€ç¼©æ”¾æ¨¡å¼ã€tintã€alpha
+- `UiBar`ï¼šçº¯æ•°å€¼æ¡æ¸²æŸ“é€»è¾‘
+- `UiProgressBar`ï¼šæŠŠ `UiBar` åŒ…è£…æˆå¯æŒ‚è¿› scene çš„ UI å…ƒç´ 
 
-`UiLabel` 现在有 `UiLabelThemeRole`：
+`UiLabel` çŽ°åœ¨æœ‰ `UiLabelThemeRole`ï¼š
 
 - `Default`
 - `Title`
 - `Subtitle`
 - `Muted`
 
-### 4.2 交互控件
+### 4.2 äº¤äº’æŽ§ä»¶
 
 - [ui_button.h](/G:/Coding/Projects/Moonline/engine/ui/widgets/ui_button.h)
 - [ui_text_button.h](/G:/Coding/Projects/Moonline/engine/ui/widgets/ui_text_button.h)
@@ -204,131 +204,131 @@ UI 系统最底层仍然建立在 [game_object.h](/G:/Coding/Projects/Moonline/e
 - [ui_toggle.h](/G:/Coding/Projects/Moonline/engine/ui/widgets/ui_toggle.h)
 - [ui_text_input.h](/G:/Coding/Projects/Moonline/engine/ui/widgets/ui_text_input.h)
 
-职责分别是：
+èŒè´£åˆ†åˆ«æ˜¯ï¼š
 
-- `UiButton`：最基础按钮，支持鼠标点击和焦点确认
-- `UiTextButton`：带文字渲染的按钮
-- `UiSlider`：连续值控件，支持拖拽和 `Left / Right`
-- `UiToggle`：布尔开关，支持 `Confirm` 和 `Left / Right`
-- `UiTextInput`：单行输入框，支持文本事件、光标移动、删除、placeholder、密码模式
+- `UiButton`ï¼šæœ€åŸºç¡€æŒ‰é’®ï¼Œæ”¯æŒé¼ æ ‡ç‚¹å‡»å’Œç„¦ç‚¹ç¡®è®¤
+- `UiTextButton`ï¼šå¸¦æ–‡å­—æ¸²æŸ“çš„æŒ‰é’®
+- `UiSlider`ï¼šè¿žç»­å€¼æŽ§ä»¶ï¼Œæ”¯æŒæ‹–æ‹½å’Œ `Left / Right`
+- `UiToggle`ï¼šå¸ƒå°”å¼€å…³ï¼Œæ”¯æŒ `Confirm` å’Œ `Left / Right`
+- `UiTextInput`ï¼šå•è¡Œè¾“å…¥æ¡†ï¼Œæ”¯æŒæ–‡æœ¬äº‹ä»¶ã€å…‰æ ‡ç§»åŠ¨ã€åˆ é™¤ã€placeholderã€å¯†ç æ¨¡å¼
 
-`UiButton` 有 `UiButtonThemeRole`：
+`UiButton` æœ‰ `UiButtonThemeRole`ï¼š
 
 - `Default`
 - `Primary`
 - `Danger`
 
-`UiProgressBar` 有 `UiBarThemeRole`：
+`UiProgressBar` æœ‰ `UiBarThemeRole`ï¼š
 
 - `Default`
 - `Progress`
 
-## 5. 复合控件
+## 5. å¤åˆæŽ§ä»¶
 
 ### 5.1 `UiMenuList`
 
 [ui_menu_list.h](/G:/Coding/Projects/Moonline/engine/ui/composite/ui_menu_list.h)
 
-它建立在 `UiScrollPanel + UiTextButton` 上，负责：
+å®ƒå»ºç«‹åœ¨ `UiScrollPanel + UiTextButton` ä¸Šï¼Œè´Ÿè´£ï¼š
 
-- 菜单项集合
-- 当前选中项
-- 上下导航
-- `Confirm` 选中
-- 自动滚动到可见区域
+- èœå•é¡¹é›†åˆ
+- å½“å‰é€‰ä¸­é¡¹
+- ä¸Šä¸‹å¯¼èˆª
+- `Confirm` é€‰ä¸­
+- è‡ªåŠ¨æ»šåŠ¨åˆ°å¯è§åŒºåŸŸ
 
 ### 5.2 `UiOptionList`
 
 [ui_option_list.h](/G:/Coding/Projects/Moonline/engine/ui/composite/ui_option_list.h)
 
-它建立在 `UiScrollPanel + UiPanel + UiLabel + (UiSlider / UiToggle)` 上，负责：
+å®ƒå»ºç«‹åœ¨ `UiScrollPanel + UiPanel + UiLabel + (UiSlider / UiToggle)` ä¸Šï¼Œè´Ÿè´£ï¼š
 
-- 设置项列表
-- 行选中
-- 行内控件值变化
-- 焦点与滚动联动
+- è®¾ç½®é¡¹åˆ—è¡¨
+- è¡Œé€‰ä¸­
+- è¡Œå†…æŽ§ä»¶å€¼å˜åŒ–
+- ç„¦ç‚¹ä¸Žæ»šåŠ¨è”åŠ¨
 
 ### 5.3 `UiDialog`
 
 [ui_dialog.h](/G:/Coding/Projects/Moonline/engine/ui/composite/ui_dialog.h)
 
-它建立在 `UiScreen + UiMenuList + UiLabel` 上，负责：
+å®ƒå»ºç«‹åœ¨ `UiScreen + UiMenuList + UiLabel` ä¸Šï¼Œè´Ÿè´£ï¼š
 
-- 标题
-- 文案
-- 操作列表
-- 模态确认/取消
+- æ ‡é¢˜
+- æ–‡æ¡ˆ
+- æ“ä½œåˆ—è¡¨
+- æ¨¡æ€ç¡®è®¤/å–æ¶ˆ
 
-## 6. 主题系统
+## 6. ä¸»é¢˜ç³»ç»Ÿ
 
-### 6.1 入口
+### 6.1 å…¥å£
 
-主题系统核心文件是：
+ä¸»é¢˜ç³»ç»Ÿæ ¸å¿ƒæ–‡ä»¶æ˜¯ï¼š
 
 - [ui_theme.h](/G:/Coding/Projects/Moonline/engine/ui/style/ui_theme.h)
 - [ui_theme_manager.h](/G:/Coding/Projects/Moonline/engine/ui/style/ui_theme_manager.h)
 
-### 6.2 工作方式
+### 6.2 å·¥ä½œæ–¹å¼
 
-`UiThemeManager` 维护当前全局主题。
+`UiThemeManager` ç»´æŠ¤å½“å‰å…¨å±€ä¸»é¢˜ã€‚
 
-当调用：
+å½“è°ƒç”¨ï¼š
 
 ```cpp
 UiThemeManager::instance().set_theme(new_theme);
 ```
 
-时，不会立刻同步调用所有控件的虚函数，而是：
+æ—¶ï¼Œä¸ä¼šç«‹åˆ»åŒæ­¥è°ƒç”¨æ‰€æœ‰æŽ§ä»¶çš„è™šå‡½æ•°ï¼Œè€Œæ˜¯ï¼š
 
-1. 标记所有已注册 `UiElement` 为 `theme_dirty`
-2. 这些元素在下一次 `on_update / on_render / on_input` 入口里执行 `refresh_theme_if_needed()`
-3. 最终进入各自的 `apply_theme(const UiTheme&)`
+1. æ ‡è®°æ‰€æœ‰å·²æ³¨å†Œ `UiElement` ä¸º `theme_dirty`
+2. è¿™äº›å…ƒç´ åœ¨ä¸‹ä¸€æ¬¡ `on_update / on_render / on_input` å…¥å£é‡Œæ‰§è¡Œ `refresh_theme_if_needed()`
+3. æœ€ç»ˆè¿›å…¥å„è‡ªçš„ `apply_theme(const UiTheme&)`
 
-这样做的好处是：
+è¿™æ ·åšçš„å¥½å¤„æ˜¯ï¼š
 
-- 可以运行时切主题
-- 不容易在对象半初始化状态下触发样式应用
+- å¯ä»¥è¿è¡Œæ—¶åˆ‡ä¸»é¢˜
+- ä¸å®¹æ˜“åœ¨å¯¹è±¡åŠåˆå§‹åŒ–çŠ¶æ€ä¸‹è§¦å‘æ ·å¼åº”ç”¨
 
-### 6.3 默认主题
+### 6.3 é»˜è®¤ä¸»é¢˜
 
-默认主题工厂是：
+é»˜è®¤ä¸»é¢˜å·¥åŽ‚æ˜¯ï¼š
 
 - [ui_theme.cpp](/G:/Coding/Projects/Moonline/engine/ui/style/ui_theme.cpp)
 
-当前默认主题以 loading bar 的视觉方向为中心：
+å½“å‰é»˜è®¤ä¸»é¢˜ä»¥ loading bar çš„è§†è§‰æ–¹å‘ä¸ºä¸­å¿ƒï¼š
 
-- 深海蓝背景
-- 冷白填充
-- 青蓝边框和高亮
-- 低饱和冷色次级文字
+- æ·±æµ·è“èƒŒæ™¯
+- å†·ç™½å¡«å……
+- é’è“è¾¹æ¡†å’Œé«˜äº®
+- ä½Žé¥±å’Œå†·è‰²æ¬¡çº§æ–‡å­—
 
-也就是说，整套默认 UI 会比较接近当前加载条的气质，而不是通用灰白菜单。
+ä¹Ÿå°±æ˜¯è¯´ï¼Œæ•´å¥—é»˜è®¤ UI ä¼šæ¯”è¾ƒæŽ¥è¿‘å½“å‰åŠ è½½æ¡çš„æ°”è´¨ï¼Œè€Œä¸æ˜¯é€šç”¨ç°ç™½èœå•ã€‚
 
-## 7. 输入流
+## 7. è¾“å…¥æµ
 
-输入链路大致是：
+è¾“å…¥é“¾è·¯å¤§è‡´æ˜¯ï¼š
 
-1. SDL 事件进入输入系统
-2. 输入系统整理成 `InputSnapshot + InputEvent`
-3. scene 把输入分发给页面根对象
-4. `UiScreen` 先处理页面级焦点导航
-5. 当前聚焦的 `UiFocusable` 处理自己的行为
+1. SDL äº‹ä»¶è¿›å…¥è¾“å…¥ç³»ç»Ÿ
+2. è¾“å…¥ç³»ç»Ÿæ•´ç†æˆ `InputSnapshot + InputEvent`
+3. scene æŠŠè¾“å…¥åˆ†å‘ç»™é¡µé¢æ ¹å¯¹è±¡
+4. `UiScreen` å…ˆå¤„ç†é¡µé¢çº§ç„¦ç‚¹å¯¼èˆª
+5. å½“å‰èšç„¦çš„ `UiFocusable` å¤„ç†è‡ªå·±çš„è¡Œä¸º
 
-例如：
+ä¾‹å¦‚ï¼š
 
-- `Up / Down` 在 `UiScreen` 里切换焦点
-- `Confirm` 会落到 `UiButton / UiMenuList / UiToggle`
-- `Left / Right` 会落到 `UiSlider / UiToggle / UiOptionList`
-- `TextInput` 事件会落到 `UiTextInput`
+- `Up / Down` åœ¨ `UiScreen` é‡Œåˆ‡æ¢ç„¦ç‚¹
+- `Confirm` ä¼šè½åˆ° `UiButton / UiMenuList / UiToggle`
+- `Left / Right` ä¼šè½åˆ° `UiSlider / UiToggle / UiOptionList`
+- `TextInput` äº‹ä»¶ä¼šè½åˆ° `UiTextInput`
 
-## 8. 当前页面落地
+## 8. å½“å‰é¡µé¢è½åœ°
 
-### 8.1 主菜单
+### 8.1 ä¸»èœå•
 
 - [main_menu_scene.h](/G:/Coding/Projects/Moonline/gameplay/scene/main_menu_scene.h)
 - [main_menu_scene.cpp](/G:/Coding/Projects/Moonline/gameplay/scene/main_menu_scene.cpp)
 
-使用：
+ä½¿ç”¨ï¼š
 
 - `UiScreen`
 - `UiLabel`
@@ -336,24 +336,24 @@ UiThemeManager::instance().set_theme(new_theme);
 - `UiScrollBar`
 - `UiDialog`
 
-### 8.2 选项页
+### 8.2 é€‰é¡¹é¡µ
 
 - [options_scene.h](/G:/Coding/Projects/Moonline/gameplay/scene/options_scene.h)
 - [options_scene.cpp](/G:/Coding/Projects/Moonline/gameplay/scene/options_scene.cpp)
 
-使用：
+ä½¿ç”¨ï¼š
 
 - `UiScreen`
 - `UiLabel`
 - `UiOptionList`
 - `UiScrollBar`
 
-### 8.3 表单演示页
+### 8.3 è¡¨å•æ¼”ç¤ºé¡µ
 
 - [ui_forms_demo_scene.h](/G:/Coding/Projects/Moonline/gameplay/scene/ui_forms_demo_scene.h)
 - [ui_forms_demo_scene.cpp](/G:/Coding/Projects/Moonline/gameplay/scene/ui_forms_demo_scene.cpp)
 
-使用：
+ä½¿ç”¨ï¼š
 
 - `UiScreen`
 - `UiGridLayout`
@@ -363,54 +363,54 @@ UiThemeManager::instance().set_theme(new_theme);
 - `UiSlider`
 - `UiTextButton`
 
-## 9. 如果要新增 UI，推荐工作流程
+## 9. å¦‚æžœè¦æ–°å¢ž UIï¼ŒæŽ¨èå·¥ä½œæµç¨‹
 
-### 9.1 新增一个简单页面
+### 9.1 æ–°å¢žä¸€ä¸ªç®€å•é¡µé¢
 
-推荐步骤：
+æŽ¨èæ­¥éª¤ï¼š
 
-1. 新建一个 scene
-2. 在 scene 里持有一个 `std::shared_ptr<UiScreen>`
-3. 再持有这个页面所需的控件
-4. 在 `ensure_ui()` 里懒创建
-5. 在 `reset()` 里：
-   - `reset()` 控件
-   - 设置文本、尺寸、回调
-   - 设置 theme role
-   - 挂进 layout
-   - 注册可聚焦控件
-6. 最后 `add_object(_screen)`
+1. æ–°å»ºä¸€ä¸ª scene
+2. åœ¨ scene é‡ŒæŒæœ‰ä¸€ä¸ª `std::shared_ptr<UiScreen>`
+3. å†æŒæœ‰è¿™ä¸ªé¡µé¢æ‰€éœ€çš„æŽ§ä»¶
+4. åœ¨ `ensure_ui()` é‡Œæ‡’åˆ›å»º
+5. åœ¨ `reset()` é‡Œï¼š
+   - `reset()` æŽ§ä»¶
+   - è®¾ç½®æ–‡æœ¬ã€å°ºå¯¸ã€å›žè°ƒ
+   - è®¾ç½® theme role
+   - æŒ‚è¿› layout
+   - æ³¨å†Œå¯èšç„¦æŽ§ä»¶
+6. æœ€åŽ `add_object(_screen)`
 
-### 9.2 新增一个基础控件
+### 9.2 æ–°å¢žä¸€ä¸ªåŸºç¡€æŽ§ä»¶
 
-如果它是可交互控件：
+å¦‚æžœå®ƒæ˜¯å¯äº¤äº’æŽ§ä»¶ï¼š
 
-1. 继承 `UiControl`
-2. 实现 `handle_focused_input_event`
-3. 在 `on_render / on_update` 入口调用 `refresh_theme_if_needed()`
-4. 实现 `apply_theme(const UiTheme&)`
+1. ç»§æ‰¿ `UiControl`
+2. å®žçŽ° `handle_focused_input_event`
+3. åœ¨ `on_render / on_update` å…¥å£è°ƒç”¨ `refresh_theme_if_needed()`
+4. å®žçŽ° `apply_theme(const UiTheme&)`
 
-如果它只是展示控件：
+å¦‚æžœå®ƒåªæ˜¯å±•ç¤ºæŽ§ä»¶ï¼š
 
-1. 继承 `UiElement`
-2. 在生命周期入口调用 `refresh_theme_if_needed()`
-3. 实现 `apply_theme(const UiTheme&)`
+1. ç»§æ‰¿ `UiElement`
+2. åœ¨ç”Ÿå‘½å‘¨æœŸå…¥å£è°ƒç”¨ `refresh_theme_if_needed()`
+3. å®žçŽ° `apply_theme(const UiTheme&)`
 
-### 9.3 新增一个复合控件
+### 9.3 æ–°å¢žä¸€ä¸ªå¤åˆæŽ§ä»¶
 
-推荐做法：
+æŽ¨èåšæ³•ï¼š
 
-1. 先选一个合适容器基类
+1. å…ˆé€‰ä¸€ä¸ªåˆé€‚å®¹å™¨åŸºç±»
    - `UiPanel`
    - `UiScrollPanel`
    - `UiScreen`
-2. 再决定它是否还需要实现 `UiFocusable`
-3. 内部组合叶子控件，而不是堆多继承
-4. 需要主题统一时，在复合控件里覆写 `apply_theme`
+2. å†å†³å®šå®ƒæ˜¯å¦è¿˜éœ€è¦å®žçŽ° `UiFocusable`
+3. å†…éƒ¨ç»„åˆå¶å­æŽ§ä»¶ï¼Œè€Œä¸æ˜¯å †å¤šç»§æ‰¿
+4. éœ€è¦ä¸»é¢˜ç»Ÿä¸€æ—¶ï¼Œåœ¨å¤åˆæŽ§ä»¶é‡Œè¦†å†™ `apply_theme`
 
-### 9.4 做主题切换
+### 9.4 åšä¸»é¢˜åˆ‡æ¢
 
-最直接的方式：
+æœ€ç›´æŽ¥çš„æ–¹å¼ï¼š
 
 ```cpp
 UiTheme theme = make_loading_blue_theme();
@@ -418,39 +418,39 @@ theme._primary_button._idle_color = SDL_Color{ 34, 84, 120, 255 };
 UiThemeManager::instance().set_theme(theme);
 ```
 
-如果某个控件不想跟着全局主题走：
+å¦‚æžœæŸä¸ªæŽ§ä»¶ä¸æƒ³è·Ÿç€å…¨å±€ä¸»é¢˜èµ°ï¼š
 
 ```cpp
 element->set_use_theme(false);
 ```
 
-然后再手动调用 `UiStyle::apply_*()` 或自己的 setter 即可。
+ç„¶åŽå†æ‰‹åŠ¨è°ƒç”¨ `UiStyle::apply_*()` æˆ–è‡ªå·±çš„ setter å³å¯ã€‚
 
-## 10. 当前命名约定
+## 10. å½“å‰å‘½åçº¦å®š
 
-这轮重构之后，推荐把 UI 类型统一看成这几档：
+è¿™è½®é‡æž„ä¹‹åŽï¼ŒæŽ¨èæŠŠ UI ç±»åž‹ç»Ÿä¸€çœ‹æˆè¿™å‡ æ¡£ï¼š
 
-- 页面与容器：`UiScreen / UiPanel / UiScrollPanel / UiGridLayout / UiLayout`
-- 展示控件：`UiLabel / UiImageView / UiProgressBar`
-- 交互控件：`UiButton / UiTextButton / UiSlider / UiToggle / UiTextInput`
-- 复合控件：`UiMenuList / UiOptionList / UiDialog`
+- é¡µé¢ä¸Žå®¹å™¨ï¼š`UiScreen / UiPanel / UiScrollPanel / UiGridLayout / UiLayout`
+- å±•ç¤ºæŽ§ä»¶ï¼š`UiLabel / UiImageView / UiProgressBar`
+- äº¤äº’æŽ§ä»¶ï¼š`UiButton / UiTextButton / UiSlider / UiToggle / UiTextInput`
+- å¤åˆæŽ§ä»¶ï¼š`UiMenuList / UiOptionList / UiDialog`
 
-`UiBar` 现在也纳入统一 UI 命名，但职责仍然保持为纯数值条渲染逻辑对象，不直接挂场景。
+`UiBar` çŽ°åœ¨ä¹Ÿçº³å…¥ç»Ÿä¸€ UI å‘½åï¼Œä½†èŒè´£ä»ç„¶ä¿æŒä¸ºçº¯æ•°å€¼æ¡æ¸²æŸ“é€»è¾‘å¯¹è±¡ï¼Œä¸ç›´æŽ¥æŒ‚åœºæ™¯ã€‚
 
-## 11. 当前还没完全解决的点
+## 11. å½“å‰è¿˜æ²¡å®Œå…¨è§£å†³çš„ç‚¹
 
-虽然基础层已经比较完整，但还没到完全不用再补的程度。
+è™½ç„¶åŸºç¡€å±‚å·²ç»æ¯”è¾ƒå®Œæ•´ï¼Œä½†è¿˜æ²¡åˆ°å®Œå…¨ä¸ç”¨å†è¡¥çš„ç¨‹åº¦ã€‚
 
-后续仍然值得继续补的方向有：
+åŽç»­ä»ç„¶å€¼å¾—ç»§ç»­è¡¥çš„æ–¹å‘æœ‰ï¼š
 
-- 更复杂的空间导航
-- 更完整的 modal/focus scope
-- 更成熟的 theme 配置来源
-- 下拉框、tab、tooltip 等高级控件
-- 更复杂的 HUD 专用页面组合
+- æ›´å¤æ‚çš„ç©ºé—´å¯¼èˆª
+- æ›´å®Œæ•´çš„ modal/focus scope
+- æ›´æˆç†Ÿçš„ theme é…ç½®æ¥æº
+- ä¸‹æ‹‰æ¡†ã€tabã€tooltip ç­‰é«˜çº§æŽ§ä»¶
+- æ›´å¤æ‚çš„ HUD ä¸“ç”¨é¡µé¢ç»„åˆ
 
-## 12. 一句话总结
+## 12. ä¸€å¥è¯æ€»ç»“
 
-当前 UI 系统的核心工作流可以概括成：
+å½“å‰ UI ç³»ç»Ÿçš„æ ¸å¿ƒå·¥ä½œæµå¯ä»¥æ¦‚æ‹¬æˆï¼š
 
-`Scene` 负责页面组织，`UiScreen` 负责焦点和页面行为，`UiElement / UiControl` 负责共享 UI 基础能力，叶子控件负责具体表现，`UiThemeManager` 负责统一视觉风格。
+`Scene` è´Ÿè´£é¡µé¢ç»„ç»‡ï¼Œ`UiScreen` è´Ÿè´£ç„¦ç‚¹å’Œé¡µé¢è¡Œä¸ºï¼Œ`UiElement / UiControl` è´Ÿè´£å…±äº« UI åŸºç¡€èƒ½åŠ›ï¼Œå¶å­æŽ§ä»¶è´Ÿè´£å…·ä½“è¡¨çŽ°ï¼Œ`UiThemeManager` è´Ÿè´£ç»Ÿä¸€è§†è§‰é£Žæ ¼ã€‚

@@ -34,8 +34,8 @@ void StartupLoadingScene::on_enter(const elysia::scene::ScenePayload& payload)
 		on_intro_sequence_finished();
 	});
 
-	_akil_icon->configure_playback(elysia::ui::UiFadeImageMode::FadeInOut, 1, 1, 1);
-	_engine_icon->configure_playback(elysia::ui::UiFadeImageMode::FadeInOut, 1, 1, 1);
+	_akil_icon->configure_playback(elysia::ui::effects::UiOpacityFadeMode::FadeInOut, 1, 1, 1);
+	_engine_icon->configure_playback(elysia::ui::effects::UiOpacityFadeMode::FadeInOut, 1, 1, 1);
 
 	//loading bar
 	_loading_bar = elysia::scene::Scene::create_and_add_object<elysia::ui::UiBar>(elysia::core::Rect{ 20, 695, 1240, 5 });
@@ -52,7 +52,7 @@ void StartupLoadingScene::on_enter(const elysia::scene::ScenePayload& payload)
 		elysia::ui::from_center
 	);
 	_start_text->configure_playback(
-		elysia::ui::UiBlinkImageMode::VisibleFirst,
+		elysia::ui::effects::UiOpacityBlinkMode::VisibleFirst,
 		0.0,
 		0.45,
 		0.45,

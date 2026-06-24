@@ -3,7 +3,7 @@
 #include "../ui_bar.h"
 #include "../widgets/ui_button.h"
 #include "../containers/ui_panel.h"
-#include "../widgets/ui_label.h"
+#include "../widgets/label/ui_label.h"
 #include "../widgets/ui_text_input.h"
 #include "../widgets/ui_slider.h"
 #include "../widgets/ui_scroll_bar.h"

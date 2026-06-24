@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../core/render/colors.h"
-#include "../core/ui_element.h"
+#include "../../../core/render/colors.h"
+#include "../../core/ui_element.h"
 
 #include <string>
 
@@ -26,11 +26,7 @@ enum class TextVerticalAlign
 class UiLabel : public UiElement
 {
 public:
-    explicit UiLabel(
-        const elysia::core::Rect& rect = elysia::core::Rect::zero(),
-        int order = 0,
-        std::string text_key = {}
-    ) noexcept;
+    explicit UiLabel(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0,std::string text_key = {}) noexcept;
     UiLabel(
         const elysia::core::Vector2& position,
         const elysia::core::Vector2& size,
@@ -87,5 +83,4 @@ private:
     int _padding = 0;
     bool _draw_background = false;
 };
-
 }

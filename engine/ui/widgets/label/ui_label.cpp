@@ -1,8 +1,8 @@
 #include "ui_label.h"
 
-#include "../../core/render/render_command.h"
-#include "../../localization/localization_manager.h"
-#include "../../localization/localized_text_style.h"
+#include "../../../core/render/render_command.h"
+#include "../../../localization/localization_manager.h"
+#include "../../../localization/localized_text_style.h"
 
 #include <SDL.h>
 
@@ -11,8 +11,8 @@
 
 namespace elysia::ui
 {
-UiLabel::UiLabel(const elysia::core::Rect& rect, int order, std::string text_key) noexcept
-    : UiElement(rect, order),
+UiLabel::UiLabel(const elysia::core::Rect& rect,int order,std::string text_key) noexcept
+    : UiElement(rect,order),
       _text_key(std::move(text_key))
 {
     set_use_theme(false);
@@ -23,9 +23,8 @@ UiLabel::UiLabel(
     const elysia::core::Vector2& size,
     int order,
     std::string text_key
-) noexcept
-    : UiElement(position, size, order),
-      _text_key(std::move(text_key))
+) noexcept : UiElement(position,size,order),
+             _text_key(std::move(text_key))
 {
     set_use_theme(false);
 }
@@ -36,9 +35,8 @@ UiLabel::UiLabel(
     UiFromCenterTag,
     int order,
     std::string text_key
-) noexcept
-    : UiElement(center, size, from_center, order),
-      _text_key(std::move(text_key))
+) noexcept : UiElement(center,size,from_center,order),
+             _text_key(std::move(text_key))
 {
     set_use_theme(false);
 }
@@ -47,7 +45,6 @@ void UiLabel::reset() noexcept
 {
     UiElement::reset();
     set_use_theme(false);
-
     _text_key.clear();
     _text_color = elysia::core::colors::white;
     _background_color = elysia::core::colors::transparent;
@@ -61,52 +58,36 @@ void UiLabel::reset() noexcept
 void UiLabel::submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const
 {
     if (!is_visible())
-    {
         return;
-    }
 
     const elysia::core::Rect& label_rect = screen_rect();
     if (label_rect.is_empty())
-    {
         return;
-    }
 
     if (_draw_background)
-    {
-        out_commands.push_back(
-            elysia::core::make_ui_fill_rect_command(label_rect, apply_opacity(_background_color))
-        );
-    }
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(label_rect,apply_opacity(_background_color)));
 
     if (_text_key.empty())
-    {
         return;
-    }
 
     elysia::localization::LocalizationManager* localization_manager = elysia::localization::LocalizationManager::instance();
     if (!localization_manager)
-    {
         return;
-    }
 
     elysia::localization::LocalizedTextStyle text_style;
     text_style.point_size = _text_point_size;
     text_style.color = _text_color;
-    text_style.wrap_width = std::max(0, static_cast<int>(content_rect().width()));
+    text_style.wrap_width = std::max(0,static_cast<int>(content_rect().width()));
 
-    SDL_Texture* text_texture = localization_manager->get_text_texture(_text_key, text_style);
+    SDL_Texture* text_texture = localization_manager->get_text_texture(_text_key,text_style);
     if (!text_texture)
-    {
         return;
-    }
 
     const elysia::core::Rect text_rect = text_render_rect(text_texture);
     if (text_rect.is_empty())
-    {
         return;
-    }
 
-    elysia::core::UiRenderCommand command = elysia::core::make_ui_texture_command(text_texture, text_rect);
+    elysia::core::UiRenderCommand command = elysia::core::make_ui_texture_command(text_texture,text_rect);
     apply_opacity(command);
     out_commands.push_back(command);
 }
@@ -173,7 +154,7 @@ TextVerticalAlign UiLabel::vertical_align() const noexcept
 
 void UiLabel::set_text_point_size(int point_size)
 {
-    _text_point_size = std::max(0, point_size);
+    _text_point_size = std::max(0,point_size);
 }
 
 int UiLabel::text_point_size() const noexcept
@@ -183,7 +164,7 @@ int UiLabel::text_point_size() const noexcept
 
 void UiLabel::set_padding(int padding)
 {
-    _padding = std::max(0, padding);
+    _padding = std::max(0,padding);
 }
 
 int UiLabel::padding() const noexcept
@@ -194,12 +175,11 @@ int UiLabel::padding() const noexcept
 elysia::core::Rect UiLabel::content_rect() const noexcept
 {
     const elysia::core::Rect& label_rect = screen_rect();
-    const float width = std::max(0.0f, label_rect.width());
-    const float height = std::max(0.0f, label_rect.height());
-
+    const float width = std::max(0.0f,label_rect.width());
+    const float height = std::max(0.0f,label_rect.height());
     const float padding = static_cast<float>(_padding);
-    const float pad_x = std::min(padding, width * 0.5f);
-    const float pad_y = std::min(padding, height * 0.5f);
+    const float pad_x = std::min(padding,width * 0.5f);
+    const float pad_y = std::min(padding,height * 0.5f);
 
     elysia::core::Rect content = label_rect;
     content.set_x(label_rect.x() + pad_x);
@@ -212,34 +192,24 @@ elysia::core::Rect UiLabel::content_rect() const noexcept
 elysia::core::Rect UiLabel::text_render_rect(SDL_Texture* text_texture) const noexcept
 {
     if (!text_texture)
-    {
         return elysia::core::Rect::zero();
-    }
 
     int texture_width = 0;
     int texture_height = 0;
-    if (SDL_QueryTexture(text_texture, nullptr, nullptr, &texture_width, &texture_height) != 0)
-    {
+    if (SDL_QueryTexture(text_texture,nullptr,nullptr,&texture_width,&texture_height) != 0)
         return elysia::core::Rect::zero();
-    }
-
     if (texture_width <= 0 || texture_height <= 0)
-    {
         return elysia::core::Rect::zero();
-    }
 
     const elysia::core::Rect available_rect = content_rect();
     if (available_rect.is_empty())
-    {
         return elysia::core::Rect::zero();
-    }
 
     const float available_width = available_rect.width();
     const float available_height = available_rect.height();
     const float width_scale = available_width / static_cast<float>(texture_width);
     const float height_scale = available_height / static_cast<float>(texture_height);
-    const float scale = std::min(1.0f, std::min(width_scale, height_scale));
-
+    const float scale = std::min(1.0f,std::min(width_scale,height_scale));
     const elysia::core::Vector2 render_size(
         static_cast<float>(texture_width) * scale,
         static_cast<float>(texture_height) * scale
@@ -275,7 +245,6 @@ elysia::core::Rect UiLabel::text_render_rect(SDL_Texture* text_texture) const no
         break;
     }
 
-    return elysia::core::Rect(x, y, render_size.x, render_size.y);
+    return elysia::core::Rect(x,y,render_size.x,render_size.y);
 }
-
 }

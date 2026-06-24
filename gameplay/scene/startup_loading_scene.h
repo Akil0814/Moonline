@@ -2,9 +2,9 @@
 
 #include "../../application/scene/application_scene.h"
 #include "../../engine/loading/game_content_loader.h"
-#include "../../engine/ui/widgets/ui_fade_image.h"
+#include "../../engine/ui/widgets/image/ui_fade_image.h"
 #include "../../engine/ui/widgets/ui_bar.h"
-#include "../../engine/ui/widgets/ui_blink_image.h"
+#include "../../engine/ui/widgets/image/ui_blink_image.h"
 
 namespace arcneco::scene
 {
@@ -49,5 +49,3 @@ private:
 	bool _has_logged_load_failure = false;
 };
 }
-
-
