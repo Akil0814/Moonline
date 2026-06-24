@@ -11,14 +11,8 @@ UiFadeImage::UiFadeImage(SDL_Texture* texture,elysia::core::Rect rect,int order)
 UiFadeImage::UiFadeImage(SDL_Texture* texture,elysia::core::Vector2 center,elysia::core::Vector2 image_size,UiFromCenterTag,int order)
     : UiImage(texture,center,image_size,from_center,order) {}
 
-UiFadeImage::UiFadeImage(
-    SDL_Texture* texture,
-    elysia::core::Vector2 center,
-    elysia::core::Vector2 source_size,
-    elysia::core::Vector2 render_size,
-    UiFromCenterTag,
-    int order
-) : UiImage(texture,center,source_size,render_size,from_center,order) {}
+UiFadeImage::UiFadeImage(SDL_Texture* texture,elysia::core::Vector2 center,elysia::core::Vector2 source_size,elysia::core::Vector2 render_size,
+    UiFromCenterTag,int order ) : UiImage(texture,center,source_size,render_size,from_center,order) {}
 
 void UiFadeImage::reset() noexcept
 {
@@ -64,4 +58,5 @@ void UiFadeImage::notify_finished()
         _on_end();
     destroy();
 }
+
 }

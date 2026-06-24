@@ -11,17 +11,18 @@ namespace elysia::ui
 class UiImage : public UiElement
 {
 public:
-    UiImage(SDL_Texture* texture,elysia::core::Vector2 pos,elysia::core::Vector2 size,int order = 0);
-    UiImage(SDL_Texture* texture,elysia::core::Rect rect,int order = 0);
-    UiImage(SDL_Texture* texture,elysia::core::Vector2 center,elysia::core::Vector2 image_size,UiFromCenterTag,int order = 0);
-    UiImage(
-        SDL_Texture* texture,
-        elysia::core::Vector2 center,
-        elysia::core::Vector2 source_size,
-        elysia::core::Vector2 render_size,
-        UiFromCenterTag,
-        int order = 0
-    );
+    UiImage(SDL_Texture* texture,
+        elysia::core::Vector2 pos,elysia::core::Vector2 size,int order = 0);
+
+    UiImage(SDL_Texture* texture,
+        elysia::core::Rect rect,int order = 0);
+
+    UiImage(SDL_Texture* texture,
+        elysia::core::Vector2 center,elysia::core::Vector2 image_size,UiFromCenterTag,int order = 0);
+
+    UiImage(SDL_Texture* texture,
+        elysia::core::Vector2 center,elysia::core::Vector2 source_size,elysia::core::Vector2 render_size,
+        UiFromCenterTag,int order = 0);
 
     void set_texture(SDL_Texture* texture);
     [[nodiscard]] SDL_Texture* texture() const;

@@ -77,15 +77,6 @@ inline constexpr Color midnight_blue{ 12, 34, 78, 255 };    // #0C224E
 inline constexpr Color slate_blue{ 18, 28, 42, 224 };       // #121C2AE0
 inline constexpr Color abyss_blue{ 8, 16, 28, 255 };        // #08101C
 
-inline constexpr Color ui_text_default = alice_blue;        // #F0F8FF
-inline constexpr Color ui_text_title = frosted_white;       // #F8FCFF
-inline constexpr Color ui_text_subtitle = powder_blue;      // #ACCCE8
-inline constexpr Color ui_text_muted = steel_blue;          // #8CA6C2
-
-inline constexpr Color ui_state_success = green_500;        // #4CAF50
-inline constexpr Color ui_state_warning = orange_500;       // #FF9800
-inline constexpr Color ui_state_danger = red_500;           // #F44336
-inline constexpr Color ui_state_info = blue_500;            // #2196F3
 }
 
 }

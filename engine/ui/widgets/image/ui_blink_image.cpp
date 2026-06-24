@@ -11,14 +11,8 @@ UiBlinkImage::UiBlinkImage(SDL_Texture* texture,elysia::core::Rect rect,int orde
 UiBlinkImage::UiBlinkImage(SDL_Texture* texture,elysia::core::Vector2 center,elysia::core::Vector2 image_size,UiFromCenterTag,int order)
     : UiImage(texture,center,image_size,from_center,order) {}
 
-UiBlinkImage::UiBlinkImage(
-    SDL_Texture* texture,
-    elysia::core::Vector2 center,
-    elysia::core::Vector2 source_size,
-    elysia::core::Vector2 render_size,
-    UiFromCenterTag,
-    int order
-) : UiImage(texture,center,source_size,render_size,from_center,order) {}
+UiBlinkImage::UiBlinkImage(SDL_Texture* texture,elysia::core::Vector2 center,elysia::core::Vector2 source_size,elysia::core::Vector2 render_size,
+    UiFromCenterTag,int order ) : UiImage(texture,center,source_size,render_size,from_center,order) {}
 
 void UiBlinkImage::reset() noexcept
 {
@@ -28,13 +22,8 @@ void UiBlinkImage::reset() noexcept
     set_opacity(_blink.opacity());
 }
 
-void UiBlinkImage::configure_playback(
-    effects::UiOpacityBlinkMode mode,
-    double hold_time,
-    double visible_duration,
-    double hidden_duration,
-    int blink_cycles
-)
+void UiBlinkImage::configure_playback( effects::UiOpacityBlinkMode mode,double hold_time,
+    double visible_duration,double hidden_duration,int blink_cycles)
 {
     _blink.configure_playback(mode,hold_time,visible_duration,hidden_duration,blink_cycles);
 }

@@ -18,14 +18,8 @@ public:
     UiFadeImage(SDL_Texture* texture,elysia::core::Vector2 pos,elysia::core::Vector2 size,int order = 0);
     UiFadeImage(SDL_Texture* texture,elysia::core::Rect rect,int order = 0);
     UiFadeImage(SDL_Texture* texture,elysia::core::Vector2 center,elysia::core::Vector2 image_size,UiFromCenterTag,int order = 0);
-    UiFadeImage(
-        SDL_Texture* texture,
-        elysia::core::Vector2 center,
-        elysia::core::Vector2 source_size,
-        elysia::core::Vector2 render_size,
-        UiFromCenterTag,
-        int order = 0
-    );
+    UiFadeImage(SDL_Texture* texture, elysia::core::Vector2 center, elysia::core::Vector2 source_size, elysia::core::Vector2 render_size,
+        UiFromCenterTag, int order = 0);
 
     void reset() noexcept override;
     void configure_playback(effects::UiOpacityFadeMode mode,double hold_time,double fade_in_duration,double fade_out_duration);

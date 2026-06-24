@@ -25,7 +25,7 @@ void UiBar::reset() noexcept
     _value = 0.0f;
     _background_color = elysia::core::colors::deep_cobalt_blue;
     _fill_color = elysia::core::colors::glacial_white;
-    _border_color = elysia::core::colors::black;
+    _border_color = elysia::core::colors::abyss_blue;
     _fill_direction = BarFillDirection::LeftToRight;
     _draw_border = false;
     _padding = 0;
@@ -73,9 +73,7 @@ float UiBar::ratio() const
 {
     const float range = _max_value - _min_value;
     if (range <= 0.0f)
-    {
         return 0.0f;
-    }
 
     return (_value - _min_value) / range;
 }
@@ -143,28 +141,20 @@ int UiBar::padding() const
 void UiBar::submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const
 {
     if (!is_visible())
-    {
         return;
-    }
 
     const elysia::core::Rect& bar_rect = screen_rect();
     if (bar_rect.is_empty())
-    {
         return;
-    }
 
     out_commands.push_back(elysia::core::make_ui_fill_rect_command(bar_rect, apply_opacity(_background_color)));
 
     const elysia::core::Rect fill = fill_rect(bar_rect);
     if (!fill.is_empty())
-    {
         out_commands.push_back(elysia::core::make_ui_fill_rect_command(fill, apply_opacity(_fill_color)));
-    }
 
     if (_draw_border)
-    {
         out_commands.push_back(elysia::core::make_ui_draw_rect_command(bar_rect, apply_opacity(_border_color)));
-    }
 }
 
 elysia::core::Rect UiBar::content_rect(const elysia::core::Rect& rect) const

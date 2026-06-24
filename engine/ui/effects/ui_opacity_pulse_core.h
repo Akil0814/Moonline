@@ -32,15 +32,9 @@ public:
         _just_finished = false;
     }
 
-    void configure_playback(
-        UiOpacityPulseMode mode,
-        double hold_time,
-        double pulse_in_duration,
-        double pulse_out_duration,
-        int pulse_cycles = -1,
-        std::uint8_t min_opacity = 96,
-        std::uint8_t max_opacity = 255
-    ) noexcept
+    void configure_playback(UiOpacityPulseMode mode,
+        double hold_time,double pulse_in_duration,double pulse_out_duration,
+        int pulse_cycles = -1,std::uint8_t min_opacity = 96,std::uint8_t max_opacity = 255) noexcept
     {
         _mode = mode;
         _hold_time = hold_time > 0.0 ? hold_time : 0.0;

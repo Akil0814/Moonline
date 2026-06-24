@@ -60,8 +60,10 @@ public:
     {
         if (_state == State::Idle || _state == State::Finished)
             return false;
+
         _just_finished = false;
         const double delta = delta_seconds > 0.0 ? delta_seconds : 0.0;
+
         switch (_state)
         {
         case State::FadingIn:

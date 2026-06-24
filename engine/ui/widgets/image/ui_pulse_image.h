@@ -19,25 +19,13 @@ public:
     UiPulseImage(SDL_Texture* texture,elysia::core::Vector2 pos,elysia::core::Vector2 size,int order = 0);
     UiPulseImage(SDL_Texture* texture,elysia::core::Rect rect,int order = 0);
     UiPulseImage(SDL_Texture* texture,elysia::core::Vector2 center,elysia::core::Vector2 image_size,UiFromCenterTag,int order = 0);
-    UiPulseImage(
-        SDL_Texture* texture,
-        elysia::core::Vector2 center,
-        elysia::core::Vector2 source_size,
-        elysia::core::Vector2 render_size,
-        UiFromCenterTag,
-        int order = 0
-    );
+    UiPulseImage(SDL_Texture* texture,elysia::core::Vector2 center,elysia::core::Vector2 source_size, elysia::core::Vector2 render_size,
+        UiFromCenterTag,int order = 0);
 
     void reset() noexcept override;
-    void configure_playback(
-        effects::UiOpacityPulseMode mode,
-        double hold_time,
-        double pulse_in_duration,
-        double pulse_out_duration,
-        int pulse_cycles = -1,
-        std::uint8_t min_alpha = 96,
-        std::uint8_t max_alpha = 255
-    );
+    void configure_playback(effects::UiOpacityPulseMode mode,
+        double hold_time,double pulse_in_duration,double pulse_out_duration,
+        int pulse_cycles = -1,std::uint8_t min_alpha = 96,std::uint8_t max_alpha = 255);
     void play();
     void update(double delta) override;
     void set_on_end(PulseImageOnEnd on_end);

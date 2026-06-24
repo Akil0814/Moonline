@@ -11,14 +11,8 @@ UiPulseImage::UiPulseImage(SDL_Texture* texture,elysia::core::Rect rect,int orde
 UiPulseImage::UiPulseImage(SDL_Texture* texture,elysia::core::Vector2 center,elysia::core::Vector2 image_size,UiFromCenterTag,int order)
     : UiImage(texture,center,image_size,from_center,order) {}
 
-UiPulseImage::UiPulseImage(
-    SDL_Texture* texture,
-    elysia::core::Vector2 center,
-    elysia::core::Vector2 source_size,
-    elysia::core::Vector2 render_size,
-    UiFromCenterTag,
-    int order
-) : UiImage(texture,center,source_size,render_size,from_center,order) {}
+UiPulseImage::UiPulseImage(SDL_Texture* texture,elysia::core::Vector2 center,elysia::core::Vector2 source_size,elysia::core::Vector2 render_size,
+    UiFromCenterTag,int order ) : UiImage(texture,center,source_size,render_size,from_center,order) {}
 
 void UiPulseImage::reset() noexcept
 {
@@ -28,15 +22,9 @@ void UiPulseImage::reset() noexcept
     set_opacity(_pulse.opacity());
 }
 
-void UiPulseImage::configure_playback(
-    effects::UiOpacityPulseMode mode,
-    double hold_time,
-    double pulse_in_duration,
-    double pulse_out_duration,
-    int pulse_cycles,
-    std::uint8_t min_alpha,
-    std::uint8_t max_alpha
-)
+void UiPulseImage::configure_playback(effects::UiOpacityPulseMode mode,
+    double hold_time,double pulse_in_duration,double pulse_out_duration,
+    int pulse_cycles,std::uint8_t min_alpha, std::uint8_t max_alpha)
 {
     _pulse.configure_playback(mode,hold_time,pulse_in_duration,pulse_out_duration,pulse_cycles,min_alpha,max_alpha);
 }

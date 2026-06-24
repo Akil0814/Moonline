@@ -32,13 +32,8 @@ public:
         _current_visible = true;
     }
 
-    void configure_playback(
-        UiOpacityBlinkMode mode,
-        double hold_time,
-        double visible_duration,
-        double hidden_duration,
-        int blink_cycles = -1
-    ) noexcept
+    void configure_playback( UiOpacityBlinkMode mode,double hold_time,
+        double visible_duration, double hidden_duration,int blink_cycles = -1) noexcept
     {
         _mode = mode;
         _hold_time = hold_time > 0.0 ? hold_time : 0.0;
@@ -77,6 +72,7 @@ public:
     {
         if (!_is_playing)
             return false;
+
         _just_finished = false;
         double remaining = delta_seconds > 0.0 ? delta_seconds : 0.0;
 
