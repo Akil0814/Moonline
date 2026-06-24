@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <functional>
 
 #include "ui_label.h"
@@ -34,7 +35,7 @@ public:
         double hold_time,
         double visible_duration,
         double hidden_duration,
-        int blink_cycles = -1
+        std::optional<int> blink_cycles = std::nullopt
     );
     void play() noexcept;
     void update(double delta) override;

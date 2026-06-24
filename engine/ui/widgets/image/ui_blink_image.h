@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <functional>
 
 #include "ui_image.h"
@@ -23,7 +24,7 @@ public:
 
     void reset() noexcept override;
     void configure_playback(effects::UiOpacityBlinkMode mode,double hold_time,
-        double visible_duration,double hidden_duration,int blink_cycles = -1);
+        double visible_duration,double hidden_duration,std::optional<int> blink_cycles = std::nullopt);
     void play();
     void update(double delta) override;
     void set_on_end(BlinkImageOnEnd on_end);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <cstdint>
 
 namespace elysia::ui::effects
@@ -22,7 +23,7 @@ public:
         _hold_time = 0.0;
         _visible_duration = 0.15;
         _hidden_duration = 0.15;
-        _blink_cycles = -1;
+        _blink_cycles = std::nullopt;
         _completed_cycles = 0;
         _phase_remaining = 0.0;
         _is_playing = false;
@@ -33,7 +34,7 @@ public:
     }
 
     void configure_playback( UiOpacityBlinkMode mode,double hold_time,
-        double visible_duration, double hidden_duration,int blink_cycles = -1) noexcept
+        double visible_duration, double hidden_duration,std::optional<int> blink_cycles = std::nullopt) noexcept
     {
         _mode = mode;
         _hold_time = hold_time > 0.0 ? hold_time : 0.0;
@@ -52,7 +53,7 @@ public:
         _current_visible = start_visible();
         apply_current_phase();
 
-        if (_blink_cycles == 0)
+        if (_blink_cycles && *_blink_cycles == 0)
         {
             finish();
             return;
@@ -162,10 +163,10 @@ private:
         _current_visible = next_visible;
         apply_current_phase();
 
-        if (returning_to_start && _blink_cycles >= 0)
+        if (returning_to_start && _blink_cycles.has_value())
         {
             ++_completed_cycles;
-            if (_completed_cycles >= _blink_cycles)
+            if (_completed_cycles >= *_blink_cycles)
             {
                 finish();
                 return;
@@ -190,7 +191,7 @@ private:
     double _hold_time = 0.0;
     double _visible_duration = 0.15;
     double _hidden_duration = 0.15;
-    int _blink_cycles = -1;
+    std::optional<int> _blink_cycles = std::nullopt;
     int _completed_cycles = 0;
     double _phase_remaining = 0.0;
     bool _is_playing = false;

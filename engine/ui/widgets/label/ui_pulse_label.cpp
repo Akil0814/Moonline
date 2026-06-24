@@ -35,7 +35,7 @@ void UiPulseLabel::configure_playback(
     double hold_time,
     double pulse_in_duration,
     double pulse_out_duration,
-    int pulse_cycles,
+    std::optional<int> pulse_cycles,
     std::uint8_t min_alpha,
     std::uint8_t max_alpha
 )

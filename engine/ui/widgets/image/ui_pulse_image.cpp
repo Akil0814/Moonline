@@ -24,7 +24,7 @@ void UiPulseImage::reset() noexcept
 
 void UiPulseImage::configure_playback(effects::UiOpacityPulseMode mode,
     double hold_time,double pulse_in_duration,double pulse_out_duration,
-    int pulse_cycles,std::uint8_t min_alpha, std::uint8_t max_alpha)
+    std::optional<int> pulse_cycles,std::uint8_t min_alpha, std::uint8_t max_alpha)
 {
     _pulse.configure_playback(mode,hold_time,pulse_in_duration,pulse_out_duration,pulse_cycles,min_alpha,max_alpha);
 }

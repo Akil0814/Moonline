@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <cstdint>
 #include <functional>
 
@@ -35,7 +36,7 @@ public:
         double hold_time,
         double pulse_in_duration,
         double pulse_out_duration,
-        int pulse_cycles = -1,
+        std::optional<int> pulse_cycles = std::nullopt,
         std::uint8_t min_alpha = 96,
         std::uint8_t max_alpha = 255
     );

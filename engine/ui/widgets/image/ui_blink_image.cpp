@@ -23,7 +23,7 @@ void UiBlinkImage::reset() noexcept
 }
 
 void UiBlinkImage::configure_playback( effects::UiOpacityBlinkMode mode,double hold_time,
-    double visible_duration,double hidden_duration,int blink_cycles)
+    double visible_duration,double hidden_duration,std::optional<int> blink_cycles)
 {
     _blink.configure_playback(mode,hold_time,visible_duration,hidden_duration,blink_cycles);
 }

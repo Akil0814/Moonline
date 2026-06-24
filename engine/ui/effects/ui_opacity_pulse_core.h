@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include "ui_opacity_common.h"
 
 namespace elysia::ui::effects
@@ -24,7 +25,7 @@ public:
         _hold_time = 0.0;
         _pulse_in_duration = 1.0;
         _pulse_out_duration = 1.0;
-        _pulse_cycles = -1;
+        _pulse_cycles = std::nullopt;
         _completed_cycles = 0;
         _min_opacity = 96;
         _max_opacity = 255;
@@ -34,7 +35,7 @@ public:
 
     void configure_playback(UiOpacityPulseMode mode,
         double hold_time,double pulse_in_duration,double pulse_out_duration,
-        int pulse_cycles = -1,std::uint8_t min_opacity = 96,std::uint8_t max_opacity = 255) noexcept
+        std::optional<int> pulse_cycles = std::nullopt,std::uint8_t min_opacity = 96,std::uint8_t max_opacity = 255) noexcept
     {
         _mode = mode;
         _hold_time = hold_time > 0.0 ? hold_time : 0.0;
@@ -70,7 +71,7 @@ public:
             _opacity = _max_opacity;
             _state = State::PulsingDown;
         }
-        if (_pulse_cycles == 0)
+        if (_pulse_cycles && *_pulse_cycles == 0)
             finish();
     }
 
@@ -185,10 +186,10 @@ private:
     [[nodiscard]] bool complete_cycle_if_needed(bool reached_max) noexcept
     {
         const bool cycle_completed = (started_from_min() && !reached_max) || (!started_from_min() && reached_max);
-        if (!cycle_completed || _pulse_cycles < 0)
+        if (!cycle_completed || !_pulse_cycles.has_value())
             return false;
         ++_completed_cycles;
-        return _completed_cycles >= _pulse_cycles;
+        return _completed_cycles >= *_pulse_cycles;
     }
 
 private:
@@ -199,7 +200,7 @@ private:
     double _hold_time = 0.0;
     double _pulse_in_duration = 1.0;
     double _pulse_out_duration = 1.0;
-    int _pulse_cycles = -1;
+    std::optional<int> _pulse_cycles = std::nullopt;
     int _completed_cycles = 0;
     std::uint8_t _min_opacity = 96;
     std::uint8_t _max_opacity = 255;

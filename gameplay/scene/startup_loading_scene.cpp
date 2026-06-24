@@ -5,6 +5,7 @@
 #include "../../engine/bootstrap/bootstrapper.h"
 
 #include <iostream>
+#include <optional>
 
 namespace arcneco::scene
 {
@@ -56,7 +57,7 @@ void StartupLoadingScene::on_enter(const elysia::scene::ScenePayload& payload)
 		0.0,
 		0.45,
 		0.45,
-		-1
+		std::nullopt
 	);
 
 	_start_text->set_visible(false);
