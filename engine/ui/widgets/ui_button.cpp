@@ -15,10 +15,7 @@
 namespace elysia::ui
 {
 UiButton::UiButton(const elysia::core::Rect& rect,int order) noexcept
-    : UiControl(rect,order)
-{
-    set_use_theme(false);
-}
+    : UiControl(rect,order){}
 
 UiButton::UiButton(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order) noexcept
     : UiButton(elysia::core::Rect(position.x,position.y,size.x,size.y),order) {}

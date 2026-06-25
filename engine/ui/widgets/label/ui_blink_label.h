@@ -15,28 +15,15 @@ public:
     using BlinkLabelOnEnd = std::function<void()>;
 
     explicit UiBlinkLabel(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0,std::string text_key = {}) noexcept;
-    UiBlinkLabel(
-        const elysia::core::Vector2& position,
-        const elysia::core::Vector2& size,
-        int order = 0,
-        std::string text_key = {}
-    ) noexcept;
-    UiBlinkLabel(
-        const elysia::core::Vector2& center,
-        const elysia::core::Vector2& size,
-        UiFromCenterTag,
-        int order = 0,
-        std::string text_key = {}
-    ) noexcept;
+    UiBlinkLabel(const elysia::core::Vector2& position, const elysia::core::Vector2& size,
+        int order = 0, std::string text_key = {}) noexcept;
+    UiBlinkLabel(const elysia::core::Vector2& center,const elysia::core::Vector2& size,
+        UiFromCenterTag,int order = 0, std::string text_key = {}) noexcept;
 
     void reset() noexcept override;
-    void configure_playback(
-        effects::UiOpacityBlinkMode mode,
-        double hold_time,
-        double visible_duration,
-        double hidden_duration,
-        std::optional<int> blink_cycles = std::nullopt
-    );
+    void configure_playback(effects::UiOpacityBlinkMode mode,
+        double hold_time,double visible_duration,double hidden_duration,
+        std::optional<int> blink_cycles = std::nullopt);
     void play() noexcept;
     void update(double delta) override;
     void set_on_end(BlinkLabelOnEnd on_end);

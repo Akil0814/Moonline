@@ -176,6 +176,11 @@ SDL_Texture* LocalizationManager::get_text_texture(
 		});
 }
 
+SDL_Renderer* LocalizationManager::renderer() const noexcept
+{
+	return _renderer;
+}
+
 bool LocalizationManager::set_language(std::string language)
 {
 	if (!_initialized)

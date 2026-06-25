@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "localized_text_style.h"
@@ -30,6 +29,7 @@ public:
 
 	std::string_view tr(std::string_view key) const;
 	SDL_Texture* get_text_texture(std::string_view key, const LocalizedTextStyle& style);
+	[[nodiscard]] SDL_Renderer* renderer() const noexcept;
 
 	bool set_language(std::string language);
 	const std::string& current_language() const;

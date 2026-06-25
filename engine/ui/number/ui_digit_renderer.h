@@ -3,6 +3,7 @@
 #include "../../core/geometry/rect.h"
 #include "../../core/geometry/vector2.h"
 #include "../../core/render/render_command.h"
+#include "../core/ui_text_align.h"
 #include "../../number/digit_cache.h"
 
 #include <optional>
@@ -17,6 +18,7 @@ struct UiDigitRenderRequest
     std::optional<elysia::core::Rect> target_rect;
     std::optional<elysia::core::Vector2> anchor_position;
     elysia::number::DigitAlignment alignment = elysia::number::DigitAlignment::Left;
+    TextVerticalAlign vertical_align = TextVerticalAlign::Center;
     float spacing = 0.0f;
     std::optional<float> fixed_glyph_advance;
     std::optional<float> target_height;

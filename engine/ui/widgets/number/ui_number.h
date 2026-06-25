@@ -1,0 +1,116 @@
+#pragma once
+
+#include "../../../core/render/colors.h"
+#include "../../../number/number_texture_provider.h"
+#include "../../core/ui_element.h"
+#include "../../core/ui_text_align.h"
+
+#include <optional>
+#include <string>
+
+namespace elysia::ui
+{
+enum class UiNumberSuffix
+{
+    None,
+    Percent
+};
+
+class UiNumber : public UiElement
+{
+public:
+    explicit UiNumber(const elysia::core::Rect& rect = elysia::core::Rect::zero(), int order = 0) noexcept;
+
+    UiNumber(
+        const elysia::core::Vector2& position,
+        const elysia::core::Vector2& size,
+        int order = 0
+    ) noexcept;
+
+    UiNumber(
+        const elysia::core::Vector2& center,
+        const elysia::core::Vector2& size,
+        UiFromCenterTag,
+        int order = 0
+    ) noexcept;
+
+    ~UiNumber() override = default;
+
+    void reset() noexcept override;
+    void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
+
+    void set_value(double value);
+    [[nodiscard]] double value() const noexcept;
+
+    void set_text_color(elysia::core::Color color);
+    [[nodiscard]] elysia::core::Color text_color() const noexcept;
+
+    void set_background_color(elysia::core::Color color);
+    [[nodiscard]] elysia::core::Color background_color() const noexcept;
+
+    void set_draw_background(bool draw_background);
+    [[nodiscard]] bool draws_background() const noexcept;
+
+    void set_horizontal_align(TextHorizontalAlign align);
+    [[nodiscard]] TextHorizontalAlign horizontal_align() const noexcept;
+
+    void set_vertical_align(TextVerticalAlign align);
+    [[nodiscard]] TextVerticalAlign vertical_align() const noexcept;
+
+    void set_text_point_size(int point_size);
+    [[nodiscard]] int text_point_size() const noexcept;
+
+    void set_padding(int padding);
+    [[nodiscard]] int padding() const noexcept;
+
+    void set_digit_spacing(float spacing);
+    [[nodiscard]] float digit_spacing() const noexcept;
+
+    void set_fixed_glyph_advance(float advance);
+    [[nodiscard]] std::optional<float> fixed_glyph_advance() const noexcept;
+    void clear_fixed_glyph_advance();
+
+    void set_target_height(float height);
+    [[nodiscard]] std::optional<float> target_height() const noexcept;
+    void clear_target_height();
+
+    void set_decimal_places(int decimal_places);
+    [[nodiscard]] int decimal_places() const noexcept;
+
+    void set_trim_trailing_zeros(bool trim_trailing_zeros);
+    [[nodiscard]] bool trims_trailing_zeros() const noexcept;
+
+    void set_keep_decimal_point(bool keep_decimal_point);
+    [[nodiscard]] bool keeps_decimal_point() const noexcept;
+
+    void set_suffix(UiNumberSuffix suffix);
+    [[nodiscard]] UiNumberSuffix suffix() const noexcept;
+
+private:
+    [[nodiscard]] elysia::core::Rect content_rect() const noexcept;
+    [[nodiscard]] std::string formatted_text() const;
+    [[nodiscard]] static std::string trim_fractional_zeros(
+        std::string text,
+        bool keep_decimal_point
+    );
+    [[nodiscard]] elysia::number::DigitAlignment digit_alignment() const noexcept;
+
+private:
+    mutable elysia::number::NumberTextureProvider _texture_provider;
+    double _value = 0.0;
+    elysia::core::Color _text_color = elysia::core::colors::white;
+    elysia::core::Color _background_color = elysia::core::colors::transparent;
+    TextHorizontalAlign _horizontal_align = TextHorizontalAlign::Left;
+    TextVerticalAlign _vertical_align = TextVerticalAlign::Top;
+    int _text_point_size = 24;
+    int _padding = 0;
+    float _digit_spacing = 0.0f;
+    std::optional<float> _fixed_glyph_advance;
+    std::optional<float> _target_height;
+    int _decimal_places = 0;
+    bool _trim_trailing_zeros = true;
+    bool _keep_decimal_point = false;
+    UiNumberSuffix _suffix = UiNumberSuffix::None;
+    bool _draw_background = false;
+};
+}

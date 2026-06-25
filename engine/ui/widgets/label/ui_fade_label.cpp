@@ -7,20 +7,12 @@ namespace elysia::ui
 UiFadeLabel::UiFadeLabel(const elysia::core::Rect& rect,int order,std::string text_key) noexcept
     : UiLabel(rect,order,std::move(text_key)) {}
 
-UiFadeLabel::UiFadeLabel(
-    const elysia::core::Vector2& position,
-    const elysia::core::Vector2& size,
-    int order,
-    std::string text_key
-) noexcept : UiLabel(position,size,order,std::move(text_key)) {}
+UiFadeLabel::UiFadeLabel(const elysia::core::Vector2& position,const elysia::core::Vector2& size,
+    int order,std::string text_key) noexcept : UiLabel(position,size,order,std::move(text_key)) {}
 
 UiFadeLabel::UiFadeLabel(
-    const elysia::core::Vector2& center,
-    const elysia::core::Vector2& size,
-    UiFromCenterTag,
-    int order,
-    std::string text_key
-) noexcept : UiLabel(center,size,from_center,order,std::move(text_key)) {}
+    const elysia::core::Vector2& center,const elysia::core::Vector2& size,
+    UiFromCenterTag,int order,std::string text_key) noexcept : UiLabel(center,size,from_center,order,std::move(text_key)) {}
 
 void UiFadeLabel::reset() noexcept
 {

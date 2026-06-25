@@ -172,7 +172,35 @@ void UiDigitRenderer::append_render_commands(
         float render_y = baseline_y;
         if (request.target_rect.has_value())
         {
-            render_y = request.target_rect->center().y - glyph.render_height * 0.5f;
+            switch (request.vertical_align)
+            {
+            case TextVerticalAlign::Top:
+                render_y = request.target_rect->y();
+                break;
+            case TextVerticalAlign::Bottom:
+                render_y = request.target_rect->bottom() - glyph.render_height;
+                break;
+            case TextVerticalAlign::Center:
+            default:
+                render_y = request.target_rect->center().y - glyph.render_height * 0.5f;
+                break;
+            }
+        }
+        else if (request.anchor_position.has_value())
+        {
+            switch (request.vertical_align)
+            {
+            case TextVerticalAlign::Top:
+                render_y = request.anchor_position->y;
+                break;
+            case TextVerticalAlign::Bottom:
+                render_y = request.anchor_position->y - glyph.render_height;
+                break;
+            case TextVerticalAlign::Center:
+            default:
+                render_y = request.anchor_position->y - glyph.render_height * 0.5f;
+                break;
+            }
         }
 
         const elysia::core::Rect render_rect(

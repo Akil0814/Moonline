@@ -2,6 +2,7 @@
 
 #include "../../../core/render/colors.h"
 #include "../../core/ui_element.h"
+#include "../../core/ui_text_align.h"
 
 #include <string>
 
@@ -9,37 +10,17 @@ struct SDL_Texture;
 
 namespace elysia::ui
 {
-enum class TextHorizontalAlign
-{
-    Left,
-    Center,
-    Right
-};
-
-enum class TextVerticalAlign
-{
-    Top,
-    Center,
-    Bottom
-};
-
 class UiLabel : public UiElement
 {
 public:
     explicit UiLabel(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0,std::string text_key = {}) noexcept;
-    UiLabel(
-        const elysia::core::Vector2& position,
-        const elysia::core::Vector2& size,
-        int order = 0,
-        std::string text_key = {}
-    ) noexcept;
-    UiLabel(
-        const elysia::core::Vector2& center,
-        const elysia::core::Vector2& size,
-        UiFromCenterTag,
-        int order = 0,
-        std::string text_key = {}
-    ) noexcept;
+
+    UiLabel( const elysia::core::Vector2& position,const elysia::core::Vector2& size,
+        int order = 0,std::string text_key = {}) noexcept;
+
+    UiLabel(const elysia::core::Vector2& center, const elysia::core::Vector2& size,
+        UiFromCenterTag,int order = 0, std::string text_key = {}) noexcept;
+
     ~UiLabel() override = default;
 
     void reset() noexcept override;

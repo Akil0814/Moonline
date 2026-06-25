@@ -7,20 +7,11 @@ namespace elysia::ui
 UiBlinkLabel::UiBlinkLabel(const elysia::core::Rect& rect,int order,std::string text_key) noexcept
     : UiLabel(rect,order,std::move(text_key)) {}
 
-UiBlinkLabel::UiBlinkLabel(
-    const elysia::core::Vector2& position,
-    const elysia::core::Vector2& size,
-    int order,
-    std::string text_key
-) noexcept : UiLabel(position,size,order,std::move(text_key)) {}
+UiBlinkLabel::UiBlinkLabel( const elysia::core::Vector2& position,const elysia::core::Vector2& size,
+    int order,std::string text_key) noexcept : UiLabel(position,size,order,std::move(text_key)) {}
 
-UiBlinkLabel::UiBlinkLabel(
-    const elysia::core::Vector2& center,
-    const elysia::core::Vector2& size,
-    UiFromCenterTag,
-    int order,
-    std::string text_key
-) noexcept : UiLabel(center,size,from_center,order,std::move(text_key)) {}
+UiBlinkLabel::UiBlinkLabel(const elysia::core::Vector2& center,const elysia::core::Vector2& size,
+    UiFromCenterTag,int order,std::string text_key) noexcept : UiLabel(center,size,from_center,order,std::move(text_key)) {}
 
 void UiBlinkLabel::reset() noexcept
 {
@@ -30,13 +21,8 @@ void UiBlinkLabel::reset() noexcept
     set_opacity(_blink.opacity());
 }
 
-void UiBlinkLabel::configure_playback(
-    effects::UiOpacityBlinkMode mode,
-    double hold_time,
-    double visible_duration,
-    double hidden_duration,
-    std::optional<int> blink_cycles
-)
+void UiBlinkLabel::configure_playback(effects::UiOpacityBlinkMode mode,
+    double hold_time,double visible_duration,double hidden_duration,std::optional<int> blink_cycles)
 {
     _blink.configure_playback(mode,hold_time,visible_duration,hidden_duration,blink_cycles);
 }

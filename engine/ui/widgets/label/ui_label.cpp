@@ -12,39 +12,17 @@
 namespace elysia::ui
 {
 UiLabel::UiLabel(const elysia::core::Rect& rect,int order,std::string text_key) noexcept
-    : UiElement(rect,order),
-      _text_key(std::move(text_key))
-{
-    set_use_theme(false);
-}
+    : UiElement(rect,order),_text_key(std::move(text_key)){}
 
-UiLabel::UiLabel(
-    const elysia::core::Vector2& position,
-    const elysia::core::Vector2& size,
-    int order,
-    std::string text_key
-) noexcept : UiElement(position,size,order),
-             _text_key(std::move(text_key))
-{
-    set_use_theme(false);
-}
+UiLabel::UiLabel(const elysia::core::Vector2& position,const elysia::core::Vector2& size,
+    int order,std::string text_key) noexcept : UiElement(position,size,order), _text_key(std::move(text_key)){}
 
-UiLabel::UiLabel(
-    const elysia::core::Vector2& center,
-    const elysia::core::Vector2& size,
-    UiFromCenterTag,
-    int order,
-    std::string text_key
-) noexcept : UiElement(center,size,from_center,order),
-             _text_key(std::move(text_key))
-{
-    set_use_theme(false);
-}
+UiLabel::UiLabel(const elysia::core::Vector2& center,const elysia::core::Vector2& size,
+    UiFromCenterTag,int order,std::string text_key) noexcept : UiElement(center,size,from_center,order),_text_key(std::move(text_key)){}
 
 void UiLabel::reset() noexcept
 {
     UiElement::reset();
-    set_use_theme(false);
     _text_key.clear();
     _text_color = elysia::core::colors::white;
     _background_color = elysia::core::colors::transparent;

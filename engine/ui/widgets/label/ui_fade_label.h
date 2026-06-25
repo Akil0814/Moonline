@@ -14,19 +14,10 @@ public:
     using FadeLabelOnEnd = std::function<void()>;
 
     explicit UiFadeLabel(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0,std::string text_key = {}) noexcept;
-    UiFadeLabel(
-        const elysia::core::Vector2& position,
-        const elysia::core::Vector2& size,
-        int order = 0,
-        std::string text_key = {}
-    ) noexcept;
-    UiFadeLabel(
-        const elysia::core::Vector2& center,
-        const elysia::core::Vector2& size,
-        UiFromCenterTag,
-        int order = 0,
-        std::string text_key = {}
-    ) noexcept;
+    UiFadeLabel(const elysia::core::Vector2& position,const elysia::core::Vector2& size,
+        int order = 0,std::string text_key = {}) noexcept;
+    UiFadeLabel(const elysia::core::Vector2& center, const elysia::core::Vector2& size,
+        UiFromCenterTag, int order = 0, std::string text_key = {}) noexcept;
 
     void reset() noexcept override;
     void configure_playback(effects::UiOpacityFadeMode mode,double hold_time,double fade_in_duration,double fade_out_duration);

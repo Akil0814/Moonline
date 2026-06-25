@@ -7,20 +7,11 @@ namespace elysia::ui
 UiPulseLabel::UiPulseLabel(const elysia::core::Rect& rect,int order,std::string text_key) noexcept
     : UiLabel(rect,order,std::move(text_key)) {}
 
-UiPulseLabel::UiPulseLabel(
-    const elysia::core::Vector2& position,
-    const elysia::core::Vector2& size,
-    int order,
-    std::string text_key
-) noexcept : UiLabel(position,size,order,std::move(text_key)) {}
+UiPulseLabel::UiPulseLabel(const elysia::core::Vector2& position,const elysia::core::Vector2& size,
+    int order,std::string text_key) noexcept : UiLabel(position,size,order,std::move(text_key)) {}
 
-UiPulseLabel::UiPulseLabel(
-    const elysia::core::Vector2& center,
-    const elysia::core::Vector2& size,
-    UiFromCenterTag,
-    int order,
-    std::string text_key
-) noexcept : UiLabel(center,size,from_center,order,std::move(text_key)) {}
+UiPulseLabel::UiPulseLabel(const elysia::core::Vector2& center,const elysia::core::Vector2& size,
+    UiFromCenterTag,int order,std::string text_key) noexcept : UiLabel(center,size,from_center,order,std::move(text_key)) {}
 
 void UiPulseLabel::reset() noexcept
 {
@@ -30,15 +21,9 @@ void UiPulseLabel::reset() noexcept
     set_opacity(_pulse.opacity());
 }
 
-void UiPulseLabel::configure_playback(
-    effects::UiOpacityPulseMode mode,
-    double hold_time,
-    double pulse_in_duration,
-    double pulse_out_duration,
-    std::optional<int> pulse_cycles,
-    std::uint8_t min_alpha,
-    std::uint8_t max_alpha
-)
+void UiPulseLabel::configure_playback(effects::UiOpacityPulseMode mode,
+    double hold_time,double pulse_in_duration,double pulse_out_duration,
+    std::optional<int> pulse_cycles,std::uint8_t min_alpha,std::uint8_t max_alpha)
 {
     _pulse.configure_playback(mode,hold_time,pulse_in_duration,pulse_out_duration,pulse_cycles,min_alpha,max_alpha);
 }
