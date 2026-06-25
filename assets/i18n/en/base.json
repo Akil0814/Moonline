@@ -3,6 +3,13 @@
     "start": "Start",
     "settings": "Settings",
     "exit": "Exit",
-    "about": "About"
+    "about": "About",
+    "ui_demo": "UI Demo",
+    "ui_opacity": "Opacity",
+    "ui_preview": "Opacity Preview",
+    "ui_button": "Demo Button",
+    "ui_blink": "Blink Label",
+    "ui_pulse": "Pulse Label",
+    "ui_hint": "Drag the slider to test shared opacity"
   }
 }
