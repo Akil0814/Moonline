@@ -11,9 +11,24 @@
       "size": 16
     },
     {
+      "key": "ui.latin.18",
+      "file": "fusion-pixel-10px-proportional-latin.ttf",
+      "size": 18
+    },
+    {
+      "key": "ui.latin.22",
+      "file": "fusion-pixel-10px-proportional-latin.ttf",
+      "size": 22
+    },
+    {
       "key": "ui.latin.24",
       "file": "fusion-pixel-10px-proportional-latin.ttf",
       "size": 24
+    },
+    {
+      "key": "ui.latin.26",
+      "file": "fusion-pixel-10px-proportional-latin.ttf",
+      "size": 26
     },
     {
       "key": "ui.zh_hans.12",
@@ -26,9 +41,24 @@
       "size": 16
     },
     {
+      "key": "ui.zh_hans.18",
+      "file": "fusion-pixel-10px-proportional-zh_hans.ttf",
+      "size": 18
+    },
+    {
+      "key": "ui.zh_hans.22",
+      "file": "fusion-pixel-10px-proportional-zh_hans.ttf",
+      "size": 22
+    },
+    {
       "key": "ui.zh_hans.24",
       "file": "fusion-pixel-10px-proportional-zh_hans.ttf",
       "size": 24
+    },
+    {
+      "key": "ui.zh_hans.26",
+      "file": "fusion-pixel-10px-proportional-zh_hans.ttf",
+      "size": 26
     },
     {
       "key": "ui.zh_hant.12",
@@ -41,9 +71,24 @@
       "size": 16
     },
     {
+      "key": "ui.zh_hant.18",
+      "file": "fusion-pixel-10px-proportional-zh_hant.ttf",
+      "size": 18
+    },
+    {
+      "key": "ui.zh_hant.22",
+      "file": "fusion-pixel-10px-proportional-zh_hant.ttf",
+      "size": 22
+    },
+    {
       "key": "ui.zh_hant.24",
       "file": "fusion-pixel-10px-proportional-zh_hant.ttf",
       "size": 24
+    },
+    {
+      "key": "ui.zh_hant.26",
+      "file": "fusion-pixel-10px-proportional-zh_hant.ttf",
+      "size": 26
     },
     {
       "key": "ui.ja.12",
@@ -56,9 +101,24 @@
       "size": 16
     },
     {
+      "key": "ui.ja.18",
+      "file": "fusion-pixel-10px-proportional-ja.ttf",
+      "size": 18
+    },
+    {
+      "key": "ui.ja.22",
+      "file": "fusion-pixel-10px-proportional-ja.ttf",
+      "size": 22
+    },
+    {
       "key": "ui.ja.24",
       "file": "fusion-pixel-10px-proportional-ja.ttf",
       "size": 24
+    },
+    {
+      "key": "ui.ja.26",
+      "file": "fusion-pixel-10px-proportional-ja.ttf",
+      "size": 26
     },
     {
       "key": "ui.ko.12",
@@ -71,9 +131,24 @@
       "size": 16
     },
     {
+      "key": "ui.ko.18",
+      "file": "fusion-pixel-10px-proportional-ko.ttf",
+      "size": 18
+    },
+    {
+      "key": "ui.ko.22",
+      "file": "fusion-pixel-10px-proportional-ko.ttf",
+      "size": 22
+    },
+    {
       "key": "ui.ko.24",
       "file": "fusion-pixel-10px-proportional-ko.ttf",
       "size": 24
+    },
+    {
+      "key": "ui.ko.26",
+      "file": "fusion-pixel-10px-proportional-ko.ttf",
+      "size": 26
     }
   ]
 }
