@@ -187,6 +187,13 @@ void MainMenuScene::rebuild_ui_demo()
             .max_value = 255.0f,
             .value = 255.0f,
             .step = 1.0f,
+            .handle = elysia::ui::UiDragHandleConfig{
+                .idle_color = elysia::core::colors::powder_blue,
+                .focused_color = elysia::core::colors::white,
+                .dragging_color = elysia::core::colors::white,
+                .border_color = elysia::core::colors::sky_blue,
+                .disabled_border_color = elysia::core::colors::gray_500
+            },
             .bar_thickness = 8.0f,
             .value_target_height = 18.0f
         },
@@ -194,8 +201,6 @@ void MainMenuScene::rebuild_ui_demo()
     _demo_slider->set_background_color(elysia::core::colors::abyss_blue);
     _demo_slider->set_border_color(elysia::core::colors::sky_blue);
     _demo_slider->set_fill_color(elysia::core::colors::glacial_white);
-    _demo_slider->set_handle_color(elysia::core::colors::powder_blue);
-    _demo_slider->set_focused_handle_color(elysia::core::colors::white);
     _demo_slider->set_on_value_changed([this](float value)
     {
         const int next_opacity = std::clamp(static_cast<int>(std::lround(value)),0,255);
