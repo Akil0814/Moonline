@@ -72,8 +72,7 @@ public:
             std::is_base_of_v<elysia::core::GameObject, T> || std::is_base_of_v<elysia::ui::UiElement, T>,
             "T must derive from elysia::core::GameObject or elysia::ui::UiElement.");
 
-        return add_object(
-            std::make_unique<T>(std::forward<Args>(args)...)
+        return add_object(std::make_unique<T>(std::forward<Args>(args)...)
         );
     }
 

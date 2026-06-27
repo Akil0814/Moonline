@@ -55,6 +55,7 @@ private:
     elysia::ui::UiBlinkLabel* _demo_blink_label = nullptr;
     elysia::ui::UiPulseLabel* _demo_pulse_label = nullptr;
     elysia::ui::UiLabel* _demo_hint_label = nullptr;
+    elysia::ui::UiDragHandle* _demo_drag = nullptr;
     size_t _focused_button_index = 0;
 };
 }

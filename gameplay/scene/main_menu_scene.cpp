@@ -71,34 +71,6 @@ void MainMenuScene::on_input(
     ApplicationScene::on_input(input, events);
     (void)input;
 
-    for (const elysia::input::RawInputEvent& event : events)
-    {
-        if (event.type != elysia::input::RawInputEventType::ControlPressed)
-        {
-            continue;
-        }
-
-        if (elysia::input::matches_control(elysia::input::RawInputControl::KeyF6, event.control))
-        {
-            cycle_language();
-            continue;
-        }
-
-        if (elysia::input::matches_control(elysia::input::RawInputControl::KeyUp, event.control)
-            || elysia::input::matches_control(elysia::input::RawInputControl::KeyW, event.control)
-            || elysia::input::matches_control(elysia::input::RawInputControl::GamepadDPadUp, event.control))
-        {
-            move_focus(-1);
-            continue;
-        }
-
-        if (elysia::input::matches_control(elysia::input::RawInputControl::KeyDown, event.control)
-            || elysia::input::matches_control(elysia::input::RawInputControl::KeyS, event.control)
-            || elysia::input::matches_control(elysia::input::RawInputControl::GamepadDPadDown, event.control))
-        {
-            move_focus(1);
-        }
-    }
 }
 
 void MainMenuScene::on_exit()
@@ -257,6 +229,11 @@ void MainMenuScene::rebuild_ui_demo()
     _demo_hint_label->set_text_point_size(18);
     _demo_hint_label->set_horizontal_align(elysia::ui::TextHorizontalAlign::Center);
     _demo_hint_label->set_vertical_align(elysia::ui::TextVerticalAlign::Center);
+
+
+    _demo_drag = elysia::scene::Scene::create_and_add_object<elysia::ui::UiDragHandle>(
+        elysia::core::Rect(10, 10, 10, 10)
+    );
 
     apply_demo_opacity(255);
 }

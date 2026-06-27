@@ -12,7 +12,7 @@ namespace elysia::ui
 {
 namespace
 {
-constexpr float kRectEpsilon = 0.0001f;
+constexpr float RectEpsilon = 0.0001f;
 
 [[nodiscard]] float clamp_non_negative(float value) noexcept
 {
@@ -21,7 +21,7 @@ constexpr float kRectEpsilon = 0.0001f;
 
 [[nodiscard]] bool nearly_equal(float a,float b) noexcept
 {
-    return std::fabs(a - b) <= kRectEpsilon;
+    return std::fabs(a - b) <= RectEpsilon;
 }
 
 [[nodiscard]] bool same_rect(const elysia::core::Rect& lhs,const elysia::core::Rect& rhs) noexcept
