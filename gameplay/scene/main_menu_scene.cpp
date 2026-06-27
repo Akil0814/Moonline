@@ -187,7 +187,7 @@ void MainMenuScene::rebuild_ui_demo()
             .max_value = 255.0f,
             .value = 255.0f,
             .step = 1.0f,
-            .handle = elysia::ui::UiDragHandleConfig{
+            .handle = elysia::ui::UiSliderHandleStyle{
                 .idle_color = elysia::core::colors::powder_blue,
                 .focused_color = elysia::core::colors::white,
                 .dragging_color = elysia::core::colors::white,
@@ -391,3 +391,4 @@ void MainMenuScene::move_focus(int direction)
     set_focused_button(static_cast<size_t>(wrapped_index));
 }
 }
+

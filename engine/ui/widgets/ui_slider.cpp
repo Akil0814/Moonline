@@ -28,6 +28,22 @@ constexpr float kValueChangeEpsilon = 0.0001f;
     return std::max(0.0f,value);
 }
 
+[[nodiscard]] UiDragHandleConfig make_drag_handle_config(const UiSliderHandleStyle& style) noexcept
+{
+    UiDragHandleConfig config{};
+    config.size = elysia::core::Vector2(clamp_non_negative(style.size.x),clamp_non_negative(style.size.y));
+    config.textures = style.textures;
+    config.draw_background = style.draw_background;
+    config.draw_border = style.draw_border;
+    config.idle_color = style.idle_color;
+    config.focused_color = style.focused_color;
+    config.dragging_color = style.dragging_color;
+    config.disabled_background_color = style.disabled_background_color;
+    config.border_color = style.border_color;
+    config.disabled_border_color = style.disabled_border_color;
+    return config;
+}
+
 [[nodiscard]] elysia::core::Rect take_left(elysia::core::Rect& rect,float width) noexcept
 {
     width = std::clamp(width,0.0f,std::max(0.0f,rect.width()));
@@ -89,19 +105,19 @@ struct UiSlider::SliderLayout
 UiSlider::UiSlider(const elysia::core::Rect& rect,int order) noexcept
     : UiControl(rect,order)
 {
-    bind_handle_callbacks();
+    reset();
 }
 
 UiSlider::UiSlider(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order) noexcept
     : UiControl(position,size,order)
 {
-    bind_handle_callbacks();
+    reset();
 }
 
 UiSlider::UiSlider(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order) noexcept
     : UiControl(center,size,from_center,order)
 {
-    bind_handle_callbacks();
+    reset();
 }
 
 UiSlider::UiSlider(const elysia::core::Rect& rect,const UiSliderConfig& config,int order) noexcept
@@ -130,7 +146,7 @@ void UiSlider::reset() noexcept
     _text_key.clear();
     _icon = nullptr;
     _sounds.reset();
-    _handle_config = UiDragHandleConfig{};
+    _handle_style = UiSliderHandleStyle{};
     _on_value_changed = nullptr;
     _label_placement = UiSliderLabelPlacement::None;
     _orientation = UiSliderOrientation::Horizontal;
@@ -154,27 +170,7 @@ void UiSlider::reset() noexcept
     _text_color = elysia::core::colors::white;
     _disabled_text_color = elysia::core::colors::gray_300;
 
-    _bar.set_use_theme(false);
-    _bar.set_draw_border(false);
-    _bar.set_padding(0);
-    _bar.set_fill_direction(BarFillDirection::LeftToRight);
-    _handle.set_use_theme(false);
-    _label.set_use_theme(false);
-    _label.set_draw_background(false);
-    _label.set_horizontal_align(TextHorizontalAlign::Center);
-    _label.set_vertical_align(TextVerticalAlign::Center);
-    _label.set_padding(0);
-    _value_number.set_use_theme(false);
-    _value_number.set_draw_background(false);
-    _value_number.set_horizontal_align(TextHorizontalAlign::Center);
-    _value_number.set_vertical_align(TextVerticalAlign::Center);
-    _value_number.set_padding(0);
-    _value_number.set_decimal_places(0);
-    _value_number.set_trim_trailing_zeros(true);
-    _value_number.set_keep_decimal_point(false);
-    _value_number.set_suffix(UiNumberSuffix::None);
-    set_handle_config(UiDragHandleConfig{});
-    bind_handle_callbacks();
+    initialize_child_widgets();
 }
 
 void UiSlider::set_enabled(bool enabled)
@@ -208,7 +204,8 @@ bool UiSlider::on_ui_input_event(const UiInputEvent& event)
         }
 
         const SliderLayout layout = compute_layout();
-        sync_handle_widget(layout);
+        sync_child_rects(layout);
+        sync_child_visuals();
         const bool handle_handled = _handle.on_ui_input_event(event);
         set_focused(_handle.is_dragging() || contains_pointer(event.mouse_x,event.mouse_y));
         _handle.set_focused(is_focused());
@@ -224,18 +221,19 @@ bool UiSlider::on_ui_input_event(const UiInputEvent& event)
         if (!contains_track_or_handle(layout,event.mouse_x,event.mouse_y))
             return false;
 
-        sync_handle_widget(layout);
+        const elysia::core::Vector2 pointer(static_cast<float>(event.mouse_x),static_cast<float>(event.mouse_y));
+        sync_child_rects(layout);
+        sync_child_visuals();
         set_focused(true);
         _handle.set_focused(true);
         _drag_value_changed = false;
         _has_last_slide_sound_tick = false;
-        if (!layout.handle_rect.contains(elysia::core::Vector2(static_cast<float>(event.mouse_x),static_cast<float>(event.mouse_y))))
+        if (!layout.handle_rect.contains(pointer))
         {
-            _drag_value_changed = update_value_from_pointer(event.mouse_x,event.mouse_y);
-            sync_handle_widget(compute_layout());
+            _drag_value_changed = update_value_from_point(layout,pointer,true);
+            sync_child_rects(compute_layout());
         }
-        (void)_handle.on_ui_input_event(event);
-        _handle.set_focused(is_focused());
+        _handle.begin_drag_from_pointer(pointer);
         return true;
     }
 
@@ -244,7 +242,9 @@ bool UiSlider::on_ui_input_event(const UiInputEvent& event)
         if (!is_primary_pointer_event(event))
             return false;
 
-        sync_handle_widget(compute_layout());
+        const SliderLayout layout = compute_layout();
+        sync_child_rects(layout);
+        sync_child_visuals();
         const bool handle_handled = _handle.on_ui_input_event(event);
         const bool is_inside = can_receive_pointer() && contains_pointer(event.mouse_x,event.mouse_y);
         set_focused(is_inside);
@@ -325,7 +325,9 @@ void UiSlider::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
     if (_draw_background)
         out_commands.push_back(elysia::core::make_ui_fill_rect_command(slider_rect,apply_opacity(current_background_color())));
 
-    sync_child_widgets(layout);
+    sync_child_rects(layout);
+    sync_child_visuals();
+    sync_value_number_content();
     _bar.submit_ui_render_commands(out_commands);
     _handle.submit_ui_render_commands(out_commands);
 
@@ -557,21 +559,19 @@ elysia::core::Color UiSlider::disabled_fill_color() const noexcept
     return _disabled_fill_color;
 }
 
-void UiSlider::set_handle_config(const UiDragHandleConfig& config)
+void UiSlider::set_handle_style(const UiSliderHandleStyle& style)
 {
-    _handle_config = config;
-    _handle_config.size = elysia::core::Vector2(
-        clamp_non_negative(_handle_config.size.x),
-        clamp_non_negative(_handle_config.size.y)
+    _handle_style = style;
+    _handle_style.size = elysia::core::Vector2(
+        clamp_non_negative(_handle_style.size.x),
+        clamp_non_negative(_handle_style.size.y)
     );
-    _handle_config.axis = UiDragAxis::Free;
-    _handle_config.drag_bounds.reset();
-    _handle.set_drag_handle_config(_handle_config);
+    _handle.set_drag_handle_config(make_drag_handle_config(_handle_style));
 }
 
-const UiDragHandleConfig& UiSlider::handle_config() const noexcept
+const UiSliderHandleStyle& UiSlider::handle_style() const noexcept
 {
-    return _handle_config;
+    return _handle_style;
 }
 
 void UiSlider::set_text_color(elysia::core::Color color) noexcept
@@ -705,7 +705,7 @@ void UiSlider::apply_slider_config(const UiSliderConfig& config)
     set_value_label_mode(config.value_label_mode);
     set_draw_background(config.draw_background);
     set_draw_border(config.draw_border);
-    set_handle_config(config.handle);
+    set_handle_style(config.handle);
     set_bar_thickness(config.bar_thickness);
     set_range(config.min_value,config.max_value);
     set_step(config.step);
@@ -725,6 +725,31 @@ void UiSlider::apply_slider_config(const UiSliderConfig& config)
     apply_label_content(config.label_content);
 }
 
+void UiSlider::initialize_child_widgets()
+{
+    _bar.set_use_theme(false);
+    _bar.set_draw_border(false);
+    _bar.set_padding(0);
+    _bar.set_fill_direction(BarFillDirection::LeftToRight);
+    _handle.set_use_theme(false);
+    _label.set_use_theme(false);
+    _label.set_draw_background(false);
+    _label.set_horizontal_align(TextHorizontalAlign::Center);
+    _label.set_vertical_align(TextVerticalAlign::Center);
+    _label.set_padding(0);
+    _value_number.set_use_theme(false);
+    _value_number.set_draw_background(false);
+    _value_number.set_horizontal_align(TextHorizontalAlign::Center);
+    _value_number.set_vertical_align(TextVerticalAlign::Center);
+    _value_number.set_padding(0);
+    _value_number.set_decimal_places(0);
+    _value_number.set_trim_trailing_zeros(true);
+    _value_number.set_keep_decimal_point(false);
+    _value_number.set_suffix(UiNumberSuffix::None);
+    set_handle_style(UiSliderHandleStyle{});
+    bind_handle_callbacks();
+}
+
 void UiSlider::apply_label_content(const UiSliderLabelContent& content)
 {
     std::visit([this](const auto& value) {
@@ -738,18 +763,22 @@ void UiSlider::apply_label_content(const UiSliderLabelContent& content)
     },content);
 }
 
-void UiSlider::sync_child_widgets(const SliderLayout& layout) const
-{
-    sync_bar_widget(layout);
-    sync_handle_widget(layout);
-    sync_label_widget(layout);
-    sync_value_number_widget(layout);
-}
-
-void UiSlider::sync_bar_widget(const SliderLayout& layout) const
+void UiSlider::sync_child_rects(const SliderLayout& layout) const
 {
     _bar.set_screen_rect(layout.bar_rect);
-    _bar.set_visible(!layout.bar_rect.is_empty());
+    _handle.set_screen_rect(layout.handle_rect);
+    _handle.set_drag_axis(_orientation == UiSliderOrientation::Horizontal ? UiDragAxis::Horizontal : UiDragAxis::Vertical);
+    if (layout.handle_rect.is_empty() || layout.bar_rect.is_empty())
+        _handle.clear_drag_bounds();
+    else
+        _handle.set_drag_bounds(handle_drag_bounds(layout));
+    _label.set_screen_rect(layout.label_rect);
+    _value_number.set_screen_rect(layout.value_rect);
+}
+
+void UiSlider::sync_child_visuals() const
+{
+    _bar.set_visible(!_bar.screen_rect().is_empty());
     _bar.set_opacity(opacity());
     _bar.set_range(_min_value,_max_value);
     _bar.set_value(_value);
@@ -758,26 +787,13 @@ void UiSlider::sync_bar_widget(const SliderLayout& layout) const
     _bar.set_fill_color(current_fill_color());
     _bar.set_draw_border(false);
     _bar.set_padding(0);
-}
 
-void UiSlider::sync_handle_widget(const SliderLayout& layout) const
-{
-    _handle.set_screen_rect(layout.handle_rect);
-    _handle.set_visible(!layout.handle_rect.is_empty());
+    _handle.set_visible(!_handle.screen_rect().is_empty());
     _handle.set_enabled(is_enabled());
     _handle.set_opacity(opacity());
     _handle.set_focused(is_focused());
-    _handle.set_drag_axis(_orientation == UiSliderOrientation::Horizontal ? UiDragAxis::Horizontal : UiDragAxis::Vertical);
-    if (layout.handle_rect.is_empty() || layout.bar_rect.is_empty())
-        _handle.clear_drag_bounds();
-    else
-        _handle.set_drag_bounds(handle_drag_bounds(layout));
-}
-void UiSlider::sync_label_widget(const SliderLayout& layout) const
-{
-    const bool show_text_label = !_text_key.empty() && !_icon && !layout.label_rect.is_empty();
-    _label.set_screen_rect(layout.label_rect);
-    _label.set_visible(show_text_label);
+
+    _label.set_visible(!_text_key.empty() && !_icon && !_label.screen_rect().is_empty());
     _label.set_opacity(opacity());
     _label.set_text_key(_text_key);
     _label.set_text_color(current_text_color());
@@ -785,19 +801,18 @@ void UiSlider::sync_label_widget(const SliderLayout& layout) const
     _label.set_horizontal_align(TextHorizontalAlign::Center);
     _label.set_vertical_align(TextVerticalAlign::Center);
     _label.set_padding(0);
-}
 
-void UiSlider::sync_value_number_widget(const SliderLayout& layout) const
-{
-    const bool show_value = _value_label_mode != UiSliderValueLabelMode::None && !layout.value_rect.is_empty();
-    _value_number.set_screen_rect(layout.value_rect);
-    _value_number.set_visible(show_value);
+    _value_number.set_visible(_value_label_mode != UiSliderValueLabelMode::None && !_value_number.screen_rect().is_empty());
     _value_number.set_opacity(opacity());
     _value_number.set_text_color(current_text_color());
     _value_number.set_draw_background(false);
     _value_number.set_horizontal_align(TextHorizontalAlign::Center);
     _value_number.set_vertical_align(TextVerticalAlign::Center);
     _value_number.set_padding(0);
+}
+
+void UiSlider::sync_value_number_content() const
+{
     _value_number.set_suffix(_value_label_mode == UiSliderValueLabelMode::Percent ? UiNumberSuffix::Percent : UiNumberSuffix::None);
     _value_number.set_value(_value_label_mode == UiSliderValueLabelMode::Percent ? static_cast<double>(clamped_ratio() * 100.0f) : static_cast<double>(_value));
 }
@@ -811,8 +826,8 @@ UiSlider::SliderLayout UiSlider::compute_layout() const noexcept
 
     const bool has_label = !_text_key.empty() || _icon;
     const elysia::core::Vector2 handle_size(
-        clamp_non_negative(_handle_config.size.x),
-        clamp_non_negative(_handle_config.size.y)
+        clamp_non_negative(_handle_style.size.x),
+        clamp_non_negative(_handle_style.size.y)
     );
     const float side_slot_extent = preferred_side_slot_extent(remaining,handle_size);
     const float target_height = _value_number.target_height().value_or(24.0f);
@@ -926,7 +941,7 @@ float UiSlider::action_step() const noexcept
     const float range = _max_value - _min_value;
     return range > 0.0f ? range * 0.05f : 0.0f;
 }
-float UiSlider::pointer_ratio(const SliderLayout& layout,int mouse_x,int mouse_y) const noexcept
+float UiSlider::ratio_from_point(const SliderLayout& layout,const elysia::core::Vector2& point) const noexcept
 {
     if (layout.bar_rect.is_empty())
         return 0.0f;
@@ -934,28 +949,12 @@ float UiSlider::pointer_ratio(const SliderLayout& layout,int mouse_x,int mouse_y
     {
         if (layout.bar_rect.width() <= 0.0f)
             return 0.0f;
-        return std::clamp((static_cast<float>(mouse_x) - layout.bar_rect.x()) / layout.bar_rect.width(),0.0f,1.0f);
+        return std::clamp((point.x - layout.bar_rect.x()) / layout.bar_rect.width(),0.0f,1.0f);
     }
 
     if (layout.bar_rect.height() <= 0.0f)
         return 0.0f;
-    return std::clamp(1.0f - (static_cast<float>(mouse_y) - layout.bar_rect.y()) / layout.bar_rect.height(),0.0f,1.0f);
-}
-
-float UiSlider::handle_ratio(const SliderLayout& layout,const elysia::core::Vector2& center) const noexcept
-{
-    if (layout.bar_rect.is_empty())
-        return 0.0f;
-    if (_orientation == UiSliderOrientation::Horizontal)
-    {
-        if (layout.bar_rect.width() <= 0.0f)
-            return 0.0f;
-        return std::clamp((center.x - layout.bar_rect.x()) / layout.bar_rect.width(),0.0f,1.0f);
-    }
-
-    if (layout.bar_rect.height() <= 0.0f)
-        return 0.0f;
-    return std::clamp(1.0f - (center.y - layout.bar_rect.y()) / layout.bar_rect.height(),0.0f,1.0f);
+    return std::clamp(1.0f - (point.y - layout.bar_rect.y()) / layout.bar_rect.height(),0.0f,1.0f);
 }
 
 elysia::core::Rect UiSlider::handle_drag_bounds(const SliderLayout& layout) const noexcept
@@ -1017,12 +1016,11 @@ bool UiSlider::set_value_internal(float value,bool notify) noexcept
     return true;
 }
 
-bool UiSlider::update_value_from_pointer(int mouse_x,int mouse_y) noexcept
+bool UiSlider::update_value_from_point(const SliderLayout& layout,const elysia::core::Vector2& point,bool notify) noexcept
 {
-    const SliderLayout layout = compute_layout();
     if (_max_value <= _min_value)
-        return set_value_internal(_min_value,true);
-    return set_value_internal(_min_value + (_max_value - _min_value) * pointer_ratio(layout,mouse_x,mouse_y),true);
+        return set_value_internal(_min_value,notify);
+    return set_value_internal(_min_value + (_max_value - _min_value) * ratio_from_point(layout,point),notify);
 }
 
 elysia::core::Rect UiSlider::fitted_texture_rect(const elysia::core::Rect& bounds,SDL_Texture* texture) const noexcept
@@ -1072,16 +1070,7 @@ void UiSlider::bind_handle_callbacks()
     _handle.set_on_dragged([this](const elysia::core::Vector2& center)
     {
         const SliderLayout layout = compute_layout();
-        if (_max_value <= _min_value)
-        {
-            _drag_value_changed = set_value_internal(_min_value,true) || _drag_value_changed;
-            return;
-        }
-
-        const bool changed = set_value_internal(
-            _min_value + (_max_value - _min_value) * handle_ratio(layout,center),
-            true
-        );
+        const bool changed = update_value_from_point(layout,center,true);
         _drag_value_changed = changed || _drag_value_changed;
         if (changed)
             play_slide_sound_if_allowed();

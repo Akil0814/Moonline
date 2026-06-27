@@ -73,12 +73,10 @@ public:
     void clear_drag_bounds() noexcept;
     [[nodiscard]] const std::optional<elysia::core::Rect>& drag_bounds() const noexcept;
 
-    void set_state_textures(const UiDragHandleTextures& textures);
-    void clear_state_textures() noexcept;
-
     void set_on_dragged(UiDragHandleDraggedCallback on_dragged);
     void set_on_drag_ended(UiDragHandleDragEndedCallback on_drag_ended);
 
+    void begin_drag_from_pointer(const elysia::core::Vector2& pointer) noexcept;
     void cancel_drag() noexcept;
     [[nodiscard]] bool is_dragging() const noexcept;
 
@@ -88,6 +86,7 @@ private:
     [[nodiscard]] bool contains_pointer(int mouse_x,int mouse_y) const noexcept;
     [[nodiscard]] bool is_primary_pointer_event(const UiInputEvent& event) const noexcept;
     [[nodiscard]] bool drag_to_pointer(int mouse_x,int mouse_y);
+    void begin_drag_session(const elysia::core::Vector2& pointer) noexcept;
     [[nodiscard]] elysia::core::Rect clamped_rect(const elysia::core::Rect& rect) const noexcept;
     [[nodiscard]] SDL_Texture* current_state_texture() const noexcept;
     [[nodiscard]] elysia::core::Color current_background_color() const noexcept;

@@ -32,6 +32,20 @@ namespace elysia::ui
 
     using UiSliderLabelContent = std::variant<std::monostate,UiSliderTextContent,UiSliderIconContent>;
 
+    struct UiSliderHandleStyle
+    {
+        elysia::core::Vector2 size{ 18.0f,18.0f };
+        std::optional<UiDragHandleTextures> textures = std::nullopt;
+        bool draw_background = true;
+        bool draw_border = true;
+        elysia::core::Color idle_color = elysia::core::colors::sky_blue;
+        elysia::core::Color focused_color = elysia::core::colors::royal_blue;
+        elysia::core::Color dragging_color = elysia::core::colors::white;
+        elysia::core::Color disabled_background_color = elysia::core::colors::gray_500;
+        elysia::core::Color border_color = elysia::core::colors::sky_blue;
+        elysia::core::Color disabled_border_color = elysia::core::colors::gray_500;
+    };
+
     struct UiSliderConfig
     {
         UiSliderLabelContent label_content{};
@@ -45,7 +59,7 @@ namespace elysia::ui
         std::optional<float> step = std::nullopt;
         bool draw_background = true;
         bool draw_border = true;
-        UiDragHandleConfig handle{};
+        UiSliderHandleStyle handle{};
         float bar_thickness = 6.0f;
         int value_decimal_places = 0;
         bool value_trim_trailing_zeros = true;
@@ -116,8 +130,8 @@ namespace elysia::ui
         [[nodiscard]] elysia::core::Color fill_color() const noexcept;
         void set_disabled_fill_color(elysia::core::Color color) noexcept;
         [[nodiscard]] elysia::core::Color disabled_fill_color() const noexcept;
-        void set_handle_config(const UiDragHandleConfig& config);
-        [[nodiscard]] const UiDragHandleConfig& handle_config() const noexcept;
+        void set_handle_style(const UiSliderHandleStyle& style);
+        [[nodiscard]] const UiSliderHandleStyle& handle_style() const noexcept;
         void set_text_color(elysia::core::Color color) noexcept;
         [[nodiscard]] elysia::core::Color text_color() const noexcept;
         void set_disabled_text_color(elysia::core::Color color) noexcept;
@@ -147,19 +161,17 @@ namespace elysia::ui
 
     private:
         struct SliderLayout;
+        void initialize_child_widgets();
         void apply_slider_config(const UiSliderConfig& config);
         void apply_label_content(const UiSliderLabelContent& content);
-        void sync_child_widgets(const SliderLayout& layout) const;
-        void sync_bar_widget(const SliderLayout& layout) const;
-        void sync_handle_widget(const SliderLayout& layout) const;
-        void sync_label_widget(const SliderLayout& layout) const;
-        void sync_value_number_widget(const SliderLayout& layout) const;
+        void sync_child_rects(const SliderLayout& layout) const;
+        void sync_child_visuals() const;
+        void sync_value_number_content() const;
         [[nodiscard]] SliderLayout compute_layout() const noexcept;
         [[nodiscard]] float clamped_ratio() const noexcept;
         [[nodiscard]] float snapped_value(float value) const noexcept;
         [[nodiscard]] float action_step() const noexcept;
-        [[nodiscard]] float pointer_ratio(const SliderLayout& layout,int mouse_x,int mouse_y) const noexcept;
-        [[nodiscard]] float handle_ratio(const SliderLayout& layout,const elysia::core::Vector2& center) const noexcept;
+        [[nodiscard]] float ratio_from_point(const SliderLayout& layout,const elysia::core::Vector2& point) const noexcept;
         [[nodiscard]] elysia::core::Rect handle_drag_bounds(const SliderLayout& layout) const noexcept;
         [[nodiscard]] bool can_interact() const noexcept;
         [[nodiscard]] bool can_receive_pointer() const noexcept;
@@ -167,7 +179,7 @@ namespace elysia::ui
         [[nodiscard]] bool contains_track_or_handle(const SliderLayout& layout,int mouse_x,int mouse_y) const noexcept;
         [[nodiscard]] bool is_primary_pointer_event(const UiInputEvent& event) const noexcept;
         [[nodiscard]] bool set_value_internal(float value,bool notify) noexcept;
-        [[nodiscard]] bool update_value_from_pointer(int mouse_x,int mouse_y) noexcept;
+        [[nodiscard]] bool update_value_from_point(const SliderLayout& layout,const elysia::core::Vector2& point,bool notify) noexcept;
         [[nodiscard]] elysia::core::Rect fitted_texture_rect(const elysia::core::Rect& bounds,SDL_Texture* texture) const noexcept;
         [[nodiscard]] elysia::core::Color current_background_color() const noexcept;
         [[nodiscard]] elysia::core::Color current_border_color() const noexcept;
@@ -186,7 +198,7 @@ namespace elysia::ui
         std::string _text_key;
         SDL_Texture* _icon = nullptr;
         std::optional<UiSliderSounds> _sounds;
-        UiDragHandleConfig _handle_config{};
+        UiSliderHandleStyle _handle_style{};
         UiSliderValueChangedCallback _on_value_changed;
         UiSliderLabelPlacement _label_placement = UiSliderLabelPlacement::None;
         UiSliderOrientation _orientation = UiSliderOrientation::Horizontal;

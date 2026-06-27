@@ -109,13 +109,7 @@ bool UiDragHandle::on_ui_input_event(const UiInputEvent& event)
         if (!contains_pointer(event.mouse_x,event.mouse_y))
             return false;
 
-        const elysia::core::Rect& rect = screen_rect();
-        set_focused(true);
-        _is_dragging = true;
-        _grab_offset = elysia::core::Vector2(
-            static_cast<float>(event.mouse_x) - rect.x(),
-            static_cast<float>(event.mouse_y) - rect.y()
-        );
+        begin_drag_session(elysia::core::Vector2(static_cast<float>(event.mouse_x),static_cast<float>(event.mouse_y)));
         return true;
     }
 
@@ -197,16 +191,6 @@ const std::optional<elysia::core::Rect>& UiDragHandle::drag_bounds() const noexc
     return _config.drag_bounds;
 }
 
-void UiDragHandle::set_state_textures(const UiDragHandleTextures& textures)
-{
-    _config.textures = textures;
-}
-
-void UiDragHandle::clear_state_textures() noexcept
-{
-    _config.textures.reset();
-}
-
 void UiDragHandle::set_on_dragged(UiDragHandleDraggedCallback on_dragged)
 {
     _on_dragged = std::move(on_dragged);
@@ -215,6 +199,13 @@ void UiDragHandle::set_on_dragged(UiDragHandleDraggedCallback on_dragged)
 void UiDragHandle::set_on_drag_ended(UiDragHandleDragEndedCallback on_drag_ended)
 {
     _on_drag_ended = std::move(on_drag_ended);
+}
+
+void UiDragHandle::begin_drag_from_pointer(const elysia::core::Vector2& pointer) noexcept
+{
+    if (!can_receive_pointer() || screen_rect().is_empty())
+        return;
+    begin_drag_session(pointer);
 }
 
 void UiDragHandle::cancel_drag() noexcept
@@ -267,6 +258,14 @@ bool UiDragHandle::drag_to_pointer(int mouse_x,int mouse_y)
     if (_on_dragged)
         _on_dragged(next_rect.center());
     return true;
+}
+
+void UiDragHandle::begin_drag_session(const elysia::core::Vector2& pointer) noexcept
+{
+    const elysia::core::Rect& rect = screen_rect();
+    set_focused(true);
+    _is_dragging = true;
+    _grab_offset = elysia::core::Vector2(pointer.x - rect.x(),pointer.y - rect.y());
 }
 
 elysia::core::Rect UiDragHandle::clamped_rect(const elysia::core::Rect& rect) const noexcept
