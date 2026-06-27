@@ -48,6 +48,7 @@ struct UiLayoutMargin
 
 struct UiLayoutChildOptions
 {
+    UiLayoutAnchor _anchor = UiLayoutAnchor::TopLeft;
     UiLayoutMargin _margin;
     UiLayoutAlign _cross_align = UiLayoutAlign::Start;
     elysia::core::Vector2 _size_override{ 0.0f, 0.0f };
