@@ -6,6 +6,13 @@ namespace elysia::ui
 {
 enum class UiLayoutAnchor
 {
+
+/*  TopLeft      Top       TopRight
+
+    Left         Center    Right
+
+    BottomLeft   Bottom    BottomRight*/
+
     TopLeft,
     TopCenter,
     TopRight,

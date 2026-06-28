@@ -367,7 +367,7 @@ void UiContainerTestScene::rebuild_ui()
     auto* title = _root_window->create_child<elysia::ui::UiLabel>(
         make_options(elysia::ui::UiLayoutAnchor::TopCenter,{},elysia::core::Vector2(kRootWidth - 200.0f,kTitleHeight)),
         elysia::core::Rect::zero(),0,"menu_scene.ui_containers");
-    style_title_label(title,28);
+    style_title_label(title,26);
 
     auto* hint = _root_window->create_child<elysia::ui::UiLabel>(
         make_options(elysia::ui::UiLayoutAnchor::TopLeft,make_margin(0.0f,38.0f),elysia::core::Vector2(kRootWidth - 320.0f,kHintHeight)),
@@ -380,7 +380,7 @@ void UiContainerTestScene::rebuild_ui()
         elysia::core::Rect::zero(),
         elysia::ui::UiButtonConfig{ .content = elysia::ui::UiButtonTextContent{ "menu_scene.ui_button" } },
         0);
-    focus_button->set_text_point_size(20);
+    focus_button->set_text_point_size(22);
     focus_button->set_on_click([]()
     {
         std::cout << "UiWindow focus demo button clicked" << std::endl;
@@ -391,7 +391,7 @@ void UiContainerTestScene::rebuild_ui()
         elysia::core::Rect::zero(),
         elysia::ui::UiButtonConfig{ .content = elysia::ui::UiButtonTextContent{ "menu_scene.ui_back" } },
         0);
-    back->set_text_point_size(20);
+    back->set_text_point_size(22);
     back->set_on_click([this]()
     {
         request_back_to_menu();

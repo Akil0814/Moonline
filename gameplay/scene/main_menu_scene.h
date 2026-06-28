@@ -2,6 +2,10 @@
 
 #include "../../application/scene/application_scene.h"
 
+#include "../../engine/ui/window/ui_window.h"
+
+
+
 #include <cstddef>
 #include <vector>
 
@@ -27,16 +31,13 @@ public:
     void reset() override;
 
 private:
-    struct MenuButtonEntry
-    {
-        elysia::ui::UiButton* button = nullptr;
-    };
 
     void rebuild_menu_buttons();
     void clear_menu_buttons();
     void handle_menu_action(std::size_t index);
 
 private:
-    std::vector<MenuButtonEntry> _menu_button_entries;
+    elysia::ui::UiWindow* _main_menu = nullptr;
+
 };
 }

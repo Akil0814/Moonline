@@ -2,38 +2,23 @@
 
 #include "../../application/scene/scene_keys.h"
 #include "../../application/scene/scene_payloads.h"
+
 #include "../../engine/audio/audio_service.h"
+
 #include "../../engine/ui/widgets/ui_button.h"
+#include "../../engine/ui/containers/ui_panel.h"
+#include "../../engine/ui/containers/ui_list_container.h"
+#include "../../engine/ui/containers/ui_container_layout_types.h"
+
+
+
+
 
 #include <array>
 #include <iostream>
 
 namespace arcneco::scene
 {
-namespace
-{
-constexpr int kMenuCenterX = 640;
-constexpr int kMenuStartY = 220;
-constexpr int kMenuVerticalSpacing = 70;
-constexpr float kMenuButtonWidth = 320.0f;
-constexpr float kMenuButtonHeight = 48.0f;
-constexpr int kMenuTextPointSize = 24;
-constexpr std::size_t kUiContainersIndex = 1;
-constexpr std::size_t kExitIndex = 3;
-
-struct MenuDefinition
-{
-    const char* key = "";
-    bool enabled = true;
-};
-
-constexpr std::array<MenuDefinition,4> kMenuDefinitions{{
-    { "menu_scene.start",true },
-    { "menu_scene.ui_containers",true },
-    { "menu_scene.settings",false },
-    { "menu_scene.exit",true }
-}};
-}
 
 void MainMenuScene::on_enter(const elysia::scene::ScenePayload& payload)
 {
@@ -64,7 +49,6 @@ void MainMenuScene::on_input(
     const std::vector<elysia::input::RawInputEvent>& events)
 {
     ApplicationScene::on_input(input,events);
-    (void)input;
 }
 
 void MainMenuScene::on_exit()
@@ -82,60 +66,35 @@ void MainMenuScene::reset()
 void MainMenuScene::rebuild_menu_buttons()
 {
     clear_menu_buttons();
-
-    int current_y = kMenuStartY;
-    for (std::size_t index = 0; index < kMenuDefinitions.size(); ++index)
-    {
-        const MenuDefinition& definition = kMenuDefinitions[index];
-        auto* button = elysia::scene::Scene::create_and_add_object<elysia::ui::UiButton>(
-            elysia::core::Rect{
-                static_cast<float>(kMenuCenterX) - (kMenuButtonWidth * 0.5f),
-                static_cast<float>(current_y),
-                kMenuButtonWidth,
-                kMenuButtonHeight
-            },
-            elysia::ui::UiButtonConfig{ .content = elysia::ui::UiButtonTextContent{ definition.key } },
-            static_cast<int>(index));
-
-        button->set_enabled(definition.enabled);
-        button->set_focused(index == 0);
-        button->set_text_point_size(kMenuTextPointSize);
-        button->set_on_click([this,index]()
+    _main_menu = Scene::create_and_add_object<elysia::ui::UiWindow>(elysia::core::Rect{ 100,100,500,500 }, 100);
+    _main_menu->set_draw_background(true);
+    _main_menu->set_draw_border(true);
+    _main_menu->set_on_cancel([this]()
         {
-            handle_menu_action(index);
+            //pop up quit window;
+            std::cout << "cancel" << std::endl;
         });
 
-        _menu_button_entries.push_back(MenuButtonEntry{ button });
-        current_y += kMenuVerticalSpacing;
-    }
+    const elysia::ui::UiLayoutChildOptions layout
+    { elysia::ui::UiLayoutAnchor::Center };
+
+    elysia::ui::UiListContainer* panel=_main_menu->create_child<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,300,900 });
+
+    elysia::ui::UiButton* button = panel->create_child<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,200,50 });
+
+    _main_menu->set_child_layout_options(1, layout);
+    _main_menu->set_child_layout_options(0, layout);
+
+    panel->create_child<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,200,50 });
+
 }
 
 void MainMenuScene::clear_menu_buttons()
 {
-    for (MenuButtonEntry& entry : _menu_button_entries)
-    {
-        if (!entry.button)
-            continue;
-        entry.button->destroy();
-        entry.button = nullptr;
-    }
+    //request_scene_switch(AppSceneKeys::UiContainerTest);
 
-    _menu_button_entries.clear();
+//request_quit();
+
 }
 
-void MainMenuScene::handle_menu_action(std::size_t index)
-{
-    if (index == kUiContainersIndex)
-    {
-        request_scene_switch(AppSceneKeys::UiContainerTest);
-        return;
-    }
-    if (index == kExitIndex)
-    {
-        request_quit();
-        return;
-    }
-
-    std::cout << "MainMenuScene action pending: index=" << index << std::endl;
-}
 }
