@@ -1,6 +1,5 @@
-#include "ui_container.h"
-
-#include <algorithm>
+﻿#include "ui_container.h"
+#include "ui_container_shared_utils.h"
 
 namespace elysia::ui
 {
@@ -167,10 +166,7 @@ void UiContainer::rebuild_layout()
 
 elysia::core::Rect UiContainer::content_rect() const noexcept
 {
-    const elysia::core::Rect& rect = screen_rect();
-    const float width = std::max(0.0f,rect.width() - _padding.left - _padding.right);
-    const float height = std::max(0.0f,rect.height() - _padding.top - _padding.bottom);
-    return elysia::core::Rect(rect.x() + _padding.left,rect.y() + _padding.top,width,height);
+    return container_utils::padded_content_rect(screen_rect(),_padding);
 }
 
 std::vector<UiContainer::ChildEntry>& UiContainer::children() noexcept
@@ -199,26 +195,7 @@ void UiContainer::submit_child_render_commands(std::vector<elysia::core::UiRende
 
 void UiContainer::apply_opacity_to_range(std::vector<elysia::core::UiRenderCommand>& out_commands,std::size_t begin) const
 {
-    if (opacity() == 255)
-        return;
-
-    for (std::size_t index = begin; index < out_commands.size(); ++index)
-    {
-        elysia::core::UiRenderCommand& command = out_commands[index];
-        switch (command.type)
-        {
-        case elysia::core::UiRenderCommandType::Texture:
-            command.alpha = multiply_alpha(command.alpha,opacity());
-            break;
-        case elysia::core::UiRenderCommandType::FillRect:
-        case elysia::core::UiRenderCommandType::DrawRect:
-        case elysia::core::UiRenderCommandType::DrawLine:
-            command.color.a = multiply_alpha(command.color.a,opacity());
-            break;
-        default:
-            break;
-        }
-    }
+    container_utils::apply_opacity_to_range(out_commands,begin,opacity());
 }
 
 void UiContainer::apply_clip_to_range(
@@ -227,25 +204,7 @@ void UiContainer::apply_clip_to_range(
     const elysia::core::Rect& clip_rect
 ) const
 {
-    if (clip_rect.is_empty())
-    {
-        out_commands.erase(out_commands.begin() + static_cast<std::ptrdiff_t>(begin),out_commands.end());
-        return;
-    }
-
-    for (std::size_t index = out_commands.size(); index > begin; --index)
-    {
-        elysia::core::UiRenderCommand& command = out_commands[index - 1];
-        const elysia::core::Rect final_clip = command.use_clip_rect ? command.clip_rect.intersection(clip_rect) : clip_rect;
-        if (final_clip.is_empty())
-        {
-            out_commands.erase(out_commands.begin() + static_cast<std::ptrdiff_t>(index - 1));
-            continue;
-        }
-
-        command.use_clip_rect = true;
-        command.clip_rect = final_clip;
-    }
+    container_utils::apply_clip_to_range(out_commands,begin,clip_rect);
 }
 
 void UiContainer::finalize_child_command_range(
@@ -254,12 +213,7 @@ void UiContainer::finalize_child_command_range(
     const elysia::core::Rect& clip_rect
 ) const
 {
-    if (begin >= out_commands.size())
-        return;
-
-    apply_opacity_to_range(out_commands,begin);
-    if (clips_children())
-        apply_clip_to_range(out_commands,begin,clip_rect);
+    container_utils::finalize_child_command_range(out_commands,begin,opacity(),clips_children(),clip_rect);
 }
 
 void UiContainer::cleanup_destroyed_children()
@@ -276,10 +230,5 @@ void UiContainer::cleanup_destroyed_children()
 bool UiContainer::needs_layout_rebuild() const noexcept
 {
     return _layout_dirty || !_last_layout_rect.nearly_equals(screen_rect());
-}
-
-std::uint8_t UiContainer::multiply_alpha(std::uint8_t a,std::uint8_t b) noexcept
-{
-    return static_cast<std::uint8_t>((static_cast<unsigned int>(a) * static_cast<unsigned int>(b)) / 255U);
 }
 }

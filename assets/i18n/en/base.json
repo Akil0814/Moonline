@@ -1,4 +1,4 @@
-{
+﻿{
   "menu_scene": {
     "start": "Start",
     "settings": "Settings",
@@ -10,6 +10,11 @@
     "ui_button": "Demo Button",
     "ui_blink": "Blink Label",
     "ui_pulse": "Pulse Label",
-    "ui_hint": "Drag the slider to test shared opacity"
+    "ui_hint": "Drag the slider to test shared opacity",
+    "ui_containers": "Container Test",
+    "ui_back": "Back",
+    "ui_vertical_scroll": "Vertical Scroll",
+    "ui_horizontal_scroll": "Horizontal Scroll",
+    "ui_scroll_hint": "Wheel over each pane to scroll. The right pane remaps wheel input to horizontal movement."
   }
 }

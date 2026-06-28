@@ -64,6 +64,7 @@ std::vector<RawInputEvent> KeyboardMouseInputTranslator::translate_event(const S
         input_event.device = InputDevice::Mouse;
         input_event.wheel_x = event.wheel.x;
         input_event.wheel_y = event.wheel.y;
+        SDL_GetMouseState(&input_event.mouse_x,&input_event.mouse_y);
         events.push_back(input_event);
         break;
     }

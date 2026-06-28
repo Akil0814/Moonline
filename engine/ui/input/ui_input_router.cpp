@@ -1,4 +1,4 @@
-﻿#include "ui_input_router.h"
+#include "ui_input_router.h"
 
 namespace
 {
@@ -115,6 +115,8 @@ std::vector<UiInputEvent> UiInputRouter::route_event(const elysia::input::RawInp
         UiInputEvent event;
         event.type = UiInputEventType::MouseWheel;
         event.device = raw_event.device;
+        event.mouse_x = raw_event.mouse_x;
+        event.mouse_y = raw_event.mouse_y;
         event.wheel_x = raw_event.wheel_x;
         event.wheel_y = raw_event.wheel_y;
         events.push_back(event);
