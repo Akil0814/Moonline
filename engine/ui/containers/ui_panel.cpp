@@ -1,20 +1,20 @@
-﻿#include "ui_panel.h"
-#include "ui_container_shared_utils.h"
+#include "ui_panel.h"
+#include "../layout/ui_anchor_layout.h"
 
 namespace elysia::ui
 {
 UiPanel::UiPanel(const elysia::core::Rect& rect,int order) noexcept
-    : UiContainer(rect,order) {}
+    : UiChildHost(rect,order) {}
 
 UiPanel::UiPanel(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order) noexcept
-    : UiContainer(position,size,order) {}
+    : UiChildHost(position,size,order) {}
 
 UiPanel::UiPanel(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order) noexcept
-    : UiContainer(center,size,from_center,order) {}
+    : UiChildHost(center,size,from_center,order) {}
 
 void UiPanel::reset() noexcept
 {
-    UiContainer::reset();
+    UiChildHost::reset();
     _draw_background = false;
     _draw_border = false;
     _background_color = elysia::core::colors::cobalt_blue;
@@ -76,16 +76,6 @@ elysia::core::Color UiPanel::border_color() const noexcept
 
 void UiPanel::rebuild_layout()
 {
-    const elysia::core::Rect bounds = content_rect();
-    for (ChildEntry& entry : children())
-    {
-        if (!entry.element)
-            continue;
-
-        const elysia::core::Vector2 size = entry.layout._use_size_override
-            ? container_utils::clamp_size(entry.layout._size_override)
-            : container_utils::clamp_size(entry.element->size());
-        entry.element->set_screen_rect(container_utils::anchored_rect(bounds,size,entry.layout._anchor,entry.layout._margin));
-    }
+    layout::layout_anchored_children(children(),content_rect());
 }
 }

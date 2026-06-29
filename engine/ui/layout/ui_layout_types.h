@@ -6,21 +6,12 @@ namespace elysia::ui
 {
 enum class UiLayoutAnchor
 {
-
-/*  TopLeft      Top       TopRight
-
-    Left         Center    Right
-
-    BottomLeft   Bottom    BottomRight*/
-
     TopLeft,
     TopCenter,
     TopRight,
-
     CenterLeft,
     Center,
     CenterRight,
-
     BottomLeft,
     BottomCenter,
     BottomRight
@@ -60,7 +51,7 @@ struct UiLayoutChildOptions
     UiLayoutAnchor _anchor = UiLayoutAnchor::TopLeft;
     UiLayoutMargin _margin;
     UiLayoutAlign _cross_align = UiLayoutAlign::Start;
-    elysia::core::Vector2 _size_override{ 0.0f, 0.0f };
+    elysia::core::Vector2 _size_override{ 0.0f,0.0f };
 
     bool _use_custom_cross_align = false;
     bool _fill_cross_axis = false;
@@ -69,7 +60,7 @@ struct UiLayoutChildOptions
 
 struct UiLayoutTransform
 {
-    elysia::core::Vector2 translation{ 0.0f, 0.0f };
-    elysia::core::Vector2 scale{ 1.0f, 1.0f };
+    elysia::core::Vector2 translation{ 0.0f,0.0f };
+    elysia::core::Vector2 scale{ 1.0f,1.0f };
 };
 }

@@ -1,4 +1,4 @@
-﻿#include "main_menu_scene.h"
+#include "main_menu_scene.h"
 
 #include "../../application/scene/scene_keys.h"
 #include "../../application/scene/scene_payloads.h"
@@ -8,7 +8,7 @@
 #include "../../engine/ui/widgets/ui_button.h"
 #include "../../engine/ui/containers/ui_panel.h"
 #include "../../engine/ui/containers/ui_list_container.h"
-#include "../../engine/ui/containers/ui_container_layout_types.h"
+#include "../../engine/ui/layout/ui_layout_types.h"
 
 
 
@@ -98,3 +98,4 @@ void MainMenuScene::clear_menu_buttons()
 }
 
 }
+

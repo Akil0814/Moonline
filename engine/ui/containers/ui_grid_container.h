@@ -1,10 +1,10 @@
 #pragma once
 
-#include "ui_container.h"
+#include "../core/ui_child_host.h"
 
 namespace elysia::ui
 {
-class UiGridContainer : public UiContainer
+class UiGridContainer : public UiChildHost
 {
 public:
     explicit UiGridContainer(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0) noexcept;
@@ -30,3 +30,4 @@ private:
     bool _fill_by_row = true;
 };
 }
+

@@ -1,10 +1,10 @@
-﻿#pragma once
+#pragma once
 
-#include "ui_container.h"
+#include "../core/ui_child_host.h"
 
 namespace elysia::ui
 {
-class UiScrollContainer : public UiContainer
+class UiScrollContainer : public UiChildHost
 {
 public:
     explicit UiScrollContainer(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0) noexcept;
@@ -64,3 +64,4 @@ private:
     elysia::core::Vector2 _scroll_step{ 24.0f,24.0f };
 };
 }
+

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "ui_container.h"
+#include "../core/ui_child_host.h"
 #include "../../core/render/colors.h"
 
 namespace elysia::ui
 {
-class UiPanel : public UiContainer
+class UiPanel : public UiChildHost
 {
 public:
     explicit UiPanel(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0) noexcept;
@@ -35,3 +35,4 @@ private:
     elysia::core::Color _border_color = elysia::core::colors::sky_blue;
 };
 }
+

@@ -1,8 +1,8 @@
-﻿#include "ui_container_shared_utils.h"
+#include "ui_layout_geometry.h"
 
 #include <algorithm>
 
-namespace elysia::ui::container_utils
+namespace elysia::ui::layout
 {
 namespace
 {
@@ -47,16 +47,23 @@ namespace
         return 0.0f;
     }
 }
-
-[[nodiscard]] std::uint8_t multiply_alpha(std::uint8_t a,std::uint8_t b) noexcept
-{
-    return static_cast<std::uint8_t>((static_cast<unsigned int>(a) * static_cast<unsigned int>(b)) / 255U);
 }
+
+float clamp_non_negative(float value) noexcept
+{
+    return std::max(0.0f,value);
 }
 
 elysia::core::Vector2 clamp_size(const elysia::core::Vector2& size) noexcept
 {
-    return elysia::core::Vector2(std::max(0.0f,size.x),std::max(0.0f,size.y));
+    return elysia::core::Vector2(clamp_non_negative(size.x),clamp_non_negative(size.y));
+}
+
+elysia::core::Rect padded_content_rect(const elysia::core::Rect& rect,const UiLayoutPadding& padding) noexcept
+{
+    const float width = std::max(0.0f,rect.width() - padding.left - padding.right);
+    const float height = std::max(0.0f,rect.height() - padding.top - padding.bottom);
+    return elysia::core::Rect(rect.x() + padding.left,rect.y() + padding.top,width,height);
 }
 
 elysia::core::Rect anchored_rect(
@@ -107,81 +114,17 @@ elysia::core::Rect anchored_rect(
     return rect;
 }
 
-elysia::core::Rect padded_content_rect(const elysia::core::Rect& rect,const UiLayoutPadding& padding) noexcept
-{
-    const float width = std::max(0.0f,rect.width() - padding.left - padding.right);
-    const float height = std::max(0.0f,rect.height() - padding.top - padding.bottom);
-    return elysia::core::Rect(rect.x() + padding.left,rect.y() + padding.top,width,height);
-}
-
-void apply_opacity_to_range(
-    std::vector<elysia::core::UiRenderCommand>& out_commands,
-    std::size_t begin,
-    std::uint8_t opacity
+elysia::core::Rect aligned_rect_in_bounds(
+    const elysia::core::Rect& bounds,
+    const elysia::core::Vector2& size,
+    UiLayoutAnchor anchor,
+    const UiLayoutMargin& margin
 ) noexcept
 {
-    if (opacity == 255)
-        return;
-
-    for (std::size_t index = begin; index < out_commands.size(); ++index)
-    {
-        elysia::core::UiRenderCommand& command = out_commands[index];
-        switch (command.type)
-        {
-        case elysia::core::UiRenderCommandType::Texture:
-            command.alpha = multiply_alpha(command.alpha,opacity);
-            break;
-        case elysia::core::UiRenderCommandType::FillRect:
-        case elysia::core::UiRenderCommandType::DrawRect:
-        case elysia::core::UiRenderCommandType::DrawLine:
-            command.color.a = multiply_alpha(command.color.a,opacity);
-            break;
-        default:
-            break;
-        }
-    }
-}
-
-void apply_clip_to_range(
-    std::vector<elysia::core::UiRenderCommand>& out_commands,
-    std::size_t begin,
-    const elysia::core::Rect& clip_rect
-)
-{
-    if (clip_rect.is_empty())
-    {
-        out_commands.erase(out_commands.begin() + static_cast<std::ptrdiff_t>(begin),out_commands.end());
-        return;
-    }
-
-    for (std::size_t index = out_commands.size(); index > begin; --index)
-    {
-        elysia::core::UiRenderCommand& command = out_commands[index - 1];
-        const elysia::core::Rect final_clip = command.use_clip_rect ? command.clip_rect.intersection(clip_rect) : clip_rect;
-        if (final_clip.is_empty())
-        {
-            out_commands.erase(out_commands.begin() + static_cast<std::ptrdiff_t>(index - 1));
-            continue;
-        }
-
-        command.use_clip_rect = true;
-        command.clip_rect = final_clip;
-    }
-}
-
-void finalize_child_command_range(
-    std::vector<elysia::core::UiRenderCommand>& out_commands,
-    std::size_t begin,
-    std::uint8_t opacity,
-    bool clip_children,
-    const elysia::core::Rect& clip_rect
-)
-{
-    if (begin >= out_commands.size())
-        return;
-
-    apply_opacity_to_range(out_commands,begin,opacity);
-    if (clip_children)
-        apply_clip_to_range(out_commands,begin,clip_rect);
+    const elysia::core::Vector2 clamped_size(
+        std::min(clamp_non_negative(size.x),bounds.width()),
+        std::min(clamp_non_negative(size.y),bounds.height())
+    );
+    return anchored_rect(bounds,clamped_size,anchor,margin);
 }
 }

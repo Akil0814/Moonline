@@ -1,35 +1,24 @@
-﻿#include "ui_scroll_container.h"
+#include "ui_scroll_container.h"
+
+#include "../layout/ui_layout_geometry.h"
 
 #include <algorithm>
 
 namespace elysia::ui
 {
-namespace
-{
-[[nodiscard]] float clamp_non_negative(float value) noexcept
-{
-    return std::max(0.0f,value);
-}
-
-[[nodiscard]] elysia::core::Vector2 clamp_non_negative(const elysia::core::Vector2& value) noexcept
-{
-    return elysia::core::Vector2(clamp_non_negative(value.x),clamp_non_negative(value.y));
-}
-}
-
 UiScrollContainer::UiScrollContainer(const elysia::core::Rect& rect,int order) noexcept
-    : UiContainer(rect,order) {}
+    : UiChildHost(rect,order) {}
 
 UiScrollContainer::UiScrollContainer(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order) noexcept
-    : UiContainer(position,size,order) {}
+    : UiChildHost(position,size,order) {}
 
 UiScrollContainer::UiScrollContainer(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order) noexcept
-    : UiContainer(center,size,from_center,order) {}
+    : UiChildHost(center,size,from_center,order) {}
 
 void UiScrollContainer::reset() noexcept
 {
-    UiContainer::reset();
-    UiContainer::set_clip_children(true);
+    UiChildHost::reset();
+    UiChildHost::set_clip_children(true);
     _content_size = elysia::core::Vector2::zero();
     _scroll_offset = elysia::core::Vector2::zero();
     _scroll_step = elysia::core::Vector2(24.0f,24.0f);
@@ -37,7 +26,7 @@ void UiScrollContainer::reset() noexcept
 
 bool UiScrollContainer::on_ui_input_event(const UiInputEvent& event)
 {
-    UiContainer::set_clip_children(true);
+    UiChildHost::set_clip_children(true);
     update_layout_if_dirty();
 
     if (event.type == UiInputEventType::MouseWheel)
@@ -65,7 +54,7 @@ bool UiScrollContainer::on_ui_input_event(const UiInputEvent& event)
         }
     }
 
-    return UiContainer::on_ui_input_event(event);
+    return UiChildHost::on_ui_input_event(event);
 }
 
 UiElement* UiScrollContainer::set_content(std::unique_ptr<UiElement> content)
@@ -91,7 +80,7 @@ void UiScrollContainer::clear_content()
 
 void UiScrollContainer::set_content_size(const elysia::core::Vector2& content_size) noexcept
 {
-    _content_size = clamp_non_negative(content_size);
+    _content_size = layout::clamp_size(content_size);
     _scroll_offset = clamp_scroll_offset(_scroll_offset);
     mark_layout_dirty();
 }
@@ -103,7 +92,7 @@ elysia::core::Vector2 UiScrollContainer::content_size() const noexcept
 
 void UiScrollContainer::set_content_width(float content_width) noexcept
 {
-    _content_size.x = clamp_non_negative(content_width);
+    _content_size.x = layout::clamp_non_negative(content_width);
     _scroll_offset = clamp_scroll_offset(_scroll_offset);
     mark_layout_dirty();
 }
@@ -115,7 +104,7 @@ float UiScrollContainer::content_width() const noexcept
 
 void UiScrollContainer::set_content_height(float content_height) noexcept
 {
-    _content_size.y = clamp_non_negative(content_height);
+    _content_size.y = layout::clamp_non_negative(content_height);
     _scroll_offset = clamp_scroll_offset(_scroll_offset);
     mark_layout_dirty();
 }
@@ -163,7 +152,7 @@ float UiScrollContainer::scroll_offset_y() const noexcept
 
 void UiScrollContainer::set_scroll_step(const elysia::core::Vector2& scroll_step) noexcept
 {
-    _scroll_step = clamp_non_negative(scroll_step);
+    _scroll_step = layout::clamp_size(scroll_step);
 }
 
 void UiScrollContainer::set_scroll_step(float scroll_step) noexcept
@@ -178,7 +167,7 @@ float UiScrollContainer::scroll_step() const noexcept
 
 void UiScrollContainer::set_scroll_step_x(float scroll_step_x) noexcept
 {
-    _scroll_step.x = clamp_non_negative(scroll_step_x);
+    _scroll_step.x = layout::clamp_non_negative(scroll_step_x);
 }
 
 float UiScrollContainer::scroll_step_x() const noexcept
@@ -188,7 +177,7 @@ float UiScrollContainer::scroll_step_x() const noexcept
 
 void UiScrollContainer::set_scroll_step_y(float scroll_step_y) noexcept
 {
-    _scroll_step.y = clamp_non_negative(scroll_step_y);
+    _scroll_step.y = layout::clamp_non_negative(scroll_step_y);
 }
 
 float UiScrollContainer::scroll_step_y() const noexcept
@@ -218,7 +207,7 @@ void UiScrollContainer::scroll_to_bottom() noexcept
 
 void UiScrollContainer::rebuild_layout()
 {
-    UiContainer::set_clip_children(true);
+    UiChildHost::set_clip_children(true);
     _scroll_offset = clamp_scroll_offset(_scroll_offset);
 
     std::vector<ChildEntry>& child_entries = children();

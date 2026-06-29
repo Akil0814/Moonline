@@ -1,7 +1,6 @@
 #include "ui_window.h"
 
-#include "../containers/ui_container.h"
-#include "../containers/ui_container_shared_utils.h"
+#include "../layout/ui_anchor_layout.h"
 #include "../../core/render/render_command.h"
 
 #include <algorithm>
@@ -26,19 +25,15 @@ namespace
 
 [[nodiscard]] std::size_t child_count_of(const UiElement& element) noexcept
 {
-    if (const auto* window = dynamic_cast<const UiWindow*>(&element))
-        return window->child_count();
-    if (const auto* container = dynamic_cast<const UiContainer*>(&element))
-        return container->child_count();
+    if (const auto* child_host = dynamic_cast<const UiChildHost*>(&element))
+        return child_host->child_count();
     return 0;
 }
 
 [[nodiscard]] const UiElement* child_at_of(const UiElement& element,std::size_t index) noexcept
 {
-    if (const auto* window = dynamic_cast<const UiWindow*>(&element))
-        return window->child_at(index);
-    if (const auto* container = dynamic_cast<const UiContainer*>(&element))
-        return container->child_at(index);
+    if (const auto* child_host = dynamic_cast<const UiChildHost*>(&element))
+        return child_host->child_at(index);
     return nullptr;
 }
 
@@ -63,93 +58,21 @@ void collect_live_controls(const UiElement& element,std::vector<const UiControl*
 }
 }
 
-UiWindow::UiWindow(const elysia::core::Rect& rect,int order) noexcept : UiElement(rect,order) {}
-UiWindow::UiWindow(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order) noexcept : UiElement(position,size,order) {}
-UiWindow::UiWindow(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag tag,int order) noexcept : UiElement(center,size,tag,order) {}
+UiWindow::UiWindow(const elysia::core::Rect& rect,int order) noexcept : UiChildHost(rect,order) {}
+UiWindow::UiWindow(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order) noexcept : UiChildHost(position,size,order) {}
+UiWindow::UiWindow(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag tag,int order) noexcept : UiChildHost(center,size,tag,order) {}
 
 void UiWindow::reset() noexcept
 {
-    UiElement::reset();
-    clear_children();
+    UiChildHost::reset();
     _focus_entries.clear();
     _focused_target = nullptr;
-    _padding = {};
-    _clip_children = false;
-    _layout_dirty = true;
-    _last_layout_rect = {};
     _draw_background = false;
     _draw_border = false;
     _background_color = elysia::core::colors::cobalt_blue;
     _border_color = elysia::core::colors::sky_blue;
     _hover_focus_enabled = true;
     _on_cancel = {};
-}
-
-UiElement* UiWindow::add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options)
-{
-    if (!child)
-        return nullptr;
-    UiElement* child_ptr = child.get();
-    _children.push_back(ChildEntry{ std::move(child),options });
-    mark_layout_dirty();
-    return child_ptr;
-}
-
-void UiWindow::clear_children()
-{
-    _children.clear();
-    _focus_entries.clear();
-    _focused_target = nullptr;
-    mark_layout_dirty();
-}
-
-std::size_t UiWindow::child_count() const noexcept
-{
-    return _children.size();
-}
-
-UiElement* UiWindow::child_at(std::size_t index) noexcept
-{
-    return index < _children.size() ? _children[index].element.get() : nullptr;
-}
-
-const UiElement* UiWindow::child_at(std::size_t index) const noexcept
-{
-    return index < _children.size() ? _children[index].element.get() : nullptr;
-}
-
-void UiWindow::set_child_layout_options(std::size_t index,const UiLayoutChildOptions& options)
-{
-    if (index >= _children.size())
-        return;
-    _children[index].layout = options;
-    mark_layout_dirty();
-}
-
-const UiLayoutChildOptions* UiWindow::child_layout_options(std::size_t index) const noexcept
-{
-    return index < _children.size() ? &_children[index].layout : nullptr;
-}
-
-void UiWindow::set_padding(const UiLayoutPadding& padding) noexcept
-{
-    _padding = padding;
-    mark_layout_dirty();
-}
-
-const UiLayoutPadding& UiWindow::padding() const noexcept
-{
-    return _padding;
-}
-
-void UiWindow::set_clip_children(bool clip_children) noexcept
-{
-    _clip_children = clip_children;
-}
-
-bool UiWindow::clips_children() const noexcept
-{
-    return _clip_children;
 }
 
 void UiWindow::set_draw_background(bool draw_background) noexcept
@@ -275,20 +198,6 @@ bool UiWindow::focus_first_available()
     return false;
 }
 
-void UiWindow::mark_layout_dirty() noexcept
-{
-    _layout_dirty = true;
-}
-
-void UiWindow::update_layout_if_dirty()
-{
-    if (!needs_layout_rebuild())
-        return;
-    rebuild_layout();
-    _last_layout_rect = screen_rect();
-    _layout_dirty = false;
-}
-
 void UiWindow::update(double delta)
 {
     cleanup_destroyed_children();
@@ -402,79 +311,14 @@ void UiWindow::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
 
 void UiWindow::rebuild_layout()
 {
-    const elysia::core::Rect bounds = content_rect();
-    for (ChildEntry& child : _children)
-    {
-        if (!child.element)
-            continue;
-        const elysia::core::Vector2 current_size = child.element->size();
-        const elysia::core::Vector2 target_size = child.layout._use_size_override ? child.layout._size_override : current_size;
-        child.element->set_screen_rect(container_utils::anchored_rect(bounds,container_utils::clamp_size(target_size),child.layout._anchor,child.layout._margin));
-    }
-}
-
-elysia::core::Rect UiWindow::content_rect() const noexcept
-{
-    return container_utils::padded_content_rect(screen_rect(),_padding);
-}
-
-std::vector<UiWindow::ChildEntry>& UiWindow::children() noexcept
-{
-    return _children;
-}
-
-const std::vector<UiWindow::ChildEntry>& UiWindow::children() const noexcept
-{
-    return _children;
-}
-
-void UiWindow::submit_child_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const
-{
-    const elysia::core::Rect clip_rect = content_rect();
-    for (const ChildEntry& child : _children)
-    {
-        if (!child.element || child.element->is_destroyed() || !child.element->is_visible())
-            continue;
-        const std::size_t begin = out_commands.size();
-        child.element->submit_ui_render_commands(out_commands);
-        finalize_child_command_range(out_commands,begin,clip_rect);
-    }
-}
-
-void UiWindow::apply_opacity_to_range(std::vector<elysia::core::UiRenderCommand>& out_commands,std::size_t begin) const
-{
-    container_utils::apply_opacity_to_range(out_commands,begin,opacity());
-}
-
-void UiWindow::apply_clip_to_range(std::vector<elysia::core::UiRenderCommand>& out_commands,std::size_t begin,const elysia::core::Rect& clip_rect) const
-{
-    container_utils::apply_clip_to_range(out_commands,begin,clip_rect);
-}
-
-void UiWindow::finalize_child_command_range(
-    std::vector<elysia::core::UiRenderCommand>& out_commands,
-    std::size_t begin,
-    const elysia::core::Rect& clip_rect) const
-{
-    container_utils::finalize_child_command_range(out_commands,begin,opacity(),_clip_children,clip_rect);
-}
-
-void UiWindow::cleanup_destroyed_children()
-{
-    const std::size_t previous_count = _children.size();
-    _children.erase(std::remove_if(_children.begin(),_children.end(),[](const ChildEntry& entry)
-    {
-        return !entry.element || entry.element->is_destroyed();
-    }),_children.end());
-    if (_children.size() != previous_count)
-        mark_layout_dirty();
+    layout::layout_anchored_children(children(),content_rect());
 }
 
 void UiWindow::prune_focus_targets()
 {
     std::vector<const UiControl*> live_controls;
     live_controls.reserve(_focus_entries.size());
-    for (const ChildEntry& child : _children)
+    for (const ChildEntry& child : children())
     {
         if (child.element)
             collect_live_controls(*child.element,live_controls);
@@ -504,44 +348,6 @@ void UiWindow::apply_focus_state()
     }
 }
 
-void UiWindow::update_child_objects(double delta)
-{
-    for (ChildEntry& child : _children)
-    {
-        if (!child.element || child.element->is_destroyed() || !child.element->is_active())
-            continue;
-        if (auto* updatable = dynamic_cast<elysia::core::Updatable*>(child.element.get()))
-            updatable->update(delta);
-    }
-}
-
-void UiWindow::dispatch_frame_to_children(const UiInputFrame& input)
-{
-    for (ChildEntry& child : _children)
-    {
-        if (!child.element || child.element->is_destroyed() || !child.element->is_active())
-            continue;
-        if (auto* receiver = dynamic_cast<UiInputFrameReceiver*>(child.element.get()))
-            receiver->on_ui_input_frame(input);
-    }
-}
-
-bool UiWindow::dispatch_input_to_children(const UiInputEvent& event)
-{
-    for (auto it = _children.rbegin(); it != _children.rend(); ++it)
-    {
-        UiElement* child = it->element.get();
-        if (!child || child->is_destroyed() || !child->is_active())
-            continue;
-        if (auto* receiver = dynamic_cast<UiInputEventReceiver*>(child))
-        {
-            if (receiver->on_ui_input_event(event))
-                return true;
-        }
-    }
-    return false;
-}
-
 UiControl* UiWindow::find_registered_target_at(int mouse_x,int mouse_y) const
 {
     const elysia::core::Vector2 pointer(static_cast<float>(mouse_x),static_cast<float>(mouse_y));
@@ -562,12 +368,12 @@ UiControl* UiWindow::find_registered_target_at(int mouse_x,int mouse_y) const
         return control->screen_rect().contains(pointer) ? const_cast<UiControl*>(control) : nullptr;
     };
 
-    for (std::size_t offset = 0; offset < _children.size(); ++offset)
+    for (std::size_t offset = 0; offset < child_count(); ++offset)
     {
-        const ChildEntry& entry = _children[_children.size() - 1 - offset];
-        if (!entry.element || entry.element->is_destroyed() || !entry.element->is_visible() || !entry.element->is_active())
+        const UiElement* child = child_at(child_count() - 1 - offset);
+        if (!child || child->is_destroyed() || !child->is_visible() || !child->is_active())
             continue;
-        if (UiControl* found = find_in_element(find_in_element,*entry.element))
+        if (UiControl* found = find_in_element(find_in_element,*child))
             return found;
     }
     return nullptr;
@@ -622,11 +428,6 @@ bool UiWindow::set_focused_target_internal(UiControl* control) noexcept
         return false;
     _focused_target = control;
     return true;
-}
-
-bool UiWindow::needs_layout_rebuild() const noexcept
-{
-    return _layout_dirty || screen_rect() != _last_layout_rect;
 }
 
 bool UiWindow::is_control_usable(const UiControl* control) noexcept

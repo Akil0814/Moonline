@@ -1,6 +1,6 @@
-﻿#pragma once
+#pragma once
 
-#include "ui_container.h"
+#include "../core/ui_child_host.h"
 
 namespace elysia::ui
 {
@@ -10,7 +10,7 @@ enum class UiListDirection
     Horizontal
 };
 
-class UiListContainer : public UiContainer
+class UiListContainer : public UiChildHost
 {
 public:
     explicit UiListContainer(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0) noexcept;
@@ -33,3 +33,4 @@ private:
     float _item_spacing = 0.0f;
 };
 }
+
