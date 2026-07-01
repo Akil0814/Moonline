@@ -7,6 +7,12 @@
 
 namespace elysia::ui
 {
+void UiElement::notify_layout_parent_of_intrinsic_layout_invalidation() noexcept
+{
+    if (_layout_parent)
+        _layout_parent->on_child_intrinsic_layout_invalidated(*this);
+}
+
 UiChildHost::UiChildHost(const elysia::core::Rect& rect,int order) noexcept
     : UiElement(rect,order) {}
 
@@ -18,6 +24,7 @@ UiChildHost::UiChildHost(const elysia::core::Vector2& center,const elysia::core:
 
 void UiChildHost::reset() noexcept
 {
+    detach_all_children_from_layout_tree();
     UiElement::reset();
     _children.clear();
     _padding = UiLayoutPadding{};
@@ -39,14 +46,19 @@ UiElement* UiChildHost::insert_child(std::unique_ptr<UiElement> child,std::size_
     UiElement* child_ptr = child.get();
     const std::size_t target_index = std::min(index,_children.size());
     _children.insert(_children.begin() + static_cast<std::ptrdiff_t>(target_index),ChildEntry{ std::move(child),options });
-    mark_layout_dirty();
+    attach_child_to_layout_tree(*child_ptr);
+    invalidate_intrinsic_layout();
     return child_ptr;
 }
 
 void UiChildHost::clear_children()
 {
+    if (_children.empty())
+        return;
+
+    detach_all_children_from_layout_tree();
     _children.clear();
-    mark_layout_dirty();
+    invalidate_intrinsic_layout();
 }
 
 std::size_t UiChildHost::child_count() const noexcept
@@ -69,7 +81,7 @@ void UiChildHost::set_child_layout_options(std::size_t index,const UiLayoutChild
     if (index >= _children.size())
         return;
     _children[index].layout = options;
-    mark_layout_dirty();
+    invalidate_intrinsic_layout();
 }
 
 const UiLayoutChildOptions* UiChildHost::child_layout_options(std::size_t index) const noexcept
@@ -80,7 +92,7 @@ const UiLayoutChildOptions* UiChildHost::child_layout_options(std::size_t index)
 void UiChildHost::set_padding(const UiLayoutPadding& padding) noexcept
 {
     _padding = padding;
-    mark_layout_dirty();
+    invalidate_intrinsic_layout();
 }
 
 const UiLayoutPadding& UiChildHost::padding() const noexcept
@@ -101,6 +113,19 @@ bool UiChildHost::clips_children() const noexcept
 void UiChildHost::mark_layout_dirty() noexcept
 {
     _layout_dirty = true;
+}
+
+void UiChildHost::invalidate_intrinsic_layout() noexcept
+{
+    mark_layout_dirty();
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+void UiChildHost::on_child_intrinsic_layout_invalidated(UiElement& child) noexcept
+{
+    (void)child;
+    mark_layout_dirty();
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 void UiChildHost::update_layout_if_dirty()
@@ -241,18 +266,37 @@ bool UiChildHost::dispatch_input_to_children(const UiInputEvent& event)
 void UiChildHost::cleanup_destroyed_children()
 {
     const std::size_t previous_count = _children.size();
-    std::erase_if(_children,[](const ChildEntry& entry)
+    std::erase_if(_children,[this](const ChildEntry& entry)
     {
-        return !entry.element || entry.element->is_destroyed();
+        if (entry.element && !entry.element->is_destroyed())
+            return false;
+
+        detach_child_from_layout_tree(entry.element.get());
+        return true;
     });
     if (_children.size() != previous_count)
-        mark_layout_dirty();
+        invalidate_intrinsic_layout();
 }
 
 bool UiChildHost::needs_layout_rebuild() const noexcept
 {
     return _layout_dirty || !_last_layout_rect.nearly_equals(screen_rect());
 }
+
+void UiChildHost::attach_child_to_layout_tree(UiElement& child) noexcept
+{
+    child.set_layout_parent(this);
 }
 
+void UiChildHost::detach_child_from_layout_tree(UiElement* child) noexcept
+{
+    if (child)
+        child->set_layout_parent(nullptr);
+}
 
+void UiChildHost::detach_all_children_from_layout_tree() noexcept
+{
+    for (ChildEntry& entry : _children)
+        detach_child_from_layout_tree(entry.element.get());
+}
+}

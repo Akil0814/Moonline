@@ -64,8 +64,15 @@ bool UiScrollContainer::on_ui_input_event(const UiInputEvent& event)
 
     if (dispatch_to_scrollbars(event))
         return true;
-    if (handle_mouse_wheel(event))
-        return true;
+
+    if (event.type == UiInputEventType::MouseWheel)
+    {
+        const bool handled_by_child = UiChildHost::on_ui_input_event(event);
+        ensure_visible_focused_target();
+        if (handled_by_child)
+            return true;
+        return handle_mouse_wheel(event);
+    }
 
     const bool handled = UiChildHost::on_ui_input_event(event);
     ensure_visible_focused_target();
@@ -414,10 +421,18 @@ bool UiScrollContainer::handle_mouse_wheel(const UiInputEvent& event)
     if (event.type != UiInputEventType::MouseWheel)
         return false;
 
-    const elysia::core::Rect viewport = content_rect();
-    const elysia::core::Vector2 point(static_cast<float>(event.mouse_x),static_cast<float>(event.mouse_y));
-    if (!viewport.contains(point))
-        return false;
+    if (event.device == elysia::input::InputDevice::Gamepad)
+    {
+        if (!_scope_focused)
+            return false;
+    }
+    else
+    {
+        const elysia::core::Rect viewport = content_rect();
+        const elysia::core::Vector2 point(static_cast<float>(event.mouse_x),static_cast<float>(event.mouse_y));
+        if (!viewport.contains(point))
+            return false;
+    }
 
     const elysia::core::Vector2 before = _scroll_state.offset();
     if (event.wheel_x != 0 && _scroll_state.can_scroll_horizontal())
@@ -706,5 +721,6 @@ void UiScrollContainer::submit_scrollbar_render_commands(std::vector<elysia::cor
     }
 }
 }
+
 
 

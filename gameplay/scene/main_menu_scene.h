@@ -34,7 +34,6 @@ private:
 
     void rebuild_menu_buttons();
     void clear_menu_buttons();
-    void handle_menu_action(std::size_t index);
 
 private:
     elysia::ui::UiWindow* _main_menu = nullptr;

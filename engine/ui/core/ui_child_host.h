@@ -16,6 +16,8 @@ namespace elysia::ui
 {
 class UiChildHost : public UiElement, public elysia::core::Updatable, public UiInputFrameReceiver, public UiInputEventReceiver
 {
+    friend class UiElement;
+
 public:
     struct ChildEntry
     {
@@ -78,6 +80,8 @@ public:
 
 protected:
     virtual void rebuild_layout();
+    void invalidate_intrinsic_layout() noexcept;
+    virtual void on_child_intrinsic_layout_invalidated(UiElement& child) noexcept;
 
     [[nodiscard]] elysia::core::Rect content_rect() const noexcept;
     [[nodiscard]] std::vector<ChildEntry>& children() noexcept;
@@ -99,6 +103,10 @@ protected:
     [[nodiscard]] bool needs_layout_rebuild() const noexcept;
 
 private:
+    void attach_child_to_layout_tree(UiElement& child) noexcept;
+    void detach_child_from_layout_tree(UiElement* child) noexcept;
+    void detach_all_children_from_layout_tree() noexcept;
+
     std::vector<ChildEntry> _children;
     UiLayoutPadding _padding{};
     bool _clip_children = false;

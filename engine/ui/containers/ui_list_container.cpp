@@ -43,7 +43,7 @@ UiElement* UiListContainer::add_child(std::unique_ptr<UiElement> child,UiLayoutC
 void UiListContainer::set_direction(UiListDirection direction) noexcept
 {
     _layout.direction = to_layout_direction(direction);
-    mark_layout_dirty();
+    invalidate_intrinsic_layout();
 }
 
 UiListDirection UiListContainer::direction() const noexcept
@@ -54,7 +54,7 @@ UiListDirection UiListContainer::direction() const noexcept
 void UiListContainer::set_item_spacing(float item_spacing) noexcept
 {
     _layout.item_spacing = layout::clamp_non_negative(item_spacing);
-    mark_layout_dirty();
+    invalidate_intrinsic_layout();
 }
 
 float UiListContainer::item_spacing() const noexcept

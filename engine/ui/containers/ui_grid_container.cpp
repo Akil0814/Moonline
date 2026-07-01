@@ -50,7 +50,7 @@ UiElement* UiGridContainer::add_child(std::unique_ptr<UiElement> child,UiLayoutC
 void UiGridContainer::set_column_count(int column_count) noexcept
 {
     _layout.column_count = std::max(1,column_count);
-    mark_layout_dirty();
+    invalidate_intrinsic_layout();
 }
 
 int UiGridContainer::column_count() const noexcept
@@ -61,7 +61,7 @@ int UiGridContainer::column_count() const noexcept
 void UiGridContainer::set_cell_spacing(const elysia::core::Vector2& spacing) noexcept
 {
     _layout.cell_spacing = layout::clamp_size(spacing);
-    mark_layout_dirty();
+    invalidate_intrinsic_layout();
 }
 
 elysia::core::Vector2 UiGridContainer::cell_spacing() const noexcept
@@ -72,7 +72,7 @@ elysia::core::Vector2 UiGridContainer::cell_spacing() const noexcept
 void UiGridContainer::set_fill_by_row(bool fill_by_row) noexcept
 {
     _layout.fill_by_row = fill_by_row;
-    mark_layout_dirty();
+    invalidate_intrinsic_layout();
 }
 
 bool UiGridContainer::fills_by_row() const noexcept

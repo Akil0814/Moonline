@@ -11,6 +11,7 @@
 namespace elysia::ui
 {
 struct UiTheme;
+class UiChildHost;
 struct UiFromCenterTag
 {
     explicit constexpr UiFromCenterTag() noexcept = default;
@@ -47,6 +48,7 @@ public:
     void reset() noexcept override
     {
         elysia::core::SceneObject::reset();
+        _layout_parent = nullptr;
         _use_theme = false;
         _opacity = 255;
     }
@@ -75,6 +77,7 @@ public:
 
 protected:
     virtual void apply_theme(const UiTheme& theme) { (void)theme; }
+    void notify_layout_parent_of_intrinsic_layout_invalidation() noexcept;
 
     void apply_opacity(elysia::core::UiRenderCommand& command) const noexcept
     {
@@ -100,12 +103,17 @@ protected:
     }
 
 private:
+    friend class UiChildHost;
+
     static std::uint8_t multiply_alpha(std::uint8_t a, std::uint8_t b) noexcept
     {
         return static_cast<std::uint8_t>((static_cast<unsigned int>(a) * static_cast<unsigned int>(b)) / 255U);
     }
 
+    void set_layout_parent(UiChildHost* parent) noexcept { _layout_parent = parent; }
+
     elysia::core::Rect _screen_rect{};
+    UiChildHost* _layout_parent = nullptr;
     int _order = 0;
     bool _use_theme = false;
     std::uint8_t _opacity = 255;
