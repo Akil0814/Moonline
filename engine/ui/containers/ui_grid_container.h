@@ -1,10 +1,11 @@
 #pragma once
 
-#include "../core/ui_child_host.h"
+#include "../focus/ui_control_focus_scope_host.h"
+#include "../layout/ui_grid_layout.h"
 
 namespace elysia::ui
 {
-class UiGridContainer : public UiChildHost
+class UiGridContainer : public UiControlFocusScopeHost
 {
 public:
     explicit UiGridContainer(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0) noexcept;
@@ -13,6 +14,9 @@ public:
     ~UiGridContainer() override = default;
 
     void reset() noexcept override;
+
+    void add_child(std::unique_ptr<UiElement> child);
+    UiElement* add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options) override;
 
     void set_column_count(int column_count) noexcept;
     [[nodiscard]] int column_count() const noexcept;
@@ -23,11 +27,9 @@ public:
 
 protected:
     void rebuild_layout() override;
+    void rebuild_focus_registry() override;
 
 private:
-    int _column_count = 1;
-    elysia::core::Vector2 _cell_spacing{ 0.0f,0.0f };
-    bool _fill_by_row = true;
+    layout::UiGridLayoutConfig _layout{};
 };
 }
-

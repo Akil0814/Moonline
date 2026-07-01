@@ -1,5 +1,6 @@
 #include "ui_window.h"
 
+#include "../focus/ui_focus_scope_utils.h"
 #include "../layout/ui_anchor_layout.h"
 #include "../../core/render/render_command.h"
 
@@ -7,57 +8,6 @@
 
 namespace elysia::ui
 {
-namespace
-{
-[[nodiscard]] bool is_navigation_action(UiAction action) noexcept
-{
-    switch (action)
-    {
-    case UiAction::NavigateLeft:
-    case UiAction::NavigateRight:
-    case UiAction::NavigateUp:
-    case UiAction::NavigateDown:
-        return true;
-    default:
-        return false;
-    }
-}
-
-[[nodiscard]] std::size_t child_count_of(const UiElement& element) noexcept
-{
-    if (const auto* child_host = dynamic_cast<const UiChildHost*>(&element))
-        return child_host->child_count();
-    return 0;
-}
-
-[[nodiscard]] const UiElement* child_at_of(const UiElement& element,std::size_t index) noexcept
-{
-    if (const auto* child_host = dynamic_cast<const UiChildHost*>(&element))
-        return child_host->child_at(index);
-    return nullptr;
-}
-
-void collect_live_controls(const UiElement& element,std::vector<const UiControl*>& out_controls)
-{
-    if (element.is_destroyed())
-        return;
-    if (const auto* control = dynamic_cast<const UiControl*>(&element))
-        out_controls.push_back(control);
-    const std::size_t count = child_count_of(element);
-    for (std::size_t index = 0; index < count; ++index)
-    {
-        const UiElement* child = child_at_of(element,index);
-        if (child)
-            collect_live_controls(*child,out_controls);
-    }
-}
-
-[[nodiscard]] bool contains_control(const std::vector<const UiControl*>& controls,const UiControl* control) noexcept
-{
-    return std::find(controls.begin(),controls.end(),control) != controls.end();
-}
-}
-
 UiWindow::UiWindow(const elysia::core::Rect& rect,int order) noexcept : UiChildHost(rect,order) {}
 UiWindow::UiWindow(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order) noexcept : UiChildHost(position,size,order) {}
 UiWindow::UiWindow(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag tag,int order) noexcept : UiChildHost(center,size,tag,order) {}
@@ -65,8 +15,8 @@ UiWindow::UiWindow(const elysia::core::Vector2& center,const elysia::core::Vecto
 void UiWindow::reset() noexcept
 {
     UiChildHost::reset();
-    _focus_entries.clear();
-    _focused_target = nullptr;
+    _scope_entries.clear();
+    _focused_scope = nullptr;
     _draw_background = false;
     _draw_border = false;
     _background_color = elysia::core::colors::cobalt_blue;
@@ -130,71 +80,74 @@ void UiWindow::set_on_cancel(UiWindowCancelCallback on_cancel)
     _on_cancel = std::move(on_cancel);
 }
 
-void UiWindow::register_focus_target(UiControl& control,const UiWindowFocusOptions& options)
+void UiWindow::register_focus_scope(UiFocusScope& scope,const UiFocusScopeNeighbors& neighbors)
 {
-    auto found = std::find_if(_focus_entries.begin(),_focus_entries.end(),[&control](const FocusEntry& entry)
+    auto found = std::find_if(_scope_entries.begin(),_scope_entries.end(),[&scope](const ScopeEntry& entry)
     {
-        return entry.control == &control;
+        return entry.scope == &scope;
     });
-    if (found != _focus_entries.end())
-        found->options = options;
+    if (found != _scope_entries.end())
+        found->neighbors = neighbors;
     else
-        _focus_entries.push_back(FocusEntry{ &control,options });
-    ensure_valid_focus();
-    apply_focus_state();
+        _scope_entries.push_back(ScopeEntry{ &scope,neighbors });
+    ensure_valid_scope_focus();
+    apply_scope_focus();
 }
 
-void UiWindow::unregister_focus_target(UiControl& control)
+void UiWindow::unregister_focus_scope(UiFocusScope& scope)
 {
-    _focus_entries.erase(std::remove_if(_focus_entries.begin(),_focus_entries.end(),[&control](const FocusEntry& entry)
+    _scope_entries.erase(std::remove_if(_scope_entries.begin(),_scope_entries.end(),[&scope](const ScopeEntry& entry)
     {
-        return entry.control == &control;
-    }),_focus_entries.end());
-    if (_focused_target == &control)
-        _focused_target = nullptr;
-    ensure_valid_focus();
-    apply_focus_state();
+        return entry.scope == &scope;
+    }),_scope_entries.end());
+    if (_focused_scope == &scope)
+        _focused_scope = nullptr;
+    ensure_valid_scope_focus();
+    apply_scope_focus();
 }
 
-void UiWindow::set_focus_neighbors(UiControl& control,const UiWindowFocusNeighbors& neighbors)
+void UiWindow::set_scope_neighbors(UiFocusScope& scope,const UiFocusScopeNeighbors& neighbors)
 {
-    auto found = std::find_if(_focus_entries.begin(),_focus_entries.end(),[&control](const FocusEntry& entry)
+    auto found = std::find_if(_scope_entries.begin(),_scope_entries.end(),[&scope](const ScopeEntry& entry)
     {
-        return entry.control == &control;
+        return entry.scope == &scope;
     });
-    if (found == _focus_entries.end())
+    if (found == _scope_entries.end())
     {
-        register_focus_target(control,UiWindowFocusOptions{ .neighbors = neighbors });
+        register_focus_scope(scope,neighbors);
         return;
     }
-    found->options.neighbors = neighbors;
+    found->neighbors = neighbors;
 }
 
-void UiWindow::set_focused_target(UiControl* control)
+void UiWindow::set_focused_scope(UiFocusScope* scope)
 {
-    (void)set_focused_target_internal(control);
-    ensure_valid_focus();
-    apply_focus_state();
+    (void)set_focused_scope_internal(scope);
+    ensure_valid_scope_focus();
+    apply_scope_focus();
 }
 
-UiControl* UiWindow::focused_target() const noexcept
+UiFocusScope* UiWindow::focused_scope() const noexcept
 {
-    return _focused_target;
+    return _focused_scope;
 }
 
-bool UiWindow::focus_first_available()
+bool UiWindow::focus_first_available_scope()
 {
-    for (const FocusEntry& entry : _focus_entries)
+    prune_focus_scopes();
+    for (const ScopeEntry& entry : _scope_entries)
     {
-        if (is_control_usable(entry.control))
+        if (is_scope_usable(entry.scope))
         {
-            _focused_target = entry.control;
-            apply_focus_state();
+            _focused_scope = entry.scope;
+            if (!_focused_scope->focused_target())
+                (void)_focused_scope->focus_first_available();
+            apply_scope_focus();
             return true;
         }
     }
-    _focused_target = nullptr;
-    apply_focus_state();
+    _focused_scope = nullptr;
+    apply_scope_focus();
     return false;
 }
 
@@ -202,37 +155,37 @@ void UiWindow::update(double delta)
 {
     cleanup_destroyed_children();
     update_layout_if_dirty();
-    prune_focus_targets();
-    ensure_valid_focus();
-    apply_focus_state();
+    prune_focus_scopes();
+    ensure_valid_scope_focus();
+    apply_scope_focus();
     update_child_objects(delta);
     cleanup_destroyed_children();
-    prune_focus_targets();
-    ensure_valid_focus();
-    apply_focus_state();
+    prune_focus_scopes();
+    ensure_valid_scope_focus();
+    apply_scope_focus();
 }
 
 void UiWindow::on_ui_input_frame(const UiInputFrame& input)
 {
     cleanup_destroyed_children();
     update_layout_if_dirty();
-    prune_focus_targets();
-    ensure_valid_focus();
-    apply_focus_state();
+    prune_focus_scopes();
+    ensure_valid_scope_focus();
+    apply_scope_focus();
     dispatch_frame_to_children(input);
     cleanup_destroyed_children();
-    prune_focus_targets();
-    ensure_valid_focus();
-    apply_focus_state();
+    prune_focus_scopes();
+    ensure_valid_scope_focus();
+    apply_scope_focus();
 }
 
 bool UiWindow::on_ui_input_event(const UiInputEvent& event)
 {
     cleanup_destroyed_children();
     update_layout_if_dirty();
-    prune_focus_targets();
-    ensure_valid_focus();
-    apply_focus_state();
+    prune_focus_scopes();
+    ensure_valid_scope_focus();
+    apply_scope_focus();
 
     bool handled = false;
 
@@ -244,50 +197,58 @@ bool UiWindow::on_ui_input_event(const UiInputEvent& event)
             handled = true;
         }
     }
-    else if (event.type == UiInputEventType::ActionPressed && event.action == UiAction::Confirm)
-    {
-        if (is_control_usable(_focused_target))
-        {
-            if (auto* receiver = dynamic_cast<UiInputEventReceiver*>(_focused_target))
-                handled = receiver->on_ui_input_event(event);
-        }
-    }
-    else if (is_navigation_action(event.action) && event.type == UiInputEventType::ActionPressed)
-    {
-        if (is_control_usable(_focused_target))
-        {
-            if (auto* receiver = dynamic_cast<UiInputEventReceiver*>(_focused_target))
-                handled = receiver->on_ui_input_event(event);
-        }
-        if (!handled && _focused_target)
-        {
-            UiControl* neighbor = find_neighbor(*_focused_target,event.action);
-            if (neighbor)
-            {
-                _focused_target = neighbor;
-                handled = true;
-            }
-        }
-    }
     else
     {
-        if (event.type == UiInputEventType::MouseMoved && _hover_focus_enabled)
+        UiFocusScope* pointer_scope = nullptr;
+        if (event.type == UiInputEventType::MouseMoved
+            || event.type == UiInputEventType::PointerPressed
+            || event.type == UiInputEventType::PointerReleased
+            || event.type == UiInputEventType::MouseWheel)
         {
-            if (UiControl* hovered = find_registered_target_at(event.mouse_x,event.mouse_y))
-                (void)set_focused_target_internal(hovered);
+            pointer_scope = find_registered_scope_at(event.mouse_x,event.mouse_y);
         }
-        else if (event.type == UiInputEventType::PointerPressed && event.control == elysia::input::RawInputControl::MouseLeft)
+
+        if (event.type == UiInputEventType::MouseMoved && _hover_focus_enabled && pointer_scope)
+            (void)set_focused_scope_internal(pointer_scope);
+        else if (event.type == UiInputEventType::PointerPressed
+            && event.device == elysia::input::InputDevice::Mouse
+            && event.control == elysia::input::RawInputControl::MouseLeft
+            && pointer_scope)
+            (void)set_focused_scope_internal(pointer_scope);
+
+        if (event.type == UiInputEventType::ActionPressed && is_navigation_action(event.action))
         {
-            if (UiControl* hovered = find_registered_target_at(event.mouse_x,event.mouse_y))
-                (void)set_focused_target_internal(hovered);
+            handled = dispatch_to_scope(_focused_scope,event);
+            if (!handled && _focused_scope)
+            {
+                if (UiFocusScope* neighbor = find_neighbor(*_focused_scope,event.action))
+                {
+                    _focused_scope = neighbor;
+                    if (!_focused_scope->focused_target())
+                        (void)_focused_scope->focus_first_available();
+                    handled = true;
+                }
+            }
         }
-        handled = dispatch_input_to_children(event);
+        else if ((event.action == UiAction::Confirm)
+            && (event.type == UiInputEventType::ActionPressed || event.type == UiInputEventType::ActionReleased))
+        {
+            handled = dispatch_to_scope(_focused_scope,event);
+        }
+        else
+        {
+            UiFocusScope* event_scope = pointer_scope ? pointer_scope : _focused_scope;
+            if (event_scope)
+                handled = dispatch_to_scope(event_scope,event);
+            if (!handled)
+                handled = dispatch_input_to_children(event);
+        }
     }
 
     cleanup_destroyed_children();
-    prune_focus_targets();
-    ensure_valid_focus();
-    apply_focus_state();
+    prune_focus_scopes();
+    ensure_valid_scope_focus();
+    apply_scope_focus();
     return handled;
 }
 
@@ -298,9 +259,9 @@ void UiWindow::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
     auto* self = const_cast<UiWindow*>(this);
     self->cleanup_destroyed_children();
     self->update_layout_if_dirty();
-    self->prune_focus_targets();
-    self->ensure_valid_focus();
-    self->apply_focus_state();
+    self->prune_focus_scopes();
+    self->ensure_valid_scope_focus();
+    self->apply_scope_focus();
 
     if (_draw_background)
         out_commands.push_back(elysia::core::make_ui_fill_rect_command(screen_rect(),apply_opacity(_background_color)));
@@ -314,124 +275,116 @@ void UiWindow::rebuild_layout()
     layout::layout_anchored_children(children(),content_rect());
 }
 
-void UiWindow::prune_focus_targets()
+void UiWindow::prune_focus_scopes()
 {
-    std::vector<const UiControl*> live_controls;
-    live_controls.reserve(_focus_entries.size());
-    for (const ChildEntry& child : children())
+    std::vector<const UiFocusScope*> live_scopes;
+    live_scopes.reserve(_scope_entries.size());
+    collect_live_scopes(*this,live_scopes);
+    _scope_entries.erase(std::remove_if(_scope_entries.begin(),_scope_entries.end(),[&live_scopes](const ScopeEntry& entry)
     {
-        if (child.element)
-            collect_live_controls(*child.element,live_controls);
-    }
-    _focus_entries.erase(std::remove_if(_focus_entries.begin(),_focus_entries.end(),[&live_controls](const FocusEntry& entry)
-    {
-        return !entry.control || entry.control->is_destroyed() || !contains_control(live_controls,entry.control);
-    }),_focus_entries.end());
-    if (_focused_target && (_focused_target->is_destroyed() || !contains_control(live_controls,_focused_target)))
-        _focused_target = nullptr;
+        return !entry.scope || !contains_scope(live_scopes,entry.scope);
+    }),_scope_entries.end());
+    if (_focused_scope && !contains_scope(live_scopes,_focused_scope))
+        _focused_scope = nullptr;
 }
 
-void UiWindow::ensure_valid_focus()
+void UiWindow::ensure_valid_scope_focus()
 {
-    if (_focused_target && is_registered_focus_target(*_focused_target) && is_control_usable(_focused_target))
+    if (_focused_scope && is_registered_scope(*_focused_scope) && is_scope_usable(_focused_scope))
         return;
-    focus_first_available();
+    (void)focus_first_available_scope();
 }
 
-void UiWindow::apply_focus_state()
+void UiWindow::apply_scope_focus()
 {
-    for (const FocusEntry& entry : _focus_entries)
+    for (const ScopeEntry& entry : _scope_entries)
     {
-        if (!entry.control)
+        if (!entry.scope)
             continue;
-        entry.control->set_focused(entry.control == _focused_target && is_control_usable(entry.control));
+        entry.scope->set_scope_focused(entry.scope == _focused_scope && is_scope_usable(entry.scope));
     }
 }
 
-UiControl* UiWindow::find_registered_target_at(int mouse_x,int mouse_y) const
+UiFocusScope* UiWindow::find_registered_scope_at(int mouse_x,int mouse_y) const
 {
-    const elysia::core::Vector2 pointer(static_cast<float>(mouse_x),static_cast<float>(mouse_y));
-    auto find_in_element = [&](const auto& self,const UiElement& element) -> UiControl*
+    for (std::size_t index = _scope_entries.size(); index > 0; --index)
     {
-        const std::size_t count = child_count_of(element);
-        for (std::size_t offset = 0; offset < count; ++offset)
-        {
-            const UiElement* child = child_at_of(element,count - 1 - offset);
-            if (!child || child->is_destroyed() || !child->is_visible() || !child->is_active())
-                continue;
-            if (UiControl* nested = self(self,*child))
-                return nested;
-        }
-        const auto* control = dynamic_cast<const UiControl*>(&element);
-        if (!control || !is_registered_focus_target(*control) || !is_control_usable(control))
-            return nullptr;
-        return control->screen_rect().contains(pointer) ? const_cast<UiControl*>(control) : nullptr;
-    };
-
-    for (std::size_t offset = 0; offset < child_count(); ++offset)
-    {
-        const UiElement* child = child_at(child_count() - 1 - offset);
-        if (!child || child->is_destroyed() || !child->is_visible() || !child->is_active())
+        UiFocusScope* scope = _scope_entries[index - 1].scope;
+        if (!is_scope_usable(scope))
             continue;
-        if (UiControl* found = find_in_element(find_in_element,*child))
-            return found;
+        if (scope->contains_focus_point(mouse_x,mouse_y))
+            return scope;
     }
     return nullptr;
 }
 
-UiControl* UiWindow::find_neighbor(const UiControl& control,UiAction action) const
+UiFocusScope* UiWindow::find_neighbor(const UiFocusScope& scope,UiAction action) const
 {
-    auto found = std::find_if(_focus_entries.begin(),_focus_entries.end(),[&control](const FocusEntry& entry)
+    auto found = std::find_if(_scope_entries.begin(),_scope_entries.end(),[&scope](const ScopeEntry& entry)
     {
-        return entry.control == &control;
+        return entry.scope == &scope;
     });
-    if (found == _focus_entries.end())
+    if (found == _scope_entries.end())
         return nullptr;
 
-    UiControl* candidate = nullptr;
+    UiFocusScope* candidate = nullptr;
     switch (action)
     {
     case UiAction::NavigateLeft:
-        candidate = found->options.neighbors.left;
+        candidate = found->neighbors.left;
         break;
     case UiAction::NavigateRight:
-        candidate = found->options.neighbors.right;
+        candidate = found->neighbors.right;
         break;
     case UiAction::NavigateUp:
-        candidate = found->options.neighbors.up;
+        candidate = found->neighbors.up;
         break;
     case UiAction::NavigateDown:
-        candidate = found->options.neighbors.down;
+        candidate = found->neighbors.down;
         break;
     default:
         break;
     }
-    return candidate && is_registered_focus_target(*candidate) && is_control_usable(candidate) ? candidate : nullptr;
+    return candidate && is_registered_scope(*candidate) && is_scope_usable(candidate) ? candidate : nullptr;
 }
 
-bool UiWindow::is_registered_focus_target(const UiControl& control) const noexcept
+bool UiWindow::is_registered_scope(const UiFocusScope& scope) const noexcept
 {
-    return std::any_of(_focus_entries.begin(),_focus_entries.end(),[&control](const FocusEntry& entry)
+    return std::any_of(_scope_entries.begin(),_scope_entries.end(),[&scope](const ScopeEntry& entry)
     {
-        return entry.control == &control;
+        return entry.scope == &scope;
     });
 }
 
-bool UiWindow::set_focused_target_internal(UiControl* control) noexcept
+bool UiWindow::set_focused_scope_internal(UiFocusScope* scope) noexcept
 {
-    if (!control)
+    if (!scope)
     {
-        _focused_target = nullptr;
+        _focused_scope = nullptr;
         return true;
     }
-    if (!is_registered_focus_target(*control) || !is_control_usable(control))
+    if (!is_registered_scope(*scope) || !is_scope_usable(scope))
         return false;
-    _focused_target = control;
+    _focused_scope = scope;
+    if (!_focused_scope->focused_target())
+        (void)_focused_scope->focus_first_available();
     return true;
 }
 
-bool UiWindow::is_control_usable(const UiControl* control) noexcept
+bool UiWindow::dispatch_to_scope(UiFocusScope* scope,const UiInputEvent& event) const
 {
-    return control && !control->is_destroyed() && control->is_active() && control->is_visible() && control->is_enabled();
+    if (!is_scope_usable(scope))
+        return false;
+    if (auto* receiver = dynamic_cast<UiInputEventReceiver*>(&scope->focus_scope_element()))
+        return receiver->on_ui_input_event(event);
+    return false;
+}
+
+bool UiWindow::is_scope_usable(const UiFocusScope* scope) noexcept
+{
+    if (!scope)
+        return false;
+    const UiElement& element = scope->focus_scope_element();
+    return !element.is_destroyed() && element.is_active() && element.is_visible() && scope->has_focusable_target();
 }
 }

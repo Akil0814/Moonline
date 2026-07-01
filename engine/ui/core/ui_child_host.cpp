@@ -2,6 +2,9 @@
 #include "ui_render_command_range_utils.h"
 #include "../layout/ui_layout_geometry.h"
 
+#include <algorithm>
+#include <cstddef>
+
 namespace elysia::ui
 {
 UiChildHost::UiChildHost(const elysia::core::Rect& rect,int order) noexcept
@@ -25,11 +28,17 @@ void UiChildHost::reset() noexcept
 
 UiElement* UiChildHost::add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options)
 {
+    return insert_child(std::move(child),_children.size(),options);
+}
+
+UiElement* UiChildHost::insert_child(std::unique_ptr<UiElement> child,std::size_t index,UiLayoutChildOptions options)
+{
     if (!child)
         return nullptr;
 
     UiElement* child_ptr = child.get();
-    _children.push_back(ChildEntry{ std::move(child),options });
+    const std::size_t target_index = std::min(index,_children.size());
+    _children.insert(_children.begin() + static_cast<std::ptrdiff_t>(target_index),ChildEntry{ std::move(child),options });
     mark_layout_dirty();
     return child_ptr;
 }
@@ -245,4 +254,5 @@ bool UiChildHost::needs_layout_rebuild() const noexcept
     return _layout_dirty || !_last_layout_rect.nearly_equals(screen_rect());
 }
 }
+
 

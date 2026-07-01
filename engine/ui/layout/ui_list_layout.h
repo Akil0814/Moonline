@@ -9,7 +9,8 @@ namespace elysia::ui::layout
 struct UiListLayoutConfig
 {
     UiLayoutDirection direction = UiLayoutDirection::Vertical;
-    float item_spacing = 0.0f;
+    UiLayoutAlign cross_align = UiLayoutAlign::Center;
+    float item_spacing = 16.0f;
 };
 
 void layout_list_children(

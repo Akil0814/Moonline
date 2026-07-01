@@ -65,27 +65,6 @@ void MainMenuScene::reset()
 
 void MainMenuScene::rebuild_menu_buttons()
 {
-    clear_menu_buttons();
-    _main_menu = Scene::create_and_add_object<elysia::ui::UiWindow>(elysia::core::Rect{ 100,100,500,500 }, 100);
-    _main_menu->set_draw_background(true);
-    _main_menu->set_draw_border(true);
-    _main_menu->set_on_cancel([this]()
-        {
-            //pop up quit window;
-            std::cout << "cancel" << std::endl;
-        });
-
-    const elysia::ui::UiLayoutChildOptions layout
-    { elysia::ui::UiLayoutAnchor::Center };
-
-    elysia::ui::UiListContainer* panel=_main_menu->create_child<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,300,900 });
-
-    elysia::ui::UiButton* button = panel->create_child<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,200,50 });
-
-    _main_menu->set_child_layout_options(1, layout);
-    _main_menu->set_child_layout_options(0, layout);
-
-    panel->create_child<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,200,50 });
 
 }
 

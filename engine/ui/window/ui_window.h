@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../core/ui_child_host.h"
+#include "../focus/ui_focus_scope.h"
 #include "../core/ui_control.h"
 #include "../../core/render/colors.h"
 
@@ -9,34 +10,6 @@
 
 namespace elysia::ui
 {
-enum class UiWindowFocusSlot
-{
-    Custom,
-    TopLeft,
-    TopCenter,
-    TopRight,
-    CenterLeft,
-    Center,
-    CenterRight,
-    BottomLeft,
-    BottomCenter,
-    BottomRight
-};
-
-struct UiWindowFocusNeighbors
-{
-    UiControl* up = nullptr;
-    UiControl* down = nullptr;
-    UiControl* left = nullptr;
-    UiControl* right = nullptr;
-};
-
-struct UiWindowFocusOptions
-{
-    UiWindowFocusSlot slot = UiWindowFocusSlot::Custom;
-    UiWindowFocusNeighbors neighbors;
-};
-
 using UiWindowCancelCallback = std::function<void()>;
 
 class UiWindow : public UiChildHost
@@ -61,12 +34,12 @@ public:
     [[nodiscard]] bool hover_focus_enabled() const noexcept;
     void set_on_cancel(UiWindowCancelCallback on_cancel);
 
-    void register_focus_target(UiControl& control,const UiWindowFocusOptions& options = {});
-    void unregister_focus_target(UiControl& control);
-    void set_focus_neighbors(UiControl& control,const UiWindowFocusNeighbors& neighbors);
-    void set_focused_target(UiControl* control);
-    [[nodiscard]] UiControl* focused_target() const noexcept;
-    bool focus_first_available();
+    void register_focus_scope(UiFocusScope& scope,const UiFocusScopeNeighbors& neighbors = {});
+    void unregister_focus_scope(UiFocusScope& scope);
+    void set_scope_neighbors(UiFocusScope& scope,const UiFocusScopeNeighbors& neighbors);
+    void set_focused_scope(UiFocusScope* scope);
+    [[nodiscard]] UiFocusScope* focused_scope() const noexcept;
+    bool focus_first_available_scope();
 
     void update(double delta) override;
     void on_ui_input_frame(const UiInputFrame& input) override;
@@ -77,25 +50,26 @@ protected:
     void rebuild_layout() override;
 
 private:
-    struct FocusEntry
+    struct ScopeEntry
     {
-        UiControl* control = nullptr;
-        UiWindowFocusOptions options;
+        UiFocusScope* scope = nullptr;
+        UiFocusScopeNeighbors neighbors;
     };
 
 private:
-    void prune_focus_targets();
-    void ensure_valid_focus();
-    void apply_focus_state();
-    [[nodiscard]] UiControl* find_registered_target_at(int mouse_x,int mouse_y) const;
-    [[nodiscard]] UiControl* find_neighbor(const UiControl& control,UiAction action) const;
-    [[nodiscard]] bool is_registered_focus_target(const UiControl& control) const noexcept;
-    [[nodiscard]] bool set_focused_target_internal(UiControl* control) noexcept;
-    [[nodiscard]] static bool is_control_usable(const UiControl* control) noexcept;
+    void prune_focus_scopes();
+    void ensure_valid_scope_focus();
+    void apply_scope_focus();
+    [[nodiscard]] UiFocusScope* find_registered_scope_at(int mouse_x,int mouse_y) const;
+    [[nodiscard]] UiFocusScope* find_neighbor(const UiFocusScope& scope,UiAction action) const;
+    [[nodiscard]] bool is_registered_scope(const UiFocusScope& scope) const noexcept;
+    [[nodiscard]] bool set_focused_scope_internal(UiFocusScope* scope) noexcept;
+    [[nodiscard]] bool dispatch_to_scope(UiFocusScope* scope,const UiInputEvent& event) const;
+    [[nodiscard]] static bool is_scope_usable(const UiFocusScope* scope) noexcept;
 
 private:
-    std::vector<FocusEntry> _focus_entries;
-    UiControl* _focused_target = nullptr;
+    std::vector<ScopeEntry> _scope_entries;
+    UiFocusScope* _focused_scope = nullptr;
     bool _draw_background = false;
     bool _draw_border = false;
     elysia::core::Color _background_color = elysia::core::colors::cobalt_blue;

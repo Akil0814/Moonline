@@ -36,10 +36,14 @@ void layout_grid_children(
             cell_width,
             cell_height
         );
-        const elysia::core::Vector2 child_size = child.layout._use_size_override
+
+        elysia::core::Vector2 child_size = child.layout._use_size_override
             ? clamp_size(child.layout._size_override)
-            : cell_rect.size();
-        child.element->set_screen_rect(aligned_rect_in_bounds(cell_rect,child_size,child.layout._anchor,child.layout._margin));
+            : clamp_size(child.element->size());
+        if (child_size.x <= 0.0f || child_size.y <= 0.0f)
+            child_size = cell_rect.size();
+
+        child.element->set_screen_rect(aligned_rect_in_bounds(cell_rect,child_size,config.cell_anchor,child.layout._margin));
     }
 }
 }

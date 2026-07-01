@@ -7,8 +7,9 @@ namespace elysia::ui::layout
 {
 struct UiGridLayoutConfig
 {
-    int column_count = 1;
-    elysia::core::Vector2 cell_spacing{ 0.0f,0.0f };
+    int column_count = 4;
+    elysia::core::Vector2 cell_spacing{ 12.0f,12.0f };
+    UiLayoutAnchor cell_anchor = UiLayoutAnchor::Center;
     bool fill_by_row = true;
 };
 

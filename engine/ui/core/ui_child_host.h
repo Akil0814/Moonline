@@ -31,7 +31,7 @@ public:
 
     void reset() noexcept override;
 
-    UiElement* add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options = {});
+    virtual UiElement* add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options = {});
 
     template<class T,class... Args,
         std::enable_if_t<!(sizeof...(Args) > 0
@@ -82,6 +82,7 @@ protected:
     [[nodiscard]] elysia::core::Rect content_rect() const noexcept;
     [[nodiscard]] std::vector<ChildEntry>& children() noexcept;
     [[nodiscard]] const std::vector<ChildEntry>& children() const noexcept;
+    UiElement* insert_child(std::unique_ptr<UiElement> child,std::size_t index,UiLayoutChildOptions options = {});
 
     void submit_child_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const;
     void apply_opacity_to_range(std::vector<elysia::core::UiRenderCommand>& out_commands,std::size_t begin) const;
