@@ -91,7 +91,6 @@ void UiContainerTestScene::rebuild_ui()
     vertical_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Auto);
     vertical_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
     vertical_scroll->set_scroll_step(elysia::core::Vector2(32.0f,32.0f));
-    vertical_scroll->set_content_size(elysia::core::Vector2(260.0f,760.0f));
 
     auto vertical_list = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,260,760 });
     vertical_list->set_padding(elysia::ui::UiLayoutPadding{ 20.0f,20.0f,20.0f,20.0f });
@@ -104,7 +103,6 @@ void UiContainerTestScene::rebuild_ui()
     horizontal_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Auto);
     horizontal_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
     horizontal_scroll->set_scroll_step(elysia::core::Vector2(36.0f,36.0f));
-    horizontal_scroll->set_content_size(elysia::core::Vector2(760.0f,180.0f));
 
     auto horizontal_panel = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,760,180 });
     horizontal_panel->set_draw_background(true);
@@ -139,7 +137,6 @@ void UiContainerTestScene::rebuild_ui()
     grid_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Auto);
     grid_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
     grid_scroll->set_scroll_step(elysia::core::Vector2(28.0f,28.0f));
-    grid_scroll->set_content_size(elysia::core::Vector2(520.0f,360.0f));
 
     auto grid_content = std::make_unique<elysia::ui::UiGridContainer>(elysia::core::Rect{ 0,0,520,360 });
     grid_content->set_padding(elysia::ui::UiLayoutPadding{ 18.0f,18.0f,18.0f,18.0f });
@@ -163,7 +160,6 @@ void UiContainerTestScene::rebuild_ui()
     hidden_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Auto);
     hidden_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Hidden);
     hidden_scroll->set_scroll_step(elysia::core::Vector2(30.0f,30.0f));
-    hidden_scroll->set_content_size(elysia::core::Vector2(320.0f,360.0f));
 
     auto first_hidden_content = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,320,360 });
     first_hidden_content->set_padding(elysia::ui::UiLayoutPadding{ 18.0f,18.0f,18.0f,18.0f });
@@ -178,7 +174,6 @@ void UiContainerTestScene::rebuild_ui()
     for (int index = 0; index < 8; ++index)
         replacement_hidden_content->add_back(make_button("menu_scene.ui_button",index,"hidden"));
     hidden_scroll->set_content(std::move(replacement_hidden_content));
-    hidden_scroll->set_content_size(elysia::core::Vector2(320.0f,520.0f));
 
     _root_window->set_child_layout_options(0,make_window_child_options(0.0f,0.0f));
     _root_window->set_child_layout_options(1,make_window_child_options(288.0f,0.0f));
@@ -206,3 +201,4 @@ void UiContainerTestScene::request_back_to_menu()
     std::cout << "ui container test back" << std::endl;
 }
 }
+

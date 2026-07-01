@@ -57,13 +57,7 @@ public:
     [[nodiscard]] UiScrollBarVisibility scrollbar_visibility() const noexcept;
     void set_scrollbar_style(const UiScrollBarStyle& style);
     [[nodiscard]] const UiScrollBarStyle& scrollbar_style() const noexcept;
-
-    void set_content_size(const elysia::core::Vector2& content_size) noexcept;
     [[nodiscard]] elysia::core::Vector2 content_size() const noexcept;
-    void set_content_width(float content_width) noexcept;
-    [[nodiscard]] float content_width() const noexcept;
-    void set_content_height(float content_height) noexcept;
-    [[nodiscard]] float content_height() const noexcept;
 
     void set_scroll_offset(const elysia::core::Vector2& scroll_offset) noexcept;
     [[nodiscard]] elysia::core::Vector2 scroll_offset() const noexcept;
@@ -111,6 +105,7 @@ private:
     [[nodiscard]] elysia::core::Color current_track_color(const UiDragHandle& thumb) const noexcept;
     void initialize_scrollbar_handles();
     void sync_scroll_state_to_viewport() noexcept;
+    void sync_scroll_state_to_content() noexcept;
     void sync_scrollbar_handles() noexcept;
     void configure_scrollbar_thumb(
         UiDragHandle& thumb,
@@ -123,6 +118,7 @@ private:
     void reset_scroll_offset() noexcept;
     void ensure_visible_focused_target() noexcept;
     void submit_scrollbar_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const;
+    [[nodiscard]] elysia::core::Vector2 measured_content_size() const noexcept;
 
 private:
     UiScrollState _scroll_state;
@@ -133,3 +129,5 @@ private:
     bool _scope_focused = false;
 };
 }
+
+

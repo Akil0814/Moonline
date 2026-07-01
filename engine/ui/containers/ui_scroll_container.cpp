@@ -152,39 +152,12 @@ const UiScrollBarStyle& UiScrollContainer::scrollbar_style() const noexcept
     return _scrollbar_style;
 }
 
-void UiScrollContainer::set_content_size(const elysia::core::Vector2& content_size) noexcept
-{
-    _scroll_state.set_content_size(content_size);
-    mark_layout_dirty();
-}
-
 elysia::core::Vector2 UiScrollContainer::content_size() const noexcept
 {
+    auto* self = const_cast<UiScrollContainer*>(this);
+    self->cleanup_destroyed_children();
+    self->update_layout_if_dirty();
     return _scroll_state.content_size();
-}
-
-void UiScrollContainer::set_content_width(float content_width) noexcept
-{
-    const elysia::core::Vector2 size = _scroll_state.content_size();
-    _scroll_state.set_content_size(elysia::core::Vector2(content_width,size.y));
-    mark_layout_dirty();
-}
-
-float UiScrollContainer::content_width() const noexcept
-{
-    return _scroll_state.content_size().x;
-}
-
-void UiScrollContainer::set_content_height(float content_height) noexcept
-{
-    const elysia::core::Vector2 size = _scroll_state.content_size();
-    _scroll_state.set_content_size(elysia::core::Vector2(size.x,content_height));
-    mark_layout_dirty();
-}
-
-float UiScrollContainer::content_height() const noexcept
-{
-    return _scroll_state.content_size().y;
 }
 
 void UiScrollContainer::set_scroll_offset(const elysia::core::Vector2& scroll_offset) noexcept
@@ -382,10 +355,11 @@ void UiScrollContainer::rebuild_layout()
 {
     UiChildHost::set_clip_children(true);
     sync_scroll_state_to_viewport();
+    sync_scroll_state_to_content();
 
     std::vector<ChildEntry>& child_entries = children();
     const elysia::core::Rect viewport = content_rect();
-    const elysia::core::Vector2 size = _scroll_state.effective_content_size();
+    const elysia::core::Vector2 size = _scroll_state.content_size();
     for (std::size_t index = 0; index < child_entries.size(); ++index)
     {
         ChildEntry& entry = child_entries[index];
@@ -584,6 +558,11 @@ void UiScrollContainer::sync_scroll_state_to_viewport() noexcept
     _scroll_state.set_viewport_size(content_rect().size());
 }
 
+void UiScrollContainer::sync_scroll_state_to_content() noexcept
+{
+    _scroll_state.set_content_size(measured_content_size());
+}
+
 void UiScrollContainer::sync_scrollbar_handles() noexcept
 {
     const elysia::core::Rect horizontal_track = scrollbar_track_rect(UiScrollAxis::Horizontal);
@@ -677,6 +656,12 @@ void UiScrollContainer::ensure_visible_focused_target() noexcept
         ensure_visible(target->screen_rect());
 }
 
+elysia::core::Vector2 UiScrollContainer::measured_content_size() const noexcept
+{
+    const UiElement* content_element = content();
+    return content_element ? content_element->screen_rect().size() : content_rect().size();
+}
+
 void UiScrollContainer::submit_scrollbar_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const
 {
     const elysia::core::Rect viewport = content_rect();
@@ -721,3 +706,5 @@ void UiScrollContainer::submit_scrollbar_render_commands(std::vector<elysia::cor
     }
 }
 }
+
+
