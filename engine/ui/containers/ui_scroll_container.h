@@ -100,6 +100,7 @@ private:
     [[nodiscard]] bool handle_mouse_wheel(const UiInputEvent& event);
     [[nodiscard]] bool dispatch_to_scrollbars(const UiInputEvent& event);
     [[nodiscard]] bool shows_scrollbar(UiScrollAxis axis) const noexcept;
+    [[nodiscard]] elysia::core::Rect viewport_rect() const noexcept;
     [[nodiscard]] elysia::core::Rect scrollbar_track_rect(UiScrollAxis axis) const noexcept;
     [[nodiscard]] elysia::core::Rect scrollbar_thumb_rect(UiScrollAxis axis,const elysia::core::Rect& track_rect) const noexcept;
     [[nodiscard]] elysia::core::Color current_track_color(const UiDragHandle& thumb) const noexcept;
@@ -129,5 +130,6 @@ private:
     bool _scope_focused = false;
 };
 }
+
 
 

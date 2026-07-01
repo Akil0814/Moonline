@@ -87,7 +87,17 @@ void UiScrollContainer::submit_ui_render_commands(std::vector<elysia::core::UiRe
     auto* self = const_cast<UiScrollContainer*>(this);
     self->cleanup_destroyed_children();
     self->update_layout_if_dirty();
-    submit_child_render_commands(out_commands);
+
+    if (const UiElement* content_element = content())
+    {
+        if (!content_element->is_destroyed() && content_element->is_visible())
+        {
+            const std::size_t begin = out_commands.size();
+            content_element->submit_ui_render_commands(out_commands);
+            finalize_child_command_range(out_commands,begin,viewport_rect());
+        }
+    }
+
     submit_scrollbar_render_commands(out_commands);
 }
 
@@ -355,17 +365,20 @@ bool UiScrollContainer::contains_focus_point(int mouse_x,int mouse_y) const noex
 {
     if (!has_focusable_target() || is_destroyed() || !is_active() || !is_visible())
         return false;
-    return content_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
+    return viewport_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
 }
 
 void UiScrollContainer::rebuild_layout()
 {
     UiChildHost::set_clip_children(true);
+    sync_scroll_state_to_content();
+    _scroll_state.set_viewport_size(UiChildHost::content_rect().size());
     sync_scroll_state_to_viewport();
     sync_scroll_state_to_content();
+    sync_scroll_state_to_viewport();
 
     std::vector<ChildEntry>& child_entries = children();
-    const elysia::core::Rect viewport = content_rect();
+    const elysia::core::Rect viewport = viewport_rect();
     const elysia::core::Vector2 size = _scroll_state.content_size();
     for (std::size_t index = 0; index < child_entries.size(); ++index)
     {
@@ -479,12 +492,27 @@ bool UiScrollContainer::shows_scrollbar(UiScrollAxis axis) const noexcept
     return is_horizontal_axis(axis) ? _scroll_state.can_scroll_horizontal() : _scroll_state.can_scroll_vertical();
 }
 
+elysia::core::Rect UiScrollContainer::viewport_rect() const noexcept
+{
+    const elysia::core::Rect bounds = UiChildHost::content_rect();
+    const float thickness = std::max(1.0f,_scrollbar_style.thickness);
+    const float margin = clamp_non_negative(_scrollbar_style.margin);
+    const float reserved_width = shows_scrollbar(UiScrollAxis::Vertical) ? (thickness + margin) : 0.0f;
+    const float reserved_height = shows_scrollbar(UiScrollAxis::Horizontal) ? (thickness + margin) : 0.0f;
+    return elysia::core::Rect(
+        bounds.x(),
+        bounds.y(),
+        std::max(0.0f,bounds.width() - reserved_width),
+        std::max(0.0f,bounds.height() - reserved_height)
+    );
+}
+
 elysia::core::Rect UiScrollContainer::scrollbar_track_rect(UiScrollAxis axis) const noexcept
 {
     if (!shows_scrollbar(axis))
         return elysia::core::Rect::zero();
 
-    const elysia::core::Rect viewport = content_rect();
+    const elysia::core::Rect viewport = UiChildHost::content_rect();
     const float thickness = std::max(1.0f,_scrollbar_style.thickness);
     const float margin = clamp_non_negative(_scrollbar_style.margin);
     const bool horizontal_visible = shows_scrollbar(UiScrollAxis::Horizontal);
@@ -570,7 +598,7 @@ void UiScrollContainer::initialize_scrollbar_handles()
 
 void UiScrollContainer::sync_scroll_state_to_viewport() noexcept
 {
-    _scroll_state.set_viewport_size(content_rect().size());
+    _scroll_state.set_viewport_size(viewport_rect().size());
 }
 
 void UiScrollContainer::sync_scroll_state_to_content() noexcept
@@ -679,7 +707,7 @@ elysia::core::Vector2 UiScrollContainer::measured_content_size() const noexcept
 
 void UiScrollContainer::submit_scrollbar_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const
 {
-    const elysia::core::Rect viewport = content_rect();
+    const elysia::core::Rect viewport = UiChildHost::content_rect();
 
     const auto submit_thumb = [this,&out_commands,&viewport](const UiDragHandle& thumb)
     {
@@ -720,7 +748,5 @@ void UiScrollContainer::submit_scrollbar_render_commands(std::vector<elysia::cor
         submit_thumb(_vertical_thumb);
     }
 }
+
 }
-
-
-

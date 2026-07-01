@@ -6,13 +6,10 @@
 #include "../../engine/audio/audio_service.h"
 
 #include "../../engine/ui/widgets/ui_button.h"
+#include "../../engine/ui/widgets/label/ui_label.h"
 #include "../../engine/ui/containers/ui_panel.h"
 #include "../../engine/ui/containers/ui_list_container.h"
 #include "../../engine/ui/layout/ui_layout_types.h"
-
-
-
-
 
 #include <array>
 #include <iostream>
@@ -65,7 +62,13 @@ void MainMenuScene::reset()
 
 void MainMenuScene::rebuild_menu_buttons()
 {
-
+    _main_menu = Scene::create_and_add_object<elysia::ui::UiWindow>(elysia::core::Rect{0,0,1280,720});
+    if (_main_menu)
+    {
+        std::unique_ptr<elysia::ui::UiListContainer> ui_list = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,250,500 });
+        elysia::ui::UiLayoutChildOptions layout{ elysia::ui::UiLayoutAnchor::Center };
+        _main_menu->add_child(ui_list, layout);
+    }
 }
 
 void MainMenuScene::clear_menu_buttons()
