@@ -63,5 +63,8 @@ private:
     elysia::core::Color _border_color = elysia::core::colors::sky_blue;
     std::vector<FocusLink> _focus_links;
     UiControl* _last_focusable = nullptr;
+    elysia::core::Vector2 _last_child_layout_origin{};
+    bool _has_child_layout_origin = false;
 };
 }
+

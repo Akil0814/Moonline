@@ -57,6 +57,8 @@ void UiPanel::reset() noexcept
     _border_color = elysia::core::colors::sky_blue;
     _focus_links.clear();
     _last_focusable = nullptr;
+    _last_child_layout_origin = elysia::core::Vector2::zero();
+    _has_child_layout_origin = false;
 }
 
 void UiPanel::submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const
@@ -132,6 +134,23 @@ elysia::core::Color UiPanel::border_color() const noexcept
 
 void UiPanel::rebuild_layout()
 {
+    const elysia::core::Vector2 current_origin = position();
+    const elysia::core::Vector2 delta = _has_child_layout_origin
+        ? (current_origin - _last_child_layout_origin)
+        : current_origin;
+
+    if (!delta.is_zero())
+    {
+        for (ChildEntry& entry : children())
+        {
+            if (!entry.element)
+                continue;
+            entry.element->set_position(entry.element->position() + delta);
+        }
+    }
+
+    _last_child_layout_origin = current_origin;
+    _has_child_layout_origin = true;
 }
 
 void UiPanel::rebuild_focus_registry()
@@ -156,6 +175,8 @@ UiElement* UiPanel::insert_panel_child(std::unique_ptr<UiElement> child,UiPanelI
 
     UiControl* control = dynamic_cast<UiControl*>(child.get());
     UiElement* added = UiChildHost::add_child(std::move(child));
+    if (added && _has_child_layout_origin)
+        added->set_position(added->position() + _last_child_layout_origin);
     if (!added || !control)
         return added;
 
@@ -227,4 +248,8 @@ const UiPanel::FocusLink* UiPanel::find_link(const UiControl& control) const noe
     return found != _focus_links.end() ? &(*found) : nullptr;
 }
 }
+
+
+
+
 
