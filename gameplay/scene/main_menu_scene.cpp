@@ -67,7 +67,7 @@ void MainMenuScene::rebuild_menu_buttons()
     {
         std::unique_ptr<elysia::ui::UiListContainer> ui_list = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,250,500 });
         elysia::ui::UiLayoutChildOptions layout{ elysia::ui::UiLayoutAnchor::Center };
-        _main_menu->add_child(ui_list, layout);
+        _main_menu->add_child(std::move(ui_list), layout);
     }
 }
 
