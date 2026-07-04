@@ -4,6 +4,7 @@
 #include "ui_focus_scope_utils.h"
 #include "../core/ui_child_host.h"
 #include "../core/ui_control.h"
+#include "../../input/input_types.h"
 
 #include <vector>
 
@@ -53,8 +54,11 @@ protected:
     void ensure_valid_focus();
     void apply_focus_state() const;
     [[nodiscard]] UiControl* find_registered_target_at(int mouse_x,int mouse_y) const;
-    [[nodiscard]] bool is_registered_focus_target(const UiControl& control) const noexcept;
+    [[nodiscard]] bool is_registered_focus_target(const UiControl* control) const noexcept;
     [[nodiscard]] bool set_focused_target_internal(UiControl* control) noexcept;
+    void update_focus_input_device(elysia::input::InputDevice device) noexcept;
+    bool restore_preferred_focus_target();
+    [[nodiscard]] static bool uses_pointer_focus_policy(elysia::input::InputDevice device) noexcept;
 
 private:
     [[nodiscard]] UiControl* find_neighbor(const UiControl& control,UiAction action) const noexcept;
@@ -62,6 +66,8 @@ private:
 private:
     std::vector<FocusEntry> _focus_entries;
     UiControl* _focused_target = nullptr;
+    UiControl* _last_focused_target = nullptr;
     bool _scope_focused = false;
+    elysia::input::InputDevice _focus_input_device = elysia::input::InputDevice::Unknown;
 };
 }

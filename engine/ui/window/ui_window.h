@@ -4,6 +4,7 @@
 #include "../focus/ui_focus_scope.h"
 #include "../core/ui_control.h"
 #include "../../core/render/colors.h"
+#include "../../input/input_types.h"
 
 #include <functional>
 #include <vector>
@@ -60,21 +61,26 @@ private:
     void prune_focus_scopes();
     void ensure_valid_scope_focus();
     void apply_scope_focus();
+    void update_focus_input_device(elysia::input::InputDevice device) noexcept;
+    bool restore_preferred_scope_focus();
     [[nodiscard]] UiFocusScope* find_registered_scope_at(int mouse_x,int mouse_y) const;
     [[nodiscard]] UiFocusScope* find_neighbor(const UiFocusScope& scope,UiAction action) const;
     [[nodiscard]] bool is_registered_scope(const UiFocusScope& scope) const noexcept;
     [[nodiscard]] bool set_focused_scope_internal(UiFocusScope* scope) noexcept;
     [[nodiscard]] bool dispatch_to_scope(UiFocusScope* scope,const UiInputEvent& event) const;
     [[nodiscard]] static bool is_scope_usable(const UiFocusScope* scope) noexcept;
+    [[nodiscard]] static bool uses_pointer_focus_policy(elysia::input::InputDevice device) noexcept;
 
 private:
     std::vector<ScopeEntry> _scope_entries;
     UiFocusScope* _focused_scope = nullptr;
+    UiFocusScope* _last_focused_scope = nullptr;
     bool _draw_background = false;
     bool _draw_border = false;
     elysia::core::Color _background_color = elysia::core::colors::cobalt_blue;
     elysia::core::Color _border_color = elysia::core::colors::sky_blue;
     bool _hover_focus_enabled = true;
+    elysia::input::InputDevice _focus_input_device = elysia::input::InputDevice::Unknown;
     UiWindowCancelCallback _on_cancel;
 };
 }

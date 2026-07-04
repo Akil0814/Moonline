@@ -53,6 +53,8 @@ void UiScrollContainer::reset() noexcept
     _scrollbar_visibility = UiScrollBarVisibility::Auto;
     _scrollbar_style = UiScrollBarStyle{};
     _scope_focused = false;
+    _draw_border = false;
+    _border_color = elysia::core::colors::sky_blue;
     initialize_scrollbar_handles();
 }
 
@@ -99,6 +101,10 @@ void UiScrollContainer::submit_ui_render_commands(std::vector<elysia::core::UiRe
     }
 
     submit_scrollbar_render_commands(out_commands);
+
+    const elysia::core::Rect rect = screen_rect();
+    if (_draw_border && !rect.is_empty())
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(_border_color)));
 }
 
 UiElement* UiScrollContainer::add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options)
@@ -167,6 +173,26 @@ void UiScrollContainer::set_scrollbar_style(const UiScrollBarStyle& style)
 const UiScrollBarStyle& UiScrollContainer::scrollbar_style() const noexcept
 {
     return _scrollbar_style;
+}
+
+void UiScrollContainer::set_draw_border(bool draw_border) noexcept
+{
+    _draw_border = draw_border;
+}
+
+bool UiScrollContainer::draws_border() const noexcept
+{
+    return _draw_border;
+}
+
+void UiScrollContainer::set_border_color(elysia::core::Color color) noexcept
+{
+    _border_color = color;
+}
+
+elysia::core::Color UiScrollContainer::border_color() const noexcept
+{
+    return _border_color;
 }
 
 elysia::core::Vector2 UiScrollContainer::content_size() const noexcept

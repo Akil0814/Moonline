@@ -17,11 +17,13 @@ void UiWindow::reset() noexcept
     UiChildHost::reset();
     _scope_entries.clear();
     _focused_scope = nullptr;
+    _last_focused_scope = nullptr;
     _draw_background = false;
     _draw_border = false;
     _background_color = elysia::core::colors::cobalt_blue;
     _border_color = elysia::core::colors::sky_blue;
     _hover_focus_enabled = true;
+    _focus_input_device = elysia::input::InputDevice::Unknown;
     _on_cancel = {};
 }
 
@@ -102,6 +104,8 @@ void UiWindow::unregister_focus_scope(UiFocusScope& scope)
     }),_scope_entries.end());
     if (_focused_scope == &scope)
         _focused_scope = nullptr;
+    if (_last_focused_scope == &scope)
+        _last_focused_scope = nullptr;
     ensure_valid_scope_focus();
     apply_scope_focus();
 }
@@ -141,9 +145,7 @@ bool UiWindow::focus_first_available_scope()
     {
         if (is_scope_usable(entry.scope))
         {
-            _focused_scope = entry.scope;
-            if (!_focused_scope->focused_target())
-                (void)_focused_scope->focus_first_available();
+            (void)set_focused_scope_internal(entry.scope);
             apply_scope_focus();
             return true;
         }
@@ -183,6 +185,7 @@ void UiWindow::on_ui_input_frame(const UiInputFrame& input)
 
 bool UiWindow::on_ui_input_event(const UiInputEvent& event)
 {
+    update_focus_input_device(event.device);
     cleanup_destroyed_children();
     update_layout_if_dirty();
     prune_focus_scopes();
@@ -210,12 +213,11 @@ bool UiWindow::on_ui_input_event(const UiInputEvent& event)
             pointer_scope = find_registered_scope_at(event.mouse_x,event.mouse_y);
         }
 
-        if (event.type == UiInputEventType::MouseMoved && _hover_focus_enabled && pointer_scope)
+        if (event.type == UiInputEventType::MouseMoved && _hover_focus_enabled)
             (void)set_focused_scope_internal(pointer_scope);
         else if (event.type == UiInputEventType::PointerPressed
             && event.device == elysia::input::InputDevice::Mouse
-            && event.control == elysia::input::RawInputControl::MouseLeft
-            && pointer_scope)
+            && event.control == elysia::input::RawInputControl::MouseLeft)
             (void)set_focused_scope_internal(pointer_scope);
 
         if (event.type == UiInputEventType::ActionPressed && is_navigation_action(event.action))
@@ -288,12 +290,22 @@ void UiWindow::prune_focus_scopes()
     }),_scope_entries.end());
     if (_focused_scope && !contains_scope(live_scopes,_focused_scope))
         _focused_scope = nullptr;
+    if (_last_focused_scope && !contains_scope(live_scopes,_last_focused_scope))
+        _last_focused_scope = nullptr;
 }
 
 void UiWindow::ensure_valid_scope_focus()
 {
     if (_focused_scope && is_registered_scope(*_focused_scope) && is_scope_usable(_focused_scope))
         return;
+
+    _focused_scope = nullptr;
+    if (uses_pointer_focus_policy(_focus_input_device))
+        return;
+
+    if (restore_preferred_scope_focus())
+        return;
+
     (void)focus_first_available_scope();
 }
 
@@ -368,6 +380,7 @@ bool UiWindow::set_focused_scope_internal(UiFocusScope* scope) noexcept
     if (!is_registered_scope(*scope) || !is_scope_usable(scope))
         return false;
     _focused_scope = scope;
+    _last_focused_scope = scope;
     if (!_focused_scope->focused_target())
         (void)_focused_scope->focus_first_available();
     return true;
@@ -388,5 +401,23 @@ bool UiWindow::is_scope_usable(const UiFocusScope* scope) noexcept
         return false;
     const UiElement& element = scope->focus_scope_element();
     return !element.is_destroyed() && element.is_active() && element.is_visible() && scope->has_focusable_target();
+}
+
+void UiWindow::update_focus_input_device(elysia::input::InputDevice device) noexcept
+{
+    if (device != elysia::input::InputDevice::Unknown)
+        _focus_input_device = device;
+}
+
+bool UiWindow::restore_preferred_scope_focus()
+{
+    if (_last_focused_scope && is_registered_scope(*_last_focused_scope) && is_scope_usable(_last_focused_scope))
+        return set_focused_scope_internal(_last_focused_scope);
+    return false;
+}
+
+bool UiWindow::uses_pointer_focus_policy(elysia::input::InputDevice device) noexcept
+{
+    return device == elysia::input::InputDevice::Mouse;
 }
 }

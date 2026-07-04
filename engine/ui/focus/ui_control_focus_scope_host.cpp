@@ -18,7 +18,9 @@ void UiControlFocusScopeHost::reset() noexcept
     UiChildHost::reset();
     _focus_entries.clear();
     _focused_target = nullptr;
+    _last_focused_target = nullptr;
     _scope_focused = false;
+    _focus_input_device = elysia::input::InputDevice::Unknown;
 }
 
 void UiControlFocusScopeHost::set_focused_target(UiControl* control)
@@ -52,7 +54,7 @@ bool UiControlFocusScopeHost::focus_first_available()
     {
         if (is_control_usable(entry.control))
         {
-            _focused_target = entry.control;
+            (void)set_focused_target_internal(entry.control);
             apply_focus_state();
             return true;
         }
@@ -133,6 +135,7 @@ void UiControlFocusScopeHost::on_ui_input_frame(const UiInputFrame& input)
 
 bool UiControlFocusScopeHost::on_ui_input_event(const UiInputEvent& event)
 {
+    update_focus_input_device(event.device);
     cleanup_destroyed_children();
     update_layout_if_dirty();
     refresh_focus_registry();
@@ -143,16 +146,14 @@ bool UiControlFocusScopeHost::on_ui_input_event(const UiInputEvent& event)
 
     if (event.type == UiInputEventType::MouseMoved)
     {
-        if (UiControl* hovered = find_registered_target_at(event.mouse_x,event.mouse_y))
-            (void)set_focused_target_internal(hovered);
+        (void)set_focused_target_internal(find_registered_target_at(event.mouse_x,event.mouse_y));
         handled = dispatch_input_to_children(event);
     }
     else if (event.type == UiInputEventType::PointerPressed)
     {
         if (event.device == elysia::input::InputDevice::Mouse && event.control == elysia::input::RawInputControl::MouseLeft)
         {
-            if (UiControl* hovered = find_registered_target_at(event.mouse_x,event.mouse_y))
-                (void)set_focused_target_internal(hovered);
+            (void)set_focused_target_internal(find_registered_target_at(event.mouse_x,event.mouse_y));
         }
         handled = dispatch_input_to_children(event);
     }
@@ -242,8 +243,16 @@ std::vector<UiControl*> UiControlFocusScopeHost::direct_focusable_children() con
 
 void UiControlFocusScopeHost::ensure_valid_focus()
 {
-    if (_focused_target && is_registered_focus_target(*_focused_target) && is_control_usable(_focused_target))
+    if (_focused_target && is_registered_focus_target(_focused_target) && is_control_usable(_focused_target))
         return;
+
+    _focused_target = nullptr;
+    if (uses_pointer_focus_policy(_focus_input_device))
+        return;
+
+    if (restore_preferred_focus_target())
+        return;
+
     (void)focus_first_available();
 }
 
@@ -271,11 +280,13 @@ UiControl* UiControlFocusScopeHost::find_registered_target_at(int mouse_x,int mo
     return nullptr;
 }
 
-bool UiControlFocusScopeHost::is_registered_focus_target(const UiControl& control) const noexcept
+bool UiControlFocusScopeHost::is_registered_focus_target(const UiControl* control) const noexcept
 {
+    if (!control)
+        return false;
     return std::any_of(_focus_entries.begin(),_focus_entries.end(),[&control](const FocusEntry& entry)
     {
-        return entry.control == &control;
+        return entry.control == control;
     });
 }
 
@@ -286,9 +297,10 @@ bool UiControlFocusScopeHost::set_focused_target_internal(UiControl* control) no
         _focused_target = nullptr;
         return true;
     }
-    if (!is_registered_focus_target(*control) || !is_control_usable(control))
+    if (!is_registered_focus_target(control) || !is_control_usable(control))
         return false;
     _focused_target = control;
+    _last_focused_target = control;
     return true;
 }
 
@@ -320,6 +332,24 @@ UiControl* UiControlFocusScopeHost::find_neighbor(const UiControl& control,UiAct
         return nullptr;
     }
 
-    return candidate && is_registered_focus_target(*candidate) && is_control_usable(candidate) ? candidate : nullptr;
+    return candidate && is_registered_focus_target(candidate) && is_control_usable(candidate) ? candidate : nullptr;
+}
+
+void UiControlFocusScopeHost::update_focus_input_device(elysia::input::InputDevice device) noexcept
+{
+    if (device != elysia::input::InputDevice::Unknown)
+        _focus_input_device = device;
+}
+
+bool UiControlFocusScopeHost::restore_preferred_focus_target()
+{
+    if (_last_focused_target && is_registered_focus_target(_last_focused_target) && is_control_usable(_last_focused_target))
+        return set_focused_target_internal(_last_focused_target);
+    return false;
+}
+
+bool UiControlFocusScopeHost::uses_pointer_focus_policy(elysia::input::InputDevice device) noexcept
+{
+    return device == elysia::input::InputDevice::Mouse;
 }
 }
