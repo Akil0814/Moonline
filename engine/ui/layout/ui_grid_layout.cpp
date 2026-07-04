@@ -46,4 +46,40 @@ void layout_grid_children(
         child.element->set_screen_rect(aligned_rect_in_bounds(cell_rect,child_size,config.cell_anchor,child.layout._margin));
     }
 }
+
+elysia::core::Vector2 intrinsic_grid_extent(
+    const std::vector<UiChildHost::ChildEntry>& children,
+    const UiLayoutPadding& padding,
+    const UiGridLayoutConfig& config
+) noexcept
+{
+    int item_count = 0;
+    float cell_width = 0.0f;
+    float cell_height = 0.0f;
+
+    for (const UiChildHost::ChildEntry& child : children)
+    {
+        if (!child.element)
+            continue;
+
+        const elysia::core::Vector2 extent = child.layout._use_size_override
+            ? layout::clamp_size(child.layout._size_override)
+            : layout::clamp_size(child.element->content_extent());
+        cell_width = std::max(cell_width,extent.x);
+        cell_height = std::max(cell_height,extent.y);
+        ++item_count;
+    }
+
+    if (item_count == 0)
+        return elysia::core::Vector2(padding.left + padding.right,padding.top + padding.bottom);
+
+    const int columns = std::max(1,config.column_count);
+    const int rows = std::max(1,(item_count + columns - 1) / columns);
+    const elysia::core::Vector2 spacing = layout::clamp_size(config.cell_spacing);
+
+    return elysia::core::Vector2(
+        padding.left + static_cast<float>(columns) * cell_width + static_cast<float>(std::max(0,columns - 1)) * spacing.x + padding.right,
+        padding.top + static_cast<float>(rows) * cell_height + static_cast<float>(std::max(0,rows - 1)) * spacing.y + padding.bottom
+    );
+}
 }

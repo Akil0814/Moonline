@@ -17,6 +17,7 @@ public:
 
     void add_child(std::unique_ptr<UiElement> child);
     UiElement* add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options) override;
+    [[nodiscard]] elysia::core::Vector2 content_extent() const noexcept override;
 
     void set_column_count(int column_count) noexcept;
     [[nodiscard]] int column_count() const noexcept;

@@ -24,6 +24,7 @@ public:
     void add_front(std::unique_ptr<UiElement> child);
     void add_back(std::unique_ptr<UiElement> child);
     UiElement* add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options) override;
+    [[nodiscard]] elysia::core::Vector2 content_extent() const noexcept override;
 
     void set_direction(UiListDirection direction) noexcept;
     [[nodiscard]] UiListDirection direction() const noexcept;

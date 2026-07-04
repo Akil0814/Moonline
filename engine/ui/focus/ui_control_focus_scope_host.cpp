@@ -44,6 +44,10 @@ UiControl* UiControlFocusScopeHost::focused_target() const noexcept
 
 bool UiControlFocusScopeHost::focus_first_available()
 {
+    cleanup_destroyed_children();
+    update_layout_if_dirty();
+    refresh_focus_registry();
+
     for (const FocusEntry& entry : _focus_entries)
     {
         if (is_control_usable(entry.control))

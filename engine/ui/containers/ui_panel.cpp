@@ -81,6 +81,11 @@ void UiPanel::submit_ui_render_commands(std::vector<elysia::core::UiRenderComman
         out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(_border_color)));
 }
 
+elysia::core::Vector2 UiPanel::content_extent() const noexcept
+{
+    return size();
+}
+
 void UiPanel::add_child(std::unique_ptr<UiElement> child,UiPanelInsertDirection direction)
 {
     (void)insert_panel_child(std::move(child),direction);

@@ -45,6 +45,11 @@ public:
         (void)out_commands;
     }
 
+    [[nodiscard]] virtual elysia::core::Vector2 content_extent() const noexcept
+    {
+        return size();
+    }
+
     void reset() noexcept override
     {
         elysia::core::SceneObject::reset();

@@ -47,6 +47,16 @@ UiElement* UiGridContainer::add_child(std::unique_ptr<UiElement> child,UiLayoutC
     return insert_child(std::move(child),child_count(),options);
 }
 
+elysia::core::Vector2 UiGridContainer::content_extent() const noexcept
+{
+    const elysia::core::Vector2 intrinsic = layout::intrinsic_grid_extent(children(),padding(),_layout);
+    const elysia::core::Vector2 explicit_size = size();
+    return elysia::core::Vector2(
+        std::max(explicit_size.x,intrinsic.x),
+        std::max(explicit_size.y,intrinsic.y)
+    );
+}
+
 void UiGridContainer::set_column_count(int column_count) noexcept
 {
     _layout.column_count = std::max(1,column_count);

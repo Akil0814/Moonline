@@ -1,5 +1,7 @@
 #include "ui_list_container.h"
 
+#include <algorithm>
+
 namespace elysia::ui
 {
 namespace
@@ -38,6 +40,16 @@ void UiListContainer::add_back(std::unique_ptr<UiElement> child)
 UiElement* UiListContainer::add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options)
 {
     return insert_child(std::move(child),child_count(),options);
+}
+
+elysia::core::Vector2 UiListContainer::content_extent() const noexcept
+{
+    const elysia::core::Vector2 intrinsic = layout::intrinsic_list_extent(children(),padding(),_layout);
+    const elysia::core::Vector2 explicit_size = size();
+    return elysia::core::Vector2(
+        std::max(explicit_size.x,intrinsic.x),
+        std::max(explicit_size.y,intrinsic.y)
+    );
 }
 
 void UiListContainer::set_direction(UiListDirection direction) noexcept

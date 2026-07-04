@@ -441,7 +441,7 @@ bool UiScrollContainer::handle_mouse_wheel(const UiInputEvent& event)
     }
     else
     {
-        const elysia::core::Rect viewport = content_rect();
+        const elysia::core::Rect viewport = viewport_rect();
         const elysia::core::Vector2 point(static_cast<float>(event.mouse_x),static_cast<float>(event.mouse_y));
         if (!viewport.contains(point))
             return false;
@@ -702,7 +702,7 @@ void UiScrollContainer::ensure_visible_focused_target() noexcept
 elysia::core::Vector2 UiScrollContainer::measured_content_size() const noexcept
 {
     const UiElement* content_element = content();
-    return content_element ? content_element->screen_rect().size() : content_rect().size();
+    return content_element ? content_element->content_extent() : content_rect().size();
 }
 
 void UiScrollContainer::submit_scrollbar_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const

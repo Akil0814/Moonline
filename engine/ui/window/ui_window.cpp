@@ -134,6 +134,8 @@ UiFocusScope* UiWindow::focused_scope() const noexcept
 
 bool UiWindow::focus_first_available_scope()
 {
+    cleanup_destroyed_children();
+    update_layout_if_dirty();
     prune_focus_scopes();
     for (const ScopeEntry& entry : _scope_entries)
     {

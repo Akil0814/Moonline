@@ -18,4 +18,10 @@ void layout_grid_children(
     const elysia::core::Rect& bounds,
     const UiGridLayoutConfig& config
 ) noexcept;
+
+[[nodiscard]] elysia::core::Vector2 intrinsic_grid_extent(
+    const std::vector<UiChildHost::ChildEntry>& children,
+    const UiLayoutPadding& padding,
+    const UiGridLayoutConfig& config
+) noexcept;
 }

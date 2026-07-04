@@ -25,6 +25,7 @@ public:
 
     void reset() noexcept override;
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
+    [[nodiscard]] elysia::core::Vector2 content_extent() const noexcept override;
 
     void add_child(std::unique_ptr<UiElement> child,UiPanelInsertDirection direction = UiPanelInsertDirection::Down);
     UiElement* add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options) override;

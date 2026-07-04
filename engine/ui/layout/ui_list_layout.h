@@ -18,4 +18,10 @@ void layout_list_children(
     const elysia::core::Rect& bounds,
     const UiListLayoutConfig& config
 ) noexcept;
+
+[[nodiscard]] elysia::core::Vector2 intrinsic_list_extent(
+    const std::vector<UiChildHost::ChildEntry>& children,
+    const UiLayoutPadding& padding,
+    const UiListLayoutConfig& config
+) noexcept;
 }

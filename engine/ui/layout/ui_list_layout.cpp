@@ -1,5 +1,7 @@
 #include "ui_list_layout.h"
 
+#include <algorithm>
+
 namespace elysia::ui::layout
 {
 namespace
@@ -70,5 +72,56 @@ void layout_list_children(
             cursor += child_size.x + item_spacing;
         }
     }
+}
+
+elysia::core::Vector2 intrinsic_list_extent(
+    const std::vector<UiChildHost::ChildEntry>& children,
+    const UiLayoutPadding& padding,
+    const UiListLayoutConfig& config
+) noexcept
+{
+    const float item_spacing = clamp_non_negative(config.item_spacing);
+    float main_axis_extent = 0.0f;
+    float cross_axis_extent = 0.0f;
+    bool has_item = false;
+
+    for (const UiChildHost::ChildEntry& child : children)
+    {
+        if (!child.element)
+            continue;
+
+        const elysia::core::Vector2 extent = child.layout._use_size_override
+            ? clamp_size(child.layout._size_override)
+            : clamp_size(child.element->content_extent());
+
+        if (has_item)
+            main_axis_extent += item_spacing;
+
+        if (config.direction == UiLayoutDirection::Vertical)
+        {
+            main_axis_extent += extent.y;
+            cross_axis_extent = std::max(cross_axis_extent,extent.x);
+        }
+        else
+        {
+            main_axis_extent += extent.x;
+            cross_axis_extent = std::max(cross_axis_extent,extent.y);
+        }
+
+        has_item = true;
+    }
+
+    if (config.direction == UiLayoutDirection::Vertical)
+    {
+        return elysia::core::Vector2(
+            padding.left + cross_axis_extent + padding.right,
+            padding.top + main_axis_extent + padding.bottom
+        );
+    }
+
+    return elysia::core::Vector2(
+        padding.left + main_axis_extent + padding.right,
+        padding.top + cross_axis_extent + padding.bottom
+    );
 }
 }
