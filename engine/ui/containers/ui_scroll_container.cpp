@@ -588,6 +588,14 @@ bool UiScrollContainer::shows_scrollbar(UiScrollAxis axis) const noexcept
     if (_scrollbar_visibility == UiScrollBarVisibility::Hidden)
         return false;
 
+    if (_scroll_state.axis() == UiScrollAxis::Auto)
+    {
+        const elysia::core::Vector2 viewport = interactive_rect().size();
+        const elysia::core::Vector2 content = _scroll_state.effective_content_size();
+        const bool overflow_x = content.x > viewport.x + ScrollbarEpsilon;
+        const bool overflow_y = content.y > viewport.y + ScrollbarEpsilon;
+        return is_horizontal_axis(axis) ? overflow_x : overflow_y;
+    }
     const UiScrollAxis resolved = _scroll_state.resolved_axis();
     const bool axis_supported = is_horizontal_axis(axis)
         ? (resolved == UiScrollAxis::Horizontal || resolved == UiScrollAxis::Both)
