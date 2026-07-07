@@ -616,9 +616,9 @@ void UiSlider::initialize_child_widgets()
     _value_number.set_draw_background(false);
     _value_number.set_horizontal_align(TextHorizontalAlign::Center);
     _value_number.set_vertical_align(TextVerticalAlign::Center);
-    _value_number.set_text_point_size(18);
+    _value_number.set_text_point_size(22  );
+    _value_number.set_target_height(24.0f);
     _value_number.set_padding(0);
-    _value_number.set_target_height(18.0f);
     _value_number.set_decimal_places(0);
     _value_number.set_trim_trailing_zeros(true);
     _value_number.set_keep_decimal_point(false);
