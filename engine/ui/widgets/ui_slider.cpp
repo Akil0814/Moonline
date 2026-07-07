@@ -28,22 +28,6 @@ constexpr float kValueChangeEpsilon = 0.0001f;
     return std::max(0.0f,value);
 }
 
-[[nodiscard]] UiDragHandleConfig make_drag_handle_config(const UiSliderHandleStyle& style) noexcept
-{
-    UiDragHandleConfig config{};
-    config.size = elysia::core::Vector2(clamp_non_negative(style.size.x),clamp_non_negative(style.size.y));
-    config.textures = style.textures;
-    config.draw_background = style.draw_background;
-    config.draw_border = style.draw_border;
-    config.idle_color = style.idle_color;
-    config.focused_color = style.focused_color;
-    config.dragging_color = style.dragging_color;
-    config.disabled_background_color = style.disabled_background_color;
-    config.border_color = style.border_color;
-    config.disabled_border_color = style.disabled_border_color;
-    return config;
-}
-
 [[nodiscard]] elysia::core::Rect take_left(elysia::core::Rect& rect,float width) noexcept
 {
     width = std::clamp(width,0.0f,std::max(0.0f,rect.width()));
@@ -146,13 +130,11 @@ void UiSlider::reset() noexcept
     _text_key.clear();
     _icon = nullptr;
     _sounds.reset();
-    _handle_style = UiSliderHandleStyle{};
+    _style = UiSliderStyle{};
     _on_value_changed = nullptr;
     _label_placement = UiSliderLabelPlacement::None;
     _orientation = UiSliderOrientation::Horizontal;
     _value_label_mode = UiSliderValueLabelMode::None;
-    _draw_background = true;
-    _draw_border = true;
     _drag_value_changed = false;
     _bar_thickness = 6.0f;
     _min_value = 0.0f;
@@ -161,14 +143,6 @@ void UiSlider::reset() noexcept
     _step = std::nullopt;
     _last_slide_sound_ticks = 0;
     _has_last_slide_sound_tick = false;
-    _background_color = elysia::core::colors::cobalt_blue;
-    _disabled_background_color = elysia::core::colors::gray_700;
-    _border_color = elysia::core::colors::sky_blue;
-    _disabled_border_color = elysia::core::colors::gray_500;
-    _fill_color = elysia::core::colors::glacial_white;
-    _disabled_fill_color = elysia::core::colors::gray_500;
-    _text_color = elysia::core::colors::white;
-    _disabled_text_color = elysia::core::colors::gray_300;
 
     initialize_child_widgets();
 }
@@ -323,7 +297,7 @@ void UiSlider::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
         return;
 
     const SliderLayout layout = compute_layout();
-    if (_draw_background)
+    if (_style.chrome.draw_background)
         out_commands.push_back(elysia::core::make_ui_fill_rect_command(slider_rect,apply_opacity(current_background_color())));
 
     sync_child_rects(layout);
@@ -349,7 +323,7 @@ void UiSlider::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
 
     if (_value_label_mode != UiSliderValueLabelMode::None)
         _value_number.submit_ui_render_commands(out_commands);
-    if (_draw_border)
+    if (_style.chrome.draw_border)
         out_commands.push_back(elysia::core::make_ui_draw_rect_command(slider_rect,apply_opacity(current_border_color())));
 }
 
@@ -500,99 +474,19 @@ void UiSlider::set_on_value_changed(UiSliderValueChangedCallback on_value_change
     _on_value_changed = std::move(on_value_changed);
 }
 
-void UiSlider::set_background_color(elysia::core::Color color) noexcept
+void UiSlider::set_style(const UiSliderStyle& style)
 {
-    _background_color = color;
-}
-
-elysia::core::Color UiSlider::background_color() const noexcept
-{
-    return _background_color;
-}
-
-void UiSlider::set_disabled_background_color(elysia::core::Color color) noexcept
-{
-    _disabled_background_color = color;
-}
-
-elysia::core::Color UiSlider::disabled_background_color() const noexcept
-{
-    return _disabled_background_color;
-}
-
-void UiSlider::set_border_color(elysia::core::Color color) noexcept
-{
-    _border_color = color;
-}
-
-elysia::core::Color UiSlider::border_color() const noexcept
-{
-    return _border_color;
-}
-
-void UiSlider::set_disabled_border_color(elysia::core::Color color) noexcept
-{
-    _disabled_border_color = color;
-}
-
-elysia::core::Color UiSlider::disabled_border_color() const noexcept
-{
-    return _disabled_border_color;
-}
-
-void UiSlider::set_fill_color(elysia::core::Color color) noexcept
-{
-    _fill_color = color;
-}
-
-elysia::core::Color UiSlider::fill_color() const noexcept
-{
-    return _fill_color;
-}
-
-void UiSlider::set_disabled_fill_color(elysia::core::Color color) noexcept
-{
-    _disabled_fill_color = color;
-}
-
-elysia::core::Color UiSlider::disabled_fill_color() const noexcept
-{
-    return _disabled_fill_color;
-}
-
-void UiSlider::set_handle_style(const UiSliderHandleStyle& style)
-{
-    _handle_style = style;
-    _handle_style.size = elysia::core::Vector2(
-        clamp_non_negative(_handle_style.size.x),
-        clamp_non_negative(_handle_style.size.y)
+    _style = style;
+    _style.handle.size = elysia::core::Vector2(
+        clamp_non_negative(_style.handle.size.x),
+        clamp_non_negative(_style.handle.size.y)
     );
-    _handle.set_drag_handle_config(make_drag_handle_config(_handle_style));
+    _handle.set_style(_style.handle);
 }
 
-const UiSliderHandleStyle& UiSlider::handle_style() const noexcept
+const UiSliderStyle& UiSlider::style() const noexcept
 {
-    return _handle_style;
-}
-
-void UiSlider::set_text_color(elysia::core::Color color) noexcept
-{
-    _text_color = color;
-}
-
-elysia::core::Color UiSlider::text_color() const noexcept
-{
-    return _text_color;
-}
-
-void UiSlider::set_disabled_text_color(elysia::core::Color color) noexcept
-{
-    _disabled_text_color = color;
-}
-
-elysia::core::Color UiSlider::disabled_text_color() const noexcept
-{
-    return _disabled_text_color;
+    return _style;
 }
 
 void UiSlider::set_value_decimal_places(int decimal_places)
@@ -674,26 +568,6 @@ float UiSlider::bar_thickness() const noexcept
     return _bar_thickness;
 }
 
-void UiSlider::set_draw_background(bool draw_background) noexcept
-{
-    _draw_background = draw_background;
-}
-
-bool UiSlider::draws_background() const noexcept
-{
-    return _draw_background;
-}
-
-void UiSlider::set_draw_border(bool draw_border) noexcept
-{
-    _draw_border = draw_border;
-}
-
-bool UiSlider::draws_border() const noexcept
-{
-    return _draw_border;
-}
-
 void UiSlider::apply_slider_config(const UiSliderConfig& config)
 {
     if (config.slider_sound)
@@ -704,9 +578,7 @@ void UiSlider::apply_slider_config(const UiSliderConfig& config)
     set_label_placement(config.label_placement);
     set_orientation(config.orientation);
     set_value_label_mode(config.value_label_mode);
-    set_draw_background(config.draw_background);
-    set_draw_border(config.draw_border);
-    set_handle_style(config.handle);
+    set_style(config.style);
     set_bar_thickness(config.bar_thickness);
     set_range(config.min_value,config.max_value);
     set_step(config.step);
@@ -747,7 +619,7 @@ void UiSlider::initialize_child_widgets()
     _value_number.set_trim_trailing_zeros(true);
     _value_number.set_keep_decimal_point(false);
     _value_number.set_suffix(UiNumberSuffix::None);
-    set_handle_style(UiSliderHandleStyle{});
+    set_style(UiSliderStyle{});
     bind_handle_callbacks();
 }
 
@@ -827,8 +699,8 @@ UiSlider::SliderLayout UiSlider::compute_layout() const noexcept
 
     const bool has_label = !_text_key.empty() || _icon;
     const elysia::core::Vector2 handle_size(
-        clamp_non_negative(_handle_style.size.x),
-        clamp_non_negative(_handle_style.size.y)
+        clamp_non_negative(_style.handle.size.x),
+        clamp_non_negative(_style.handle.size.y)
     );
     const float side_slot_extent = preferred_side_slot_extent(remaining,handle_size);
     const float target_height = _value_number.target_height().value_or(24.0f);
@@ -1049,22 +921,27 @@ elysia::core::Rect UiSlider::fitted_texture_rect(const elysia::core::Rect& bound
 
 elysia::core::Color UiSlider::current_background_color() const noexcept
 {
-    return is_enabled() ? _background_color : _disabled_background_color;
+    return resolve_enabled_disabled_color(
+        UiEnabledDisabledColors{
+            _style.chrome.background.idle,
+            _style.chrome.background.disabled
+        },
+        is_enabled());
 }
 
 elysia::core::Color UiSlider::current_border_color() const noexcept
 {
-    return is_enabled() ? _border_color : _disabled_border_color;
+    return resolve_enabled_disabled_color(_style.chrome.border,is_enabled());
 }
 
 elysia::core::Color UiSlider::current_fill_color() const noexcept
 {
-    return is_enabled() ? _fill_color : _disabled_fill_color;
+    return resolve_enabled_disabled_color(_style.fill,is_enabled());
 }
 
 elysia::core::Color UiSlider::current_text_color() const noexcept
 {
-    return is_enabled() ? _text_color : _disabled_text_color;
+    return resolve_enabled_disabled_color(_style.text,is_enabled());
 }
 void UiSlider::bind_handle_callbacks()
 {

@@ -6,6 +6,7 @@
 #include <string_view>
 #include <variant>
 #include "../core/ui_control.h"
+#include "../style/ui_interaction_style.h"
 #include "label/ui_label.h"
 #include "number/ui_number.h"
 #include "ui_bar.h"
@@ -32,18 +33,15 @@ namespace elysia::ui
 
     using UiSliderLabelContent = std::variant<std::monostate,UiSliderTextContent,UiSliderIconContent>;
 
-    struct UiSliderHandleStyle
+    struct UiSliderStyle
     {
-        elysia::core::Vector2 size{ 18.0f,18.0f };
-        std::optional<UiDragHandleTextures> textures = std::nullopt;
-        bool draw_background = true;
-        bool draw_border = true;
-        elysia::core::Color idle_color = elysia::core::colors::sky_blue;
-        elysia::core::Color focused_color = elysia::core::colors::royal_blue;
-        elysia::core::Color dragging_color = elysia::core::colors::white;
-        elysia::core::Color disabled_background_color = elysia::core::colors::gray_500;
-        elysia::core::Color border_color = elysia::core::colors::sky_blue;
-        elysia::core::Color disabled_border_color = elysia::core::colors::gray_500;
+        UiChromeStyle chrome{};
+        UiEnabledDisabledColors fill{
+            elysia::core::colors::glacial_white,
+            elysia::core::colors::gray_500
+        };
+        UiEnabledDisabledColors text{};
+        UiDragHandleStyle handle{};
     };
 
     struct UiSliderConfig
@@ -57,9 +55,7 @@ namespace elysia::ui
         float max_value = 1.0f;
         float value = 0.0f;
         std::optional<float> step = std::nullopt;
-        bool draw_background = true;
-        bool draw_border = true;
-        UiSliderHandleStyle handle{};
+        UiSliderStyle style{};
         float bar_thickness = 6.0f;
         int value_decimal_places = 0;
         bool value_trim_trailing_zeros = true;
@@ -118,24 +114,8 @@ namespace elysia::ui
         [[nodiscard]] const std::optional<UiSliderSounds>& sounds() const noexcept;
         void set_on_value_changed(UiSliderValueChangedCallback on_value_changed);
 
-        void set_background_color(elysia::core::Color color) noexcept;
-        [[nodiscard]] elysia::core::Color background_color() const noexcept;
-        void set_disabled_background_color(elysia::core::Color color) noexcept;
-        [[nodiscard]] elysia::core::Color disabled_background_color() const noexcept;
-        void set_border_color(elysia::core::Color color) noexcept;
-        [[nodiscard]] elysia::core::Color border_color() const noexcept;
-        void set_disabled_border_color(elysia::core::Color color) noexcept;
-        [[nodiscard]] elysia::core::Color disabled_border_color() const noexcept;
-        void set_fill_color(elysia::core::Color color) noexcept;
-        [[nodiscard]] elysia::core::Color fill_color() const noexcept;
-        void set_disabled_fill_color(elysia::core::Color color) noexcept;
-        [[nodiscard]] elysia::core::Color disabled_fill_color() const noexcept;
-        void set_handle_style(const UiSliderHandleStyle& style);
-        [[nodiscard]] const UiSliderHandleStyle& handle_style() const noexcept;
-        void set_text_color(elysia::core::Color color) noexcept;
-        [[nodiscard]] elysia::core::Color text_color() const noexcept;
-        void set_disabled_text_color(elysia::core::Color color) noexcept;
-        [[nodiscard]] elysia::core::Color disabled_text_color() const noexcept;
+        void set_style(const UiSliderStyle& style);
+        [[nodiscard]] const UiSliderStyle& style() const noexcept;
 
         void set_value_decimal_places(int decimal_places);
         [[nodiscard]] int value_decimal_places() const noexcept;
@@ -154,10 +134,6 @@ namespace elysia::ui
 
         void set_bar_thickness(float thickness) noexcept;
         [[nodiscard]] float bar_thickness() const noexcept;
-        void set_draw_background(bool draw_background) noexcept;
-        [[nodiscard]] bool draws_background() const noexcept;
-        void set_draw_border(bool draw_border) noexcept;
-        [[nodiscard]] bool draws_border() const noexcept;
 
     private:
         struct SliderLayout;
@@ -198,13 +174,11 @@ namespace elysia::ui
         std::string _text_key;
         SDL_Texture* _icon = nullptr;
         std::optional<UiSliderSounds> _sounds;
-        UiSliderHandleStyle _handle_style{};
+        UiSliderStyle _style{};
         UiSliderValueChangedCallback _on_value_changed;
         UiSliderLabelPlacement _label_placement = UiSliderLabelPlacement::None;
         UiSliderOrientation _orientation = UiSliderOrientation::Horizontal;
         UiSliderValueLabelMode _value_label_mode = UiSliderValueLabelMode::None;
-        bool _draw_background = true;
-        bool _draw_border = true;
         bool _drag_value_changed = false;
         float _bar_thickness = 6.0f;
         float _min_value = 0.0f;
@@ -213,13 +187,5 @@ namespace elysia::ui
         std::optional<float> _step = std::nullopt;
         std::uint32_t _last_slide_sound_ticks = 0;
         bool _has_last_slide_sound_tick = false;
-        elysia::core::Color _background_color = elysia::core::colors::cobalt_blue;
-        elysia::core::Color _disabled_background_color = elysia::core::colors::gray_700;
-        elysia::core::Color _border_color = elysia::core::colors::sky_blue;
-        elysia::core::Color _disabled_border_color = elysia::core::colors::gray_500;
-        elysia::core::Color _fill_color = elysia::core::colors::glacial_white;
-        elysia::core::Color _disabled_fill_color = elysia::core::colors::gray_500;
-        elysia::core::Color _text_color = elysia::core::colors::white;
-        elysia::core::Color _disabled_text_color = elysia::core::colors::gray_300;
     };
 }

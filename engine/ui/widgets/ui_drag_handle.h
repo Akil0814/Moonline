@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../core/render/colors.h"
+#include "../style/ui_interaction_style.h"
 #include "../core/ui_control.h"
 
 #include <functional>
@@ -26,20 +27,31 @@ struct UiDragHandleTextures
     SDL_Texture* disabled = nullptr;
 };
 
-struct UiDragHandleConfig
+struct UiDragHandleStyle
 {
     elysia::core::Vector2 size{ 18.0f,18.0f };
+    std::optional<UiDragHandleTextures> textures = std::nullopt;
+    UiChromeStyle chrome{
+        UiInteractiveColors{
+            elysia::core::colors::sky_blue,
+            elysia::core::colors::royal_blue,
+            elysia::core::colors::white,
+            elysia::core::colors::gray_500
+        },
+        UiEnabledDisabledColors{
+            elysia::core::colors::sky_blue,
+            elysia::core::colors::gray_500
+        },
+        true,
+        true
+    };
+};
+
+struct UiDragHandleConfig
+{
     UiDragAxis axis = UiDragAxis::Free;
     std::optional<elysia::core::Rect> drag_bounds = std::nullopt;
-    std::optional<UiDragHandleTextures> textures = std::nullopt;
-    bool draw_background = true;
-    bool draw_border = true;
-    elysia::core::Color idle_color = elysia::core::colors::sky_blue;
-    elysia::core::Color focused_color = elysia::core::colors::royal_blue;
-    elysia::core::Color dragging_color = elysia::core::colors::white;
-    elysia::core::Color disabled_background_color = elysia::core::colors::gray_500;
-    elysia::core::Color border_color = elysia::core::colors::sky_blue;
-    elysia::core::Color disabled_border_color = elysia::core::colors::gray_500;
+    UiDragHandleStyle style{};
 };
 
 using UiDragHandleDraggedCallback = std::function<void(const elysia::core::Vector2& center)>;
@@ -65,6 +77,8 @@ public:
 
     void set_drag_handle_config(const UiDragHandleConfig& config);
     [[nodiscard]] const UiDragHandleConfig& drag_handle_config() const noexcept;
+    void set_style(const UiDragHandleStyle& style);
+    [[nodiscard]] const UiDragHandleStyle& style() const noexcept;
 
     void set_drag_axis(UiDragAxis axis) noexcept;
     [[nodiscard]] UiDragAxis drag_axis() const noexcept;

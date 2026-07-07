@@ -65,7 +65,7 @@ void UiDragHandle::reset() noexcept
     _on_drag_ended = nullptr;
     _grab_offset = elysia::core::Vector2{};
     _is_dragging = false;
-    set_size(_config.size);
+    set_size(_config.style.size);
 }
 
 void UiDragHandle::set_enabled(bool enabled)
@@ -147,12 +147,12 @@ void UiDragHandle::submit_ui_render_commands(std::vector<elysia::core::UiRenderC
         apply_opacity(command);
         out_commands.push_back(command);
     }
-    else if (_config.draw_background)
+    else if (_config.style.chrome.draw_background)
     {
         out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(current_background_color())));
     }
 
-    if (_config.draw_border)
+    if (_config.style.chrome.draw_border)
         out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(current_border_color())));
 }
 
@@ -164,6 +164,21 @@ void UiDragHandle::set_drag_handle_config(const UiDragHandleConfig& config)
 const UiDragHandleConfig& UiDragHandle::drag_handle_config() const noexcept
 {
     return _config;
+}
+
+void UiDragHandle::set_style(const UiDragHandleStyle& style)
+{
+    _config.style = style;
+    _config.style.size = elysia::core::Vector2(
+        clamp_non_negative(_config.style.size.x),
+        clamp_non_negative(_config.style.size.y)
+    );
+    set_size(_config.style.size);
+}
+
+const UiDragHandleStyle& UiDragHandle::style() const noexcept
+{
+    return _config.style;
 }
 
 void UiDragHandle::set_drag_axis(UiDragAxis axis) noexcept
@@ -221,11 +236,11 @@ bool UiDragHandle::is_dragging() const noexcept
 void UiDragHandle::apply_drag_handle_config(const UiDragHandleConfig& config)
 {
     _config = config;
-    _config.size = elysia::core::Vector2(
-        clamp_non_negative(_config.size.x),
-        clamp_non_negative(_config.size.y)
+    _config.style.size = elysia::core::Vector2(
+        clamp_non_negative(_config.style.size.x),
+        clamp_non_negative(_config.style.size.y)
     );
-    set_size(_config.size);
+    set_size(_config.style.size);
 }
 
 bool UiDragHandle::can_receive_pointer() const noexcept
@@ -295,10 +310,10 @@ elysia::core::Rect UiDragHandle::clamped_rect(const elysia::core::Rect& rect) co
 
 SDL_Texture* UiDragHandle::current_state_texture() const noexcept
 {
-    if (!_config.textures)
+    if (!_config.style.textures)
         return nullptr;
 
-    const UiDragHandleTextures& textures = *_config.textures;
+    const UiDragHandleTextures& textures = *_config.style.textures;
     if (!is_enabled())
         return textures.disabled ? textures.disabled : textures.idle;
     if (_is_dragging)
@@ -310,15 +325,11 @@ SDL_Texture* UiDragHandle::current_state_texture() const noexcept
 
 elysia::core::Color UiDragHandle::current_background_color() const noexcept
 {
-    if (!is_enabled())
-        return _config.disabled_background_color;
-    if (_is_dragging)
-        return _config.dragging_color;
-    return is_focused() ? _config.focused_color : _config.idle_color;
+    return resolve_interactive_color(_config.style.chrome.background,is_enabled(),is_focused(),_is_dragging);
 }
 
 elysia::core::Color UiDragHandle::current_border_color() const noexcept
 {
-    return is_enabled() ? _config.border_color : _config.disabled_border_color;
+    return resolve_enabled_disabled_color(_config.style.chrome.border,is_enabled());
 }
 }

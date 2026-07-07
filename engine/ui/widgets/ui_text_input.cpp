@@ -122,21 +122,9 @@ void UiTextInput::reset() noexcept
     _composition_start = 0;
     _composition_length = 0;
     _max_length.reset();
-    _idle_color = elysia::core::colors::cobalt_blue;
-    _focused_color = elysia::core::colors::royal_blue;
-    _pushed_color = elysia::core::colors::midnight_blue;
-    _disabled_background_color = elysia::core::colors::gray_700;
-    _border_color = elysia::core::colors::sky_blue;
-    _disabled_border_color = elysia::core::colors::gray_500;
-    _text_color = elysia::core::colors::white;
-    _disabled_text_color = elysia::core::colors::gray_300;
-    _placeholder_color = elysia::core::colors::gray_300;
-    _disabled_placeholder_color = elysia::core::colors::gray_500;
-    _caret_color = elysia::core::colors::glacial_white;
+    _style = UiTextInputStyle{};
     _text_point_size = 24;
     _padding = 10;
-    _draw_background = true;
-    _draw_border = true;
     _is_pushed = false;
 }
 
@@ -259,9 +247,9 @@ void UiTextInput::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
     if (input_rect.is_empty())
         return;
 
-    if (_draw_background)
+    if (_style.chrome.draw_background)
         out_commands.push_back(elysia::core::make_ui_fill_rect_command(input_rect,apply_opacity(current_background_color())));
-    if (_draw_border)
+    if (_style.chrome.draw_border)
         out_commands.push_back(elysia::core::make_ui_draw_rect_command(input_rect,apply_opacity(current_border_color())));
 
     const TextLayout layout = compute_text_layout();
@@ -306,11 +294,11 @@ void UiTextInput::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
     if (!_composition_text.empty() && layout.composition_display_length > 0)
     {
         const float underline_y = layout.text_y + layout.text_height;
-        out_commands.push_back(elysia::core::make_ui_draw_line_command(
-            elysia::core::Vector2(layout.composition_highlight_start_x,underline_y),
-            elysia::core::Vector2(layout.composition_highlight_end_x,underline_y),
-            apply_opacity(_caret_color),
-            layout.content_rect));
+            out_commands.push_back(elysia::core::make_ui_draw_line_command(
+                elysia::core::Vector2(layout.composition_highlight_start_x,underline_y),
+                elysia::core::Vector2(layout.composition_highlight_end_x,underline_y),
+                apply_opacity(_style.caret),
+                layout.content_rect));
     }
 
     if (is_focused())
@@ -323,7 +311,7 @@ void UiTextInput::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
             out_commands.push_back(elysia::core::make_ui_draw_line_command(
                 elysia::core::Vector2(layout.caret_x,caret_top),
                 elysia::core::Vector2(layout.caret_x,caret_bottom),
-                apply_opacity(_caret_color),
+                apply_opacity(_style.caret),
                 layout.content_rect));
         }
 
@@ -383,114 +371,14 @@ const std::optional<std::size_t>& UiTextInput::max_length() const noexcept
     return _max_length;
 }
 
-void UiTextInput::set_idle_color(elysia::core::Color color) noexcept
+void UiTextInput::set_style(const UiTextInputStyle& style) noexcept
 {
-    _idle_color = color;
+    _style = style;
 }
 
-elysia::core::Color UiTextInput::idle_color() const noexcept
+const UiTextInputStyle& UiTextInput::style() const noexcept
 {
-    return _idle_color;
-}
-
-void UiTextInput::set_focused_color(elysia::core::Color color) noexcept
-{
-    _focused_color = color;
-}
-
-elysia::core::Color UiTextInput::focused_color() const noexcept
-{
-    return _focused_color;
-}
-
-void UiTextInput::set_pushed_color(elysia::core::Color color) noexcept
-{
-    _pushed_color = color;
-}
-
-elysia::core::Color UiTextInput::pushed_color() const noexcept
-{
-    return _pushed_color;
-}
-
-void UiTextInput::set_disabled_background_color(elysia::core::Color color) noexcept
-{
-    _disabled_background_color = color;
-}
-
-elysia::core::Color UiTextInput::disabled_background_color() const noexcept
-{
-    return _disabled_background_color;
-}
-
-void UiTextInput::set_border_color(elysia::core::Color color) noexcept
-{
-    _border_color = color;
-}
-
-elysia::core::Color UiTextInput::border_color() const noexcept
-{
-    return _border_color;
-}
-
-void UiTextInput::set_disabled_border_color(elysia::core::Color color) noexcept
-{
-    _disabled_border_color = color;
-}
-
-elysia::core::Color UiTextInput::disabled_border_color() const noexcept
-{
-    return _disabled_border_color;
-}
-
-void UiTextInput::set_text_color(elysia::core::Color color) noexcept
-{
-    _text_color = color;
-}
-
-elysia::core::Color UiTextInput::text_color() const noexcept
-{
-    return _text_color;
-}
-
-void UiTextInput::set_disabled_text_color(elysia::core::Color color) noexcept
-{
-    _disabled_text_color = color;
-}
-
-elysia::core::Color UiTextInput::disabled_text_color() const noexcept
-{
-    return _disabled_text_color;
-}
-
-void UiTextInput::set_placeholder_color(elysia::core::Color color) noexcept
-{
-    _placeholder_color = color;
-}
-
-elysia::core::Color UiTextInput::placeholder_color() const noexcept
-{
-    return _placeholder_color;
-}
-
-void UiTextInput::set_disabled_placeholder_color(elysia::core::Color color) noexcept
-{
-    _disabled_placeholder_color = color;
-}
-
-elysia::core::Color UiTextInput::disabled_placeholder_color() const noexcept
-{
-    return _disabled_placeholder_color;
-}
-
-void UiTextInput::set_caret_color(elysia::core::Color color) noexcept
-{
-    _caret_color = color;
-}
-
-elysia::core::Color UiTextInput::caret_color() const noexcept
-{
-    return _caret_color;
+    return _style;
 }
 
 void UiTextInput::set_text_point_size(int point_size) noexcept
@@ -511,26 +399,6 @@ void UiTextInput::set_padding(int padding) noexcept
 int UiTextInput::padding() const noexcept
 {
     return _padding;
-}
-
-void UiTextInput::set_draw_background(bool draw_background) noexcept
-{
-    _draw_background = draw_background;
-}
-
-bool UiTextInput::draws_background() const noexcept
-{
-    return _draw_background;
-}
-
-void UiTextInput::set_draw_border(bool draw_border) noexcept
-{
-    _draw_border = draw_border;
-}
-
-bool UiTextInput::draws_border() const noexcept
-{
-    return _draw_border;
 }
 
 bool UiTextInput::can_interact() const noexcept
@@ -800,28 +668,22 @@ UiTextInput::TextLayout UiTextInput::compute_text_layout() const
 
 elysia::core::Color UiTextInput::current_background_color() const noexcept
 {
-    if (!is_enabled())
-        return _disabled_background_color;
-    if (_is_pushed)
-        return _pushed_color;
-    if (is_focused())
-        return _focused_color;
-    return _idle_color;
+    return resolve_interactive_color(_style.chrome.background,is_enabled(),is_focused(),_is_pushed);
 }
 
 elysia::core::Color UiTextInput::current_border_color() const noexcept
 {
-    return is_enabled() ? _border_color : _disabled_border_color;
+    return resolve_enabled_disabled_color(_style.chrome.border,is_enabled());
 }
 
 elysia::core::Color UiTextInput::current_text_color() const noexcept
 {
-    return is_enabled() ? _text_color : _disabled_text_color;
+    return resolve_enabled_disabled_color(_style.text,is_enabled());
 }
 
 elysia::core::Color UiTextInput::current_placeholder_color() const noexcept
 {
-    return is_enabled() ? _placeholder_color : _disabled_placeholder_color;
+    return resolve_enabled_disabled_color(_style.placeholder,is_enabled());
 }
 
 void UiTextInput::acquire_text_input_ownership() const

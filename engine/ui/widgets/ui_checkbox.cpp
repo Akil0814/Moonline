@@ -51,18 +51,8 @@ void UiCheckbox::reset() noexcept
     _sounds.reset();
     _on_toggled = nullptr;
     _state = UiCheckboxState::Unchecked;
-    _idle_color = elysia::core::colors::cobalt_blue;
-    _focused_color = elysia::core::colors::royal_blue;
-    _pushed_color = elysia::core::colors::midnight_blue;
-    _disabled_background_color = elysia::core::colors::gray_700;
-    _border_color = elysia::core::colors::sky_blue;
-    _disabled_border_color = elysia::core::colors::gray_500;
-    _checkmark_color = elysia::core::colors::glacial_white;
-    _disabled_checkmark_color = elysia::core::colors::gray_300;
-    _mark_style = UiCheckboxMarkStyle::Checkmark;
+    _style = UiCheckboxStyle{};
     _padding = 4;
-    _draw_background = true;
-    _draw_border = true;
     _is_pushed = false;
 }
 
@@ -178,15 +168,15 @@ void UiCheckbox::submit_ui_render_commands(std::vector<elysia::core::UiRenderCom
         return;
     }
 
-    if (_draw_background)
+    if (_style.chrome.draw_background)
         out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(current_background_color())));
-    if (_draw_border)
+    if (_style.chrome.draw_border)
         out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(current_border_color())));
 
     const elysia::core::Color mark_color = apply_opacity(current_checkmark_color());
     if (_state == UiCheckboxState::Checked)
     {
-        if (_mark_style == UiCheckboxMarkStyle::FilledBox)
+        if (_style.mark_style == UiCheckboxMarkStyle::FilledBox)
         {
             const float inset = std::max(2.0f,std::min(rect.width(),rect.height()) * 0.22f);
             const elysia::core::Rect fill_rect(
@@ -250,14 +240,14 @@ void UiCheckbox::toggle()
     (void)toggle_internal(true,false);
 }
 
-void UiCheckbox::set_mark_style(UiCheckboxMarkStyle mark_style) noexcept
+void UiCheckbox::set_style(const UiCheckboxStyle& style) noexcept
 {
-    _mark_style = mark_style;
+    _style = style;
 }
 
-UiCheckboxMarkStyle UiCheckbox::mark_style() const noexcept
+const UiCheckboxStyle& UiCheckbox::style() const noexcept
 {
-    return _mark_style;
+    return _style;
 }
 
 void UiCheckbox::set_state_textures(const UiCheckboxTextures& textures)
@@ -303,86 +293,6 @@ void UiCheckbox::set_on_toggled(UiCheckboxToggledCallback on_toggled)
     _on_toggled = std::move(on_toggled);
 }
 
-void UiCheckbox::set_idle_color(elysia::core::Color color) noexcept
-{
-    _idle_color = color;
-}
-
-elysia::core::Color UiCheckbox::idle_color() const noexcept
-{
-    return _idle_color;
-}
-
-void UiCheckbox::set_focused_color(elysia::core::Color color) noexcept
-{
-    _focused_color = color;
-}
-
-elysia::core::Color UiCheckbox::focused_color() const noexcept
-{
-    return _focused_color;
-}
-
-void UiCheckbox::set_pushed_color(elysia::core::Color color) noexcept
-{
-    _pushed_color = color;
-}
-
-elysia::core::Color UiCheckbox::pushed_color() const noexcept
-{
-    return _pushed_color;
-}
-
-void UiCheckbox::set_disabled_background_color(elysia::core::Color color) noexcept
-{
-    _disabled_background_color = color;
-}
-
-elysia::core::Color UiCheckbox::disabled_background_color() const noexcept
-{
-    return _disabled_background_color;
-}
-
-void UiCheckbox::set_border_color(elysia::core::Color color) noexcept
-{
-    _border_color = color;
-}
-
-elysia::core::Color UiCheckbox::border_color() const noexcept
-{
-    return _border_color;
-}
-
-void UiCheckbox::set_disabled_border_color(elysia::core::Color color) noexcept
-{
-    _disabled_border_color = color;
-}
-
-elysia::core::Color UiCheckbox::disabled_border_color() const noexcept
-{
-    return _disabled_border_color;
-}
-
-void UiCheckbox::set_checkmark_color(elysia::core::Color color) noexcept
-{
-    _checkmark_color = color;
-}
-
-elysia::core::Color UiCheckbox::checkmark_color() const noexcept
-{
-    return _checkmark_color;
-}
-
-void UiCheckbox::set_disabled_checkmark_color(elysia::core::Color color) noexcept
-{
-    _disabled_checkmark_color = color;
-}
-
-elysia::core::Color UiCheckbox::disabled_checkmark_color() const noexcept
-{
-    return _disabled_checkmark_color;
-}
-
 void UiCheckbox::set_padding(int padding) noexcept
 {
     _padding = std::max(0,padding);
@@ -391,26 +301,6 @@ void UiCheckbox::set_padding(int padding) noexcept
 int UiCheckbox::padding() const noexcept
 {
     return _padding;
-}
-
-void UiCheckbox::set_draw_background(bool draw_background) noexcept
-{
-    _draw_background = draw_background;
-}
-
-bool UiCheckbox::draws_background() const noexcept
-{
-    return _draw_background;
-}
-
-void UiCheckbox::set_draw_border(bool draw_border) noexcept
-{
-    _draw_border = draw_border;
-}
-
-bool UiCheckbox::draws_border() const noexcept
-{
-    return _draw_border;
 }
 
 void UiCheckbox::apply_checkbox_config(const UiCheckboxConfig& config)
@@ -425,9 +315,7 @@ void UiCheckbox::apply_checkbox_config(const UiCheckboxConfig& config)
     else
         clear_sounds();
 
-    set_mark_style(config.mark_style);
-    set_draw_background(config.draw_background);
-    set_draw_border(config.draw_border);
+    set_style(config.style);
 }
 
 bool UiCheckbox::set_state_internal(UiCheckboxState state,bool notify) noexcept
@@ -550,23 +438,17 @@ bool UiCheckbox::uses_texture_rendering() const noexcept
 
 elysia::core::Color UiCheckbox::current_background_color() const noexcept
 {
-    if (!is_enabled())
-        return _disabled_background_color;
-    if (_is_pushed)
-        return _pushed_color;
-    if (is_focused())
-        return _focused_color;
-    return _idle_color;
+    return resolve_interactive_color(_style.chrome.background,is_enabled(),is_focused(),_is_pushed);
 }
 
 elysia::core::Color UiCheckbox::current_border_color() const noexcept
 {
-    return is_enabled() ? _border_color : _disabled_border_color;
+    return resolve_enabled_disabled_color(_style.chrome.border,is_enabled());
 }
 
 elysia::core::Color UiCheckbox::current_checkmark_color() const noexcept
 {
-    return is_enabled() ? _checkmark_color : _disabled_checkmark_color;
+    return resolve_enabled_disabled_color(_style.mark,is_enabled());
 }
 
 UiCheckboxState UiCheckbox::toggled_state(UiCheckboxState state) noexcept

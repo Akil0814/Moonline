@@ -47,18 +47,9 @@ void UiButton::reset() noexcept
     _state_textures = UiButtonTextures{};
     _on_click = nullptr;
     _visual_mode = UiButtonVisualMode::None;
-    _idle_color = elysia::core::colors::cobalt_blue;
-    _focused_color = elysia::core::colors::royal_blue;
-    _pushed_color = elysia::core::colors::midnight_blue;
-    _disabled_background_color = elysia::core::colors::gray_700;
-    _border_color = elysia::core::colors::sky_blue;
-    _disabled_border_color = elysia::core::colors::gray_500;
-    _text_color = elysia::core::colors::white;
-    _disabled_text_color = elysia::core::colors::gray_300;
+    _style = UiButtonStyle{};
     _text_point_size = 24;
     _padding = 10;
-    _draw_background = true;
-    _draw_border = true;
     _is_pushed = false;
 }
 
@@ -185,9 +176,9 @@ void UiButton::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
         return;
     }
 
-    if (_draw_background)
+    if (_style.chrome.draw_background)
         out_commands.push_back(elysia::core::make_ui_fill_rect_command(button_rect,apply_opacity(current_background_color())));
-    if (_draw_border)
+    if (_style.chrome.draw_border)
         out_commands.push_back(elysia::core::make_ui_draw_rect_command(button_rect,apply_opacity(current_border_color())));
 
     if (_visual_mode == UiButtonVisualMode::Icon)
@@ -295,84 +286,14 @@ void UiButton::set_on_click(ClickCallback on_click)
     _on_click = std::move(on_click);
 }
 
-void UiButton::set_idle_color(elysia::core::Color color)
+void UiButton::set_style(const UiButtonStyle& style)
 {
-    _idle_color = color;
+    _style = style;
 }
 
-elysia::core::Color UiButton::idle_color() const noexcept
+const UiButtonStyle& UiButton::style() const noexcept
 {
-    return _idle_color;
-}
-
-void UiButton::set_focused_color(elysia::core::Color color)
-{
-    _focused_color = color;
-}
-
-elysia::core::Color UiButton::focused_color() const noexcept
-{
-    return _focused_color;
-}
-
-void UiButton::set_pushed_color(elysia::core::Color color)
-{
-    _pushed_color = color;
-}
-
-elysia::core::Color UiButton::pushed_color() const noexcept
-{
-    return _pushed_color;
-}
-
-void UiButton::set_disabled_background_color(elysia::core::Color color)
-{
-    _disabled_background_color = color;
-}
-
-elysia::core::Color UiButton::disabled_background_color() const noexcept
-{
-    return _disabled_background_color;
-}
-
-void UiButton::set_border_color(elysia::core::Color color)
-{
-    _border_color = color;
-}
-
-elysia::core::Color UiButton::border_color() const noexcept
-{
-    return _border_color;
-}
-
-void UiButton::set_disabled_border_color(elysia::core::Color color)
-{
-    _disabled_border_color = color;
-}
-
-elysia::core::Color UiButton::disabled_border_color() const noexcept
-{
-    return _disabled_border_color;
-}
-
-void UiButton::set_text_color(elysia::core::Color color)
-{
-    _text_color = color;
-}
-
-elysia::core::Color UiButton::text_color() const noexcept
-{
-    return _text_color;
-}
-
-void UiButton::set_disabled_text_color(elysia::core::Color color)
-{
-    _disabled_text_color = color;
-}
-
-elysia::core::Color UiButton::disabled_text_color() const noexcept
-{
-    return _disabled_text_color;
+    return _style;
 }
 
 void UiButton::set_text_point_size(int point_size)
@@ -395,26 +316,6 @@ int UiButton::padding() const noexcept
     return _padding;
 }
 
-void UiButton::set_draw_background(bool draw_background)
-{
-    _draw_background = draw_background;
-}
-
-bool UiButton::draws_background() const noexcept
-{
-    return _draw_background;
-}
-
-void UiButton::set_draw_border(bool draw_border)
-{
-    _draw_border = draw_border;
-}
-
-bool UiButton::draws_border() const noexcept
-{
-    return _draw_border;
-}
-
 void UiButton::apply_button_config(const UiButtonConfig& config)
 {
     if (config.sounds)
@@ -422,8 +323,7 @@ void UiButton::apply_button_config(const UiButtonConfig& config)
     else
         clear_sounds();
 
-    set_draw_background(config.draw_background);
-    set_draw_border(config.draw_border);
+    set_style(config.style);
     apply_button_content(config.content);
 }
 
@@ -471,23 +371,17 @@ bool UiButton::can_receive_pointer() const noexcept
 
 elysia::core::Color UiButton::current_background_color() const noexcept
 {
-    if (!is_enabled())
-        return _disabled_background_color;
-    if (_is_pushed)
-        return _pushed_color;
-    if (is_focused())
-        return _focused_color;
-    return _idle_color;
+    return resolve_interactive_color(_style.chrome.background,is_enabled(),is_focused(),_is_pushed);
 }
 
 elysia::core::Color UiButton::current_border_color() const noexcept
 {
-    return is_enabled() ? _border_color : _disabled_border_color;
+    return resolve_enabled_disabled_color(_style.chrome.border,is_enabled());
 }
 
 elysia::core::Color UiButton::current_text_color() const noexcept
 {
-    return is_enabled() ? _text_color : _disabled_text_color;
+    return resolve_enabled_disabled_color(_style.text,is_enabled());
 }
 
 SDL_Texture* UiButton::current_state_texture() const noexcept

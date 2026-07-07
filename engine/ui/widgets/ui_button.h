@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../core/render/colors.h"
+#include "../style/ui_interaction_style.h"
 #include "../core/ui_control.h"
 
 #include <functional>
@@ -51,12 +52,17 @@ struct UiButtonSounds
     std::string click;
 };
 
+struct UiButtonStyle
+{
+    UiChromeStyle chrome{};
+    UiEnabledDisabledColors text{};
+};
+
 struct UiButtonConfig
 {
     UiButtonContent content{};
     std::optional<UiButtonSounds> sounds;
-    bool draw_background = true;
-    bool draw_border = true;
+    UiButtonStyle style{};
 };
 
 class UiButton : public UiControl
@@ -107,41 +113,14 @@ public:
 
     void set_on_click(ClickCallback on_click);
 
-    void set_idle_color(elysia::core::Color color);
-    [[nodiscard]] elysia::core::Color idle_color() const noexcept;
-
-    void set_focused_color(elysia::core::Color color);
-    [[nodiscard]] elysia::core::Color focused_color() const noexcept;
-
-    void set_pushed_color(elysia::core::Color color);
-    [[nodiscard]] elysia::core::Color pushed_color() const noexcept;
-
-    void set_disabled_background_color(elysia::core::Color color);
-    [[nodiscard]] elysia::core::Color disabled_background_color() const noexcept;
-
-    void set_border_color(elysia::core::Color color);
-    [[nodiscard]] elysia::core::Color border_color() const noexcept;
-
-    void set_disabled_border_color(elysia::core::Color color);
-    [[nodiscard]] elysia::core::Color disabled_border_color() const noexcept;
-
-    void set_text_color(elysia::core::Color color);
-    [[nodiscard]] elysia::core::Color text_color() const noexcept;
-
-    void set_disabled_text_color(elysia::core::Color color);
-    [[nodiscard]] elysia::core::Color disabled_text_color() const noexcept;
+    void set_style(const UiButtonStyle& style);
+    [[nodiscard]] const UiButtonStyle& style() const noexcept;
 
     void set_text_point_size(int point_size);
     [[nodiscard]] int text_point_size() const noexcept;
 
     void set_padding(int padding);
     [[nodiscard]] int padding() const noexcept;
-
-    void set_draw_background(bool draw_background);
-    [[nodiscard]] bool draws_background() const noexcept;
-
-    void set_draw_border(bool draw_border);
-    [[nodiscard]] bool draws_border() const noexcept;
 
 private:
     void apply_button_config(const UiButtonConfig& config);
@@ -168,20 +147,10 @@ private:
     UiButtonTextures _state_textures;
     ClickCallback _on_click;
     UiButtonVisualMode _visual_mode = UiButtonVisualMode::None;
-
-    elysia::core::Color _idle_color = elysia::core::colors::cobalt_blue;
-    elysia::core::Color _focused_color = elysia::core::colors::royal_blue;
-    elysia::core::Color _pushed_color = elysia::core::colors::midnight_blue;
-    elysia::core::Color _disabled_background_color = elysia::core::colors::gray_700;
-    elysia::core::Color _border_color = elysia::core::colors::sky_blue;
-    elysia::core::Color _disabled_border_color = elysia::core::colors::gray_500;
-    elysia::core::Color _text_color = elysia::core::colors::white;
-    elysia::core::Color _disabled_text_color = elysia::core::colors::gray_300;
+    UiButtonStyle _style{};
 
     int _text_point_size = 24;
     int _padding = 10;
-    bool _draw_background = true;
-    bool _draw_border = true;
     bool _is_pushed = false;
 };
 }

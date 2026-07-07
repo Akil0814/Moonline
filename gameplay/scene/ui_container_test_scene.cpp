@@ -71,7 +71,9 @@ std::unique_ptr<elysia::ui::UiCheckbox> make_checkbox(
 {
     auto checkbox = std::make_unique<elysia::ui::UiCheckbox>(rect,0);
     checkbox->set_checked(checked);
-    checkbox->set_mark_style(mark_style);
+    elysia::ui::UiCheckboxStyle style = checkbox->style();
+    style.mark_style = mark_style;
+    checkbox->set_style(style);
     checkbox->set_on_toggled([scope](elysia::ui::UiCheckboxState state)
     {
         std::cout << scope << " checkbox state " << static_cast<int>(state) << std::endl;

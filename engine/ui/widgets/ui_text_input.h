@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../core/render/colors.h"
+#include "../style/ui_interaction_style.h"
 #include "../core/ui_control.h"
 
 #include <cstddef>
@@ -13,6 +14,17 @@ namespace elysia::ui
 {
 using UiTextInputChangedCallback = std::function<void(std::string_view text)>;
 using UiTextInputSubmitCallback = std::function<void(std::string_view text)>;
+
+struct UiTextInputStyle
+{
+    UiChromeStyle chrome{};
+    UiEnabledDisabledColors text{};
+    UiEnabledDisabledColors placeholder{
+        elysia::core::colors::gray_300,
+        elysia::core::colors::gray_500
+    };
+    elysia::core::Color caret = elysia::core::colors::glacial_white;
+};
 
 class UiTextInput : public UiControl
 {
@@ -43,37 +55,13 @@ public:
     void set_max_length(std::optional<std::size_t> max_length);
     [[nodiscard]] const std::optional<std::size_t>& max_length() const noexcept;
 
-    void set_idle_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color idle_color() const noexcept;
-    void set_focused_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color focused_color() const noexcept;
-    void set_pushed_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color pushed_color() const noexcept;
-    void set_disabled_background_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color disabled_background_color() const noexcept;
-    void set_border_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color border_color() const noexcept;
-    void set_disabled_border_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color disabled_border_color() const noexcept;
-    void set_text_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color text_color() const noexcept;
-    void set_disabled_text_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color disabled_text_color() const noexcept;
-    void set_placeholder_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color placeholder_color() const noexcept;
-    void set_disabled_placeholder_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color disabled_placeholder_color() const noexcept;
-    void set_caret_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color caret_color() const noexcept;
+    void set_style(const UiTextInputStyle& style) noexcept;
+    [[nodiscard]] const UiTextInputStyle& style() const noexcept;
 
     void set_text_point_size(int point_size) noexcept;
     [[nodiscard]] int text_point_size() const noexcept;
     void set_padding(int padding) noexcept;
     [[nodiscard]] int padding() const noexcept;
-    void set_draw_background(bool draw_background) noexcept;
-    [[nodiscard]] bool draws_background() const noexcept;
-    void set_draw_border(bool draw_border) noexcept;
-    [[nodiscard]] bool draws_border() const noexcept;
 
 private:
     struct TextLayout;
@@ -115,21 +103,9 @@ private:
     int _composition_start = 0;
     int _composition_length = 0;
     std::optional<std::size_t> _max_length = std::nullopt;
-    elysia::core::Color _idle_color = elysia::core::colors::cobalt_blue;
-    elysia::core::Color _focused_color = elysia::core::colors::royal_blue;
-    elysia::core::Color _pushed_color = elysia::core::colors::midnight_blue;
-    elysia::core::Color _disabled_background_color = elysia::core::colors::gray_700;
-    elysia::core::Color _border_color = elysia::core::colors::sky_blue;
-    elysia::core::Color _disabled_border_color = elysia::core::colors::gray_500;
-    elysia::core::Color _text_color = elysia::core::colors::white;
-    elysia::core::Color _disabled_text_color = elysia::core::colors::gray_300;
-    elysia::core::Color _placeholder_color = elysia::core::colors::gray_300;
-    elysia::core::Color _disabled_placeholder_color = elysia::core::colors::gray_500;
-    elysia::core::Color _caret_color = elysia::core::colors::glacial_white;
+    UiTextInputStyle _style{};
     int _text_point_size = 24;
     int _padding = 10;
-    bool _draw_background = true;
-    bool _draw_border = true;
     bool _is_pushed = false;
 };
 }

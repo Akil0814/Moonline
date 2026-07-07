@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../core/render/colors.h"
+#include "../style/ui_interaction_style.h"
 #include "../core/ui_control.h"
 
 #include <functional>
@@ -46,13 +47,21 @@ struct UiCheckboxSounds
     std::string toggle;
 };
 
+struct UiCheckboxStyle
+{
+    UiChromeStyle chrome{};
+    UiEnabledDisabledColors mark{
+        elysia::core::colors::glacial_white,
+        elysia::core::colors::gray_300
+    };
+    UiCheckboxMarkStyle mark_style = UiCheckboxMarkStyle::Checkmark;
+};
+
 struct UiCheckboxConfig
 {
     std::optional<UiCheckboxTextures> textures = std::nullopt;
     std::optional<UiCheckboxSounds> sounds = std::nullopt;
-    UiCheckboxMarkStyle mark_style = UiCheckboxMarkStyle::Checkmark;
-    bool draw_background = true;
-    bool draw_border = true;
+    UiCheckboxStyle style{};
 };
 
 using UiCheckboxToggledCallback = std::function<void(UiCheckboxState state)>;
@@ -86,8 +95,6 @@ public:
     [[nodiscard]] bool is_checked() const noexcept;
     [[nodiscard]] bool is_indeterminate() const noexcept;
     void toggle();
-    void set_mark_style(UiCheckboxMarkStyle mark_style) noexcept;
-    [[nodiscard]] UiCheckboxMarkStyle mark_style() const noexcept;
 
     void set_state_textures(const UiCheckboxTextures& textures);
     void clear_state_textures() noexcept;
@@ -100,38 +107,11 @@ public:
 
     void set_on_toggled(UiCheckboxToggledCallback on_toggled);
 
-    void set_idle_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color idle_color() const noexcept;
-
-    void set_focused_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color focused_color() const noexcept;
-
-    void set_pushed_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color pushed_color() const noexcept;
-
-    void set_disabled_background_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color disabled_background_color() const noexcept;
-
-    void set_border_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color border_color() const noexcept;
-
-    void set_disabled_border_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color disabled_border_color() const noexcept;
-
-    void set_checkmark_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color checkmark_color() const noexcept;
-
-    void set_disabled_checkmark_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color disabled_checkmark_color() const noexcept;
+    void set_style(const UiCheckboxStyle& style) noexcept;
+    [[nodiscard]] const UiCheckboxStyle& style() const noexcept;
 
     void set_padding(int padding) noexcept;
     [[nodiscard]] int padding() const noexcept;
-
-    void set_draw_background(bool draw_background) noexcept;
-    [[nodiscard]] bool draws_background() const noexcept;
-
-    void set_draw_border(bool draw_border) noexcept;
-    [[nodiscard]] bool draws_border() const noexcept;
 
 private:
     void apply_checkbox_config(const UiCheckboxConfig& config);
@@ -162,18 +142,8 @@ private:
     std::optional<UiCheckboxSounds> _sounds;
     UiCheckboxToggledCallback _on_toggled;
     UiCheckboxState _state = UiCheckboxState::Unchecked;
-    elysia::core::Color _idle_color = elysia::core::colors::cobalt_blue;
-    elysia::core::Color _focused_color = elysia::core::colors::royal_blue;
-    elysia::core::Color _pushed_color = elysia::core::colors::midnight_blue;
-    elysia::core::Color _disabled_background_color = elysia::core::colors::gray_700;
-    elysia::core::Color _border_color = elysia::core::colors::sky_blue;
-    elysia::core::Color _disabled_border_color = elysia::core::colors::gray_500;
-    elysia::core::Color _checkmark_color = elysia::core::colors::glacial_white;
-    elysia::core::Color _disabled_checkmark_color = elysia::core::colors::gray_300;
-    UiCheckboxMarkStyle _mark_style = UiCheckboxMarkStyle::Checkmark;
+    UiCheckboxStyle _style{};
     int _padding = 4;
-    bool _draw_background = true;
-    bool _draw_border = true;
     bool _is_pushed = false;
 };
 }

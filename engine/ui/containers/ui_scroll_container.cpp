@@ -770,17 +770,17 @@ void UiScrollContainer::configure_scrollbar_thumb(
     }
 
     UiDragHandleConfig config{};
-    config.size = thumb_rect.size();
     config.axis = is_horizontal_axis(axis) ? UiDragAxis::Horizontal : UiDragAxis::Vertical;
     config.drag_bounds = track_rect;
-    config.draw_background = true;
-    config.draw_border = false;
-    config.idle_color = _scrollbar_style.thumb_idle_color;
-    config.focused_color = _scrollbar_style.thumb_focused_color;
-    config.dragging_color = _scrollbar_style.thumb_dragging_color;
-    config.disabled_background_color = _scrollbar_style.thumb_disabled_color;
-    config.border_color = _scrollbar_style.thumb_idle_color;
-    config.disabled_border_color = _scrollbar_style.thumb_disabled_color;
+    config.style.size = thumb_rect.size();
+    config.style.chrome.draw_background = true;
+    config.style.chrome.draw_border = false;
+    config.style.chrome.background.idle = _scrollbar_style.thumb_idle_color;
+    config.style.chrome.background.focused = _scrollbar_style.thumb_focused_color;
+    config.style.chrome.background.active = _scrollbar_style.thumb_dragging_color;
+    config.style.chrome.background.disabled = _scrollbar_style.thumb_disabled_color;
+    config.style.chrome.border.enabled = _scrollbar_style.thumb_idle_color;
+    config.style.chrome.border.disabled = _scrollbar_style.thumb_disabled_color;
 
     thumb.set_drag_handle_config(config);
     thumb.set_drag_axis(config.axis);
