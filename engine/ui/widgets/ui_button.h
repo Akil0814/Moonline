@@ -85,8 +85,8 @@ public:
 
     void reset() noexcept override;
 
-    void set_enabled(bool enabled);
-    void set_focused(bool focused);
+    void set_enabled(bool enabled) override;
+    void set_focused(bool focused) override;
 
     bool on_ui_input_event(const UiInputEvent& event) override;
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;

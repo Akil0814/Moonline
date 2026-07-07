@@ -72,6 +72,8 @@ namespace
 {
     return std::max(0.0f,value);
 }
+
+const UiTextInput* s_text_input_owner = nullptr;
 }
 
 struct UiTextInput::TextLayout
@@ -99,8 +101,14 @@ UiTextInput::UiTextInput(const elysia::core::Vector2& position,const elysia::cor
 UiTextInput::UiTextInput(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order) noexcept
     : UiTextInput(elysia::core::Rect::from_center(center,size),order) {}
 
+UiTextInput::~UiTextInput()
+{
+    release_text_input_ownership();
+}
+
 void UiTextInput::reset() noexcept
 {
+    release_text_input_ownership();
     UiControl::reset();
     set_use_theme(false);
 
@@ -139,8 +147,7 @@ void UiTextInput::set_enabled(bool enabled)
     {
         clear_pushed_state();
         clear_composition();
-        if (SDL_IsTextInputActive())
-            SDL_StopTextInput();
+        release_text_input_ownership();
     }
 }
 
@@ -148,13 +155,12 @@ void UiTextInput::set_focused(bool focused)
 {
     UiControl::set_focused(focused);
     if (is_focused() && is_enabled() && is_active() && is_visible())
-        SDL_StartTextInput();
+        acquire_text_input_ownership();
     else
     {
         clear_pushed_state();
         clear_composition();
-        if (SDL_IsTextInputActive())
-            SDL_StopTextInput();
+        release_text_input_ownership();
     }
 }
 
@@ -171,7 +177,8 @@ bool UiTextInput::on_ui_input_event(const UiInputEvent& event)
             return false;
 
         set_focused(true);
-        _caret_codepoint_index = utf8_codepoint_count(_text);
+        clear_composition();
+        _caret_codepoint_index = codepoint_index_at_x(event.mouse_x);
         clear_composition();
         _is_pushed = true;
         return true;
@@ -636,6 +643,50 @@ bool UiTextInput::erase_next_codepoint()
     return previous_text != _text;
 }
 
+std::size_t UiTextInput::codepoint_index_at_x(int mouse_x) const
+{
+    const std::size_t codepoint_count = utf8_codepoint_count(_text);
+    if (codepoint_count == 0)
+        return 0;
+
+    elysia::localization::LocalizationManager* localization_manager = elysia::localization::LocalizationManager::instance();
+    if (!localization_manager)
+        return codepoint_count;
+
+    const TextLayout layout = compute_text_layout();
+    if (layout.content_rect.is_empty())
+        return codepoint_count;
+
+    elysia::localization::LocalizedTextStyle style;
+    style.point_size = _text_point_size;
+    style.color = current_text_color();
+    style.wrap_width = 0;
+
+    const float target_text_x = static_cast<float>(mouse_x) - layout.text_x;
+    if (target_text_x <= 0.0f)
+        return 0;
+
+    int previous_width = 0;
+    for (std::size_t index = 1; index <= codepoint_count; ++index)
+    {
+        const std::size_t byte_offset = utf8_byte_offset_from_codepoint_index(_text,index);
+        const std::string prefix = _text.substr(0,byte_offset);
+
+        int current_width = 0;
+        int current_height = 0;
+        if (!localization_manager->measure_raw_text(prefix,style,current_width,current_height))
+            return codepoint_count;
+
+        const float midpoint = (static_cast<float>(previous_width) + static_cast<float>(current_width)) * 0.5f;
+        if (target_text_x < midpoint)
+            return index - 1;
+
+        previous_width = current_width;
+    }
+
+    return codepoint_count;
+}
+
 void UiTextInput::move_caret_left() noexcept
 {
     if (_caret_codepoint_index > 0)
@@ -771,6 +822,23 @@ elysia::core::Color UiTextInput::current_text_color() const noexcept
 elysia::core::Color UiTextInput::current_placeholder_color() const noexcept
 {
     return is_enabled() ? _placeholder_color : _disabled_placeholder_color;
+}
+
+void UiTextInput::acquire_text_input_ownership() const
+{
+    s_text_input_owner = this;
+    if (!SDL_IsTextInputActive())
+        SDL_StartTextInput();
+}
+
+void UiTextInput::release_text_input_ownership() const
+{
+    if (s_text_input_owner != this)
+        return;
+
+    s_text_input_owner = nullptr;
+    if (SDL_IsTextInputActive())
+        SDL_StopTextInput();
 }
 
 void UiTextInput::notify_text_changed_if_needed(const std::string& previous_text) const

@@ -20,12 +20,12 @@ public:
     explicit UiTextInput(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0) noexcept;
     UiTextInput(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order = 0) noexcept;
     UiTextInput(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order = 0) noexcept;
-    ~UiTextInput() override = default;
+    ~UiTextInput() override;
 
     void reset() noexcept override;
 
-    void set_enabled(bool enabled);
-    void set_focused(bool focused);
+    void set_enabled(bool enabled) override;
+    void set_focused(bool focused) override;
 
     bool on_ui_input_event(const UiInputEvent& event) override;
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
@@ -89,6 +89,7 @@ private:
     [[nodiscard]] bool insert_text_at_caret(std::string_view text);
     [[nodiscard]] bool erase_previous_codepoint();
     [[nodiscard]] bool erase_next_codepoint();
+    [[nodiscard]] std::size_t codepoint_index_at_x(int mouse_x) const;
     void move_caret_left() noexcept;
     void move_caret_right() noexcept;
     void move_caret_home() noexcept;
@@ -99,6 +100,8 @@ private:
     [[nodiscard]] elysia::core::Color current_border_color() const noexcept;
     [[nodiscard]] elysia::core::Color current_text_color() const noexcept;
     [[nodiscard]] elysia::core::Color current_placeholder_color() const noexcept;
+    void acquire_text_input_ownership() const;
+    void release_text_input_ownership() const;
     void notify_text_changed_if_needed(const std::string& previous_text) const;
 
 private:

@@ -14,7 +14,7 @@ public:
 
     void reset() noexcept override;
 
-    void set_enabled(bool enabled);
+    virtual void set_enabled(bool enabled);
     [[nodiscard]] bool is_enabled() const;
 
     void set_focused(bool focused) override;
