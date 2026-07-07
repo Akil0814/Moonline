@@ -93,7 +93,7 @@ bool UiScrollContainer::on_ui_input_event(const UiInputEvent& event)
             && dispatch_content_input_event(event);
         if (handled_by_content)
         {
-            ensure_visible_focused_target();
+            ensure_visible_focused_target_for_input(event);
             return true;
         }
         return handle_mouse_wheel(event);
@@ -107,7 +107,7 @@ bool UiScrollContainer::on_ui_input_event(const UiInputEvent& event)
             && is_primary_mouse_pointer_event(event)
             && is_pointer_in_viewport(event.mouse_x,event.mouse_y);
         if (handled_by_content)
-            ensure_visible_focused_target();
+            ensure_visible_focused_target_for_input(event);
         return handled_by_content;
     }
 
@@ -116,7 +116,7 @@ bool UiScrollContainer::on_ui_input_event(const UiInputEvent& event)
         const bool handled_by_content = should_dispatch_content_input_event(event)
             && dispatch_content_input_event(event);
         if (handled_by_content)
-            ensure_visible_focused_target();
+            ensure_visible_focused_target_for_input(event);
         return handled_by_content;
     }
 
@@ -126,12 +126,12 @@ bool UiScrollContainer::on_ui_input_event(const UiInputEvent& event)
             && dispatch_content_input_event(event);
         clear_content_pointer_state();
         if (handled_by_content)
-            ensure_visible_focused_target();
+            ensure_visible_focused_target_for_input(event);
         return handled_by_content;
     }
 
     const bool handled = dispatch_content_input_event(event);
-    ensure_visible_focused_target();
+    ensure_visible_focused_target_for_input(event);
     return handled;
 }
 
@@ -408,8 +408,6 @@ void UiScrollContainer::set_scope_focused(bool focused) noexcept
 {
     _scope_focused = focused;
     sync_content_scope_focus();
-    if (focused && !_content_focus_suppressed)
-        ensure_visible_focused_target();
 }
 
 bool UiScrollContainer::is_scope_focused() const noexcept
@@ -426,12 +424,7 @@ bool UiScrollContainer::has_focusable_target() const noexcept
 bool UiScrollContainer::focus_first_available()
 {
     if (UiFocusScope* scope = content_scope())
-    {
-        const bool focused = scope->focus_first_available();
-        if (focused)
-            ensure_visible_focused_target();
-        return focused;
-    }
+        return scope->focus_first_available();
     return false;
 }
 
@@ -871,6 +864,18 @@ void UiScrollContainer::update_content_focus_suppression(const UiInputEvent& eve
     }
 
     set_content_focus_suppressed(!is_pointer_in_viewport(event.mouse_x,event.mouse_y));
+}
+
+bool UiScrollContainer::should_auto_position_focus(const UiInputEvent& event) const noexcept
+{
+    return event.device == elysia::input::InputDevice::Keyboard
+        || event.device == elysia::input::InputDevice::Gamepad;
+}
+
+void UiScrollContainer::ensure_visible_focused_target_for_input(const UiInputEvent& event) noexcept
+{
+    if (should_auto_position_focus(event))
+        ensure_visible_focused_target();
 }
 
 void UiScrollContainer::ensure_visible_focused_target() noexcept

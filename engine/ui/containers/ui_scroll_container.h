@@ -131,6 +131,8 @@ private:
     void sync_content_scope_focus() noexcept;
     void set_content_focus_suppressed(bool suppressed) noexcept;
     void update_content_focus_suppression(const UiInputEvent& event) noexcept;
+    [[nodiscard]] bool should_auto_position_focus(const UiInputEvent& event) const noexcept;
+    void ensure_visible_focused_target_for_input(const UiInputEvent& event) noexcept;
     void ensure_visible_focused_target() noexcept;
     void submit_scrollbar_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const;
     [[nodiscard]] elysia::core::Vector2 measured_content_size() const noexcept;
