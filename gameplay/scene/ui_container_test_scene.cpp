@@ -6,8 +6,12 @@
 #include "../../engine/ui/containers/ui_panel.h"
 #include "../../engine/ui/containers/ui_scroll_container.h"
 #include "../../engine/ui/widgets/ui_button.h"
+#include "../../engine/ui/widgets/ui_checkbox.h"
+#include "../../engine/ui/widgets/ui_labeled_checkbox.h"
+#include "../../engine/ui/widgets/ui_text_input.h"
 #include "../../engine/ui/layout/ui_layout_types.h"
 
+#include <array>
 #include <iostream>
 #include <memory>
 #include <utility>
@@ -19,6 +23,17 @@ namespace
 [[nodiscard]] elysia::ui::UiButtonConfig make_button_config(const char* text_key)
 {
     return elysia::ui::UiButtonConfig{ .content = elysia::ui::UiButtonTextContent{ text_key } };
+}
+
+[[nodiscard]] const char* button_text_key_for_index(int index) noexcept
+{
+    static constexpr std::array<const char*,4> kButtonTextKeys{
+        "menu_scene.start",
+        "menu_scene.settings",
+        "menu_scene.about",
+        "menu_scene.exit"
+    };
+    return kButtonTextKeys[static_cast<std::size_t>(index) % kButtonTextKeys.size()];
 }
 
 [[nodiscard]] elysia::ui::UiLayoutChildOptions make_window_child_options(float left,float top)
@@ -34,17 +49,72 @@ namespace
     };
 }
 
-std::unique_ptr<elysia::ui::UiButton> make_button(const char* text_key,int index,const char* scope)
+std::unique_ptr<elysia::ui::UiButton> make_button(int index,const char* scope)
 {
     auto button = std::make_unique<elysia::ui::UiButton>(
         elysia::core::Rect{ 0,0,180,44 },
-        make_button_config(text_key),
+        make_button_config(button_text_key_for_index(index)),
         0);
     button->set_on_click([index,scope]()
     {
         std::cout << scope << " button " << index << std::endl;
     });
     return button;
+}
+
+std::unique_ptr<elysia::ui::UiCheckbox> make_checkbox(
+    const elysia::core::Rect& rect,
+    bool checked,
+    elysia::ui::UiCheckboxMarkStyle mark_style,
+    const char* scope
+)
+{
+    auto checkbox = std::make_unique<elysia::ui::UiCheckbox>(rect,0);
+    checkbox->set_checked(checked);
+    checkbox->set_mark_style(mark_style);
+    checkbox->set_on_toggled([scope](elysia::ui::UiCheckboxState state)
+    {
+        std::cout << scope << " checkbox state " << static_cast<int>(state) << std::endl;
+    });
+    return checkbox;
+}
+
+std::unique_ptr<elysia::ui::UiLabeledCheckbox> make_labeled_checkbox(
+    const elysia::core::Rect& rect,
+    const char* text_key,
+    bool checked,
+    const char* scope
+)
+{
+    auto checkbox = std::make_unique<elysia::ui::UiLabeledCheckbox>(rect,0);
+    checkbox->set_text_key(text_key);
+    checkbox->set_checked(checked);
+    checkbox->set_on_toggled([scope](elysia::ui::UiCheckboxState state)
+    {
+        std::cout << scope << " labeled checkbox state " << static_cast<int>(state) << std::endl;
+    });
+    return checkbox;
+}
+
+std::unique_ptr<elysia::ui::UiTextInput> make_text_input(
+    const elysia::core::Rect& rect,
+    std::string placeholder_text,
+    std::optional<std::size_t> max_length,
+    const char* scope
+)
+{
+    auto input = std::make_unique<elysia::ui::UiTextInput>(rect,0);
+    input->set_placeholder_text(std::move(placeholder_text));
+    input->set_max_length(max_length);
+    input->set_on_text_changed([scope](std::string_view text)
+    {
+        std::cout << scope << " text changed: " << text << std::endl;
+    });
+    input->set_on_submit([scope](std::string_view text)
+    {
+        std::cout << scope << " submit: " << text << std::endl;
+    });
+    return input;
 }
 }
 
@@ -96,7 +166,7 @@ void UiContainerTestScene::rebuild_ui()
     vertical_list->set_padding(elysia::ui::UiLayoutPadding{ 20.0f,20.0f,20.0f,20.0f });
     vertical_list->set_item_spacing(18.0f);
     for (int index = 0; index < 10; ++index)
-        vertical_list->add_back(make_button("menu_scene.ui_button",index,"vertical"));
+        vertical_list->add_back(make_button(index,"vertical"));
     vertical_scroll->set_content(std::move(vertical_list));
 
     auto* horizontal_scroll = _root_window->create_child<elysia::ui::UiScrollContainer>(elysia::core::Rect{ 0,0,320,180 });
@@ -111,7 +181,7 @@ void UiContainerTestScene::rebuild_ui()
 
     auto horizontal_button_0 = std::make_unique<elysia::ui::UiButton>(
         elysia::core::Rect{ 70,68,120,44 },
-        make_button_config("menu_scene.ui_button"),
+        make_button_config(button_text_key_for_index(0)),
         0);
     horizontal_button_0->set_on_click([]()
     {
@@ -123,7 +193,7 @@ void UiContainerTestScene::rebuild_ui()
     {
         auto button = std::make_unique<elysia::ui::UiButton>(
             elysia::core::Rect{ 70.0f + 140.0f * static_cast<float>(index),68.0f,120.0f,44.0f },
-            make_button_config("menu_scene.ui_button"),
+            make_button_config(button_text_key_for_index(index)),
             0);
         button->set_on_click([index]()
         {
@@ -146,7 +216,7 @@ void UiContainerTestScene::rebuild_ui()
     {
         auto button = std::make_unique<elysia::ui::UiButton>(
             elysia::core::Rect{ 0,0,96,48 },
-            make_button_config("menu_scene.ui_button"),
+            make_button_config(button_text_key_for_index(index)),
             0);
         button->set_on_click([index]()
         {
@@ -165,25 +235,65 @@ void UiContainerTestScene::rebuild_ui()
     first_hidden_content->set_padding(elysia::ui::UiLayoutPadding{ 18.0f,18.0f,18.0f,18.0f });
     first_hidden_content->set_item_spacing(14.0f);
     for (int index = 0; index < 4; ++index)
-        first_hidden_content->add_back(make_button("menu_scene.ui_button",index,"hidden-initial"));
+        first_hidden_content->add_back(make_button(index,"hidden-initial"));
     hidden_scroll->set_content(std::move(first_hidden_content));
 
     auto replacement_hidden_content = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,320,520 });
     replacement_hidden_content->set_padding(elysia::ui::UiLayoutPadding{ 18.0f,18.0f,18.0f,18.0f });
     replacement_hidden_content->set_item_spacing(14.0f);
     for (int index = 0; index < 8; ++index)
-        replacement_hidden_content->add_back(make_button("menu_scene.ui_button",index,"hidden"));
+        replacement_hidden_content->add_back(make_button(index,"hidden"));
     hidden_scroll->set_content(std::move(replacement_hidden_content));
+
+    auto* widget_scroll = _root_window->create_child<elysia::ui::UiScrollContainer>(elysia::core::Rect{ 0,0,340,220 });
+    widget_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Auto);
+    widget_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
+    widget_scroll->set_scroll_step(elysia::core::Vector2(24.0f,24.0f));
+
+    auto widget_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,340,300 });
+    widget_content->set_draw_background(true);
+    widget_content->set_draw_border(true);
+    widget_content->set_background_color(elysia::core::colors::midnight_blue);
+
+    widget_content->add_child(
+        make_checkbox(
+            elysia::core::Rect{ 18,18,36,36 },
+            false,
+            elysia::ui::UiCheckboxMarkStyle::Checkmark,
+            "widget"),
+        elysia::ui::UiPanelInsertDirection::Down);
+    widget_content->add_child(
+        make_checkbox(
+            elysia::core::Rect{ 74,18,36,36 },
+            true,
+            elysia::ui::UiCheckboxMarkStyle::FilledBox,
+            "widget"),
+        elysia::ui::UiPanelInsertDirection::Right);
+    widget_content->add_child(
+        make_labeled_checkbox(elysia::core::Rect{ 18,74,220,40 },"menu_scene.settings",false,"widget"),
+        elysia::ui::UiPanelInsertDirection::Down);
+    widget_content->add_child(
+        make_labeled_checkbox(elysia::core::Rect{ 18,124,220,40 },"menu_scene.about",true,"widget"),
+        elysia::ui::UiPanelInsertDirection::Down);
+    widget_content->add_child(
+        make_text_input(elysia::core::Rect{ 18,178,280,44 },"Type here",std::nullopt,"widget-main"),
+        elysia::ui::UiPanelInsertDirection::Down);
+    widget_content->add_child(
+        make_text_input(elysia::core::Rect{ 18,232,280,44 },"Max 8 chars",std::optional<std::size_t>(8),"widget-limited"),
+        elysia::ui::UiPanelInsertDirection::Down);
+    widget_scroll->set_content(std::move(widget_content));
 
     _root_window->set_child_layout_options(0,make_window_child_options(0.0f,0.0f));
     _root_window->set_child_layout_options(1,make_window_child_options(288.0f,0.0f));
     _root_window->set_child_layout_options(2,make_window_child_options(624.0f,0.0f));
     _root_window->set_child_layout_options(3,make_window_child_options(288.0f,220.0f));
+    _root_window->set_child_layout_options(4,make_window_child_options(624.0f,300.0f));
 
     _root_window->register_focus_scope(*vertical_scroll,elysia::ui::UiFocusScopeNeighbors{ nullptr,hidden_scroll,nullptr,horizontal_scroll });
     _root_window->register_focus_scope(*horizontal_scroll,elysia::ui::UiFocusScopeNeighbors{ nullptr,hidden_scroll,vertical_scroll,grid_scroll });
-    _root_window->register_focus_scope(*grid_scroll,elysia::ui::UiFocusScopeNeighbors{ nullptr,nullptr,horizontal_scroll,nullptr });
+    _root_window->register_focus_scope(*grid_scroll,elysia::ui::UiFocusScopeNeighbors{ nullptr,widget_scroll,horizontal_scroll,nullptr });
     _root_window->register_focus_scope(*hidden_scroll,elysia::ui::UiFocusScopeNeighbors{ vertical_scroll,nullptr,nullptr,nullptr });
+    _root_window->register_focus_scope(*widget_scroll,elysia::ui::UiFocusScopeNeighbors{ grid_scroll,nullptr,hidden_scroll,nullptr });
     _root_window->focus_first_available_scope();
 }
 

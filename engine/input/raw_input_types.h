@@ -213,6 +213,8 @@ struct RawInputEvent
     int mouse_delta_y = 0;
     int wheel_x = 0;
     int wheel_y = 0;
+    int composition_start = 0;
+    int composition_length = 0;
     // Stick axes: [-1.0f, 1.0f]
     // Trigger axes: [0.0f, 1.0f]
     float axis_value = 0.0f;

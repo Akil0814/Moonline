@@ -59,6 +59,7 @@ void UiCheckbox::reset() noexcept
     _disabled_border_color = elysia::core::colors::gray_500;
     _checkmark_color = elysia::core::colors::glacial_white;
     _disabled_checkmark_color = elysia::core::colors::gray_300;
+    _mark_style = UiCheckboxMarkStyle::Checkmark;
     _padding = 4;
     _draw_background = true;
     _draw_border = true;
@@ -185,11 +186,26 @@ void UiCheckbox::submit_ui_render_commands(std::vector<elysia::core::UiRenderCom
     const elysia::core::Color mark_color = apply_opacity(current_checkmark_color());
     if (_state == UiCheckboxState::Checked)
     {
-        const elysia::core::Vector2 start(rect.x() + rect.width() * 0.22f,rect.y() + rect.height() * 0.54f);
-        const elysia::core::Vector2 mid(rect.x() + rect.width() * 0.43f,rect.y() + rect.height() * 0.76f);
-        const elysia::core::Vector2 end(rect.x() + rect.width() * 0.80f,rect.y() + rect.height() * 0.28f);
-        out_commands.push_back(elysia::core::make_ui_draw_line_command(start,mid,mark_color));
-        out_commands.push_back(elysia::core::make_ui_draw_line_command(mid,end,mark_color));
+        if (_mark_style == UiCheckboxMarkStyle::FilledBox)
+        {
+            const float inset = std::max(2.0f,std::min(rect.width(),rect.height()) * 0.22f);
+            const elysia::core::Rect fill_rect(
+                rect.x() + inset,
+                rect.y() + inset,
+                std::max(0.0f,rect.width() - inset * 2.0f),
+                std::max(0.0f,rect.height() - inset * 2.0f)
+            );
+            if (!fill_rect.is_empty())
+                out_commands.push_back(elysia::core::make_ui_fill_rect_command(fill_rect,mark_color));
+        }
+        else
+        {
+            const elysia::core::Vector2 start(rect.x() + rect.width() * 0.22f,rect.y() + rect.height() * 0.54f);
+            const elysia::core::Vector2 mid(rect.x() + rect.width() * 0.43f,rect.y() + rect.height() * 0.76f);
+            const elysia::core::Vector2 end(rect.x() + rect.width() * 0.80f,rect.y() + rect.height() * 0.28f);
+            out_commands.push_back(elysia::core::make_ui_draw_line_command(start,mid,mark_color));
+            out_commands.push_back(elysia::core::make_ui_draw_line_command(mid,end,mark_color));
+        }
     }
     else if (_state == UiCheckboxState::Indeterminate)
     {
@@ -232,6 +248,16 @@ bool UiCheckbox::is_indeterminate() const noexcept
 void UiCheckbox::toggle()
 {
     (void)toggle_internal(true,false);
+}
+
+void UiCheckbox::set_mark_style(UiCheckboxMarkStyle mark_style) noexcept
+{
+    _mark_style = mark_style;
+}
+
+UiCheckboxMarkStyle UiCheckbox::mark_style() const noexcept
+{
+    return _mark_style;
 }
 
 void UiCheckbox::set_state_textures(const UiCheckboxTextures& textures)
@@ -399,6 +425,7 @@ void UiCheckbox::apply_checkbox_config(const UiCheckboxConfig& config)
     else
         clear_sounds();
 
+    set_mark_style(config.mark_style);
     set_draw_background(config.draw_background);
     set_draw_border(config.draw_border);
 }

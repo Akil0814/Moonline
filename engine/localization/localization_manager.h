@@ -6,6 +6,7 @@
 #include "../tools/singleton.h"
 
 #include <SDL.h>
+#include <SDL_ttf.h>
 
 #include <filesystem>
 #include <string>
@@ -29,6 +30,8 @@ public:
 
 	std::string_view tr(std::string_view key) const;
 	SDL_Texture* get_text_texture(std::string_view key, const LocalizedTextStyle& style);
+	SDL_Texture* get_raw_text_texture(std::string_view text, const LocalizedTextStyle& style);
+	bool measure_raw_text(std::string_view text,const LocalizedTextStyle& style,int& out_width,int& out_height) const;
 	[[nodiscard]] SDL_Renderer* renderer() const noexcept;
 
 	bool set_language(std::string language);
@@ -48,8 +51,13 @@ private:
 		std::string_view key
 	) const;
 	std::string map_font_key(const std::string& language, int point_size) const;
+	TTF_Font* resolve_font(int point_size) const;
 	CachedTexturePtr create_text_texture(
 		std::string_view key,
+		const LocalizedTextStyle& style
+	);
+	CachedTexturePtr create_raw_text_texture(
+		std::string_view text,
 		const LocalizedTextStyle& style
 	);
 

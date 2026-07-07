@@ -18,6 +18,12 @@ enum class UiCheckboxState
     Indeterminate
 };
 
+enum class UiCheckboxMarkStyle
+{
+    Checkmark,
+    FilledBox
+};
+
 struct UiCheckboxVisualStateTextures
 {
     SDL_Texture* idle = nullptr;
@@ -44,6 +50,7 @@ struct UiCheckboxConfig
 {
     std::optional<UiCheckboxTextures> textures = std::nullopt;
     std::optional<UiCheckboxSounds> sounds = std::nullopt;
+    UiCheckboxMarkStyle mark_style = UiCheckboxMarkStyle::Checkmark;
     bool draw_background = true;
     bool draw_border = true;
 };
@@ -65,8 +72,8 @@ public:
 
     void reset() noexcept override;
 
-    void set_enabled(bool enabled);
-    void set_focused(bool focused);
+    void set_enabled(bool enabled) override;
+    void set_focused(bool focused) override;
 
     bool on_ui_input_event(const UiInputEvent& event) override;
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
@@ -79,6 +86,8 @@ public:
     [[nodiscard]] bool is_checked() const noexcept;
     [[nodiscard]] bool is_indeterminate() const noexcept;
     void toggle();
+    void set_mark_style(UiCheckboxMarkStyle mark_style) noexcept;
+    [[nodiscard]] UiCheckboxMarkStyle mark_style() const noexcept;
 
     void set_state_textures(const UiCheckboxTextures& textures);
     void clear_state_textures() noexcept;
@@ -134,8 +143,12 @@ private:
     [[nodiscard]] bool is_primary_pointer_event(const UiInputEvent& event) const noexcept;
     void clear_pushed_state() noexcept;
     void play_sound_if_set(const std::string& sound_key) const;
+
+protected:
     [[nodiscard]] elysia::core::Rect content_rect() const noexcept;
-    [[nodiscard]] elysia::core::Rect checkbox_rect() const noexcept;
+    [[nodiscard]] virtual elysia::core::Rect checkbox_rect() const noexcept;
+
+private:
     [[nodiscard]] const UiCheckboxVisualStateTextures* current_state_textures() const noexcept;
     [[nodiscard]] SDL_Texture* current_state_texture() const noexcept;
     [[nodiscard]] bool uses_texture_rendering() const noexcept;
@@ -157,6 +170,7 @@ private:
     elysia::core::Color _disabled_border_color = elysia::core::colors::gray_500;
     elysia::core::Color _checkmark_color = elysia::core::colors::glacial_white;
     elysia::core::Color _disabled_checkmark_color = elysia::core::colors::gray_300;
+    UiCheckboxMarkStyle _mark_style = UiCheckboxMarkStyle::Checkmark;
     int _padding = 4;
     bool _draw_background = true;
     bool _draw_border = true;

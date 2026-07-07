@@ -9,13 +9,9 @@ struct UiBinding
 };
 
 constexpr UiBinding k_ui_bindings[] = {
-    { elysia::ui::UiAction::NavigateLeft, elysia::input::RawInputControl::KeyA },
     { elysia::ui::UiAction::NavigateLeft, elysia::input::RawInputControl::KeyLeft },
-    { elysia::ui::UiAction::NavigateRight, elysia::input::RawInputControl::KeyD },
     { elysia::ui::UiAction::NavigateRight, elysia::input::RawInputControl::KeyRight },
-    { elysia::ui::UiAction::NavigateUp, elysia::input::RawInputControl::KeyW },
     { elysia::ui::UiAction::NavigateUp, elysia::input::RawInputControl::KeyUp },
-    { elysia::ui::UiAction::NavigateDown, elysia::input::RawInputControl::KeyS },
     { elysia::ui::UiAction::NavigateDown, elysia::input::RawInputControl::KeyDown },
     { elysia::ui::UiAction::Confirm, elysia::input::RawInputControl::KeyEnter },
     { elysia::ui::UiAction::Confirm, elysia::input::RawInputControl::KeyNumpadEnter },
@@ -139,6 +135,8 @@ std::vector<UiInputEvent> UiInputRouter::route_event(const elysia::input::RawInp
         event.type = UiInputEventType::TextEditing;
         event.device = raw_event.device;
         event.text = raw_event.text;
+        event.composition_start = raw_event.composition_start;
+        event.composition_length = raw_event.composition_length;
         events.push_back(event);
         break;
     }
