@@ -101,10 +101,16 @@ private:
     [[nodiscard]] UiFocusScope* content_scope() noexcept;
     [[nodiscard]] const UiFocusScope* content_scope() const noexcept;
     [[nodiscard]] UiElement* set_content_internal(std::unique_ptr<UiElement> content);
+    [[nodiscard]] bool dispatch_content_input_event(const UiInputEvent& event);
+    [[nodiscard]] bool should_dispatch_content_input_event(const UiInputEvent& event) const noexcept;
+    [[nodiscard]] bool should_dispatch_content_mouse_wheel(const UiInputEvent& event) const noexcept;
     [[nodiscard]] bool handle_mouse_wheel(const UiInputEvent& event);
     [[nodiscard]] bool dispatch_to_scrollbars(const UiInputEvent& event);
     [[nodiscard]] bool shows_scrollbar(UiScrollAxis axis) const noexcept;
+    [[nodiscard]] elysia::core::Rect interactive_rect() const noexcept;
     [[nodiscard]] elysia::core::Rect viewport_rect() const noexcept;
+    [[nodiscard]] bool is_pointer_in_interactive_rect(int mouse_x,int mouse_y) const noexcept;
+    [[nodiscard]] bool is_pointer_in_viewport(int mouse_x,int mouse_y) const noexcept;
     [[nodiscard]] elysia::core::Rect scrollbar_track_rect(UiScrollAxis axis) const noexcept;
     [[nodiscard]] elysia::core::Rect scrollbar_thumb_rect(UiScrollAxis axis,const elysia::core::Rect& track_rect) const noexcept;
     [[nodiscard]] elysia::core::Color current_track_color(const UiDragHandle& thumb) const noexcept;
@@ -121,6 +127,10 @@ private:
     void update_horizontal_offset_from_thumb() noexcept;
     void update_vertical_offset_from_thumb() noexcept;
     void reset_scroll_offset() noexcept;
+    void clear_content_pointer_state() noexcept;
+    void sync_content_scope_focus() noexcept;
+    void set_content_focus_suppressed(bool suppressed) noexcept;
+    void update_content_focus_suppression(const UiInputEvent& event) noexcept;
     void ensure_visible_focused_target() noexcept;
     void submit_scrollbar_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const;
     [[nodiscard]] elysia::core::Vector2 measured_content_size() const noexcept;
@@ -133,9 +143,8 @@ private:
     UiDragHandle _vertical_thumb;
     bool _scope_focused = false;
     bool _draw_border = false;
+    bool _content_pointer_active = false;
+    bool _content_focus_suppressed = false;
     elysia::core::Color _border_color = elysia::core::colors::sky_blue;
 };
 }
-
-
-

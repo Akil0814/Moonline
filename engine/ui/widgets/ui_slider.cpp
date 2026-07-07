@@ -203,12 +203,14 @@ bool UiSlider::on_ui_input_event(const UiInputEvent& event)
             return false;
         }
 
-        const SliderLayout layout = compute_layout();
-        sync_child_rects(layout);
+        if (!_handle.is_dragging())
+            sync_child_rects(compute_layout());
         sync_child_visuals();
         const bool handle_handled = _handle.on_ui_input_event(event);
         set_focused(_handle.is_dragging() || contains_pointer(event.mouse_x,event.mouse_y));
         _handle.set_focused(is_focused());
+        if (!_handle.is_dragging())
+            sync_child_rects(compute_layout());
         return handle_handled;
     }
 
@@ -242,10 +244,9 @@ bool UiSlider::on_ui_input_event(const UiInputEvent& event)
         if (!is_primary_pointer_event(event))
             return false;
 
-        const SliderLayout layout = compute_layout();
-        sync_child_rects(layout);
-        sync_child_visuals();
         const bool handle_handled = _handle.on_ui_input_event(event);
+        sync_child_rects(compute_layout());
+        sync_child_visuals();
         const bool is_inside = can_receive_pointer() && contains_pointer(event.mouse_x,event.mouse_y);
         set_focused(is_inside);
         _handle.set_focused(is_focused());

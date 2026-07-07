@@ -213,7 +213,7 @@ bool UiWindow::on_ui_input_event(const UiInputEvent& event)
             pointer_scope = find_registered_scope_at(event.mouse_x,event.mouse_y);
         }
 
-        if (event.type == UiInputEventType::MouseMoved && _hover_focus_enabled)
+        if ((event.type == UiInputEventType::MouseMoved || event.type == UiInputEventType::MouseWheel) && _hover_focus_enabled)
             (void)set_focused_scope_internal(pointer_scope);
         else if (event.type == UiInputEventType::PointerPressed
             && event.device == elysia::input::InputDevice::Mouse
@@ -421,3 +421,4 @@ bool UiWindow::uses_pointer_focus_policy(elysia::input::InputDevice device) noex
     return device == elysia::input::InputDevice::Mouse;
 }
 }
+

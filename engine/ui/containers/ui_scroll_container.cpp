@@ -25,6 +25,12 @@ constexpr float ScrollbarEpsilon = 0.01f;
 {
     return axis == UiScrollAxis::Horizontal;
 }
+
+[[nodiscard]] bool is_primary_mouse_pointer_event(const UiInputEvent& event) noexcept
+{
+    return event.device == elysia::input::InputDevice::Mouse
+        && event.control == elysia::input::RawInputControl::MouseLeft;
+}
 }
 
 UiScrollContainer::UiScrollContainer(const elysia::core::Rect& rect,int order) noexcept
@@ -54,6 +60,8 @@ void UiScrollContainer::reset() noexcept
     _scrollbar_style = UiScrollBarStyle{};
     _scope_focused = false;
     _draw_border = false;
+    _content_pointer_active = false;
+    _content_focus_suppressed = false;
     _border_color = elysia::core::colors::sky_blue;
     initialize_scrollbar_handles();
 }
@@ -62,21 +70,67 @@ bool UiScrollContainer::on_ui_input_event(const UiInputEvent& event)
 {
     UiChildHost::set_clip_children(true);
     cleanup_destroyed_children();
-    update_layout_if_dirty();
+
+    const bool dragging_scrollbar = _horizontal_thumb.is_dragging() || _vertical_thumb.is_dragging();
+    if (!dragging_scrollbar)
+        update_layout_if_dirty();
+
+    update_content_focus_suppression(event);
 
     if (dispatch_to_scrollbars(event))
+    {
+        if (event.type == UiInputEventType::PointerReleased)
+            update_layout_if_dirty();
         return true;
+    }
+
+    if (dragging_scrollbar)
+        update_layout_if_dirty();
 
     if (event.type == UiInputEventType::MouseWheel)
     {
-        const bool handled_by_child = UiChildHost::on_ui_input_event(event);
-        ensure_visible_focused_target();
-        if (handled_by_child)
+        const bool handled_by_content = should_dispatch_content_mouse_wheel(event)
+            && dispatch_content_input_event(event);
+        if (handled_by_content)
+        {
+            ensure_visible_focused_target();
             return true;
+        }
         return handle_mouse_wheel(event);
     }
 
-    const bool handled = UiChildHost::on_ui_input_event(event);
+    if (event.type == UiInputEventType::PointerPressed)
+    {
+        const bool handled_by_content = should_dispatch_content_input_event(event)
+            && dispatch_content_input_event(event);
+        _content_pointer_active = handled_by_content
+            && is_primary_mouse_pointer_event(event)
+            && is_pointer_in_viewport(event.mouse_x,event.mouse_y);
+        if (handled_by_content)
+            ensure_visible_focused_target();
+        return handled_by_content;
+    }
+
+    if (event.type == UiInputEventType::MouseMoved)
+    {
+        const bool handled_by_content = should_dispatch_content_input_event(event)
+            && dispatch_content_input_event(event);
+        if (handled_by_content)
+            ensure_visible_focused_target();
+        return handled_by_content;
+    }
+
+    if (event.type == UiInputEventType::PointerReleased)
+    {
+        const bool handled_by_content = should_dispatch_content_input_event(event)
+            && dispatch_content_input_event(event);
+        clear_content_pointer_state();
+        if (handled_by_content)
+            ensure_visible_focused_target();
+        return handled_by_content;
+    }
+
+    const bool handled = dispatch_content_input_event(event);
     ensure_visible_focused_target();
     return handled;
 }
@@ -131,6 +185,8 @@ const UiElement* UiScrollContainer::content() const noexcept
 void UiScrollContainer::clear_content()
 {
     UiChildHost::clear_children();
+    clear_content_pointer_state();
+    set_content_focus_suppressed(false);
     reset_scroll_offset();
 }
 
@@ -351,9 +407,8 @@ const UiElement& UiScrollContainer::focus_scope_element() const noexcept
 void UiScrollContainer::set_scope_focused(bool focused) noexcept
 {
     _scope_focused = focused;
-    if (UiFocusScope* scope = content_scope())
-        scope->set_scope_focused(focused);
-    if (focused)
+    sync_content_scope_focus();
+    if (focused && !_content_focus_suppressed)
         ensure_visible_focused_target();
 }
 
@@ -391,7 +446,7 @@ bool UiScrollContainer::contains_focus_point(int mouse_x,int mouse_y) const noex
 {
     if (!has_focusable_target() || is_destroyed() || !is_active() || !is_visible())
         return false;
-    return viewport_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
+    return is_pointer_in_interactive_rect(mouse_x,mouse_y);
 }
 
 void UiScrollContainer::rebuild_layout()
@@ -443,6 +498,8 @@ const UiFocusScope* UiScrollContainer::content_scope() const noexcept
 UiElement* UiScrollContainer::set_content_internal(std::unique_ptr<UiElement> content)
 {
     UiChildHost::clear_children();
+    clear_content_pointer_state();
+    set_content_focus_suppressed(false);
     reset_scroll_offset();
 
     if (!content)
@@ -451,8 +508,38 @@ UiElement* UiScrollContainer::set_content_internal(std::unique_ptr<UiElement> co
     UiElement* element = UiChildHost::insert_child(std::move(content),0,UiLayoutChildOptions{});
     if (_scope_focused)
         set_scope_focused(true);
-    ensure_visible_focused_target();
     return element;
+}
+
+bool UiScrollContainer::dispatch_content_input_event(const UiInputEvent& event)
+{
+    return UiChildHost::on_ui_input_event(event);
+}
+
+bool UiScrollContainer::should_dispatch_content_input_event(const UiInputEvent& event) const noexcept
+{
+    switch (event.type)
+    {
+    case UiInputEventType::PointerPressed:
+        return is_primary_mouse_pointer_event(event) && is_pointer_in_viewport(event.mouse_x,event.mouse_y);
+    case UiInputEventType::MouseMoved:
+        return _content_pointer_active || is_pointer_in_viewport(event.mouse_x,event.mouse_y);
+    case UiInputEventType::PointerReleased:
+        return _content_pointer_active && is_primary_mouse_pointer_event(event);
+    default:
+        return true;
+    }
+}
+
+bool UiScrollContainer::should_dispatch_content_mouse_wheel(const UiInputEvent& event) const noexcept
+{
+    if (event.type != UiInputEventType::MouseWheel)
+        return false;
+
+    if (event.device == elysia::input::InputDevice::Gamepad)
+        return _scope_focused;
+
+    return is_pointer_in_viewport(event.mouse_x,event.mouse_y);
 }
 
 bool UiScrollContainer::handle_mouse_wheel(const UiInputEvent& event)
@@ -465,12 +552,9 @@ bool UiScrollContainer::handle_mouse_wheel(const UiInputEvent& event)
         if (!_scope_focused)
             return false;
     }
-    else
+    else if (!is_pointer_in_interactive_rect(event.mouse_x,event.mouse_y))
     {
-        const elysia::core::Rect viewport = viewport_rect();
-        const elysia::core::Vector2 point(static_cast<float>(event.mouse_x),static_cast<float>(event.mouse_y));
-        if (!viewport.contains(point))
-            return false;
+        return false;
     }
 
     const elysia::core::Vector2 before = _scroll_state.offset();
@@ -501,6 +585,11 @@ bool UiScrollContainer::dispatch_to_scrollbars(const UiInputEvent& event)
     return false;
 }
 
+elysia::core::Rect UiScrollContainer::interactive_rect() const noexcept
+{
+    return UiChildHost::content_rect();
+}
+
 bool UiScrollContainer::shows_scrollbar(UiScrollAxis axis) const noexcept
 {
     if (_scrollbar_visibility == UiScrollBarVisibility::Hidden)
@@ -520,7 +609,7 @@ bool UiScrollContainer::shows_scrollbar(UiScrollAxis axis) const noexcept
 
 elysia::core::Rect UiScrollContainer::viewport_rect() const noexcept
 {
-    const elysia::core::Rect bounds = UiChildHost::content_rect();
+    const elysia::core::Rect bounds = interactive_rect();
     const float thickness = std::max(1.0f,_scrollbar_style.thickness);
     const float margin = clamp_non_negative(_scrollbar_style.margin);
     const float reserved_width = shows_scrollbar(UiScrollAxis::Vertical) ? (thickness + margin) : 0.0f;
@@ -531,6 +620,16 @@ elysia::core::Rect UiScrollContainer::viewport_rect() const noexcept
         std::max(0.0f,bounds.width() - reserved_width),
         std::max(0.0f,bounds.height() - reserved_height)
     );
+}
+
+bool UiScrollContainer::is_pointer_in_interactive_rect(int mouse_x,int mouse_y) const noexcept
+{
+    return interactive_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
+}
+
+bool UiScrollContainer::is_pointer_in_viewport(int mouse_x,int mouse_y) const noexcept
+{
+    return viewport_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
 }
 
 elysia::core::Rect UiScrollContainer::scrollbar_track_rect(UiScrollAxis axis) const noexcept
@@ -716,6 +815,62 @@ void UiScrollContainer::reset_scroll_offset() noexcept
 {
     _scroll_state.set_offset(elysia::core::Vector2::zero());
     mark_layout_dirty();
+}
+
+void UiScrollContainer::clear_content_pointer_state() noexcept
+{
+    _content_pointer_active = false;
+}
+
+void UiScrollContainer::sync_content_scope_focus() noexcept
+{
+    if (UiFocusScope* scope = content_scope())
+        scope->set_scope_focused(_scope_focused && !_content_focus_suppressed);
+}
+
+void UiScrollContainer::set_content_focus_suppressed(bool suppressed) noexcept
+{
+    if (_content_focus_suppressed == suppressed)
+        return;
+
+    _content_focus_suppressed = suppressed;
+    sync_content_scope_focus();
+}
+
+void UiScrollContainer::update_content_focus_suppression(const UiInputEvent& event) noexcept
+{
+    switch (event.type)
+    {
+    case UiInputEventType::MouseMoved:
+    case UiInputEventType::PointerPressed:
+    case UiInputEventType::PointerReleased:
+    case UiInputEventType::MouseWheel:
+        break;
+    default:
+        if (event.device != elysia::input::InputDevice::Mouse)
+            set_content_focus_suppressed(false);
+        return;
+    }
+
+    if (event.device != elysia::input::InputDevice::Mouse)
+    {
+        set_content_focus_suppressed(false);
+        return;
+    }
+
+    if (_horizontal_thumb.is_dragging() || _vertical_thumb.is_dragging())
+    {
+        set_content_focus_suppressed(true);
+        return;
+    }
+
+    if (!is_pointer_in_interactive_rect(event.mouse_x,event.mouse_y))
+    {
+        set_content_focus_suppressed(false);
+        return;
+    }
+
+    set_content_focus_suppressed(!is_pointer_in_viewport(event.mouse_x,event.mouse_y));
 }
 
 void UiScrollContainer::ensure_visible_focused_target() noexcept

@@ -149,6 +149,12 @@ bool UiControlFocusScopeHost::on_ui_input_event(const UiInputEvent& event)
         (void)set_focused_target_internal(find_registered_target_at(event.mouse_x,event.mouse_y));
         handled = dispatch_input_to_children(event);
     }
+    else if (event.type == UiInputEventType::MouseWheel)
+    {
+        if (event.device == elysia::input::InputDevice::Mouse)
+            (void)set_focused_target_internal(find_registered_target_at(event.mouse_x,event.mouse_y));
+        handled = dispatch_input_to_children(event);
+    }
     else if (event.type == UiInputEventType::PointerPressed)
     {
         if (event.device == elysia::input::InputDevice::Mouse && event.control == elysia::input::RawInputControl::MouseLeft)
@@ -353,3 +359,4 @@ bool UiControlFocusScopeHost::uses_pointer_focus_policy(elysia::input::InputDevi
     return device == elysia::input::InputDevice::Mouse;
 }
 }
+
