@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../style/ui_visual_styles.h"
+#include "../style/ui_visual_styles.h"
 #include "../core/ui_element.h"
 
 namespace elysia::ui
