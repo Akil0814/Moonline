@@ -83,12 +83,20 @@ std::unique_ptr<elysia::ui::UiLabeledCheckbox> make_labeled_checkbox(
     const elysia::core::Rect& rect,
     const char* text_key,
     bool checked,
+    elysia::ui::UiLabeledCheckboxLabelPlacement label_placement,
+    elysia::ui::UiLabeledCheckboxTextPlacement text_placement,
+    bool draw_background,
+    bool draw_border,
     const char* scope
 )
 {
     auto checkbox = std::make_unique<elysia::ui::UiLabeledCheckbox>(rect,0);
     checkbox->set_text_key(text_key);
     checkbox->set_checked(checked);
+    checkbox->set_label_placement(label_placement);
+    checkbox->set_text_placement(text_placement);
+    checkbox->set_draw_background(draw_background);
+    checkbox->set_draw_border(draw_border);
     checkbox->set_on_toggled([scope](elysia::ui::UiCheckboxState state)
     {
         std::cout << scope << " labeled checkbox state " << static_cast<int>(state) << std::endl;
@@ -250,7 +258,7 @@ void UiContainerTestScene::rebuild_ui()
     widget_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
     widget_scroll->set_scroll_step(elysia::core::Vector2(24.0f,24.0f));
 
-    auto widget_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,340,300 });
+    auto widget_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,340,420 });
     widget_content->set_draw_background(true);
     widget_content->set_draw_border(true);
     widget_content->set_background_color(elysia::core::colors::midnight_blue);
@@ -270,16 +278,54 @@ void UiContainerTestScene::rebuild_ui()
             "widget"),
         elysia::ui::UiPanelInsertDirection::Right);
     widget_content->add_child(
-        make_labeled_checkbox(elysia::core::Rect{ 18,74,220,40 },"menu_scene.settings",false,"widget"),
+        make_labeled_checkbox(
+            elysia::core::Rect{ 18,74,220,40 },
+            "menu_scene.settings",
+            false,
+            elysia::ui::UiLabeledCheckboxLabelPlacement::Right,
+            elysia::ui::UiLabeledCheckboxTextPlacement::NearBox,
+            false,
+            false,
+            "widget"),
         elysia::ui::UiPanelInsertDirection::Down);
     widget_content->add_child(
-        make_labeled_checkbox(elysia::core::Rect{ 18,124,220,40 },"menu_scene.about",true,"widget"),
+        make_labeled_checkbox(
+            elysia::core::Rect{ 18,124,220,40 },
+            "menu_scene.about",
+            true,
+            elysia::ui::UiLabeledCheckboxLabelPlacement::Right,
+            elysia::ui::UiLabeledCheckboxTextPlacement::FarEdge,
+            true,
+            true,
+            "widget"),
         elysia::ui::UiPanelInsertDirection::Down);
     widget_content->add_child(
-        make_text_input(elysia::core::Rect{ 18,178,280,44 },"Type here",std::nullopt,"widget-main"),
+        make_labeled_checkbox(
+            elysia::core::Rect{ 18,174,220,40 },
+            "menu_scene.start",
+            false,
+            elysia::ui::UiLabeledCheckboxLabelPlacement::Left,
+            elysia::ui::UiLabeledCheckboxTextPlacement::NearBox,
+            false,
+            false,
+            "widget"),
         elysia::ui::UiPanelInsertDirection::Down);
     widget_content->add_child(
-        make_text_input(elysia::core::Rect{ 18,232,280,44 },"Max 8 chars",std::optional<std::size_t>(8),"widget-limited"),
+        make_labeled_checkbox(
+            elysia::core::Rect{ 18,224,220,40 },
+            "menu_scene.exit",
+            true,
+            elysia::ui::UiLabeledCheckboxLabelPlacement::Left,
+            elysia::ui::UiLabeledCheckboxTextPlacement::FarEdge,
+            true,
+            true,
+            "widget"),
+        elysia::ui::UiPanelInsertDirection::Down);
+    widget_content->add_child(
+        make_text_input(elysia::core::Rect{ 18,282,280,44 },"Type here",std::nullopt,"widget-main"),
+        elysia::ui::UiPanelInsertDirection::Down);
+    widget_content->add_child(
+        make_text_input(elysia::core::Rect{ 18,336,280,44 },"Max 8 chars",std::optional<std::size_t>(8),"widget-limited"),
         elysia::ui::UiPanelInsertDirection::Down);
     widget_scroll->set_content(std::move(widget_content));
 

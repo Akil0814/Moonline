@@ -13,12 +13,21 @@ enum class UiLabeledCheckboxLabelPlacement
     Right
 };
 
+enum class UiLabeledCheckboxTextPlacement
+{
+    NearBox,
+    FarEdge
+};
+
 struct UiLabeledCheckboxConfig
 {
     UiCheckboxConfig checkbox{};
     std::string text_key{};
     UiLabeledCheckboxLabelPlacement label_placement = UiLabeledCheckboxLabelPlacement::Right;
     float label_spacing = 8.0f;
+    UiLabeledCheckboxTextPlacement text_placement = UiLabeledCheckboxTextPlacement::NearBox;
+    bool draw_background = false;
+    bool draw_border = false;
 };
 
 class UiLabeledCheckbox : public UiCheckbox
@@ -48,6 +57,9 @@ public:
     void set_label_spacing(float spacing) noexcept;
     [[nodiscard]] float label_spacing() const noexcept;
 
+    void set_text_placement(UiLabeledCheckboxTextPlacement placement) noexcept;
+    [[nodiscard]] UiLabeledCheckboxTextPlacement text_placement() const noexcept;
+
     void set_text_color(elysia::core::Color color) noexcept;
     [[nodiscard]] elysia::core::Color text_color() const noexcept;
 
@@ -59,6 +71,11 @@ public:
 
     void set_label_padding(int padding) noexcept;
     [[nodiscard]] int label_padding() const noexcept;
+
+    void set_draw_background(bool draw_background) noexcept;
+    [[nodiscard]] bool draws_background() const noexcept;
+    void set_draw_border(bool draw_border) noexcept;
+    [[nodiscard]] bool draws_border() const noexcept;
 
 protected:
     [[nodiscard]] elysia::core::Rect checkbox_rect() const noexcept override;
@@ -73,7 +90,10 @@ private:
     std::string _text_key;
     UiLabeledCheckboxLabelPlacement _label_placement = UiLabeledCheckboxLabelPlacement::Right;
     float _label_spacing = 8.0f;
+    UiLabeledCheckboxTextPlacement _text_placement = UiLabeledCheckboxTextPlacement::NearBox;
     elysia::core::Color _text_color = elysia::core::colors::white;
     elysia::core::Color _disabled_text_color = elysia::core::colors::gray_300;
+    bool _draw_background = false;
+    bool _draw_border = false;
 };
 }

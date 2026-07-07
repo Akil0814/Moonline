@@ -1,5 +1,7 @@
 #include "ui_labeled_checkbox.h"
 
+#include "../../core/render/render_command.h"
+
 #include <algorithm>
 #include <utility>
 
@@ -49,12 +51,27 @@ void UiLabeledCheckbox::reset() noexcept
     _text_key.clear();
     _label_placement = UiLabeledCheckboxLabelPlacement::Right;
     _label_spacing = 8.0f;
+    _text_placement = UiLabeledCheckboxTextPlacement::NearBox;
     _text_color = elysia::core::colors::white;
     _disabled_text_color = elysia::core::colors::gray_300;
+    _draw_background = false;
+    _draw_border = false;
 }
 
 void UiLabeledCheckbox::submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const
 {
+    if (!is_visible())
+        return;
+
+    const elysia::core::Rect& rect = screen_rect();
+    if (!rect.is_empty())
+    {
+        if (_draw_background)
+            out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(current_background_color())));
+        if (_draw_border)
+            out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(current_border_color())));
+    }
+
     UiCheckbox::submit_ui_render_commands(out_commands);
     sync_label_visuals();
     _label.submit_ui_render_commands(out_commands);
@@ -93,6 +110,16 @@ void UiLabeledCheckbox::set_label_spacing(float spacing) noexcept
 float UiLabeledCheckbox::label_spacing() const noexcept
 {
     return _label_spacing;
+}
+
+void UiLabeledCheckbox::set_text_placement(UiLabeledCheckboxTextPlacement placement) noexcept
+{
+    _text_placement = placement;
+}
+
+UiLabeledCheckboxTextPlacement UiLabeledCheckbox::text_placement() const noexcept
+{
+    return _text_placement;
 }
 
 void UiLabeledCheckbox::set_text_color(elysia::core::Color color) noexcept
@@ -135,6 +162,26 @@ int UiLabeledCheckbox::label_padding() const noexcept
     return _label.padding();
 }
 
+void UiLabeledCheckbox::set_draw_background(bool draw_background) noexcept
+{
+    _draw_background = draw_background;
+}
+
+bool UiLabeledCheckbox::draws_background() const noexcept
+{
+    return _draw_background;
+}
+
+void UiLabeledCheckbox::set_draw_border(bool draw_border) noexcept
+{
+    _draw_border = draw_border;
+}
+
+bool UiLabeledCheckbox::draws_border() const noexcept
+{
+    return _draw_border;
+}
+
 elysia::core::Rect UiLabeledCheckbox::checkbox_rect() const noexcept
 {
     const elysia::core::Rect content = content_rect();
@@ -157,6 +204,9 @@ void UiLabeledCheckbox::apply_labeled_checkbox_config(const UiLabeledCheckboxCon
     set_text_key(config.text_key);
     set_label_placement(config.label_placement);
     set_label_spacing(config.label_spacing);
+    set_text_placement(config.text_placement);
+    set_draw_background(config.draw_background);
+    set_draw_border(config.draw_border);
 }
 
 void UiLabeledCheckbox::sync_label_visuals() const
@@ -168,7 +218,20 @@ void UiLabeledCheckbox::sync_label_visuals() const
     _label.set_text_color(is_enabled() ? _text_color : _disabled_text_color);
     _label.set_draw_background(false);
     _label.set_vertical_align(TextVerticalAlign::Center);
-    _label.set_horizontal_align(_label_placement == UiLabeledCheckboxLabelPlacement::Left ? TextHorizontalAlign::Right : TextHorizontalAlign::Left);
+    if (_label_placement == UiLabeledCheckboxLabelPlacement::Left)
+    {
+        _label.set_horizontal_align(
+            _text_placement == UiLabeledCheckboxTextPlacement::NearBox
+                ? TextHorizontalAlign::Right
+                : TextHorizontalAlign::Left);
+    }
+    else
+    {
+        _label.set_horizontal_align(
+            _text_placement == UiLabeledCheckboxTextPlacement::NearBox
+                ? TextHorizontalAlign::Left
+                : TextHorizontalAlign::Right);
+    }
 }
 
 elysia::core::Rect UiLabeledCheckbox::label_rect() const noexcept

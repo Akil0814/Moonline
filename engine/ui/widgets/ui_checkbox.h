@@ -147,13 +147,13 @@ private:
 protected:
     [[nodiscard]] elysia::core::Rect content_rect() const noexcept;
     [[nodiscard]] virtual elysia::core::Rect checkbox_rect() const noexcept;
+    [[nodiscard]] elysia::core::Color current_background_color() const noexcept;
+    [[nodiscard]] elysia::core::Color current_border_color() const noexcept;
 
 private:
     [[nodiscard]] const UiCheckboxVisualStateTextures* current_state_textures() const noexcept;
     [[nodiscard]] SDL_Texture* current_state_texture() const noexcept;
     [[nodiscard]] bool uses_texture_rendering() const noexcept;
-    [[nodiscard]] elysia::core::Color current_background_color() const noexcept;
-    [[nodiscard]] elysia::core::Color current_border_color() const noexcept;
     [[nodiscard]] elysia::core::Color current_checkmark_color() const noexcept;
     static UiCheckboxState toggled_state(UiCheckboxState state) noexcept;
 
