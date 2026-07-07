@@ -106,6 +106,7 @@ private:
     [[nodiscard]] bool should_dispatch_content_mouse_wheel(const UiInputEvent& event) const noexcept;
     [[nodiscard]] bool handle_mouse_wheel(const UiInputEvent& event);
     [[nodiscard]] bool dispatch_to_scrollbars(const UiInputEvent& event);
+    [[nodiscard]] bool can_scroll_axis(UiScrollAxis axis) const noexcept;
     [[nodiscard]] bool shows_scrollbar(UiScrollAxis axis) const noexcept;
     [[nodiscard]] elysia::core::Rect interactive_rect() const noexcept;
     [[nodiscard]] elysia::core::Rect viewport_rect() const noexcept;

@@ -550,15 +550,17 @@ bool UiScrollContainer::handle_mouse_wheel(const UiInputEvent& event)
         return false;
     }
 
+    const bool can_scroll_x = can_scroll_axis(UiScrollAxis::Horizontal);
+    const bool can_scroll_y = can_scroll_axis(UiScrollAxis::Vertical);
     const elysia::core::Vector2 before = _scroll_state.offset();
-    if (event.wheel_x != 0 && _scroll_state.can_scroll_horizontal())
+    if (event.wheel_x != 0 && can_scroll_x)
         _scroll_state.scroll_by(elysia::core::Vector2(-static_cast<float>(event.wheel_x) * _scroll_state.step().x,0.0f));
 
     if (event.wheel_y != 0)
     {
-        if (_scroll_state.can_scroll_vertical())
+        if (can_scroll_y)
             _scroll_state.scroll_by(elysia::core::Vector2(0.0f,-static_cast<float>(event.wheel_y) * _scroll_state.step().y));
-        else if (_scroll_state.can_scroll_horizontal())
+        else if (can_scroll_x)
             _scroll_state.scroll_by(elysia::core::Vector2(-static_cast<float>(event.wheel_y) * _scroll_state.step().x,0.0f));
     }
 
@@ -583,11 +585,8 @@ elysia::core::Rect UiScrollContainer::interactive_rect() const noexcept
     return UiChildHost::content_rect();
 }
 
-bool UiScrollContainer::shows_scrollbar(UiScrollAxis axis) const noexcept
+bool UiScrollContainer::can_scroll_axis(UiScrollAxis axis) const noexcept
 {
-    if (_scrollbar_visibility == UiScrollBarVisibility::Hidden)
-        return false;
-
     if (_scroll_state.axis() == UiScrollAxis::Auto)
     {
         const elysia::core::Vector2 viewport = interactive_rect().size();
@@ -596,6 +595,17 @@ bool UiScrollContainer::shows_scrollbar(UiScrollAxis axis) const noexcept
         const bool overflow_y = content.y > viewport.y + ScrollbarEpsilon;
         return is_horizontal_axis(axis) ? overflow_x : overflow_y;
     }
+
+    return is_horizontal_axis(axis) ? _scroll_state.can_scroll_horizontal() : _scroll_state.can_scroll_vertical();
+}
+
+bool UiScrollContainer::shows_scrollbar(UiScrollAxis axis) const noexcept
+{
+    if (_scrollbar_visibility == UiScrollBarVisibility::Hidden)
+        return false;
+
+    if (_scroll_state.axis() == UiScrollAxis::Auto)
+        return can_scroll_axis(axis);
     const UiScrollAxis resolved = _scroll_state.resolved_axis();
     const bool axis_supported = is_horizontal_axis(axis)
         ? (resolved == UiScrollAxis::Horizontal || resolved == UiScrollAxis::Both)
