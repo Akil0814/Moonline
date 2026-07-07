@@ -38,6 +38,14 @@ struct UiStyleDefaults
         };
     }
 
+    [[nodiscard]] static UiEnabledDisabledColors placeholder_text() noexcept
+    {
+        return UiEnabledDisabledColors{
+            UiPalette::text_placeholder,
+            UiPalette::text_disabled
+        };
+    }
+
     [[nodiscard]] static UiInteractiveColors interactive_surface() noexcept
     {
         return UiInteractiveColors{
@@ -157,7 +165,7 @@ struct UiStyleDefaults
         UiTextInputStyle style;
         style.chrome = interactive_chrome();
         style.text = secondary_text();
-        style.placeholder = muted_text();
+        style.placeholder = placeholder_text();
         style.caret = UiPalette::caret;
         return style;
     }
@@ -195,3 +203,4 @@ struct UiStyleDefaults
     }
 };
 }
+

@@ -95,7 +95,10 @@ struct UiTextInput::TextLayout
 };
 
 UiTextInput::UiTextInput(const elysia::core::Rect& rect,int order) noexcept
-    : UiControl(rect,order) {}
+    : UiControl(rect,order)
+{
+    reset();
+}
 
 UiTextInput::UiTextInput(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order) noexcept
     : UiTextInput(elysia::core::Rect(position.x,position.y,size.x,size.y),order) {}
@@ -712,4 +715,5 @@ void UiTextInput::notify_text_changed_if_needed(const std::string& previous_text
     _on_text_changed(_text);
 }
 }
+
 

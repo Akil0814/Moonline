@@ -10,6 +10,7 @@ struct UiPalette
     static inline constexpr elysia::core::Color text_secondary = elysia::core::colors::alice_blue;
     static inline constexpr elysia::core::Color text_muted = elysia::core::colors::powder_blue;
     static inline constexpr elysia::core::Color text_disabled = elysia::core::colors::steel_blue;
+    static inline constexpr elysia::core::Color text_placeholder = elysia::core::colors::gray_500;
 
     static inline constexpr elysia::core::Color surface_base = elysia::core::colors::abyss_blue;
     static inline constexpr elysia::core::Color surface_elevated = elysia::core::colors::midnight_blue;
@@ -37,3 +38,4 @@ struct UiPalette
     static inline constexpr elysia::core::Color scrollbar_thumb_disabled = elysia::core::colors::steel_blue;
 };
 }
+
