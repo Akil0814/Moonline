@@ -317,7 +317,8 @@ void UiCheckbox::apply_checkbox_config(const UiCheckboxConfig& config)
     else
         clear_sounds();
 
-    set_style(config.style);
+    if (config.style)
+        set_style(*config.style);
 }
 
 bool UiCheckbox::set_state_internal(UiCheckboxState state,bool notify) noexcept

@@ -62,7 +62,7 @@ struct UiButtonConfig
 {
     UiButtonContent content{};
     std::optional<UiButtonSounds> sounds;
-    UiButtonStyle style{};
+    std::optional<UiButtonStyle> style = std::nullopt;
 };
 
 class UiButton : public UiControl

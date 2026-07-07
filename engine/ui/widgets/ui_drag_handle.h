@@ -38,7 +38,7 @@ struct UiDragHandleConfig
 {
     UiDragAxis axis = UiDragAxis::Free;
     std::optional<elysia::core::Rect> drag_bounds = std::nullopt;
-    UiDragHandleStyle style{};
+    std::optional<UiDragHandleStyle> style = std::nullopt;
 };
 
 using UiDragHandleDraggedCallback = std::function<void(const elysia::core::Vector2& center)>;
@@ -95,6 +95,7 @@ private:
 
 private:
     UiDragHandleConfig _config{};
+    UiDragHandleStyle _style{};
     UiDragHandleDraggedCallback _on_dragged;
     UiDragHandleDragEndedCallback _on_drag_ended;
     elysia::core::Vector2 _grab_offset{};

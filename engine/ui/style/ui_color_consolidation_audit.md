@@ -15,6 +15,10 @@
 - `UiScrollContainer`
 - `UiScrollBarStyle`
 
+## Default Source Rules
+- Compatibility defaults removed from interaction/style structs and config fallbacks.
+- UiStyleDefaults is the only default visual source for color-bearing UI types.
+
 ## Audited As Structural / No Default Color Ownership
 - `UiGridContainer`
 - `UiListContainer`

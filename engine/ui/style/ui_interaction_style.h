@@ -1,32 +1,29 @@
 #pragma once
 
-#include "ui_palette.h"
+#include "../../core/render/color.h"
 
 namespace elysia::ui
 {
 struct UiEnabledDisabledColors
 {
-    elysia::core::Color enabled = UiPalette::text_primary;
-    elysia::core::Color disabled = UiPalette::text_disabled;
+    elysia::core::Color enabled{};
+    elysia::core::Color disabled{};
 };
 
 struct UiInteractiveColors
 {
-    elysia::core::Color idle = UiPalette::surface_interactive_idle;
-    elysia::core::Color focused = UiPalette::surface_interactive_focused;
-    elysia::core::Color active = UiPalette::surface_interactive_active;
-    elysia::core::Color disabled = UiPalette::surface_disabled;
+    elysia::core::Color idle{};
+    elysia::core::Color focused{};
+    elysia::core::Color active{};
+    elysia::core::Color disabled{};
 };
 
 struct UiChromeStyle
 {
     UiInteractiveColors background{};
-    UiEnabledDisabledColors border{
-        UiPalette::border_default,
-        UiPalette::border_disabled
-    };
-    bool draw_background = true;
-    bool draw_border = true;
+    UiEnabledDisabledColors border{};
+    bool draw_background = false;
+    bool draw_border = false;
 };
 
 [[nodiscard]] inline elysia::core::Color resolve_interactive_color(

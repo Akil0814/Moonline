@@ -19,11 +19,8 @@ struct UiTextInputStyle
 {
     UiChromeStyle chrome{};
     UiEnabledDisabledColors text{};
-    UiEnabledDisabledColors placeholder{
-        UiPalette::text_muted,
-        UiPalette::text_disabled
-    };
-    elysia::core::Color caret = UiPalette::caret;
+    UiEnabledDisabledColors placeholder{};
+    elysia::core::Color caret{};
 };
 
 class UiTextInput : public UiControl
@@ -109,3 +106,5 @@ private:
     bool _is_pushed = false;
 };
 }
+
+

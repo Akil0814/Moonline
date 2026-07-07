@@ -36,10 +36,7 @@ namespace elysia::ui
     struct UiSliderStyle
     {
         UiChromeStyle chrome{};
-        UiEnabledDisabledColors fill{
-            elysia::core::colors::glacial_white,
-            elysia::core::colors::gray_500
-        };
+        UiEnabledDisabledColors fill{};
         UiEnabledDisabledColors text{};
         UiDragHandleStyle handle{};
     };
@@ -55,7 +52,7 @@ namespace elysia::ui
         float max_value = 1.0f;
         float value = 0.0f;
         std::optional<float> step = std::nullopt;
-        UiSliderStyle style{};
+        std::optional<UiSliderStyle> style = std::nullopt;
         float bar_thickness = 6.0f;
         int value_decimal_places = 0;
         bool value_trim_trailing_zeros = true;
@@ -189,4 +186,5 @@ namespace elysia::ui
         bool _has_last_slide_sound_tick = false;
     };
 }
+
 

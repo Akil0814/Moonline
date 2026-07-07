@@ -91,9 +91,11 @@ private:
     UiLabeledCheckboxLabelPlacement _label_placement = UiLabeledCheckboxLabelPlacement::Right;
     float _label_spacing = 8.0f;
     UiLabeledCheckboxTextPlacement _text_placement = UiLabeledCheckboxTextPlacement::NearBox;
-    elysia::core::Color _text_color = elysia::core::colors::white;
-    elysia::core::Color _disabled_text_color = elysia::core::colors::gray_300;
+    elysia::core::Color _text_color{};
+    elysia::core::Color _disabled_text_color{};
     bool _draw_background = false;
     bool _draw_border = false;
 };
 }
+
+

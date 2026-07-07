@@ -325,7 +325,8 @@ void UiButton::apply_button_config(const UiButtonConfig& config)
     else
         clear_sounds();
 
-    set_style(config.style);
+    if (config.style)
+        set_style(*config.style);
     apply_button_content(config.content);
 }
 

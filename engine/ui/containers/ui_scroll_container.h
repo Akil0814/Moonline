@@ -20,21 +20,21 @@ struct UiScrollBarStyle
     float margin = 4.0f;
     float min_thumb_length = 24.0f;
     bool draw_track = true;
-    elysia::core::Color track_idle_color = UiPalette::scrollbar_track_idle;
-    elysia::core::Color track_focused_color = UiPalette::scrollbar_track_focused;
-    elysia::core::Color track_dragging_color = UiPalette::scrollbar_track_active;
-    elysia::core::Color track_disabled_color = UiPalette::scrollbar_track_disabled;
-    elysia::core::Color thumb_idle_color = UiPalette::scrollbar_thumb_idle;
-    elysia::core::Color thumb_focused_color = UiPalette::scrollbar_thumb_focused;
-    elysia::core::Color thumb_dragging_color = UiPalette::scrollbar_thumb_active;
-    elysia::core::Color thumb_disabled_color = UiPalette::scrollbar_thumb_disabled;
+    elysia::core::Color track_idle_color{};
+    elysia::core::Color track_focused_color{};
+    elysia::core::Color track_dragging_color{};
+    elysia::core::Color track_disabled_color{};
+    elysia::core::Color thumb_idle_color{};
+    elysia::core::Color thumb_focused_color{};
+    elysia::core::Color thumb_dragging_color{};
+    elysia::core::Color thumb_disabled_color{};
 };
 
 struct UiScrollContainerStyle
 {
     UiScrollBarStyle scrollbar{};
     bool draw_border = false;
-    elysia::core::Color border_color = UiPalette::border_default;
+    elysia::core::Color border_color{};
 };
 
 class UiScrollContainer : public UiChildHost, public UiFocusScope
@@ -158,3 +158,5 @@ private:
     bool _content_focus_suppressed = false;
 };
 }
+
+

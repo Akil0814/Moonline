@@ -58,7 +58,7 @@ struct UiCheckboxConfig
 {
     std::optional<UiCheckboxTextures> textures = std::nullopt;
     std::optional<UiCheckboxSounds> sounds = std::nullopt;
-    UiCheckboxStyle style{};
+    std::optional<UiCheckboxStyle> style = std::nullopt;
 };
 
 using UiCheckboxToggledCallback = std::function<void(UiCheckboxState state)>;

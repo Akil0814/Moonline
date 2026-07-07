@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ui_palette.h"
 #include "ui_visual_styles.h"
 #include "../widgets/ui_button.h"
 #include "../widgets/ui_checkbox.h"

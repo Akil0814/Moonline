@@ -579,7 +579,8 @@ void UiSlider::apply_slider_config(const UiSliderConfig& config)
     set_label_placement(config.label_placement);
     set_orientation(config.orientation);
     set_value_label_mode(config.value_label_mode);
-    set_style(config.style);
+    if (config.style)
+        set_style(*config.style);
     set_bar_thickness(config.bar_thickness);
     set_range(config.min_value,config.max_value);
     set_step(config.step);
