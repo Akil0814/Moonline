@@ -1,5 +1,6 @@
 #include "ui_labeled_checkbox.h"
 
+#include "../style/ui_style_defaults.h"
 #include "../../core/render/render_command.h"
 
 #include <algorithm>
@@ -16,7 +17,10 @@ namespace
 }
 
 UiLabeledCheckbox::UiLabeledCheckbox(const elysia::core::Rect& rect,int order) noexcept
-    : UiCheckbox(rect,order) {}
+    : UiCheckbox(rect,order)
+{
+    reset();
+}
 
 UiLabeledCheckbox::UiLabeledCheckbox(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order) noexcept
     : UiLabeledCheckbox(elysia::core::Rect(position.x,position.y,size.x,size.y),order) {}
@@ -52,8 +56,9 @@ void UiLabeledCheckbox::reset() noexcept
     _label_placement = UiLabeledCheckboxLabelPlacement::Right;
     _label_spacing = 8.0f;
     _text_placement = UiLabeledCheckboxTextPlacement::NearBox;
-    _text_color = elysia::core::colors::white;
-    _disabled_text_color = elysia::core::colors::gray_300;
+    const UiEnabledDisabledColors text_colors = UiStyleDefaults::labeled_checkbox_text();
+    _text_color = text_colors.enabled;
+    _disabled_text_color = text_colors.disabled;
     _draw_background = false;
     _draw_border = false;
 }
@@ -211,12 +216,15 @@ void UiLabeledCheckbox::apply_labeled_checkbox_config(const UiLabeledCheckboxCon
 
 void UiLabeledCheckbox::sync_label_visuals() const
 {
+    UiLabelStyle label_style = UiStyleDefaults::label();
+    label_style.text = is_enabled() ? _text_color : _disabled_text_color;
+    label_style.draw_background = false;
+
     _label.set_screen_rect(label_rect());
     _label.set_visible(!_text_key.empty() && !_label.screen_rect().is_empty() && is_visible());
     _label.set_opacity(opacity());
     _label.set_text_key(_text_key);
-    _label.set_text_color(is_enabled() ? _text_color : _disabled_text_color);
-    _label.set_draw_background(false);
+    _label.set_style(label_style);
     _label.set_vertical_align(TextVerticalAlign::Center);
     if (_label_placement == UiLabeledCheckboxLabelPlacement::Left)
     {

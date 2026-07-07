@@ -8,6 +8,7 @@
 #include "../../engine/ui/widgets/ui_button.h"
 #include "../../engine/ui/widgets/ui_checkbox.h"
 #include "../../engine/ui/widgets/ui_labeled_checkbox.h"
+#include "../../engine/ui/widgets/ui_slider.h"
 #include "../../engine/ui/widgets/ui_text_input.h"
 #include "../../engine/ui/layout/ui_layout_types.h"
 
@@ -126,6 +127,26 @@ std::unique_ptr<elysia::ui::UiTextInput> make_text_input(
     });
     return input;
 }
+
+std::unique_ptr<elysia::ui::UiSlider> make_slider(
+    const elysia::core::Rect& rect,
+    const char* text_key,
+    float value,
+    const char* scope
+)
+{
+    auto slider = std::make_unique<elysia::ui::UiSlider>(rect,0);
+    slider->set_text_key(text_key);
+    slider->set_label_placement(elysia::ui::UiSliderLabelPlacement::Above);
+    slider->set_value_label_mode(elysia::ui::UiSliderValueLabelMode::Percent);
+    slider->set_range(0.0f,1.0f);
+    slider->set_value(value);
+    slider->set_on_value_changed([scope](float changed_value)
+    {
+        std::cout << scope << " slider value " << changed_value << std::endl;
+    });
+    return slider;
+}
 }
 
 void UiContainerTestScene::on_enter(const elysia::scene::ScenePayload& payload)
@@ -171,6 +192,7 @@ void UiContainerTestScene::rebuild_ui()
     vertical_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Auto);
     vertical_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
     vertical_scroll->set_scroll_step(elysia::core::Vector2(32.0f,32.0f));
+    vertical_scroll->set_draw_border(true);
 
     auto vertical_list = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,260,760 });
     vertical_list->set_padding(elysia::ui::UiLayoutPadding{ 20.0f,20.0f,20.0f,20.0f });
@@ -183,11 +205,11 @@ void UiContainerTestScene::rebuild_ui()
     horizontal_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Auto);
     horizontal_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
     horizontal_scroll->set_scroll_step(elysia::core::Vector2(36.0f,36.0f));
+    horizontal_scroll->set_draw_border(true);
 
     auto horizontal_panel = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,760,180 });
     horizontal_panel->set_draw_background(true);
     horizontal_panel->set_draw_border(true);
-    horizontal_panel->set_background_color(elysia::core::colors::cobalt_blue);
 
     auto horizontal_button_0 = std::make_unique<elysia::ui::UiButton>(
         elysia::core::Rect{ 70,68,120,44 },
@@ -217,6 +239,7 @@ void UiContainerTestScene::rebuild_ui()
     grid_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Auto);
     grid_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
     grid_scroll->set_scroll_step(elysia::core::Vector2(28.0f,28.0f));
+    grid_scroll->set_draw_border(true);
 
     auto grid_content = std::make_unique<elysia::ui::UiGridContainer>(elysia::core::Rect{ 0,0,520,360 });
     grid_content->set_padding(elysia::ui::UiLayoutPadding{ 18.0f,18.0f,18.0f,18.0f });
@@ -240,6 +263,7 @@ void UiContainerTestScene::rebuild_ui()
     hidden_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Auto);
     hidden_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Hidden);
     hidden_scroll->set_scroll_step(elysia::core::Vector2(30.0f,30.0f));
+    hidden_scroll->set_draw_border(true);
 
     auto first_hidden_content = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,320,360 });
     first_hidden_content->set_padding(elysia::ui::UiLayoutPadding{ 18.0f,18.0f,18.0f,18.0f });
@@ -259,11 +283,11 @@ void UiContainerTestScene::rebuild_ui()
     widget_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Auto);
     widget_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
     widget_scroll->set_scroll_step(elysia::core::Vector2(24.0f,24.0f));
+    widget_scroll->set_draw_border(true);
 
-    auto widget_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,340,420 });
+    auto widget_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,340,520 });
     widget_content->set_draw_background(true);
     widget_content->set_draw_border(true);
-    widget_content->set_background_color(elysia::core::colors::midnight_blue);
 
     widget_content->add_child(
         make_checkbox(
@@ -329,6 +353,9 @@ void UiContainerTestScene::rebuild_ui()
     widget_content->add_child(
         make_text_input(elysia::core::Rect{ 18,336,280,44 },"Max 8 chars",std::optional<std::size_t>(8),"widget-limited"),
         elysia::ui::UiPanelInsertDirection::Down);
+    widget_content->add_child(
+        make_slider(elysia::core::Rect{ 18,394,280,78 },"menu_scene.start",0.42f,"widget"),
+        elysia::ui::UiPanelInsertDirection::Down);
     widget_scroll->set_content(std::move(widget_content));
 
     _root_window->set_child_layout_options(0,make_window_child_options(0.0f,0.0f));
@@ -359,4 +386,3 @@ void UiContainerTestScene::request_back_to_menu()
     std::cout << "ui container test back" << std::endl;
 }
 }
-

@@ -122,7 +122,7 @@ void UiTextInput::reset() noexcept
     _composition_start = 0;
     _composition_length = 0;
     _max_length.reset();
-    _style = UiTextInputStyle{};
+    _style = UiStyleDefaults::text_input();
     _text_point_size = 24;
     _padding = 10;
     _is_pushed = false;
@@ -710,3 +710,4 @@ void UiTextInput::notify_text_changed_if_needed(const std::string& previous_text
     _on_text_changed(_text);
 }
 }
+

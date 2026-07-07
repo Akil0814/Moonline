@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../core/render/colors.h"
+#include "../../style/ui_visual_styles.h"
 #include "../core/ui_element.h"
 
 namespace elysia::ui
@@ -32,6 +32,9 @@ public:
     [[nodiscard]] float value() const;
     [[nodiscard]] float ratio() const;
 
+    void set_style(const UiBarStyle& style) noexcept;
+    [[nodiscard]] const UiBarStyle& style() const noexcept;
+
     void set_background_color(elysia::core::Color color);
     [[nodiscard]] elysia::core::Color background_color() const;
 
@@ -60,13 +63,8 @@ private:
     float _min_value = 0.0f;
     float _max_value = 1.0f;
     float _value = 0.0f;
-
-    elysia::core::Color _background_color = elysia::core::colors::deep_cobalt_blue;
-    elysia::core::Color _fill_color = elysia::core::colors::glacial_white;
-    elysia::core::Color _border_color = elysia::core::colors::abyss_blue;
-
+    UiBarStyle _style{};
     BarFillDirection _fill_direction = BarFillDirection::LeftToRight;
-    bool _draw_border = false;
     int _padding = 0;
 };
 

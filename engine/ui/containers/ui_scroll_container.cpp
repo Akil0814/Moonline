@@ -1,5 +1,6 @@
 #include "ui_scroll_container.h"
 
+#include "../style/ui_style_defaults.h"
 #include "../core/ui_control.h"
 #include "../../core/render/render_command.h"
 
@@ -36,19 +37,19 @@ constexpr float ScrollbarEpsilon = 0.01f;
 UiScrollContainer::UiScrollContainer(const elysia::core::Rect& rect,int order) noexcept
     : UiChildHost(rect,order)
 {
-    initialize_scrollbar_handles();
+    reset();
 }
 
 UiScrollContainer::UiScrollContainer(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order) noexcept
     : UiChildHost(position,size,order)
 {
-    initialize_scrollbar_handles();
+    reset();
 }
 
 UiScrollContainer::UiScrollContainer(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order) noexcept
     : UiChildHost(center,size,from_center,order)
 {
-    initialize_scrollbar_handles();
+    reset();
 }
 
 void UiScrollContainer::reset() noexcept
@@ -57,12 +58,10 @@ void UiScrollContainer::reset() noexcept
     UiChildHost::set_clip_children(true);
     _scroll_state.reset();
     _scrollbar_visibility = UiScrollBarVisibility::Auto;
-    _scrollbar_style = UiScrollBarStyle{};
+    _style = UiStyleDefaults::scroll_container();
     _scope_focused = false;
-    _draw_border = false;
     _content_pointer_active = false;
     _content_focus_suppressed = false;
-    _border_color = elysia::core::colors::sky_blue;
     initialize_scrollbar_handles();
 }
 
@@ -157,8 +156,8 @@ void UiScrollContainer::submit_ui_render_commands(std::vector<elysia::core::UiRe
     submit_scrollbar_render_commands(out_commands);
 
     const elysia::core::Rect rect = screen_rect();
-    if (_draw_border && !rect.is_empty())
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(_border_color)));
+    if (_style.draw_border && !rect.is_empty())
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(_style.border_color)));
 }
 
 UiElement* UiScrollContainer::add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options)
@@ -209,6 +208,18 @@ UiScrollAxis UiScrollContainer::resolved_scroll_axis() const noexcept
     return _scroll_state.resolved_axis();
 }
 
+void UiScrollContainer::set_style(const UiScrollContainerStyle& style) noexcept
+{
+    _style = style;
+    sync_scrollbar_handles();
+    mark_layout_dirty();
+}
+
+const UiScrollContainerStyle& UiScrollContainer::style() const noexcept
+{
+    return _style;
+}
+
 void UiScrollContainer::set_scrollbar_visibility(UiScrollBarVisibility visibility) noexcept
 {
     _scrollbar_visibility = visibility;
@@ -222,33 +233,34 @@ UiScrollBarVisibility UiScrollContainer::scrollbar_visibility() const noexcept
 
 void UiScrollContainer::set_scrollbar_style(const UiScrollBarStyle& style)
 {
-    _scrollbar_style = style;
+    _style.scrollbar = style;
+    sync_scrollbar_handles();
     mark_layout_dirty();
 }
 
 const UiScrollBarStyle& UiScrollContainer::scrollbar_style() const noexcept
 {
-    return _scrollbar_style;
+    return _style.scrollbar;
 }
 
 void UiScrollContainer::set_draw_border(bool draw_border) noexcept
 {
-    _draw_border = draw_border;
+    _style.draw_border = draw_border;
 }
 
 bool UiScrollContainer::draws_border() const noexcept
 {
-    return _draw_border;
+    return _style.draw_border;
 }
 
 void UiScrollContainer::set_border_color(elysia::core::Color color) noexcept
 {
-    _border_color = color;
+    _style.border_color = color;
 }
 
 elysia::core::Color UiScrollContainer::border_color() const noexcept
 {
-    return _border_color;
+    return _style.border_color;
 }
 
 elysia::core::Vector2 UiScrollContainer::content_size() const noexcept
@@ -621,8 +633,8 @@ bool UiScrollContainer::shows_scrollbar(UiScrollAxis axis) const noexcept
 elysia::core::Rect UiScrollContainer::viewport_rect() const noexcept
 {
     const elysia::core::Rect bounds = interactive_rect();
-    const float thickness = std::max(1.0f,_scrollbar_style.thickness);
-    const float margin = clamp_non_negative(_scrollbar_style.margin);
+    const float thickness = std::max(1.0f,_style.scrollbar.thickness);
+    const float margin = clamp_non_negative(_style.scrollbar.margin);
     const float reserved_width = shows_scrollbar(UiScrollAxis::Vertical) ? (thickness + margin) : 0.0f;
     const float reserved_height = shows_scrollbar(UiScrollAxis::Horizontal) ? (thickness + margin) : 0.0f;
     return elysia::core::Rect(
@@ -649,8 +661,8 @@ elysia::core::Rect UiScrollContainer::scrollbar_track_rect(UiScrollAxis axis) co
         return elysia::core::Rect::zero();
 
     const elysia::core::Rect viewport = UiChildHost::content_rect();
-    const float thickness = std::max(1.0f,_scrollbar_style.thickness);
-    const float margin = clamp_non_negative(_scrollbar_style.margin);
+    const float thickness = std::max(1.0f,_style.scrollbar.thickness);
+    const float margin = clamp_non_negative(_style.scrollbar.margin);
     const bool horizontal_visible = shows_scrollbar(UiScrollAxis::Horizontal);
     const bool vertical_visible = shows_scrollbar(UiScrollAxis::Vertical);
 
@@ -673,7 +685,7 @@ elysia::core::Rect UiScrollContainer::scrollbar_thumb_rect(UiScrollAxis axis,con
     if (track_rect.is_empty())
         return elysia::core::Rect::zero();
 
-    const float min_thumb_length = clamp_non_negative(_scrollbar_style.min_thumb_length);
+    const float min_thumb_length = clamp_non_negative(_style.scrollbar.min_thumb_length);
     const elysia::core::Vector2 viewport = _scroll_state.viewport_size();
     const elysia::core::Vector2 content = _scroll_state.effective_content_size();
 
@@ -704,12 +716,12 @@ elysia::core::Rect UiScrollContainer::scrollbar_thumb_rect(UiScrollAxis axis,con
 elysia::core::Color UiScrollContainer::current_track_color(const UiDragHandle& thumb) const noexcept
 {
     if (!thumb.is_enabled())
-        return _scrollbar_style.track_disabled_color;
+        return _style.scrollbar.track_disabled_color;
     if (thumb.is_dragging())
-        return _scrollbar_style.track_dragging_color;
+        return _style.scrollbar.track_dragging_color;
     if (thumb.is_focused())
-        return _scrollbar_style.track_focused_color;
-    return _scrollbar_style.track_idle_color;
+        return _style.scrollbar.track_focused_color;
+    return _style.scrollbar.track_idle_color;
 }
 
 void UiScrollContainer::initialize_scrollbar_handles()
@@ -775,12 +787,12 @@ void UiScrollContainer::configure_scrollbar_thumb(
     config.style.size = thumb_rect.size();
     config.style.chrome.draw_background = true;
     config.style.chrome.draw_border = false;
-    config.style.chrome.background.idle = _scrollbar_style.thumb_idle_color;
-    config.style.chrome.background.focused = _scrollbar_style.thumb_focused_color;
-    config.style.chrome.background.active = _scrollbar_style.thumb_dragging_color;
-    config.style.chrome.background.disabled = _scrollbar_style.thumb_disabled_color;
-    config.style.chrome.border.enabled = _scrollbar_style.thumb_idle_color;
-    config.style.chrome.border.disabled = _scrollbar_style.thumb_disabled_color;
+    config.style.chrome.background.idle = _style.scrollbar.thumb_idle_color;
+    config.style.chrome.background.focused = _style.scrollbar.thumb_focused_color;
+    config.style.chrome.background.active = _style.scrollbar.thumb_dragging_color;
+    config.style.chrome.background.disabled = _style.scrollbar.thumb_disabled_color;
+    config.style.chrome.border.enabled = _style.scrollbar.thumb_idle_color;
+    config.style.chrome.border.disabled = _style.scrollbar.thumb_disabled_color;
 
     thumb.set_drag_handle_config(config);
     thumb.set_drag_axis(config.axis);
@@ -926,7 +938,7 @@ void UiScrollContainer::submit_scrollbar_render_commands(std::vector<elysia::cor
 
     if (_horizontal_thumb.is_visible())
     {
-        if (_scrollbar_style.draw_track)
+        if (_style.scrollbar.draw_track)
         {
             elysia::core::UiRenderCommand track = elysia::core::make_ui_fill_rect_command(
                 scrollbar_track_rect(UiScrollAxis::Horizontal),
@@ -940,7 +952,7 @@ void UiScrollContainer::submit_scrollbar_render_commands(std::vector<elysia::cor
 
     if (_vertical_thumb.is_visible())
     {
-        if (_scrollbar_style.draw_track)
+        if (_style.scrollbar.draw_track)
         {
             elysia::core::UiRenderCommand track = elysia::core::make_ui_fill_rect_command(
                 scrollbar_track_rect(UiScrollAxis::Vertical),
@@ -954,3 +966,5 @@ void UiScrollContainer::submit_scrollbar_render_commands(std::vector<elysia::cor
 }
 
 }
+
+

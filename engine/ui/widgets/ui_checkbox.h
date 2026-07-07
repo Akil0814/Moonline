@@ -50,10 +50,7 @@ struct UiCheckboxSounds
 struct UiCheckboxStyle
 {
     UiChromeStyle chrome{};
-    UiEnabledDisabledColors mark{
-        elysia::core::colors::glacial_white,
-        elysia::core::colors::gray_300
-    };
+    UiEnabledDisabledColors mark{};
     UiCheckboxMarkStyle mark_style = UiCheckboxMarkStyle::Checkmark;
 };
 

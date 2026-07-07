@@ -4,7 +4,6 @@
 #include "../focus/ui_focus_scope.h"
 #include "../scroll/ui_scroll_state.h"
 #include "../widgets/ui_drag_handle.h"
-#include "../../core/render/colors.h"
 
 namespace elysia::ui
 {
@@ -21,14 +20,21 @@ struct UiScrollBarStyle
     float margin = 4.0f;
     float min_thumb_length = 24.0f;
     bool draw_track = true;
-    elysia::core::Color track_idle_color = elysia::core::colors::gray_700;
-    elysia::core::Color track_focused_color = elysia::core::colors::cobalt_blue;
-    elysia::core::Color track_dragging_color = elysia::core::colors::royal_blue;
-    elysia::core::Color track_disabled_color = elysia::core::colors::gray_500;
-    elysia::core::Color thumb_idle_color = elysia::core::colors::sky_blue;
-    elysia::core::Color thumb_focused_color = elysia::core::colors::royal_blue;
-    elysia::core::Color thumb_dragging_color = elysia::core::colors::glacial_white;
-    elysia::core::Color thumb_disabled_color = elysia::core::colors::gray_500;
+    elysia::core::Color track_idle_color = UiPalette::scrollbar_track_idle;
+    elysia::core::Color track_focused_color = UiPalette::scrollbar_track_focused;
+    elysia::core::Color track_dragging_color = UiPalette::scrollbar_track_active;
+    elysia::core::Color track_disabled_color = UiPalette::scrollbar_track_disabled;
+    elysia::core::Color thumb_idle_color = UiPalette::scrollbar_thumb_idle;
+    elysia::core::Color thumb_focused_color = UiPalette::scrollbar_thumb_focused;
+    elysia::core::Color thumb_dragging_color = UiPalette::scrollbar_thumb_active;
+    elysia::core::Color thumb_disabled_color = UiPalette::scrollbar_thumb_disabled;
+};
+
+struct UiScrollContainerStyle
+{
+    UiScrollBarStyle scrollbar{};
+    bool draw_border = false;
+    elysia::core::Color border_color = UiPalette::border_default;
 };
 
 class UiScrollContainer : public UiChildHost, public UiFocusScope
@@ -52,6 +58,9 @@ public:
     void set_scroll_axis(UiScrollAxis axis) noexcept;
     [[nodiscard]] UiScrollAxis scroll_axis() const noexcept;
     [[nodiscard]] UiScrollAxis resolved_scroll_axis() const noexcept;
+
+    void set_style(const UiScrollContainerStyle& style) noexcept;
+    [[nodiscard]] const UiScrollContainerStyle& style() const noexcept;
 
     void set_scrollbar_visibility(UiScrollBarVisibility visibility) noexcept;
     [[nodiscard]] UiScrollBarVisibility scrollbar_visibility() const noexcept;
@@ -141,13 +150,11 @@ private:
 private:
     UiScrollState _scroll_state;
     UiScrollBarVisibility _scrollbar_visibility = UiScrollBarVisibility::Auto;
-    UiScrollBarStyle _scrollbar_style{};
+    UiScrollContainerStyle _style{};
     UiDragHandle _horizontal_thumb;
     UiDragHandle _vertical_thumb;
     bool _scope_focused = false;
-    bool _draw_border = false;
     bool _content_pointer_active = false;
     bool _content_focus_suppressed = false;
-    elysia::core::Color _border_color = elysia::core::colors::sky_blue;
 };
 }

@@ -51,7 +51,7 @@ void UiCheckbox::reset() noexcept
     _sounds.reset();
     _on_toggled = nullptr;
     _state = UiCheckboxState::Unchecked;
-    _style = UiCheckboxStyle{};
+    _style = UiStyleDefaults::checkbox();
     _padding = 4;
     _is_pushed = false;
 }
@@ -465,3 +465,4 @@ UiCheckboxState UiCheckbox::toggled_state(UiCheckboxState state) noexcept
     }
 }
 }
+

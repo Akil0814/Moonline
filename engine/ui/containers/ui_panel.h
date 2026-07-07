@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../focus/ui_control_focus_scope_host.h"
-#include "../../core/render/colors.h"
+#include "../style/ui_visual_styles.h"
 
 #include <vector>
 
@@ -29,6 +29,9 @@ public:
 
     void add_child(std::unique_ptr<UiElement> child,UiPanelInsertDirection direction = UiPanelInsertDirection::Down);
     UiElement* add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options) override;
+
+    void set_style(const UiPanelStyle& style) noexcept;
+    [[nodiscard]] const UiPanelStyle& style() const noexcept;
 
     void set_draw_background(bool draw_background) noexcept;
     [[nodiscard]] bool draws_background() const noexcept;
@@ -58,14 +61,10 @@ private:
     const FocusLink* find_link(const UiControl& control) const noexcept;
 
 private:
-    bool _draw_background = false;
-    bool _draw_border = false;
-    elysia::core::Color _background_color = elysia::core::colors::cobalt_blue;
-    elysia::core::Color _border_color = elysia::core::colors::sky_blue;
+    UiPanelStyle _style{};
     std::vector<FocusLink> _focus_links;
     UiControl* _last_focusable = nullptr;
     elysia::core::Vector2 _last_child_layout_origin{};
     bool _has_child_layout_origin = false;
 };
 }
-

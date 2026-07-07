@@ -7,7 +7,7 @@
 #include <string_view>
 
 namespace elysia::physics
-{
+{  
 struct Collider
 {
     elysia::core::Rect local_rect{};

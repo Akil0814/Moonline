@@ -1,29 +1,29 @@
 #pragma once
 
-#include "../../core/render/colors.h"
+#include "ui_palette.h"
 
 namespace elysia::ui
 {
 struct UiEnabledDisabledColors
 {
-    elysia::core::Color enabled = elysia::core::colors::white;
-    elysia::core::Color disabled = elysia::core::colors::gray_300;
+    elysia::core::Color enabled = UiPalette::text_primary;
+    elysia::core::Color disabled = UiPalette::text_disabled;
 };
 
 struct UiInteractiveColors
 {
-    elysia::core::Color idle = elysia::core::colors::cobalt_blue;
-    elysia::core::Color focused = elysia::core::colors::royal_blue;
-    elysia::core::Color active = elysia::core::colors::midnight_blue;
-    elysia::core::Color disabled = elysia::core::colors::gray_700;
+    elysia::core::Color idle = UiPalette::surface_interactive_idle;
+    elysia::core::Color focused = UiPalette::surface_interactive_focused;
+    elysia::core::Color active = UiPalette::surface_interactive_active;
+    elysia::core::Color disabled = UiPalette::surface_disabled;
 };
 
 struct UiChromeStyle
 {
     UiInteractiveColors background{};
     UiEnabledDisabledColors border{
-        elysia::core::colors::sky_blue,
-        elysia::core::colors::gray_500
+        UiPalette::border_default,
+        UiPalette::border_disabled
     };
     bool draw_background = true;
     bool draw_border = true;

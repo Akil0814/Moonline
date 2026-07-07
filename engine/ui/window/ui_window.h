@@ -3,7 +3,7 @@
 #include "../core/ui_child_host.h"
 #include "../focus/ui_focus_scope.h"
 #include "../core/ui_control.h"
-#include "../../core/render/colors.h"
+#include "../style/ui_visual_styles.h"
 #include "../../input/input_types.h"
 
 #include <functional>
@@ -22,6 +22,9 @@ public:
     ~UiWindow() override = default;
 
     void reset() noexcept override;
+
+    void set_style(const UiWindowStyle& style) noexcept;
+    [[nodiscard]] const UiWindowStyle& style() const noexcept;
 
     void set_draw_background(bool draw_background) noexcept;
     [[nodiscard]] bool draws_background() const noexcept;
@@ -75,10 +78,7 @@ private:
     std::vector<ScopeEntry> _scope_entries;
     UiFocusScope* _focused_scope = nullptr;
     UiFocusScope* _last_focused_scope = nullptr;
-    bool _draw_background = false;
-    bool _draw_border = false;
-    elysia::core::Color _background_color = elysia::core::colors::cobalt_blue;
-    elysia::core::Color _border_color = elysia::core::colors::sky_blue;
+    UiWindowStyle _style{};
     bool _hover_focus_enabled = true;
     elysia::input::InputDevice _focus_input_device = elysia::input::InputDevice::Unknown;
     UiWindowCancelCallback _on_cancel;

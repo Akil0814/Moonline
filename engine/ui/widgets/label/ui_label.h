@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../../core/render/colors.h"
+#include "../../style/ui_visual_styles.h"
 #include "../../core/ui_element.h"
 #include "../../core/ui_text_align.h"
 
@@ -15,11 +15,11 @@ class UiLabel : public UiElement
 public:
     explicit UiLabel(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0,std::string text_key = {}) noexcept;
 
-    UiLabel( const elysia::core::Vector2& position,const elysia::core::Vector2& size,
+    UiLabel(const elysia::core::Vector2& position,const elysia::core::Vector2& size,
         int order = 0,std::string text_key = {}) noexcept;
 
-    UiLabel(const elysia::core::Vector2& center, const elysia::core::Vector2& size,
-        UiFromCenterTag,int order = 0, std::string text_key = {}) noexcept;
+    UiLabel(const elysia::core::Vector2& center,const elysia::core::Vector2& size,
+        UiFromCenterTag,int order = 0,std::string text_key = {}) noexcept;
 
     ~UiLabel() override = default;
 
@@ -28,6 +28,9 @@ public:
 
     void set_text_key(std::string text_key);
     [[nodiscard]] const std::string& text_key() const noexcept;
+
+    void set_style(const UiLabelStyle& style) noexcept;
+    [[nodiscard]] const UiLabelStyle& style() const noexcept;
 
     void set_text_color(elysia::core::Color color);
     [[nodiscard]] elysia::core::Color text_color() const noexcept;
@@ -56,12 +59,10 @@ private:
 
 private:
     std::string _text_key;
-    elysia::core::Color _text_color = elysia::core::colors::white;
-    elysia::core::Color _background_color = elysia::core::colors::transparent;
+    UiLabelStyle _style{};
     TextHorizontalAlign _horizontal_align = TextHorizontalAlign::Left;
     TextVerticalAlign _vertical_align = TextVerticalAlign::Top;
     int _text_point_size = 24;
     int _padding = 0;
-    bool _draw_background = false;
 };
 }

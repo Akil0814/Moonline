@@ -1,5 +1,6 @@
 #include "ui_number.h"
 
+#include "../../style/ui_style_defaults.h"
 #include "../../../core/render/render_command.h"
 
 #include <SDL.h>
@@ -25,9 +26,10 @@ struct GlyphLayout
 };
 }
 
-UiNumber::UiNumber(const elysia::core::Rect& rect, int order) noexcept
-    : UiElement(rect, order)
+UiNumber::UiNumber(const elysia::core::Rect& rect,int order) noexcept
+    : UiElement(rect,order)
 {
+    reset();
 }
 
 UiNumber::UiNumber(
@@ -35,8 +37,9 @@ UiNumber::UiNumber(
     const elysia::core::Vector2& size,
     int order
 ) noexcept
-    : UiElement(position, size, order)
+    : UiElement(position,size,order)
 {
+    reset();
 }
 
 UiNumber::UiNumber(
@@ -45,8 +48,9 @@ UiNumber::UiNumber(
     UiFromCenterTag,
     int order
 ) noexcept
-    : UiElement(center, size, from_center, order)
+    : UiElement(center,size,from_center,order)
 {
+    reset();
 }
 
 void UiNumber::reset() noexcept
@@ -54,8 +58,7 @@ void UiNumber::reset() noexcept
     UiElement::reset();
     _texture_provider.reset();
     _value = 0.0;
-    _text_color = elysia::core::colors::white;
-    _background_color = elysia::core::colors::transparent;
+    _style = UiStyleDefaults::number();
     _horizontal_align = TextHorizontalAlign::Left;
     _vertical_align = TextVerticalAlign::Top;
     _text_point_size = 24;
@@ -67,7 +70,6 @@ void UiNumber::reset() noexcept
     _trim_trailing_zeros = true;
     _keep_decimal_point = false;
     _suffix = UiNumberSuffix::None;
-    _draw_background = false;
 }
 
 void UiNumber::submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const
@@ -79,8 +81,8 @@ void UiNumber::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
     if (number_rect.is_empty())
         return;
 
-    if (_draw_background)
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(number_rect, apply_opacity(_background_color)));
+    if (_style.draw_background)
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(number_rect,apply_opacity(_style.background)));
 
     const std::string text = formatted_text();
     if (text.empty())
@@ -91,7 +93,7 @@ void UiNumber::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
         return;
 
     const std::vector<elysia::number::NumberTextureGlyph> texture_set =
-        _texture_provider.get_texture_set(text, _text_point_size, _text_color);
+        _texture_provider.get_texture_set(text,_text_point_size,_style.text);
     if (texture_set.empty())
         return;
 
@@ -102,34 +104,26 @@ void UiNumber::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
     for (const elysia::number::NumberTextureGlyph& texture_glyph : texture_set)
     {
         if (!texture_glyph.texture || texture_glyph.texture_width <= 0 || texture_glyph.texture_height <= 0)
-        {
             continue;
-        }
 
         float scale = 0.0f;
         if (_target_height.has_value() && *_target_height > 0.0f)
-        {
-            scale = *(_target_height) / static_cast<float>(texture_glyph.texture_height);
-        }
+            scale = *_target_height / static_cast<float>(texture_glyph.texture_height);
         else if (available_rect.height() > 0.0f)
-        {
             scale = available_rect.height() / static_cast<float>(texture_glyph.texture_height);
-        }
 
-        scale = std::max(0.0f, scale);
+        scale = std::max(0.0f,scale);
 
         GlyphLayout glyph;
         glyph.texture = texture_glyph.texture;
         glyph.render_width = static_cast<float>(texture_glyph.texture_width) * scale;
         glyph.render_height = static_cast<float>(texture_glyph.texture_height) * scale;
         glyph.advance = _fixed_glyph_advance.has_value()
-            ? std::max(0.0f, *_fixed_glyph_advance)
+            ? std::max(0.0f,*_fixed_glyph_advance)
             : glyph.render_width;
 
         if (!glyphs.empty())
-        {
             total_width += _digit_spacing;
-        }
 
         total_width += glyph.advance;
         glyphs.push_back(glyph);
@@ -175,16 +169,14 @@ void UiNumber::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
 
         elysia::core::UiRenderCommand command = elysia::core::make_ui_texture_command(
             glyph.texture,
-            elysia::core::Rect(cursor_x, render_y, glyph.render_width, glyph.render_height)
+            elysia::core::Rect(cursor_x,render_y,glyph.render_width,glyph.render_height)
         );
         apply_opacity(command);
         out_commands.push_back(command);
 
         cursor_x += glyph.advance;
         if (index + 1 < glyphs.size())
-        {
             cursor_x += _digit_spacing;
-        }
     }
 }
 
@@ -198,34 +190,44 @@ double UiNumber::value() const noexcept
     return _value;
 }
 
+void UiNumber::set_style(const UiNumberStyle& style) noexcept
+{
+    _style = style;
+}
+
+const UiNumberStyle& UiNumber::style() const noexcept
+{
+    return _style;
+}
+
 void UiNumber::set_text_color(elysia::core::Color color)
 {
-    _text_color = color;
+    _style.text = color;
 }
 
 elysia::core::Color UiNumber::text_color() const noexcept
 {
-    return _text_color;
+    return _style.text;
 }
 
 void UiNumber::set_background_color(elysia::core::Color color)
 {
-    _background_color = color;
+    _style.background = color;
 }
 
 elysia::core::Color UiNumber::background_color() const noexcept
 {
-    return _background_color;
+    return _style.background;
 }
 
 void UiNumber::set_draw_background(bool draw_background)
 {
-    _draw_background = draw_background;
+    _style.draw_background = draw_background;
 }
 
 bool UiNumber::draws_background() const noexcept
 {
-    return _draw_background;
+    return _style.draw_background;
 }
 
 void UiNumber::set_horizontal_align(TextHorizontalAlign align)
@@ -250,7 +252,7 @@ TextVerticalAlign UiNumber::vertical_align() const noexcept
 
 void UiNumber::set_text_point_size(int point_size)
 {
-    _text_point_size = std::max(0, point_size);
+    _text_point_size = std::max(0,point_size);
 }
 
 int UiNumber::text_point_size() const noexcept
@@ -260,7 +262,7 @@ int UiNumber::text_point_size() const noexcept
 
 void UiNumber::set_padding(int padding)
 {
-    _padding = std::max(0, padding);
+    _padding = std::max(0,padding);
 }
 
 int UiNumber::padding() const noexcept
@@ -270,7 +272,7 @@ int UiNumber::padding() const noexcept
 
 void UiNumber::set_digit_spacing(float spacing)
 {
-    _digit_spacing = std::max(0.0f, spacing);
+    _digit_spacing = std::max(0.0f,spacing);
 }
 
 float UiNumber::digit_spacing() const noexcept
@@ -280,7 +282,7 @@ float UiNumber::digit_spacing() const noexcept
 
 void UiNumber::set_fixed_glyph_advance(float advance)
 {
-    _fixed_glyph_advance = std::max(0.0f, advance);
+    _fixed_glyph_advance = std::max(0.0f,advance);
 }
 
 std::optional<float> UiNumber::fixed_glyph_advance() const noexcept
@@ -295,7 +297,7 @@ void UiNumber::clear_fixed_glyph_advance()
 
 void UiNumber::set_target_height(float height)
 {
-    _target_height = std::max(0.0f, height);
+    _target_height = std::max(0.0f,height);
 }
 
 std::optional<float> UiNumber::target_height() const noexcept
@@ -310,7 +312,7 @@ void UiNumber::clear_target_height()
 
 void UiNumber::set_decimal_places(int decimal_places)
 {
-    _decimal_places = std::max(0, decimal_places);
+    _decimal_places = std::max(0,decimal_places);
 }
 
 int UiNumber::decimal_places() const noexcept
@@ -351,11 +353,11 @@ UiNumberSuffix UiNumber::suffix() const noexcept
 elysia::core::Rect UiNumber::content_rect() const noexcept
 {
     const elysia::core::Rect& number_rect = screen_rect();
-    const float width = std::max(0.0f, number_rect.width());
-    const float height = std::max(0.0f, number_rect.height());
+    const float width = std::max(0.0f,number_rect.width());
+    const float height = std::max(0.0f,number_rect.height());
     const float padding = static_cast<float>(_padding);
-    const float pad_x = std::min(padding, width * 0.5f);
-    const float pad_y = std::min(padding, height * 0.5f);
+    const float pad_x = std::min(padding,width * 0.5f);
+    const float pad_y = std::min(padding,height * 0.5f);
 
     elysia::core::Rect content = number_rect;
     content.set_x(number_rect.x() + pad_x);
@@ -369,51 +371,37 @@ std::string UiNumber::formatted_text() const
 {
     double display_value = _value;
     if (std::abs(display_value) < kNegativeZeroTolerance)
-    {
         display_value = 0.0;
-    }
 
     std::ostringstream stream;
     stream << std::fixed << std::setprecision(_decimal_places) << display_value;
     std::string text = stream.str();
 
     if (_trim_trailing_zeros)
-    {
-        text = trim_fractional_zeros(std::move(text), _keep_decimal_point);
-    }
+        text = trim_fractional_zeros(std::move(text),_keep_decimal_point);
 
     if (_suffix == UiNumberSuffix::Percent)
-    {
         text.push_back('%');
-    }
 
     return text;
 }
 
-std::string UiNumber::trim_fractional_zeros(std::string text, bool keep_decimal_point)
+std::string UiNumber::trim_fractional_zeros(std::string text,bool keep_decimal_point)
 {
     if (text.find('.') == std::string::npos)
-    {
         return text;
-    }
 
     while (!text.empty() && text.back() == '0')
-    {
         text.pop_back();
-    }
 
     if (!text.empty() && text.back() == '.')
     {
         if (!keep_decimal_point)
-        {
             text.pop_back();
-        }
     }
 
     if (text == "-0" || text == "-0.")
-    {
         return keep_decimal_point && !text.empty() && text.back() == '.' ? "0." : "0";
-    }
 
     return text;
 }

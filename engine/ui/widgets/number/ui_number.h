@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../../core/render/colors.h"
+#include "../../style/ui_visual_styles.h"
 #include "../../../number/number_texture_provider.h"
 #include "../../core/ui_element.h"
 #include "../../core/ui_text_align.h"
@@ -41,6 +41,9 @@ public:
 
     void set_value(double value);
     [[nodiscard]] double value() const noexcept;
+
+    void set_style(const UiNumberStyle& style) noexcept;
+    [[nodiscard]] const UiNumberStyle& style() const noexcept;
 
     void set_text_color(elysia::core::Color color);
     [[nodiscard]] elysia::core::Color text_color() const noexcept;
@@ -98,8 +101,7 @@ private:
 private:
     mutable elysia::number::NumberTextureProvider _texture_provider;
     double _value = 0.0;
-    elysia::core::Color _text_color = elysia::core::colors::white;
-    elysia::core::Color _background_color = elysia::core::colors::transparent;
+    UiNumberStyle _style{};
     TextHorizontalAlign _horizontal_align = TextHorizontalAlign::Left;
     TextVerticalAlign _vertical_align = TextVerticalAlign::Top;
     int _text_point_size = 24;
@@ -111,6 +113,5 @@ private:
     bool _trim_trailing_zeros = true;
     bool _keep_decimal_point = false;
     UiNumberSuffix _suffix = UiNumberSuffix::None;
-    bool _draw_background = false;
 };
 }

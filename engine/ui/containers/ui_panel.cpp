@@ -1,5 +1,7 @@
 #include "ui_panel.h"
 
+#include "../style/ui_style_defaults.h"
+
 #include <algorithm>
 
 namespace elysia::ui
@@ -40,21 +42,27 @@ std::optional<UiControl*>& neighbor_slot(UiFocusNeighbors& neighbors,UiPanelInse
 }
 
 UiPanel::UiPanel(const elysia::core::Rect& rect,int order) noexcept
-    : UiControlFocusScopeHost(rect,order) {}
+    : UiControlFocusScopeHost(rect,order)
+{
+    reset();
+}
 
 UiPanel::UiPanel(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order) noexcept
-    : UiControlFocusScopeHost(position,size,order) {}
+    : UiControlFocusScopeHost(position,size,order)
+{
+    reset();
+}
 
 UiPanel::UiPanel(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order) noexcept
-    : UiControlFocusScopeHost(center,size,from_center,order) {}
+    : UiControlFocusScopeHost(center,size,from_center,order)
+{
+    reset();
+}
 
 void UiPanel::reset() noexcept
 {
     UiControlFocusScopeHost::reset();
-    _draw_background = false;
-    _draw_border = false;
-    _background_color = elysia::core::colors::cobalt_blue;
-    _border_color = elysia::core::colors::sky_blue;
+    _style = UiStyleDefaults::panel();
     _focus_links.clear();
     _last_focusable = nullptr;
     _last_child_layout_origin = elysia::core::Vector2::zero();
@@ -74,11 +82,11 @@ void UiPanel::submit_ui_render_commands(std::vector<elysia::core::UiRenderComman
     self->apply_focus_state();
 
     const elysia::core::Rect& rect = screen_rect();
-    if (_draw_background && !rect.is_empty())
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(_background_color)));
+    if (_style.draw_background && !rect.is_empty())
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(_style.background)));
     submit_child_render_commands(out_commands);
-    if (_draw_border && !rect.is_empty())
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(_border_color)));
+    if (_style.draw_border && !rect.is_empty())
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(_style.border)));
 }
 
 elysia::core::Vector2 UiPanel::content_extent() const noexcept
@@ -97,44 +105,54 @@ UiElement* UiPanel::add_child(std::unique_ptr<UiElement> child,UiLayoutChildOpti
     return insert_panel_child(std::move(child),UiPanelInsertDirection::Down);
 }
 
+void UiPanel::set_style(const UiPanelStyle& style) noexcept
+{
+    _style = style;
+}
+
+const UiPanelStyle& UiPanel::style() const noexcept
+{
+    return _style;
+}
+
 void UiPanel::set_draw_background(bool draw_background) noexcept
 {
-    _draw_background = draw_background;
+    _style.draw_background = draw_background;
 }
 
 bool UiPanel::draws_background() const noexcept
 {
-    return _draw_background;
+    return _style.draw_background;
 }
 
 void UiPanel::set_draw_border(bool draw_border) noexcept
 {
-    _draw_border = draw_border;
+    _style.draw_border = draw_border;
 }
 
 bool UiPanel::draws_border() const noexcept
 {
-    return _draw_border;
+    return _style.draw_border;
 }
 
 void UiPanel::set_background_color(elysia::core::Color color) noexcept
 {
-    _background_color = color;
+    _style.background = color;
 }
 
 elysia::core::Color UiPanel::background_color() const noexcept
 {
-    return _background_color;
+    return _style.background;
 }
 
 void UiPanel::set_border_color(elysia::core::Color color) noexcept
 {
-    _border_color = color;
+    _style.border = color;
 }
 
 elysia::core::Color UiPanel::border_color() const noexcept
 {
-    return _border_color;
+    return _style.border;
 }
 
 void UiPanel::rebuild_layout()
@@ -253,8 +271,4 @@ const UiPanel::FocusLink* UiPanel::find_link(const UiControl& control) const noe
     return found != _focus_links.end() ? &(*found) : nullptr;
 }
 }
-
-
-
-
 

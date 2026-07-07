@@ -31,20 +31,7 @@ struct UiDragHandleStyle
 {
     elysia::core::Vector2 size{ 18.0f,18.0f };
     std::optional<UiDragHandleTextures> textures = std::nullopt;
-    UiChromeStyle chrome{
-        UiInteractiveColors{
-            elysia::core::colors::sky_blue,
-            elysia::core::colors::royal_blue,
-            elysia::core::colors::white,
-            elysia::core::colors::gray_500
-        },
-        UiEnabledDisabledColors{
-            elysia::core::colors::sky_blue,
-            elysia::core::colors::gray_500
-        },
-        true,
-        true
-    };
+    UiChromeStyle chrome{};
 };
 
 struct UiDragHandleConfig

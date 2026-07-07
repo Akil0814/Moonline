@@ -130,7 +130,7 @@ void UiSlider::reset() noexcept
     _text_key.clear();
     _icon = nullptr;
     _sounds.reset();
-    _style = UiSliderStyle{};
+    _style = UiStyleDefaults::slider();
     _on_value_changed = nullptr;
     _label_placement = UiSliderLabelPlacement::None;
     _orientation = UiSliderOrientation::Horizontal;
@@ -619,7 +619,7 @@ void UiSlider::initialize_child_widgets()
     _value_number.set_trim_trailing_zeros(true);
     _value_number.set_keep_decimal_point(false);
     _value_number.set_suffix(UiNumberSuffix::None);
-    set_style(UiSliderStyle{});
+    set_style(UiStyleDefaults::slider());
     bind_handle_callbacks();
 }
 
@@ -651,14 +651,25 @@ void UiSlider::sync_child_rects(const SliderLayout& layout) const
 
 void UiSlider::sync_child_visuals() const
 {
+    UiBarStyle bar_style = UiStyleDefaults::bar();
+    bar_style.background = current_border_color();
+    bar_style.fill = current_fill_color();
+    bar_style.draw_border = false;
+
+    UiLabelStyle label_style = UiStyleDefaults::label();
+    label_style.text = current_text_color();
+    label_style.draw_background = false;
+
+    UiNumberStyle number_style = UiStyleDefaults::number();
+    number_style.text = current_text_color();
+    number_style.draw_background = false;
+
     _bar.set_visible(!_bar.screen_rect().is_empty());
     _bar.set_opacity(opacity());
     _bar.set_range(_min_value,_max_value);
     _bar.set_value(_value);
     _bar.set_fill_direction(_orientation == UiSliderOrientation::Horizontal ? BarFillDirection::LeftToRight : BarFillDirection::BottomToTop);
-    _bar.set_background_color(current_border_color());
-    _bar.set_fill_color(current_fill_color());
-    _bar.set_draw_border(false);
+    _bar.set_style(bar_style);
     _bar.set_padding(0);
 
     _handle.set_visible(!_handle.screen_rect().is_empty());
@@ -669,16 +680,14 @@ void UiSlider::sync_child_visuals() const
     _label.set_visible(!_text_key.empty() && !_icon && !_label.screen_rect().is_empty());
     _label.set_opacity(opacity());
     _label.set_text_key(_text_key);
-    _label.set_text_color(current_text_color());
-    _label.set_draw_background(false);
+    _label.set_style(label_style);
     _label.set_horizontal_align(TextHorizontalAlign::Center);
     _label.set_vertical_align(TextVerticalAlign::Center);
     _label.set_padding(0);
 
     _value_number.set_visible(_value_label_mode != UiSliderValueLabelMode::None && !_value_number.screen_rect().is_empty());
     _value_number.set_opacity(opacity());
-    _value_number.set_text_color(current_text_color());
-    _value_number.set_draw_background(false);
+    _value_number.set_style(number_style);
     _value_number.set_horizontal_align(TextHorizontalAlign::Center);
     _value_number.set_vertical_align(TextVerticalAlign::Center);
     _value_number.set_padding(0);
@@ -992,3 +1001,5 @@ void UiSlider::play_slide_sound_if_allowed()
     }
 }
 }
+
+

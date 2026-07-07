@@ -20,10 +20,10 @@ struct UiTextInputStyle
     UiChromeStyle chrome{};
     UiEnabledDisabledColors text{};
     UiEnabledDisabledColors placeholder{
-        elysia::core::colors::gray_300,
-        elysia::core::colors::gray_500
+        UiPalette::text_muted,
+        UiPalette::text_disabled
     };
-    elysia::core::Color caret = elysia::core::colors::glacial_white;
+    elysia::core::Color caret = UiPalette::caret;
 };
 
 class UiTextInput : public UiControl

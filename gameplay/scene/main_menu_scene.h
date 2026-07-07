@@ -36,7 +36,7 @@ private:
     void clear_menu_buttons();
 
 private:
-    elysia::ui::UiWindow* _main_menu = nullptr;
+    elysia::ui::UiWindow* _main_menu_window = nullptr;
 
 };
 }

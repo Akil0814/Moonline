@@ -47,7 +47,7 @@ void UiButton::reset() noexcept
     _state_textures = UiButtonTextures{};
     _on_click = nullptr;
     _visual_mode = UiButtonVisualMode::None;
-    _style = UiButtonStyle{};
+    _style = UiStyleDefaults::button();
     _text_point_size = 24;
     _padding = 10;
     _is_pushed = false;
@@ -463,3 +463,4 @@ void UiButton::play_sound_if_set(std::string_view sound_key) const
     elysia::audio::AudioService::instance()->play_sound(sound_key);
 }
 }
+
