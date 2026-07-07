@@ -1,5 +1,9 @@
 #include "ui_container_test_scene.h"
 
+
+#include "../../application/scene/scene_keys.h"
+
+
 #include "../../engine/ui/window/ui_window.h"
 #include "../../engine/ui/containers/ui_grid_container.h"
 #include "../../engine/ui/containers/ui_list_container.h"
@@ -384,5 +388,6 @@ void UiContainerTestScene::clear_ui()
 void UiContainerTestScene::request_back_to_menu()
 {
     std::cout << "ui container test back" << std::endl;
+    request_scene_switch(AppSceneKeys::MainMenu);
 }
 }

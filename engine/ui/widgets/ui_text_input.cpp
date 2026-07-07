@@ -1,5 +1,7 @@
 #include "ui_text_input.h"
 
+#include "../style/ui_style_defaults.h"
+
 #include "../../core/render/render_command.h"
 #include "../../localization/localization_manager.h"
 #include "../../localization/localized_text_style.h"

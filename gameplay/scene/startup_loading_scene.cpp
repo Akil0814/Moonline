@@ -116,7 +116,6 @@ void StartupLoadingScene::on_input(const elysia::input::RawInputFrame& input, co
 			&& elysia::input::matches_control(elysia::input::RawInputControl::AnyControl,event.control))
 		{
 			_phase = StartupPhase::Transitioning;
-			//request_scene_switch(AppSceneKeys::UiContainerTest);
 			request_scene_switch(AppSceneKeys::MainMenu);
 			break;
 		}

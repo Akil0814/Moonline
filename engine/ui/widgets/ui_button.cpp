@@ -1,5 +1,7 @@
 #include "ui_button.h"
 
+#include "../style/ui_style_defaults.h"
+
 #include "../../audio/audio_service.h"
 #include "../../core/render/colors.h"
 #include "../../core/render/render_command.h"

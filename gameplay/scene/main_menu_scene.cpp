@@ -62,18 +62,38 @@ void MainMenuScene::reset()
 
 void MainMenuScene::rebuild_menu_buttons()
 {
-    _main_menu = Scene::create_and_add_object<elysia::ui::UiWindow>(elysia::core::Rect{0,0,1280,720});
-    if (_main_menu)
+    _main_menu_window = Scene::create_and_add_object<elysia::ui::UiWindow>(elysia::core::Rect{0,0,1280,720});
+    if (_main_menu_window)
     {
         std::unique_ptr<elysia::ui::UiListContainer> ui_list = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,250,500 });
         elysia::ui::UiLayoutChildOptions layout{ elysia::ui::UiLayoutAnchor::Center };
-        _main_menu->add_child(std::move(ui_list), layout);
+
+        std::unique_ptr<elysia::ui::UiButton> ui_button = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,200,75 });
+        ui_button->set_text_key("menu_scene.start");
+        ui_list->add_back(std::move(ui_button));
+
+        ui_button = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,200,75 });
+        ui_button->set_text_key("menu_scene.settings");
+        ui_button->set_on_click([this] {Scene::request_scene_switch(AppSceneKeys::UiContainerTest);});
+        ui_list->add_back(std::move(ui_button));
+
+        ui_button = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,200,75 });
+        ui_button->set_text_key("menu_scene.exit");
+        ui_button->set_on_click([this]{Scene::request_quit();});
+        ui_list->add_back(std::move(ui_button));
+
+        elysia::ui::UiElement* added = _main_menu_window->add_child(std::move(ui_list), layout);
+        _main_menu_window->set_draw_background(true);
+
+        if (auto* list = dynamic_cast<elysia::ui::UiListContainer*>(added))
+            _main_menu_window->register_focus_scope(*list);
+        _main_menu_window->focus_first_available_scope();
+
     }
 }
 
 void MainMenuScene::clear_menu_buttons()
 {
-    //request_scene_switch(AppSceneKeys::UiContainerTest);
 
 //request_quit();
 
