@@ -139,6 +139,8 @@ std::vector<UiInputEvent> UiInputRouter::route_event(const elysia::input::RawInp
         event.type = UiInputEventType::TextEditing;
         event.device = raw_event.device;
         event.text = raw_event.text;
+        event.composition_start = raw_event.composition_start;
+        event.composition_length = raw_event.composition_length;
         events.push_back(event);
         break;
     }

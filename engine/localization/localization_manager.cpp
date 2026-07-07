@@ -176,6 +176,56 @@ SDL_Texture* LocalizationManager::get_text_texture(
 		});
 }
 
+SDL_Texture* LocalizationManager::get_raw_text_texture(
+	std::string_view text,
+	const LocalizedTextStyle& style
+)
+{
+	if (!_initialized)
+		return nullptr;
+
+	return _text_texture_cache.get_or_create_raw(
+		_current_language,
+		text,
+		style,
+		[this, text, style]()
+		{
+			return create_raw_text_texture(text, style);
+		});
+}
+
+bool LocalizationManager::measure_raw_text(
+	std::string_view text,
+	const LocalizedTextStyle& style,
+	int& out_width,
+	int& out_height
+) const
+{
+	out_width = 0;
+	out_height = 0;
+
+	if (!_initialized)
+		return false;
+
+	TTF_Font* font = resolve_font(style.point_size);
+	if (!font)
+		return false;
+
+	if (text.empty())
+	{
+		out_height = TTF_FontHeight(font);
+		return true;
+	}
+
+	if (TTF_SizeUTF8(font,std::string(text).c_str(),&out_width,&out_height) != 0)
+	{
+		std::cout << "Measure raw text failed, error: " << TTF_GetError() << std::endl;
+		return false;
+	}
+
+	return true;
+}
+
 SDL_Renderer* LocalizationManager::renderer() const noexcept
 {
 	return _renderer;
@@ -322,6 +372,30 @@ std::string LocalizationManager::map_font_key(
 	return {};
 }
 
+TTF_Font* LocalizationManager::resolve_font(int point_size) const
+{
+	if (point_size <= 0)
+		return nullptr;
+
+	const std::string font_key = map_font_key(_current_language, point_size);
+	if (font_key.empty())
+	{
+		std::cout << "Resolve font failed: font mapping is missing for language "
+			<< _current_language << ", size " << point_size << std::endl;
+		return nullptr;
+	}
+
+	TTF_Font* font = elysia::resources::ResourceManager::instance()->find_font(font_key);
+	if (!font)
+	{
+		std::cout << "Resolve font failed: font is not loaded: "
+			<< font_key << std::endl;
+		return nullptr;
+	}
+
+	return font;
+}
+
 CachedTexturePtr LocalizationManager::create_text_texture(
 	std::string_view key,
 	const LocalizedTextStyle& style
@@ -337,21 +411,9 @@ CachedTexturePtr LocalizationManager::create_text_texture(
 		return {};
 	}
 
-	const std::string font_key = map_font_key(_current_language, style.point_size);
-	if (font_key.empty())
-	{
-		std::cout << "Create text texture failed: font mapping is missing for language "
-			<< _current_language << ", size " << style.point_size << std::endl;
-		return {};
-	}
-
-	TTF_Font* font = elysia::resources::ResourceManager::instance()->find_font(font_key);
+	TTF_Font* font = resolve_font(style.point_size);
 	if (!font)
-	{
-		std::cout << "Create text texture failed: font is not loaded: "
-			<< font_key << std::endl;
 		return {};
-	}
 
 	const std::string translated_text(tr(key));
 	if (translated_text.empty())
@@ -392,6 +454,65 @@ CachedTexturePtr LocalizationManager::create_text_texture(
 	{
 		std::cout << "Create text texture failed: SDL_CreateTextureFromSurface failed for key "
 			<< key << ", error: " << SDL_GetError() << std::endl;
+		return {};
+	}
+
+	return CachedTexturePtr(texture);
+}
+
+CachedTexturePtr LocalizationManager::create_raw_text_texture(
+	std::string_view text,
+	const LocalizedTextStyle& style
+)
+{
+	if (!_renderer)
+		return {};
+
+	if (style.point_size <= 0)
+	{
+		std::cout << "Create raw text texture failed: invalid point size." << std::endl;
+		return {};
+	}
+
+	TTF_Font* font = resolve_font(style.point_size);
+	if (!font)
+		return {};
+
+	const std::string raw_text(text);
+	if (raw_text.empty())
+		return {};
+
+	SDL_Surface* surface = nullptr;
+	const SDL_Color text_color = elysia::core::to_sdl_color(style.color);
+	if (style.wrap_width > 0)
+	{
+		surface = TTF_RenderUTF8_Blended_Wrapped(
+			font,
+			raw_text.c_str(),
+			text_color,
+			style.wrap_width);
+	}
+	else
+	{
+		surface = TTF_RenderUTF8_Blended(
+			font,
+			raw_text.c_str(),
+			text_color);
+	}
+
+	if (!surface)
+	{
+		std::cout << "Create raw text texture failed, error: "
+			<< TTF_GetError() << std::endl;
+		return {};
+	}
+
+	SDL_Texture* texture = SDL_CreateTextureFromSurface(_renderer, surface);
+	SDL_FreeSurface(surface);
+	if (!texture)
+	{
+		std::cout << "Create raw text texture failed: SDL_CreateTextureFromSurface failed, error: "
+			<< SDL_GetError() << std::endl;
 		return {};
 	}
 

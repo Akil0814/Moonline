@@ -22,6 +22,7 @@ bool TextTextureCacheKey::operator==(const TextTextureCacheKey& other) const
 {
 	return language == other.language
 		&& translation_key == other.translation_key
+		&& is_raw_text == other.is_raw_text
 		&& point_size == other.point_size
 		&& wrap_width == other.wrap_width
 		&& color == other.color;
@@ -31,6 +32,7 @@ size_t TextTextureCacheKeyHash::operator()(const TextTextureCacheKey& key) const
 {
 	size_t seed = std::hash<std::string>{}(key.language);
 	hash_combine(seed, std::hash<std::string>{}(key.translation_key));
+	hash_combine(seed, std::hash<bool>{}(key.is_raw_text));
 	hash_combine(seed, std::hash<int>{}(key.point_size));
 	hash_combine(seed, std::hash<int>{}(key.wrap_width));
 	hash_combine(seed, std::hash<unsigned int>{}(key.color.r));
@@ -50,6 +52,38 @@ SDL_Texture* TextTextureCache::get_or_create(
 	TextTextureCacheKey key;
 	key.language = language;
 	key.translation_key = std::string(translation_key);
+	key.is_raw_text = false;
+	key.point_size = style.point_size;
+	key.color = style.color;
+	key.wrap_width = style.wrap_width;
+
+	const auto found = _textures.find(key);
+	if (found != _textures.end())
+		return found->second.get();
+
+	if (!texture_factory)
+		return nullptr;
+
+	CachedTexturePtr created_texture = texture_factory();
+	if (!created_texture)
+		return nullptr;
+
+	SDL_Texture* raw_texture = created_texture.get();
+	_textures.emplace(std::move(key), std::move(created_texture));
+	return raw_texture;
+}
+
+SDL_Texture* TextTextureCache::get_or_create_raw(
+	const std::string& language,
+	std::string_view raw_text,
+	const LocalizedTextStyle& style,
+	const TextureFactory& texture_factory
+)
+{
+	TextTextureCacheKey key;
+	key.language = language;
+	key.translation_key = std::string(raw_text);
+	key.is_raw_text = true;
 	key.point_size = style.point_size;
 	key.color = style.color;
 	key.wrap_width = style.wrap_width;

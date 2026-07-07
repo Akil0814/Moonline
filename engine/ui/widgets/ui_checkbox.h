@@ -134,8 +134,12 @@ private:
     [[nodiscard]] bool is_primary_pointer_event(const UiInputEvent& event) const noexcept;
     void clear_pushed_state() noexcept;
     void play_sound_if_set(const std::string& sound_key) const;
+
+protected:
     [[nodiscard]] elysia::core::Rect content_rect() const noexcept;
-    [[nodiscard]] elysia::core::Rect checkbox_rect() const noexcept;
+    [[nodiscard]] virtual elysia::core::Rect checkbox_rect() const noexcept;
+
+private:
     [[nodiscard]] const UiCheckboxVisualStateTextures* current_state_textures() const noexcept;
     [[nodiscard]] SDL_Texture* current_state_texture() const noexcept;
     [[nodiscard]] bool uses_texture_rendering() const noexcept;

@@ -85,6 +85,8 @@ std::vector<RawInputEvent> KeyboardMouseInputTranslator::translate_event(const S
         input_event.type = RawInputEventType::TextEditing;
         input_event.device = InputDevice::Keyboard;
         input_event.text = event.edit.text;
+        input_event.composition_start = event.edit.start;
+        input_event.composition_length = event.edit.length;
         events.push_back(input_event);
         break;
     }
