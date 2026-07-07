@@ -30,6 +30,14 @@ struct UiStyleDefaults
         };
     }
 
+    [[nodiscard]] static UiEnabledDisabledColors secondary_text() noexcept
+    {
+        return UiEnabledDisabledColors{
+            UiPalette::text_secondary,
+            UiPalette::text_disabled
+        };
+    }
+
     [[nodiscard]] static UiInteractiveColors interactive_surface() noexcept
     {
         return UiInteractiveColors{
@@ -148,7 +156,7 @@ struct UiStyleDefaults
     {
         UiTextInputStyle style;
         style.chrome = interactive_chrome();
-        style.text = text();
+        style.text = secondary_text();
         style.placeholder = muted_text();
         style.caret = UiPalette::caret;
         return style;
