@@ -107,16 +107,6 @@ struct UiStyleDefaults
         return style;
     }
 
-    [[nodiscard]] static UiPopupStyle popup() noexcept
-    {
-        UiPopupStyle style;
-        style.draw_background = true;
-        style.draw_border = true;
-        style.background = UiPalette::surface_elevated;
-        style.border = UiPalette::border_default;
-        return style;
-    }
-
     [[nodiscard]] static UiWindowStyle window() noexcept
     {
         UiWindowStyle style;

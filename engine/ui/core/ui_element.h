@@ -68,6 +68,7 @@ public:
     [[nodiscard]] elysia::core::Vector2 center() const noexcept { return _screen_rect.center(); }
     [[nodiscard]] elysia::core::Vector2 size() const noexcept { return _screen_rect.size(); }
 
+    void set_order(int order) noexcept { _order = order; }
     [[nodiscard]] int order() const noexcept { return _order; }
 
     void set_use_theme(bool use_theme) noexcept { _use_theme = use_theme; }

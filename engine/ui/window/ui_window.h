@@ -4,6 +4,7 @@
 #include "../focus/ui_focus_scope.h"
 #include "../core/ui_control.h"
 #include "../style/ui_visual_styles.h"
+#include "ui_overlay.h"
 #include "../../input/input_types.h"
 
 #include <functional>
@@ -11,7 +12,6 @@
 
 namespace elysia::ui
 {
-class UiPopup;
 using UiWindowCancelCallback = std::function<void()>;
 
 class UiWindow : public UiChildHost
@@ -39,14 +39,18 @@ public:
     [[nodiscard]] bool hover_focus_enabled() const noexcept;
     void set_on_cancel(UiWindowCancelCallback on_cancel);
 
-    UiElement* add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options = {}) override;
-
     void register_focus_scope(UiFocusScope& scope,const UiFocusScopeNeighbors& neighbors = {});
     void unregister_focus_scope(UiFocusScope& scope);
     void set_scope_neighbors(UiFocusScope& scope,const UiFocusScopeNeighbors& neighbors);
     void set_focused_scope(UiFocusScope* scope);
     [[nodiscard]] UiFocusScope* focused_scope() const noexcept;
     bool focus_first_available_scope();
+
+    void register_overlay(UiElement& element,UiOverlayOptions options = {});
+    void unregister_overlay(UiElement& element);
+    void set_overlay_open(UiElement& element,bool open);
+    [[nodiscard]] bool is_overlay_open(const UiElement& element) const noexcept;
+    [[nodiscard]] UiOverlayOptions* overlay_options(UiElement& element) noexcept;
 
     void update(double delta) override;
     void on_ui_input_frame(const UiInputFrame& input) override;
@@ -63,14 +67,29 @@ private:
         UiFocusScopeNeighbors neighbors;
     };
 
+    struct OverlayEntry
+    {
+        UiElement* element = nullptr;
+        UiOverlayOptions options;
+    };
+
 private:
     void prune_focus_scopes();
+    void prune_overlays();
     void ensure_valid_scope_focus();
     void apply_scope_focus();
     void update_focus_input_device(elysia::input::InputDevice device) noexcept;
     bool restore_preferred_scope_focus();
-    [[nodiscard]] UiPopup* active_modal_popup() noexcept;
-    [[nodiscard]] const UiPopup* active_modal_popup() const noexcept;
+    [[nodiscard]] OverlayEntry* active_modal_overlay() noexcept;
+    [[nodiscard]] const OverlayEntry* active_modal_overlay() const noexcept;
+    [[nodiscard]] OverlayEntry* find_overlay(UiElement& element) noexcept;
+    [[nodiscard]] const OverlayEntry* find_overlay(const UiElement& element) const noexcept;
+    void sync_overlay_visibility(OverlayEntry& entry) noexcept;
+    void apply_overlay_placements() noexcept;
+    void apply_overlay_placement(OverlayEntry& entry) noexcept;
+    [[nodiscard]] bool should_close_overlay_from_event(const OverlayEntry& entry,const UiInputEvent& event) const noexcept;
+    [[nodiscard]] bool contains_overlay_point(const OverlayEntry& entry,int mouse_x,int mouse_y) const noexcept;
+    [[nodiscard]] bool is_live_child_element(const UiElement& element) const noexcept;
     [[nodiscard]] UiFocusScope* find_registered_scope_at(int mouse_x,int mouse_y) const;
     [[nodiscard]] UiFocusScope* find_neighbor(const UiFocusScope& scope,UiAction action) const;
     [[nodiscard]] bool is_registered_scope(const UiFocusScope& scope) const noexcept;
@@ -81,6 +100,7 @@ private:
 
 private:
     std::vector<ScopeEntry> _scope_entries;
+    std::vector<OverlayEntry> _overlay_entries;
     UiFocusScope* _focused_scope = nullptr;
     UiFocusScope* _last_focused_scope = nullptr;
     UiWindowStyle _style{};
