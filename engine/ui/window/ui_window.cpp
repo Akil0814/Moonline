@@ -1,5 +1,6 @@
 #include "ui_window.h"
 
+#include "../containers/ui_popup.h"
 #include "../style/ui_style_defaults.h"
 #include "../focus/ui_focus_scope_utils.h"
 #include "../layout/ui_anchor_layout.h"
@@ -99,6 +100,18 @@ void UiWindow::set_on_cancel(UiWindowCancelCallback on_cancel)
     _on_cancel = std::move(on_cancel);
 }
 
+UiElement* UiWindow::add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options)
+{
+    UiPopup* popup = dynamic_cast<UiPopup*>(child.get());
+    if (popup && popup->uses_default_centering())
+        options._anchor = UiLayoutAnchor::Center;
+
+    UiElement* added = UiChildHost::add_child(std::move(child),options);
+    if (added && popup)
+        register_focus_scope(*popup);
+    return added;
+}
+
 void UiWindow::register_focus_scope(UiFocusScope& scope,const UiFocusScopeNeighbors& neighbors)
 {
     auto found = std::find_if(_scope_entries.begin(),_scope_entries.end(),[&scope](const ScopeEntry& entry)
@@ -193,6 +206,20 @@ void UiWindow::on_ui_input_frame(const UiInputFrame& input)
     prune_focus_scopes();
     ensure_valid_scope_focus();
     apply_scope_focus();
+
+    if (UiPopup* popup = active_modal_popup())
+    {
+        if (popup->has_focusable_target())
+            (void)set_focused_scope_internal(popup);
+        apply_scope_focus();
+        popup->on_ui_input_frame(input);
+        cleanup_destroyed_children();
+        prune_focus_scopes();
+        ensure_valid_scope_focus();
+        apply_scope_focus();
+        return;
+    }
+
     dispatch_frame_to_children(input);
     cleanup_destroyed_children();
     prune_focus_scopes();
@@ -208,6 +235,21 @@ bool UiWindow::on_ui_input_event(const UiInputEvent& event)
     prune_focus_scopes();
     ensure_valid_scope_focus();
     apply_scope_focus();
+
+    if (UiPopup* popup = active_modal_popup())
+    {
+        if (popup->has_focusable_target())
+            (void)set_focused_scope_internal(popup);
+        apply_scope_focus();
+
+        const bool blocks_background_input = popup->is_modal();
+        const bool handled = popup->on_ui_input_event(event);
+        cleanup_destroyed_children();
+        prune_focus_scopes();
+        ensure_valid_scope_focus();
+        apply_scope_focus();
+        return handled || blocks_background_input;
+    }
 
     bool handled = false;
 
@@ -431,6 +473,36 @@ bool UiWindow::restore_preferred_scope_focus()
     if (_last_focused_scope && is_registered_scope(*_last_focused_scope) && is_scope_usable(_last_focused_scope))
         return set_focused_scope_internal(_last_focused_scope);
     return false;
+}
+
+UiPopup* UiWindow::active_modal_popup() noexcept
+{
+    UiPopup* top_popup = nullptr;
+    for (std::size_t index = child_count(); index > 0; --index)
+    {
+        UiPopup* popup = dynamic_cast<UiPopup*>(child_at(index - 1));
+        if (!popup || !popup->is_open() || !popup->is_modal())
+            continue;
+
+        if (!top_popup || popup->order() > top_popup->order())
+            top_popup = popup;
+    }
+    return top_popup;
+}
+
+const UiPopup* UiWindow::active_modal_popup() const noexcept
+{
+    const UiPopup* top_popup = nullptr;
+    for (std::size_t index = child_count(); index > 0; --index)
+    {
+        const UiPopup* popup = dynamic_cast<const UiPopup*>(child_at(index - 1));
+        if (!popup || !popup->is_open() || !popup->is_modal())
+            continue;
+
+        if (!top_popup || popup->order() > top_popup->order())
+            top_popup = popup;
+    }
+    return top_popup;
 }
 
 bool UiWindow::uses_pointer_focus_policy(elysia::input::InputDevice device) noexcept

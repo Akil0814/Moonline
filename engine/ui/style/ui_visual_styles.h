@@ -34,6 +34,14 @@ struct UiPanelStyle
     elysia::core::Color border{};
 };
 
+struct UiPopupStyle
+{
+    bool draw_background = true;
+    bool draw_border = true;
+    elysia::core::Color background{};
+    elysia::core::Color border{};
+};
+
 struct UiWindowStyle
 {
     bool draw_background = false;

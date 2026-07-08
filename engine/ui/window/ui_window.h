@@ -11,6 +11,7 @@
 
 namespace elysia::ui
 {
+class UiPopup;
 using UiWindowCancelCallback = std::function<void()>;
 
 class UiWindow : public UiChildHost
@@ -37,6 +38,8 @@ public:
     void set_hover_focus_enabled(bool enabled) noexcept;
     [[nodiscard]] bool hover_focus_enabled() const noexcept;
     void set_on_cancel(UiWindowCancelCallback on_cancel);
+
+    UiElement* add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options = {}) override;
 
     void register_focus_scope(UiFocusScope& scope,const UiFocusScopeNeighbors& neighbors = {});
     void unregister_focus_scope(UiFocusScope& scope);
@@ -66,6 +69,8 @@ private:
     void apply_scope_focus();
     void update_focus_input_device(elysia::input::InputDevice device) noexcept;
     bool restore_preferred_scope_focus();
+    [[nodiscard]] UiPopup* active_modal_popup() noexcept;
+    [[nodiscard]] const UiPopup* active_modal_popup() const noexcept;
     [[nodiscard]] UiFocusScope* find_registered_scope_at(int mouse_x,int mouse_y) const;
     [[nodiscard]] UiFocusScope* find_neighbor(const UiFocusScope& scope,UiAction action) const;
     [[nodiscard]] bool is_registered_scope(const UiFocusScope& scope) const noexcept;

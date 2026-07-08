@@ -190,13 +190,24 @@ const std::vector<UiChildHost::ChildEntry>& UiChildHost::children() const noexce
 void UiChildHost::submit_child_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const
 {
     const elysia::core::Rect clip_rect = clips_children() ? content_rect() : elysia::core::Rect::zero();
+    std::vector<const ChildEntry*> render_children;
+    render_children.reserve(_children.size());
     for (const ChildEntry& entry : _children)
     {
         if (!entry.element || entry.element->is_destroyed() || !entry.element->is_visible())
             continue;
+        render_children.push_back(&entry);
+    }
 
+    std::stable_sort(render_children.begin(),render_children.end(),[](const ChildEntry* left,const ChildEntry* right)
+    {
+        return left->element->order() < right->element->order();
+    });
+
+    for (const ChildEntry* entry : render_children)
+    {
         const std::size_t begin = out_commands.size();
-        entry.element->submit_ui_render_commands(out_commands);
+        entry->element->submit_ui_render_commands(out_commands);
         finalize_child_command_range(out_commands,begin,clip_rect);
     }
 }
@@ -248,12 +259,24 @@ void UiChildHost::dispatch_frame_to_children(const UiInputFrame& input)
 
 bool UiChildHost::dispatch_input_to_children(const UiInputEvent& event)
 {
+    std::vector<ChildEntry*> input_children;
+    input_children.reserve(_children.size());
     for (std::size_t index = _children.size(); index > 0; --index)
     {
         ChildEntry& entry = _children[index - 1];
         if (!entry.element || entry.element->is_destroyed() || !entry.element->is_active())
             continue;
-        if (UiInputEventReceiver* receiver = dynamic_cast<UiInputEventReceiver*>(entry.element.get()))
+        input_children.push_back(&entry);
+    }
+
+    std::stable_sort(input_children.begin(),input_children.end(),[](const ChildEntry* left,const ChildEntry* right)
+    {
+        return left->element->order() > right->element->order();
+    });
+
+    for (ChildEntry* entry : input_children)
+    {
+        if (UiInputEventReceiver* receiver = dynamic_cast<UiInputEventReceiver*>(entry->element.get()))
         {
             if (receiver->on_ui_input_event(event))
                 return true;
