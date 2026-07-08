@@ -1,4 +1,0 @@
-namespace elysia::ui
-{
-
-}
