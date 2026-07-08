@@ -4,6 +4,12 @@
     "start": "Start",
     "settings": "Settings",
     "exit": "Exit",
+    "exit_confirm": {
+      "title": "Confirm Exit",
+      "message": "Exit MoonLine?",
+      "cancel": "Cancel",
+      "close": "X"
+    },
     "about": "About"
   }
 }

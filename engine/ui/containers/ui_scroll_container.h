@@ -101,6 +101,7 @@ public:
     [[nodiscard]] bool has_focusable_target() const noexcept override;
     bool focus_first_available() override;
     [[nodiscard]] UiControl* focused_target() const noexcept override;
+    [[nodiscard]] bool can_navigate(UiAction action) const noexcept override;
     [[nodiscard]] bool contains_focus_point(int mouse_x,int mouse_y) const noexcept override;
 
 protected:

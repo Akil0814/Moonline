@@ -107,6 +107,18 @@ struct UiStyleDefaults
         return style;
     }
 
+    [[nodiscard]] static UiChromeContainerStyle chrome_container() noexcept
+    {
+        UiChromeContainerStyle style;
+        style.draw_background = true;
+        style.draw_border = true;
+        style.draw_header_background = true;
+        style.background = UiPalette::surface_elevated;
+        style.border = UiPalette::border_default;
+        style.header_background = UiPalette::surface_base;
+        return style;
+    }
+
     [[nodiscard]] static UiWindowStyle window() noexcept
     {
         UiWindowStyle style;

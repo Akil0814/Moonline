@@ -3,6 +3,12 @@
     "start": "開始",
     "settings": "設定",
     "exit": "終了",
+    "exit_confirm": {
+      "title": "終了確認",
+      "message": "MoonLine を終了しますか？",
+      "cancel": "キャンセル",
+      "close": "X"
+    },
     "about": "情報"
   }
 }

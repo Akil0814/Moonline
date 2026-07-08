@@ -80,11 +80,18 @@ private:
     void apply_scope_focus();
     void update_focus_input_device(elysia::input::InputDevice device) noexcept;
     bool restore_preferred_scope_focus();
+    [[nodiscard]] OverlayEntry* active_overlay() noexcept;
+    [[nodiscard]] const OverlayEntry* active_overlay() const noexcept;
     [[nodiscard]] OverlayEntry* active_modal_overlay() noexcept;
     [[nodiscard]] const OverlayEntry* active_modal_overlay() const noexcept;
     [[nodiscard]] OverlayEntry* find_overlay(UiElement& element) noexcept;
     [[nodiscard]] const OverlayEntry* find_overlay(const UiElement& element) const noexcept;
+    [[nodiscard]] UiFocusScope* overlay_focus_scope(OverlayEntry& entry) noexcept;
+    [[nodiscard]] const UiFocusScope* overlay_focus_scope(const OverlayEntry& entry) const noexcept;
+    [[nodiscard]] bool focus_overlay(OverlayEntry& entry);
+    [[nodiscard]] bool dispatch_to_overlay(OverlayEntry& entry,const UiInputEvent& event);
     void sync_overlay_visibility(OverlayEntry& entry) noexcept;
+    void sync_overlay_visibility_all() noexcept;
     void apply_overlay_placements() noexcept;
     void apply_overlay_placement(OverlayEntry& entry) noexcept;
     [[nodiscard]] bool should_close_overlay_from_event(const OverlayEntry& entry,const UiInputEvent& event) const noexcept;

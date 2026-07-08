@@ -77,6 +77,24 @@ bool UiControlFocusScopeHost::has_focusable_target() const noexcept
     });
 }
 
+bool UiControlFocusScopeHost::can_navigate(UiAction action) const noexcept
+{
+    if (!is_navigation_action(action))
+        return false;
+
+    auto* self = const_cast<UiControlFocusScopeHost*>(this);
+    self->cleanup_destroyed_children();
+    self->update_layout_if_dirty();
+    self->refresh_focus_registry();
+    self->ensure_valid_focus();
+    self->apply_focus_state();
+
+    if (!is_control_usable(_focused_target))
+        return false;
+
+    return find_neighbor(*_focused_target,action) != nullptr;
+}
+
 UiElement& UiControlFocusScopeHost::focus_scope_element() noexcept
 {
     return *this;

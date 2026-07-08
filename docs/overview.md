@@ -4,7 +4,14 @@
 
 Moonline is a C++ 2D game project
 
-Around 25k LOC
+As of 2026-07-08, the tracked C/C++ code in `application/`, `engine/`, and `gameplay/`
+is already about 25.6k LOC, excluding `thirdparty/`.
+
+That means the older "around 25k LOC" estimate is no longer realistic as a final project-size
+target. With the engine still unfinished and gameplay systems still relatively early, a more
+reasonable final expectation is that the codebase will likely grow beyond 30k LOC and may land
+closer to the mid-30k range depending on how much UI, save/load, combat, and data-pipeline work
+is added.
 
 The current source layout shows a clear separation between:
 

@@ -16,6 +16,9 @@ namespace arcneco::character
 	public:
 		bool init();
 
+		const std::vector<CharacterPrototype> get_character_prototype();
+
+
 
 	private:
 		std::vector<CharacterPrototype> _prototypes;

@@ -31,6 +31,7 @@ public:
     [[nodiscard]] UiControl* focused_target() const noexcept override;
     bool focus_first_available() override;
     [[nodiscard]] bool has_focusable_target() const noexcept override;
+    [[nodiscard]] bool can_navigate(UiAction action) const noexcept override;
 
     [[nodiscard]] UiElement& focus_scope_element() noexcept override;
     [[nodiscard]] const UiElement& focus_scope_element() const noexcept override;

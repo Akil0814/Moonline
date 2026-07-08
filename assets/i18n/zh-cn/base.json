@@ -3,6 +3,12 @@
     "start": "开始",
     "settings": "设置",
     "exit": "退出",
+    "exit_confirm": {
+      "title": "确认退出",
+      "message": "要退出 MoonLine 吗？",
+      "cancel": "取消",
+      "close": "X"
+    },
     "about": "关于"
   }
 }

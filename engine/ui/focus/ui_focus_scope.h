@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../input/ui_input_types.h"
+
 #include <optional>
 
 namespace elysia::ui
@@ -36,6 +38,7 @@ public:
     [[nodiscard]] virtual bool has_focusable_target() const noexcept = 0;
     virtual bool focus_first_available() = 0;
     [[nodiscard]] virtual UiControl* focused_target() const noexcept = 0;
+    [[nodiscard]] virtual bool can_navigate(UiAction action) const noexcept = 0;
     [[nodiscard]] virtual bool contains_focus_point(int mouse_x,int mouse_y) const noexcept = 0;
 };
 }

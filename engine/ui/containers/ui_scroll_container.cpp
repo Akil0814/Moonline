@@ -1,5 +1,6 @@
 #include "ui_scroll_container.h"
 
+#include "../focus/ui_focus_scope_utils.h"
 #include "../style/ui_style_defaults.h"
 #include "../core/ui_control.h"
 #include "../../core/render/render_command.h"
@@ -445,6 +446,21 @@ UiControl* UiScrollContainer::focused_target() const noexcept
     if (const UiFocusScope* scope = content_scope())
         return scope->focused_target();
     return nullptr;
+}
+
+bool UiScrollContainer::can_navigate(UiAction action) const noexcept
+{
+    if (!is_navigation_action(action))
+        return false;
+
+    if (const UiFocusScope* scope = content_scope())
+    {
+        if (!scope->focused_target())
+            return false;
+        return scope->can_navigate(action);
+    }
+
+    return false;
 }
 
 bool UiScrollContainer::contains_focus_point(int mouse_x,int mouse_y) const noexcept

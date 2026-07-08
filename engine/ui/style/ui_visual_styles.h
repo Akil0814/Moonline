@@ -34,6 +34,16 @@ struct UiPanelStyle
     elysia::core::Color border{};
 };
 
+struct UiChromeContainerStyle
+{
+    bool draw_background = true;
+    bool draw_border = true;
+    bool draw_header_background = true;
+    elysia::core::Color background{};
+    elysia::core::Color border{};
+    elysia::core::Color header_background{};
+};
+
 struct UiWindowStyle
 {
     bool draw_background = false;
