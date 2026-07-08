@@ -717,7 +717,11 @@ bool UiWindow::focus_overlay(OverlayEntry& entry)
         return false;
 
     if (_focused_scope == scope && is_scope_usable(scope))
+    {
+        if (!scope->focused_target())
+            return scope->focus_first_available();
         return true;
+    }
 
     register_focus_scope(*scope);
     if (!scope->has_focusable_target())

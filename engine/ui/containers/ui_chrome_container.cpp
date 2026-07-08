@@ -285,6 +285,9 @@ elysia::core::Vector2 UiChromeContainer::content_extent() const noexcept
 
 void UiChromeContainer::set_scope_focused(bool focused) noexcept
 {
+    if (!focused)
+        _body_scope_active = false;
+
     _scope_focused = focused;
     sync_body_scope_focus();
 }
