@@ -71,6 +71,7 @@ private:
     {
         UiElement* element = nullptr;
         UiOverlayOptions options;
+        UiFocusScope* restore_focus_scope = nullptr;
     };
 
 private:
@@ -88,6 +89,8 @@ private:
     [[nodiscard]] const OverlayEntry* find_overlay(const UiElement& element) const noexcept;
     [[nodiscard]] UiFocusScope* overlay_focus_scope(OverlayEntry& entry) noexcept;
     [[nodiscard]] const UiFocusScope* overlay_focus_scope(const OverlayEntry& entry) const noexcept;
+    void remember_overlay_restore_focus(OverlayEntry& entry) noexcept;
+    [[nodiscard]] bool restore_focus_after_overlay_close(OverlayEntry& entry);
     [[nodiscard]] bool focus_overlay(OverlayEntry& entry);
     [[nodiscard]] bool dispatch_to_overlay(OverlayEntry& entry,const UiInputEvent& event);
     void sync_overlay_visibility(OverlayEntry& entry) noexcept;

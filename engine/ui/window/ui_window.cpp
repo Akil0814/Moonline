@@ -206,12 +206,17 @@ void UiWindow::register_overlay(UiElement& element,UiOverlayOptions options)
 {
     if (OverlayEntry* entry = find_overlay(element))
     {
+        const bool was_open = entry->options.open;
         entry->options = options;
+        if (!options.open)
+            entry->restore_focus_scope = nullptr;
         element.set_order(options.order);
         sync_overlay_visibility(*entry);
         mark_layout_dirty();
         if (options.open)
         {
+            if (!was_open)
+                remember_overlay_restore_focus(*entry);
             update_layout_if_dirty();
             (void)focus_overlay(*entry);
         }
@@ -219,13 +224,15 @@ void UiWindow::register_overlay(UiElement& element,UiOverlayOptions options)
     else
     {
         _overlay_entries.push_back(OverlayEntry{ &element,options });
+        OverlayEntry& added = _overlay_entries.back();
         element.set_order(options.order);
-        sync_overlay_visibility(_overlay_entries.back());
+        sync_overlay_visibility(added);
         mark_layout_dirty();
         if (options.open)
         {
+            remember_overlay_restore_focus(added);
             update_layout_if_dirty();
-            (void)focus_overlay(_overlay_entries.back());
+            (void)focus_overlay(added);
         }
     }
 
@@ -248,6 +255,10 @@ void UiWindow::set_overlay_open(UiElement& element,bool open)
     if (!entry)
         return;
 
+    const bool was_open = entry->options.open;
+    if (open && !was_open)
+        remember_overlay_restore_focus(*entry);
+
     entry->options.open = open;
     sync_overlay_visibility(*entry);
     mark_layout_dirty();
@@ -257,9 +268,10 @@ void UiWindow::set_overlay_open(UiElement& element,bool open)
     {
         (void)focus_overlay(*entry);
     }
-    else if (OverlayEntry* active_overlay = active_modal_overlay())
+    else if (!restore_focus_after_overlay_close(*entry))
     {
-        (void)focus_overlay(*active_overlay);
+        if (OverlayEntry* active = active_overlay())
+            (void)focus_overlay(*active);
     }
 
     prune_focus_scopes();
@@ -714,6 +726,22 @@ UiFocusScope* UiWindow::overlay_focus_scope(OverlayEntry& entry) noexcept
 const UiFocusScope* UiWindow::overlay_focus_scope(const OverlayEntry& entry) const noexcept
 {
     return entry.element ? dynamic_cast<const UiFocusScope*>(entry.element) : nullptr;
+}
+
+void UiWindow::remember_overlay_restore_focus(OverlayEntry& entry) noexcept
+{
+    UiFocusScope* overlay_scope = overlay_focus_scope(entry);
+    if (_focused_scope && _focused_scope != overlay_scope && is_registered_scope(*_focused_scope) && is_scope_usable(_focused_scope))
+        entry.restore_focus_scope = _focused_scope;
+}
+
+bool UiWindow::restore_focus_after_overlay_close(OverlayEntry& entry)
+{
+    UiFocusScope* restore_scope = entry.restore_focus_scope;
+    entry.restore_focus_scope = nullptr;
+    if (restore_scope && is_registered_scope(*restore_scope) && is_scope_usable(restore_scope))
+        return set_focused_scope_internal(restore_scope);
+    return false;
 }
 
 bool UiWindow::focus_overlay(OverlayEntry& entry)

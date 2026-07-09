@@ -91,8 +91,7 @@ void MainMenuScene::rebuild_menu_buttons()
             exit_confirmation->set_body_padding(elysia::ui::UiLayoutPadding{ 20.0f,20.0f,20.0f,20.0f });
 
             auto title = std::make_unique<elysia::ui::UiLabel>(
-                elysia::core::Rect{ 0,0,280,36 },
-                0,
+                elysia::core::Rect{ 0,0,280,36 },0,
                 "menu_scene.exit_confirm.title");
             title->set_vertical_align(elysia::ui::TextVerticalAlign::Center);
             exit_confirmation->title_slot().add_child(std::move(title));
