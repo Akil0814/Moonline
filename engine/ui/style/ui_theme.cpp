@@ -219,19 +219,19 @@ template<class Enum>
         elysia::core::colors::elysia_plum,
         elysia::core::colors::gray_500);
     const UiEnabledDisabledColors placeholder_text = make_text_colors(
-        elysia::core::colors::gray_500,
+        elysia::core::colors::elysia_iris_mauve,
         elysia::core::colors::gray_300);
     const UiEnabledDisabledColors secondary_text = make_text_colors(
-        elysia::core::colors::elysia_mist_blue,
+        elysia::core::colors::elysia_iris_mauve,
         elysia::core::colors::gray_500);
     const UiEnabledDisabledColors border = UiEnabledDisabledColors{
-        elysia::core::colors::elysia_rose_pink,
+        elysia::core::colors::elysia_hair_rose,
         elysia::core::colors::gray_300
     };
     const UiInteractiveColors interactive_surface = make_surface_colors(
+        elysia::core::colors::elysia_chiffon_pink,
         elysia::core::colors::elysia_petal_pink,
-        elysia::core::colors::elysia_rose_pink,
-        elysia::core::colors::elysia_lilac,
+        elysia::core::colors::elysia_crystal_lilac,
         elysia::core::colors::gray_300);
     const UiChromeThemeColors interactive_chrome = make_chrome(interactive_surface,border);
 
@@ -240,11 +240,11 @@ template<class Enum>
         elysia::core::colors::transparent
     };
     theme.label_styles[to_index(UiLabelThemeRole::Title)] = UiLabelThemeColors{
-        elysia::core::colors::elysia_rose_pink,
+        elysia::core::colors::elysia_hair_rose,
         elysia::core::colors::transparent
     };
     theme.label_styles[to_index(UiLabelThemeRole::Subtitle)] = UiLabelThemeColors{
-        elysia::core::colors::elysia_mist_blue,
+        elysia::core::colors::elysia_iris_mauve,
         elysia::core::colors::transparent
     };
     theme.label_styles[to_index(UiLabelThemeRole::Muted)] = UiLabelThemeColors{
@@ -258,42 +258,42 @@ template<class Enum>
     };
 
     theme.bar_styles[to_index(UiBarThemeRole::Default)] = UiBarThemeColors{
-        elysia::core::colors::elysia_silk_white,
-        elysia::core::colors::elysia_rose_pink,
+        elysia::core::colors::elysia_pearl_white,
+        elysia::core::colors::elysia_hair_rose,
         elysia::core::colors::elysia_plum
     };
     theme.bar_styles[to_index(UiBarThemeRole::Progress)] = UiBarThemeColors{
-        elysia::core::colors::elysia_silk_white,
-        elysia::core::colors::elysia_lilac,
-        elysia::core::colors::elysia_glow_pink
+        elysia::core::colors::elysia_pearl_white,
+        elysia::core::colors::elysia_crystal_lilac,
+        elysia::core::colors::elysia_hair_rose
     };
 
     theme.panel_styles[to_index(UiPanelThemeRole::Default)] = UiPanelThemeColors{
-        elysia::core::colors::elysia_silk_white,
-        elysia::core::colors::elysia_rose_pink
+        elysia::core::colors::elysia_pearl_white,
+        elysia::core::colors::elysia_hair_rose
     };
     theme.panel_styles[to_index(UiPanelThemeRole::Screen)] = UiPanelThemeColors{
-        elysia::core::colors::elysia_blush_white,
-        elysia::core::colors::elysia_petal_pink
+        elysia::core::colors::elysia_chiffon_pink,
+        elysia::core::colors::elysia_opal_lilac
     };
     theme.panel_styles[to_index(UiPanelThemeRole::Dialog)] = UiPanelThemeColors{
         elysia::core::colors::elysia_silk_white,
-        elysia::core::colors::elysia_lilac
+        elysia::core::colors::elysia_crystal_lilac
     };
     theme.panel_styles[to_index(UiPanelThemeRole::List)] = UiPanelThemeColors{
-        elysia::core::colors::elysia_blush_white,
-        elysia::core::colors::elysia_petal_pink
+        elysia::core::colors::elysia_chiffon_pink,
+        elysia::core::colors::elysia_opal_lilac
     };
 
     theme.window_style = UiWindowThemeColors{
-        elysia::core::colors::elysia_blush_white,
-        elysia::core::colors::elysia_lilac
+        elysia::core::colors::elysia_pearl_white,
+        elysia::core::colors::elysia_crystal_lilac
     };
 
     theme.chrome_container_style = UiChromeContainerThemeColors{
-        elysia::core::colors::elysia_silk_white,
-        elysia::core::colors::elysia_lilac,
-        elysia::core::colors::elysia_petal_pink
+        elysia::core::colors::elysia_pearl_white,
+        elysia::core::colors::elysia_crystal_lilac,
+        elysia::core::colors::elysia_opal_lilac
     };
 
     theme.button_styles[to_index(UiButtonThemeRole::Default)] = UiButtonThemeColors{
@@ -303,8 +303,8 @@ template<class Enum>
     theme.button_styles[to_index(UiButtonThemeRole::Primary)] = UiButtonThemeColors{
         make_chrome(
             make_surface_colors(
+                elysia::core::colors::elysia_hair_rose,
                 elysia::core::colors::elysia_rose_pink,
-                elysia::core::colors::elysia_glow_pink,
                 elysia::core::colors::elysia_lilac,
                 elysia::core::colors::gray_300),
             UiEnabledDisabledColors{ elysia::core::colors::elysia_plum,elysia::core::colors::gray_300 }),
@@ -323,12 +323,12 @@ template<class Enum>
 
     theme.checkbox_style = UiCheckboxThemeColors{
         interactive_chrome,
-        UiEnabledDisabledColors{ elysia::core::colors::elysia_rose_pink,elysia::core::colors::gray_500 }
+        UiEnabledDisabledColors{ elysia::core::colors::elysia_hair_rose,elysia::core::colors::gray_500 }
     };
 
     theme.radio_button_style = UiRadioButtonThemeColors{
         interactive_chrome,
-        UiEnabledDisabledColors{ elysia::core::colors::elysia_rose_pink,elysia::core::colors::gray_500 },
+        UiEnabledDisabledColors{ elysia::core::colors::elysia_hair_rose,elysia::core::colors::gray_500 },
         text
     };
 
@@ -338,7 +338,7 @@ template<class Enum>
 
     theme.slider_style = UiSliderThemeColors{
         make_chrome(interactive_surface,border),
-        UiEnabledDisabledColors{ elysia::core::colors::elysia_rose_pink,elysia::core::colors::gray_500 },
+        UiEnabledDisabledColors{ elysia::core::colors::elysia_hair_rose,elysia::core::colors::gray_500 },
         text,
         theme.drag_handle_style
     };
@@ -347,21 +347,21 @@ template<class Enum>
         interactive_chrome,
         secondary_text,
         placeholder_text,
-        elysia::core::colors::elysia_lilac
+        elysia::core::colors::elysia_crystal_lilac
     };
 
     theme.scroll_container_style = UiScrollContainerThemeColors{
         make_scrollbar_colors(
-            elysia::core::colors::elysia_blush_white,
-            elysia::core::colors::elysia_petal_pink,
-            elysia::core::colors::elysia_petal_pink,
+            elysia::core::colors::elysia_pearl_white,
+            elysia::core::colors::elysia_chiffon_pink,
+            elysia::core::colors::elysia_opal_lilac,
             elysia::core::colors::gray_300,
+            elysia::core::colors::elysia_hair_rose,
             elysia::core::colors::elysia_rose_pink,
             elysia::core::colors::elysia_glow_pink,
-            elysia::core::colors::elysia_glow_pink,
             elysia::core::colors::gray_500),
-        elysia::core::colors::elysia_silk_white,
-        elysia::core::colors::elysia_rose_pink
+        elysia::core::colors::elysia_pearl_white,
+        elysia::core::colors::elysia_hair_rose
     };
 
     return theme;

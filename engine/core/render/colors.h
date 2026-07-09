@@ -81,9 +81,15 @@ inline constexpr Color abyss_blue{ 8, 16, 28, 255 };        // #08101C
 // can mix soft bridal pinks with deep ocean blues without hardcoding RGBs.
 inline constexpr Color elysia_blush_white{ 255, 249, 252, 255 }; // #FFF9FC
 inline constexpr Color elysia_silk_white{ 255, 255, 255, 255 };  // #FFFFFF
+inline constexpr Color elysia_pearl_white{ 253, 250, 252, 255 }; // #FDFAFC
+inline constexpr Color elysia_chiffon_pink{ 247, 223, 246, 255 }; // #F7DFF6
+inline constexpr Color elysia_opal_lilac{ 230, 220, 240, 255 };  // #E6DCF0
 inline constexpr Color elysia_petal_pink{ 249, 223, 236, 255 };  // #F9DFEC
 inline constexpr Color elysia_rose_pink{ 236, 176, 211, 255 };   // #ECB0D3
 inline constexpr Color elysia_glow_pink{ 242, 170, 212, 255 };   // #F2AAD4
+inline constexpr Color elysia_hair_rose{ 220, 135, 183, 255 };   // #DC87B7
+inline constexpr Color elysia_crystal_lilac{ 206, 182, 228, 255 }; // #CEB6E4
+inline constexpr Color elysia_iris_mauve{ 170, 153, 220, 255 };  // #AA99DC
 inline constexpr Color elysia_lilac{ 204, 188, 243, 255 };       // #CCBCF3
 inline constexpr Color elysia_plum{ 111, 94, 156, 255 };         // #6F5E9C
 inline constexpr Color elysia_mist_blue{ 152, 173, 215, 255 };   // #98ADD7
