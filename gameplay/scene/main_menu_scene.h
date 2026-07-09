@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "../../application/scene/application_scene.h"
 
@@ -12,6 +12,7 @@
 namespace elysia::ui
 {
 class UiButton;
+class UiChromeContainer;
 }
 
 namespace arcneco::scene
@@ -34,9 +35,11 @@ private:
 
     void rebuild_menu_buttons();
     void clear_menu_buttons();
+    void restore_menu_state();
 
 private:
     elysia::ui::UiWindow* _main_menu_window = nullptr;
+    elysia::ui::UiChromeContainer* _exit_confirmation = nullptr;
 
 };
 }

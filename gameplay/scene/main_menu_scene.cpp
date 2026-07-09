@@ -45,7 +45,11 @@ void MainMenuScene::on_enter(const elysia::scene::ScenePayload& payload)
 
     _paused = false;
     (void)elysia::audio::AudioService::instance()->play_music("scene.main_meun_scene_main");
-    rebuild_menu_buttons();
+
+    if (!_main_menu_window || _main_menu_window->is_destroyed())
+        rebuild_menu_buttons();
+
+    restore_menu_state();
 }
 
 void MainMenuScene::on_update(double delta)
@@ -79,13 +83,18 @@ void MainMenuScene::reset()
 
 void MainMenuScene::rebuild_menu_buttons()
 {
+    if (_main_menu_window && !_main_menu_window->is_destroyed())
+        return;
+
     _main_menu_window = Scene::create_and_add_object<elysia::ui::UiWindow>(elysia::core::Rect{0,0,1280,720});
+    _exit_confirmation = nullptr;
     if (_main_menu_window)
     {
         auto* exit_confirmation = _main_menu_window->create_child<elysia::ui::UiChromeContainer>(
             elysia::core::Rect{ 0,0,420,240 });
         if (exit_confirmation)
         {
+            _exit_confirmation = exit_confirmation;
             exit_confirmation->set_header_height(48.0f);
             exit_confirmation->set_header_padding(elysia::ui::UiLayoutPadding{ 12.0f,6.0f,12.0f,6.0f });
             exit_confirmation->set_body_padding(elysia::ui::UiLayoutPadding{ 20.0f,20.0f,20.0f,20.0f });
@@ -97,9 +106,9 @@ void MainMenuScene::rebuild_menu_buttons()
             exit_confirmation->title_slot().add_child(std::move(title));
 
             auto close_button = make_menu_button(elysia::core::Rect{ 0,0,40,36 },"menu_scene.exit_confirm.close");
-            close_button->set_on_click([window = _main_menu_window,exit_confirmation]
+            close_button->set_on_click([this]
             {
-                close_overlay(window,exit_confirmation);
+                close_overlay(_main_menu_window,_exit_confirmation);
             });
             exit_confirmation->right_actions().add_back(std::move(close_button));
 
@@ -114,9 +123,9 @@ void MainMenuScene::rebuild_menu_buttons()
             body->add_child(std::move(message),elysia::ui::UiPanelInsertDirection::Down);
 
             auto cancel_button = make_menu_button(elysia::core::Rect{ 0,72,184,56 },"menu_scene.exit_confirm.cancel");
-            cancel_button->set_on_click([window = _main_menu_window,exit_confirmation]
+            cancel_button->set_on_click([this]
             {
-                close_overlay(window,exit_confirmation);
+                close_overlay(_main_menu_window,_exit_confirmation);
             });
             body->add_child(std::move(cancel_button),elysia::ui::UiPanelInsertDirection::Down);
 
@@ -153,10 +162,10 @@ void MainMenuScene::rebuild_menu_buttons()
 
         ui_button = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,200,75 });
         ui_button->set_text_key("menu_scene.exit");
-        ui_button->set_on_click([window = _main_menu_window,exit_confirmation]
+        ui_button->set_on_click([this]
         {
-            if (window && exit_confirmation)
-                window->set_overlay_open(*exit_confirmation,true);
+            if (_main_menu_window && _exit_confirmation)
+                _main_menu_window->set_overlay_open(*_exit_confirmation,true);
         });
         ui_list->add_back(std::move(ui_button));
 
@@ -165,16 +174,27 @@ void MainMenuScene::rebuild_menu_buttons()
 
         if (auto* list = dynamic_cast<elysia::ui::UiListContainer*>(added))
             _main_menu_window->register_focus_scope(*list);
-        _main_menu_window->focus_first_available_scope();
-
     }
 }
 
 void MainMenuScene::clear_menu_buttons()
 {
+    if (_main_menu_window && _exit_confirmation && !_main_menu_window->is_destroyed() && !_exit_confirmation->is_destroyed())
+        _main_menu_window->set_overlay_open(*_exit_confirmation,false);
+}
 
-//request_quit();
+void MainMenuScene::restore_menu_state()
+{
+    if (!_main_menu_window || _main_menu_window->is_destroyed())
+        return;
 
+    _main_menu_window->set_active(true);
+    _main_menu_window->set_visible(true);
+
+    if (_exit_confirmation && !_exit_confirmation->is_destroyed())
+        _main_menu_window->set_overlay_open(*_exit_confirmation,false);
+
+    _main_menu_window->focus_first_available_scope();
 }
 
 }
