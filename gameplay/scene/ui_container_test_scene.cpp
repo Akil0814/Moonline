@@ -8,10 +8,12 @@
 #include "../../engine/ui/containers/ui_grid_container.h"
 #include "../../engine/ui/containers/ui_list_container.h"
 #include "../../engine/ui/containers/ui_panel.h"
+#include "../../engine/ui/containers/ui_radio_group.h"
 #include "../../engine/ui/containers/ui_scroll_container.h"
 #include "../../engine/ui/widgets/ui_button.h"
 #include "../../engine/ui/widgets/ui_checkbox.h"
 #include "../../engine/ui/widgets/ui_labeled_checkbox.h"
+#include "../../engine/ui/widgets/ui_radio_button.h"
 #include "../../engine/ui/widgets/ui_slider.h"
 #include "../../engine/ui/widgets/ui_text_input.h"
 #include "../../engine/ui/layout/ui_layout_types.h"
@@ -151,6 +153,23 @@ std::unique_ptr<elysia::ui::UiSlider> make_slider(
     });
     return slider;
 }
+
+std::unique_ptr<elysia::ui::UiRadioButton> make_radio_button(
+    const elysia::core::Rect& rect,
+    const char* text_key,
+    bool selected,
+    const char* scope
+)
+{
+    auto radio_button = std::make_unique<elysia::ui::UiRadioButton>(rect,0);
+    radio_button->set_text_key(text_key);
+    radio_button->set_selected(selected);
+    radio_button->set_on_selected([scope]()
+    {
+        std::cout << scope << " radio selected" << std::endl;
+    });
+    return radio_button;
+}
 }
 
 void UiContainerTestScene::on_enter(const elysia::scene::ScenePayload& payload)
@@ -289,7 +308,7 @@ void UiContainerTestScene::rebuild_ui()
     widget_scroll->set_scroll_step(elysia::core::Vector2(24.0f,24.0f));
     widget_scroll->set_draw_border(true);
 
-    auto widget_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,340,580 });
+    auto widget_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,340,860 });
     widget_content->set_draw_background(true);
     widget_content->set_draw_border(true);
 
@@ -377,18 +396,74 @@ void UiContainerTestScene::rebuild_ui()
             true,
             "widget"),
         elysia::ui::UiPanelInsertDirection::Down);
+
+    auto vertical_radio_group = std::make_unique<elysia::ui::UiRadioGroup>(elysia::core::Rect{ 18,282,280,154 });
+    vertical_radio_group->set_padding(elysia::ui::UiLayoutPadding{ 10.0f,10.0f,10.0f,10.0f });
+    vertical_radio_group->set_item_spacing(10.0f);
+    vertical_radio_group->set_on_selection_changed([](std::optional<std::size_t> selected_index)
+    {
+        if (selected_index)
+            std::cout << "widget vertical radio group " << *selected_index << std::endl;
+        else
+            std::cout << "widget vertical radio group none" << std::endl;
+    });
+    vertical_radio_group->add_back(make_radio_button(
+        elysia::core::Rect{ 0,0,240,38 },
+        "menu_scene.start",
+        true,
+        "widget-vertical"));
+    vertical_radio_group->add_back(make_radio_button(
+        elysia::core::Rect{ 0,0,240,38 },
+        "menu_scene.settings",
+        true,
+        "widget-vertical"));
+    vertical_radio_group->add_back(make_radio_button(
+        elysia::core::Rect{ 0,0,240,38 },
+        "menu_scene.about",
+        false,
+        "widget-vertical"));
+    widget_content->add_child(std::move(vertical_radio_group),elysia::ui::UiPanelInsertDirection::Down);
+
+    auto horizontal_radio_group = std::make_unique<elysia::ui::UiRadioGroup>(elysia::core::Rect{ 18,452,280,54 });
+    horizontal_radio_group->set_direction(elysia::ui::UiListDirection::Horizontal);
+    horizontal_radio_group->set_item_spacing(16.0f);
+    horizontal_radio_group->set_padding(elysia::ui::UiLayoutPadding{ 10.0f,8.0f,10.0f,8.0f });
+    horizontal_radio_group->set_on_selection_changed([](std::optional<std::size_t> selected_index)
+    {
+        if (selected_index)
+            std::cout << "widget horizontal radio group " << *selected_index << std::endl;
+        else
+            std::cout << "widget horizontal radio group none" << std::endl;
+    });
+    horizontal_radio_group->add_back(make_radio_button(
+        elysia::core::Rect{ 0,0,84,36 },
+        "menu_scene.start",
+        false,
+        "widget-horizontal"));
+    horizontal_radio_group->add_back(make_radio_button(
+        elysia::core::Rect{ 0,0,84,36 },
+        "menu_scene.settings",
+        false,
+        "widget-horizontal"));
+    horizontal_radio_group->add_back(make_radio_button(
+        elysia::core::Rect{ 0,0,84,36 },
+        "menu_scene.about",
+        false,
+        "widget-horizontal"));
+    widget_content->add_child(std::move(horizontal_radio_group),elysia::ui::UiPanelInsertDirection::Down);
+
     widget_content->add_child(
-        make_text_input(elysia::core::Rect{ 18,282,280,44 },"Type here",std::nullopt,"widget-main"),
+        make_text_input(elysia::core::Rect{ 18,526,280,44 },"Type here",std::nullopt,"widget-main"),
         elysia::ui::UiPanelInsertDirection::Down);
     widget_content->add_child(
-        make_text_input(elysia::core::Rect{ 18,336,280,44 },"Max 8 chars",std::optional<std::size_t>(8),"widget-limited"),
+        make_text_input(elysia::core::Rect{ 18,580,280,44 },"Max 8 chars",std::optional<std::size_t>(8),"widget-limited"),
         elysia::ui::UiPanelInsertDirection::Down);
     widget_content->add_child(
-        make_slider(elysia::core::Rect{ 18,394,280,78 },"menu_scene.start",0.42f,"widget"),
+        make_slider(elysia::core::Rect{ 18,638,280,78 },"menu_scene.start",0.42f,"widget"),
         elysia::ui::UiPanelInsertDirection::Down);
 
     auto open_overlay_button = std::make_unique<elysia::ui::UiButton>(
-        elysia::core::Rect{ 18,488,150,40 },
+        elysia::core::Rect{ 18,732,150,40 },
         make_button_config("menu_scene.about"),
         0);
     open_overlay_button->set_on_click([this,non_modal_overlay]()

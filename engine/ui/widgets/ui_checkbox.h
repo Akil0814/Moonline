@@ -22,7 +22,8 @@ enum class UiCheckboxState
 enum class UiCheckboxMarkStyle
 {
     Checkmark,
-    FilledBox
+    FilledBox,
+    RadioDot
 };
 
 struct UiCheckboxVisualStateTextures

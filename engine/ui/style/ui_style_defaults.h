@@ -8,6 +8,7 @@
 #include "../widgets/ui_slider.h"
 #include "../widgets/ui_text_input.h"
 #include "../widgets/ui_labeled_checkbox.h"
+#include "../widgets/ui_radio_button.h"
 #include "../containers/ui_scroll_container.h"
 
 namespace elysia::ui
@@ -146,6 +147,18 @@ struct UiStyleDefaults
             UiPalette::text_disabled
         };
         style.mark_style = UiCheckboxMarkStyle::Checkmark;
+        return style;
+    }
+
+    [[nodiscard]] static UiRadioButtonStyle radio_button() noexcept
+    {
+        UiRadioButtonStyle style;
+        style.chrome = interactive_chrome();
+        style.mark = UiEnabledDisabledColors{
+            UiPalette::accent_fill,
+            UiPalette::text_disabled
+        };
+        style.text = text();
         return style;
     }
 
