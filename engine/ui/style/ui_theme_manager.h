@@ -67,8 +67,8 @@ private:
     void invalidate_element_registration(UiElement& element) noexcept;
     void detach_all_elements() noexcept;
 
-    UiBuiltinTheme _current_builtin_theme = UiBuiltinTheme::ClassicBlue;
-    UiTheme _current_theme = make_builtin_theme(UiBuiltinTheme::ClassicBlue);
+    UiBuiltinTheme _current_builtin_theme = UiBuiltinTheme::BlueGlassMoon;
+    UiTheme _current_theme = make_builtin_theme(UiBuiltinTheme::BlueGlassMoon);
     std::vector<std::shared_ptr<UiThemeRegistration::RegistrationRecord>> _records;
 
     friend class UiElement;

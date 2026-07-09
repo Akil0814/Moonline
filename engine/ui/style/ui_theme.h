@@ -17,9 +17,9 @@ namespace elysia::ui
 {
 enum class UiBuiltinTheme
 {
-    ClassicBlue,
-    Light,
-    HighContrast
+    BlueGlassMoon,
+    ElysiaLight,
+    ElysiaDark
 };
 
 struct UiTheme

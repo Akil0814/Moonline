@@ -9,7 +9,7 @@ struct UiStyleDefaults
 {
     [[nodiscard]] static const UiTheme& theme() noexcept
     {
-        return builtin_theme(UiBuiltinTheme::ClassicBlue);
+        return builtin_theme(UiBuiltinTheme::BlueGlassMoon);
     }
 
     [[nodiscard]] static UiEnabledDisabledColors text() noexcept
