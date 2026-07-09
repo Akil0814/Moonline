@@ -33,7 +33,7 @@ struct UiBarStyle
 struct UiPanelStyle
 {
     bool draw_background = false;
-    bool draw_border = false;
+    bool draw_border = true;
     elysia::core::Color background{};
     elysia::core::Color border{};
 };
@@ -53,7 +53,7 @@ struct UiChromeContainerStyle
 struct UiWindowStyle
 {
     bool draw_background = false;
-    bool draw_border = false;
+    bool draw_border = true;
     elysia::core::Color background{};
     elysia::core::Color border{};
 };

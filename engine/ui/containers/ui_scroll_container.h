@@ -38,7 +38,7 @@ struct UiScrollContainerStyle
     UiScrollBarStyle scrollbar{};
     bool draw_background = true;
     elysia::core::Color background_color{};
-    bool draw_border = false;
+    bool draw_border = true;
     elysia::core::Color border_color{};
 };
 
