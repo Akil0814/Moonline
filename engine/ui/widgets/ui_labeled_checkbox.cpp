@@ -90,6 +90,7 @@ void UiLabeledCheckbox::set_labeled_checkbox_config(const UiLabeledCheckboxConfi
 void UiLabeledCheckbox::set_text_key(std::string text_key)
 {
     _text_key = std::move(text_key);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 const std::string& UiLabeledCheckbox::text_key() const noexcept
@@ -100,6 +101,7 @@ const std::string& UiLabeledCheckbox::text_key() const noexcept
 void UiLabeledCheckbox::set_label_placement(UiLabeledCheckboxLabelPlacement placement) noexcept
 {
     _label_placement = placement;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 UiLabeledCheckboxLabelPlacement UiLabeledCheckbox::label_placement() const noexcept
@@ -110,6 +112,7 @@ UiLabeledCheckboxLabelPlacement UiLabeledCheckbox::label_placement() const noexc
 void UiLabeledCheckbox::set_label_spacing(float spacing) noexcept
 {
     _label_spacing = clamp_non_negative(spacing);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 float UiLabeledCheckbox::label_spacing() const noexcept
@@ -120,6 +123,7 @@ float UiLabeledCheckbox::label_spacing() const noexcept
 void UiLabeledCheckbox::set_text_placement(UiLabeledCheckboxTextPlacement placement) noexcept
 {
     _text_placement = placement;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 UiLabeledCheckboxTextPlacement UiLabeledCheckbox::text_placement() const noexcept
@@ -150,6 +154,7 @@ elysia::core::Color UiLabeledCheckbox::disabled_text_color() const noexcept
 void UiLabeledCheckbox::set_text_point_size(int point_size) noexcept
 {
     _label.set_text_point_size(point_size);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 int UiLabeledCheckbox::text_point_size() const noexcept
@@ -160,6 +165,7 @@ int UiLabeledCheckbox::text_point_size() const noexcept
 void UiLabeledCheckbox::set_label_padding(int padding) noexcept
 {
     _label.set_padding(padding);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 int UiLabeledCheckbox::label_padding() const noexcept

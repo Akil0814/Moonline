@@ -111,6 +111,8 @@ private:
     UiLayoutPadding _padding{};
     bool _clip_children = false;
     bool _layout_dirty = true;
+    bool _is_rebuilding_layout = false;
+    bool _layout_dirty_after_rebuild = false;
     elysia::core::Rect _last_layout_rect{};
 };
 }

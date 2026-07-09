@@ -234,6 +234,7 @@ void UiButton::set_text_key(std::string text_key)
     clear_content();
     _text_key = std::move(text_key);
     _visual_mode = _text_key.empty() ? UiButtonVisualMode::None : UiButtonVisualMode::Text;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 const std::string& UiButton::text_key() const noexcept
@@ -246,6 +247,7 @@ void UiButton::set_state_textures(const UiButtonTextures& textures)
     clear_content();
     _state_textures = textures;
     _visual_mode = has_state_textures() ? UiButtonVisualMode::Textured : UiButtonVisualMode::None;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 void UiButton::clear_state_textures()
@@ -291,6 +293,7 @@ void UiButton::set_on_click(ClickCallback on_click)
 void UiButton::set_style(const UiButtonStyle& style)
 {
     _style = style;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 const UiButtonStyle& UiButton::style() const noexcept
@@ -301,6 +304,7 @@ const UiButtonStyle& UiButton::style() const noexcept
 void UiButton::set_text_point_size(int point_size)
 {
     _text_point_size = std::max(0,point_size);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 int UiButton::text_point_size() const noexcept
@@ -311,6 +315,7 @@ int UiButton::text_point_size() const noexcept
 void UiButton::set_padding(int padding)
 {
     _padding = std::max(0,padding);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 int UiButton::padding() const noexcept
@@ -349,10 +354,14 @@ void UiButton::set_icon_texture(SDL_Texture* texture) noexcept
 {
     clear_content();
     if (!texture)
+    {
+        notify_layout_parent_of_intrinsic_layout_invalidation();
         return;
+    }
 
     _state_textures = UiButtonTextures{ texture,texture,texture,texture };
     _visual_mode = UiButtonVisualMode::Icon;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 void UiButton::clear_content() noexcept

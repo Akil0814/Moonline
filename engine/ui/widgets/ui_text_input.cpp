@@ -348,6 +348,7 @@ void UiTextInput::clear_text()
 void UiTextInput::set_placeholder_text(std::string placeholder_text)
 {
     _placeholder_text = std::move(placeholder_text);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 const std::string& UiTextInput::placeholder_text() const noexcept
@@ -379,6 +380,7 @@ const std::optional<std::size_t>& UiTextInput::max_length() const noexcept
 void UiTextInput::set_style(const UiTextInputStyle& style) noexcept
 {
     _style = style;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 const UiTextInputStyle& UiTextInput::style() const noexcept
@@ -389,6 +391,7 @@ const UiTextInputStyle& UiTextInput::style() const noexcept
 void UiTextInput::set_text_point_size(int point_size) noexcept
 {
     _text_point_size = std::max(0,point_size);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 int UiTextInput::text_point_size() const noexcept
@@ -399,6 +402,7 @@ int UiTextInput::text_point_size() const noexcept
 void UiTextInput::set_padding(int padding) noexcept
 {
     _padding = std::max(0,padding);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 int UiTextInput::padding() const noexcept
@@ -454,9 +458,12 @@ bool UiTextInput::set_text_internal(std::string text,bool notify_text_changed,bo
 
     clear_composition();
 
+    const bool changed = previous_text != _text;
     if (notify_text_changed)
         notify_text_changed_if_needed(previous_text);
-    return previous_text != _text;
+    if (changed)
+        notify_layout_parent_of_intrinsic_layout_invalidation();
+    return changed;
 }
 
 bool UiTextInput::insert_text_at_caret(std::string_view text)
@@ -482,8 +489,11 @@ bool UiTextInput::insert_text_at_caret(std::string_view text)
     _text.insert(insert_byte,sanitized);
     _caret_codepoint_index = insert_at + utf8_codepoint_count(sanitized);
     clear_composition();
+    const bool changed = previous_text != _text;
     notify_text_changed_if_needed(previous_text);
-    return previous_text != _text;
+    if (changed)
+        notify_layout_parent_of_intrinsic_layout_invalidation();
+    return changed;
 }
 
 bool UiTextInput::erase_previous_codepoint()
@@ -497,8 +507,11 @@ bool UiTextInput::erase_previous_codepoint()
     _text.erase(start_byte,end_byte - start_byte);
     --_caret_codepoint_index;
     clear_composition();
+    const bool changed = previous_text != _text;
     notify_text_changed_if_needed(previous_text);
-    return previous_text != _text;
+    if (changed)
+        notify_layout_parent_of_intrinsic_layout_invalidation();
+    return changed;
 }
 
 bool UiTextInput::erase_next_codepoint()
@@ -512,8 +525,11 @@ bool UiTextInput::erase_next_codepoint()
     const std::size_t end_byte = utf8_byte_offset_from_codepoint_index(_text,_caret_codepoint_index + 1);
     _text.erase(start_byte,end_byte - start_byte);
     clear_composition();
+    const bool changed = previous_text != _text;
     notify_text_changed_if_needed(previous_text);
-    return previous_text != _text;
+    if (changed)
+        notify_layout_parent_of_intrinsic_layout_invalidation();
+    return changed;
 }
 
 std::size_t UiTextInput::codepoint_index_at_x(int mouse_x) const

@@ -363,6 +363,12 @@ bool UiWindow::on_ui_input_event(const UiInputEvent& event)
 
     if (OverlayEntry* overlay = active_overlay())
     {
+        if (should_close_overlay_from_event(*overlay,event))
+        {
+            set_overlay_open(*overlay->element,false);
+            return true;
+        }
+
         if (dispatch_to_overlay(*overlay,event))
         {
             cleanup_destroyed_children();

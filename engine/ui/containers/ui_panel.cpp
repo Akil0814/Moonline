@@ -1,5 +1,6 @@
 #include "ui_panel.h"
 
+#include "../layout/ui_layout_geometry.h"
 #include "../style/ui_style_defaults.h"
 
 #include <algorithm>
@@ -38,6 +39,23 @@ std::optional<UiControl*>& neighbor_slot(UiFocusNeighbors& neighbors,UiPanelInse
     default:
         return neighbors.right;
     }
+}
+
+[[nodiscard]] bool is_zero_margin(const UiLayoutMargin& margin) noexcept
+{
+    return margin.left == 0.0f
+        && margin.top == 0.0f
+        && margin.right == 0.0f
+        && margin.bottom == 0.0f;
+}
+
+[[nodiscard]] bool uses_panel_anchor_layout(const UiLayoutChildOptions& options) noexcept
+{
+    return options._anchor != UiLayoutAnchor::TopLeft
+        || !is_zero_margin(options._margin)
+        || options._use_size_override
+        || options._use_custom_cross_align
+        || options._fill_cross_axis;
 }
 }
 
@@ -101,8 +119,10 @@ void UiPanel::add_child(std::unique_ptr<UiElement> child,UiPanelInsertDirection 
 
 UiElement* UiPanel::add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options)
 {
-    (void)options;
-    return insert_panel_child(std::move(child),UiPanelInsertDirection::Down);
+    if (!uses_panel_anchor_layout(options))
+        return insert_panel_child(std::move(child),UiPanelInsertDirection::Down);
+
+    return UiChildHost::add_child(std::move(child),options);
 }
 
 void UiPanel::set_style(const UiPanelStyle& style) noexcept
@@ -157,19 +177,28 @@ elysia::core::Color UiPanel::border_color() const noexcept
 
 void UiPanel::rebuild_layout()
 {
+    const elysia::core::Rect bounds = content_rect();
     const elysia::core::Vector2 current_origin = position();
     const elysia::core::Vector2 delta = _has_child_layout_origin
         ? (current_origin - _last_child_layout_origin)
         : current_origin;
 
-    if (!delta.is_zero())
+    for (ChildEntry& entry : children())
     {
-        for (ChildEntry& entry : children())
+        if (!entry.element)
+            continue;
+
+        if (uses_panel_anchor_layout(entry.layout))
         {
-            if (!entry.element)
-                continue;
-            entry.element->set_position(entry.element->position() + delta);
+            const elysia::core::Vector2 child_size = entry.layout._use_size_override
+                ? layout::clamp_size(entry.layout._size_override)
+                : layout::clamp_size(entry.element->size());
+            entry.element->set_screen_rect(layout::anchored_rect(bounds,child_size,entry.layout._anchor,entry.layout._margin));
+            continue;
         }
+
+        if (!delta.is_zero())
+            entry.element->set_position(entry.element->position() + delta);
     }
 
     _last_child_layout_origin = current_origin;

@@ -1,6 +1,7 @@
 #include "ui_scroll_container.h"
 
 #include "../focus/ui_focus_scope_utils.h"
+#include "../layout/ui_layout_geometry.h"
 #include "../style/ui_style_defaults.h"
 #include "../core/ui_control.h"
 #include "../../core/render/render_command.h"
@@ -60,6 +61,7 @@ void UiScrollContainer::reset() noexcept
     _scroll_state.reset();
     _scrollbar_visibility = UiScrollBarVisibility::Auto;
     _style = UiStyleDefaults::scroll_container();
+    _content_layout = UiLayoutChildOptions{};
     _scope_focused = false;
     _content_pointer_active = false;
     _content_focus_suppressed = false;
@@ -163,13 +165,12 @@ void UiScrollContainer::submit_ui_render_commands(std::vector<elysia::core::UiRe
 
 UiElement* UiScrollContainer::add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options)
 {
-    (void)options;
-    return set_content_internal(std::move(child));
+    return set_content_internal(std::move(child),options);
 }
 
 UiElement* UiScrollContainer::set_content(std::unique_ptr<UiElement> content)
 {
-    return set_content_internal(std::move(content));
+    return set_content_internal(std::move(content),UiLayoutChildOptions{});
 }
 
 UiElement* UiScrollContainer::content() noexcept
@@ -185,6 +186,7 @@ const UiElement* UiScrollContainer::content() const noexcept
 void UiScrollContainer::clear_content()
 {
     UiChildHost::clear_children();
+    _content_layout = UiLayoutChildOptions{};
     clear_content_pointer_state();
     set_content_focus_suppressed(false);
     reset_scroll_offset();
@@ -516,9 +518,10 @@ const UiFocusScope* UiScrollContainer::content_scope() const noexcept
     return dynamic_cast<const UiFocusScope*>(content());
 }
 
-UiElement* UiScrollContainer::set_content_internal(std::unique_ptr<UiElement> content)
+UiElement* UiScrollContainer::set_content_internal(std::unique_ptr<UiElement> content,UiLayoutChildOptions options)
 {
     UiChildHost::clear_children();
+    _content_layout = UiLayoutChildOptions{};
     clear_content_pointer_state();
     set_content_focus_suppressed(false);
     reset_scroll_offset();
@@ -526,7 +529,8 @@ UiElement* UiScrollContainer::set_content_internal(std::unique_ptr<UiElement> co
     if (!content)
         return nullptr;
 
-    UiElement* element = UiChildHost::insert_child(std::move(content),0,UiLayoutChildOptions{});
+    _content_layout = options;
+    UiElement* element = UiChildHost::insert_child(std::move(content),0,options);
     if (_scope_focused)
         set_scope_focused(true);
     return element;
@@ -613,46 +617,76 @@ elysia::core::Rect UiScrollContainer::interactive_rect() const noexcept
     return UiChildHost::content_rect();
 }
 
+bool UiScrollContainer::supports_scroll_axis(UiScrollAxis axis) const noexcept
+{
+    const UiScrollAxis configured = _scroll_state.axis();
+    if (configured == UiScrollAxis::Auto || configured == UiScrollAxis::Both)
+        return true;
+    return is_horizontal_axis(axis) ? configured == UiScrollAxis::Horizontal : configured == UiScrollAxis::Vertical;
+}
+
 bool UiScrollContainer::can_scroll_axis(UiScrollAxis axis) const noexcept
 {
-    if (_scroll_state.axis() == UiScrollAxis::Auto)
-    {
-        const elysia::core::Vector2 viewport = interactive_rect().size();
-        const elysia::core::Vector2 content = _scroll_state.effective_content_size();
-        const bool overflow_x = content.x > viewport.x + ScrollbarEpsilon;
-        const bool overflow_y = content.y > viewport.y + ScrollbarEpsilon;
-        return is_horizontal_axis(axis) ? overflow_x : overflow_y;
-    }
+    if (!supports_scroll_axis(axis))
+        return false;
 
-    return is_horizontal_axis(axis) ? _scroll_state.can_scroll_horizontal() : _scroll_state.can_scroll_vertical();
+    const elysia::core::Vector2 max = _scroll_state.max_offset();
+    return is_horizontal_axis(axis) ? max.x > ScrollbarEpsilon : max.y > ScrollbarEpsilon;
 }
 
 bool UiScrollContainer::shows_scrollbar(UiScrollAxis axis) const noexcept
 {
-    if (_scrollbar_visibility == UiScrollBarVisibility::Hidden)
-        return false;
+    const ScrollbarVisibilityState scrollbars = resolved_scrollbar_visibility();
+    return is_horizontal_axis(axis) ? scrollbars.horizontal : scrollbars.vertical;
+}
 
-    if (_scroll_state.axis() == UiScrollAxis::Auto)
-        return can_scroll_axis(axis);
-    const UiScrollAxis resolved = _scroll_state.resolved_axis();
-    const bool axis_supported = is_horizontal_axis(axis)
-        ? (resolved == UiScrollAxis::Horizontal || resolved == UiScrollAxis::Both)
-        : (resolved == UiScrollAxis::Vertical || resolved == UiScrollAxis::Both);
-    if (!axis_supported)
-        return false;
+UiScrollContainer::ScrollbarVisibilityState UiScrollContainer::resolved_scrollbar_visibility() const noexcept
+{
+    ScrollbarVisibilityState visible{};
+    if (_scrollbar_visibility == UiScrollBarVisibility::Hidden)
+        return visible;
 
     if (_scrollbar_visibility == UiScrollBarVisibility::Always)
-        return true;
-    return is_horizontal_axis(axis) ? _scroll_state.can_scroll_horizontal() : _scroll_state.can_scroll_vertical();
+    {
+        visible.horizontal = supports_scroll_axis(UiScrollAxis::Horizontal);
+        visible.vertical = supports_scroll_axis(UiScrollAxis::Vertical);
+        return visible;
+    }
+
+    const elysia::core::Rect bounds = interactive_rect();
+    const elysia::core::Vector2 content_size = _scroll_state.effective_content_size();
+    const float reserve = std::max(1.0f,_style.scrollbar.thickness) + clamp_non_negative(_style.scrollbar.margin);
+
+    for (int pass = 0; pass < 3; ++pass)
+    {
+        const float viewport_width = std::max(0.0f,bounds.width() - (visible.vertical ? reserve : 0.0f));
+        const float viewport_height = std::max(0.0f,bounds.height() - (visible.horizontal ? reserve : 0.0f));
+
+        ScrollbarVisibilityState next{};
+        next.horizontal = supports_scroll_axis(UiScrollAxis::Horizontal)
+            && content_size.x > viewport_width + ScrollbarEpsilon;
+        next.vertical = supports_scroll_axis(UiScrollAxis::Vertical)
+            && content_size.y > viewport_height + ScrollbarEpsilon;
+
+        if (next.horizontal == visible.horizontal && next.vertical == visible.vertical)
+            return visible;
+        visible = next;
+    }
+
+    return visible;
 }
 
 elysia::core::Rect UiScrollContainer::viewport_rect() const noexcept
 {
+    return viewport_rect(resolved_scrollbar_visibility());
+}
+
+elysia::core::Rect UiScrollContainer::viewport_rect(const ScrollbarVisibilityState& scrollbars) const noexcept
+{
     const elysia::core::Rect bounds = interactive_rect();
-    const float thickness = std::max(1.0f,_style.scrollbar.thickness);
-    const float margin = clamp_non_negative(_style.scrollbar.margin);
-    const float reserved_width = shows_scrollbar(UiScrollAxis::Vertical) ? (thickness + margin) : 0.0f;
-    const float reserved_height = shows_scrollbar(UiScrollAxis::Horizontal) ? (thickness + margin) : 0.0f;
+    const float reserve = std::max(1.0f,_style.scrollbar.thickness) + clamp_non_negative(_style.scrollbar.margin);
+    const float reserved_width = scrollbars.vertical ? reserve : 0.0f;
+    const float reserved_height = scrollbars.horizontal ? reserve : 0.0f;
     return elysia::core::Rect(
         bounds.x(),
         bounds.y(),
@@ -673,26 +707,25 @@ bool UiScrollContainer::is_pointer_in_viewport(int mouse_x,int mouse_y) const no
 
 elysia::core::Rect UiScrollContainer::scrollbar_track_rect(UiScrollAxis axis) const noexcept
 {
-    if (!shows_scrollbar(axis))
+    const ScrollbarVisibilityState scrollbars = resolved_scrollbar_visibility();
+    if (is_horizontal_axis(axis) ? !scrollbars.horizontal : !scrollbars.vertical)
         return elysia::core::Rect::zero();
 
     const elysia::core::Rect viewport = UiChildHost::content_rect();
     const float thickness = std::max(1.0f,_style.scrollbar.thickness);
     const float margin = clamp_non_negative(_style.scrollbar.margin);
-    const bool horizontal_visible = shows_scrollbar(UiScrollAxis::Horizontal);
-    const bool vertical_visible = shows_scrollbar(UiScrollAxis::Vertical);
 
     if (is_horizontal_axis(axis))
     {
         const float x = viewport.x() + margin;
         const float y = viewport.bottom() - margin - thickness;
-        const float width = std::max(0.0f,viewport.width() - margin * 2.0f - (vertical_visible ? thickness + margin : 0.0f));
+        const float width = std::max(0.0f,viewport.width() - margin * 2.0f - (scrollbars.vertical ? thickness + margin : 0.0f));
         return elysia::core::Rect(x,y,width,thickness);
     }
 
     const float x = viewport.right() - margin - thickness;
     const float y = viewport.y() + margin;
-    const float height = std::max(0.0f,viewport.height() - margin * 2.0f - (horizontal_visible ? thickness + margin : 0.0f));
+    const float height = std::max(0.0f,viewport.height() - margin * 2.0f - (scrollbars.horizontal ? thickness + margin : 0.0f));
     return elysia::core::Rect(x,y,thickness,height);
 }
 
@@ -933,6 +966,9 @@ void UiScrollContainer::ensure_visible_focused_target() noexcept
 
 elysia::core::Vector2 UiScrollContainer::measured_content_size() const noexcept
 {
+    if (_content_layout._use_size_override)
+        return layout::clamp_size(_content_layout._size_override);
+
     const UiElement* content_element = content();
     return content_element ? content_element->content_extent() : content_rect().size();
 }

@@ -406,12 +406,14 @@ void UiSlider::clear_label_content() noexcept
 {
     _text_key.clear();
     _icon = nullptr;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 void UiSlider::set_text_key(std::string text_key)
 {
     clear_label_content();
     _text_key = std::move(text_key);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 const std::string& UiSlider::text_key() const noexcept
@@ -423,11 +425,13 @@ void UiSlider::set_icon_texture(SDL_Texture* texture) noexcept
 {
     clear_label_content();
     _icon = texture;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 void UiSlider::set_label_placement(UiSliderLabelPlacement placement) noexcept
 {
     _label_placement = placement;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 UiSliderLabelPlacement UiSlider::label_placement() const noexcept
@@ -438,6 +442,7 @@ UiSliderLabelPlacement UiSlider::label_placement() const noexcept
 void UiSlider::set_orientation(UiSliderOrientation orientation) noexcept
 {
     _orientation = orientation;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 UiSliderOrientation UiSlider::orientation() const noexcept
@@ -448,6 +453,7 @@ UiSliderOrientation UiSlider::orientation() const noexcept
 void UiSlider::set_value_label_mode(UiSliderValueLabelMode mode) noexcept
 {
     _value_label_mode = mode;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 UiSliderValueLabelMode UiSlider::value_label_mode() const noexcept
@@ -483,6 +489,7 @@ void UiSlider::set_style(const UiSliderStyle& style)
         clamp_non_negative(_style.handle.size.y)
     );
     _handle.set_style(_style.handle);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 const UiSliderStyle& UiSlider::style() const noexcept
@@ -493,6 +500,7 @@ const UiSliderStyle& UiSlider::style() const noexcept
 void UiSlider::set_value_decimal_places(int decimal_places)
 {
     _value_number.set_decimal_places(decimal_places);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 int UiSlider::value_decimal_places() const noexcept
@@ -502,6 +510,7 @@ int UiSlider::value_decimal_places() const noexcept
 void UiSlider::set_value_trim_trailing_zeros(bool trim_trailing_zeros)
 {
     _value_number.set_trim_trailing_zeros(trim_trailing_zeros);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 bool UiSlider::value_trims_trailing_zeros() const noexcept
@@ -512,6 +521,7 @@ bool UiSlider::value_trims_trailing_zeros() const noexcept
 void UiSlider::set_value_keep_decimal_point(bool keep_decimal_point)
 {
     _value_number.set_keep_decimal_point(keep_decimal_point);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 bool UiSlider::value_keeps_decimal_point() const noexcept
@@ -522,6 +532,7 @@ bool UiSlider::value_keeps_decimal_point() const noexcept
 void UiSlider::set_value_digit_spacing(float spacing)
 {
     _value_number.set_digit_spacing(spacing);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 float UiSlider::value_digit_spacing() const noexcept
@@ -532,6 +543,7 @@ float UiSlider::value_digit_spacing() const noexcept
 void UiSlider::set_value_fixed_glyph_advance(float advance)
 {
     _value_number.set_fixed_glyph_advance(advance);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 std::optional<float> UiSlider::value_fixed_glyph_advance() const noexcept
@@ -542,11 +554,13 @@ std::optional<float> UiSlider::value_fixed_glyph_advance() const noexcept
 void UiSlider::clear_value_fixed_glyph_advance()
 {
     _value_number.clear_fixed_glyph_advance();
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 void UiSlider::set_value_target_height(float height)
 {
     _value_number.set_target_height(height);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 std::optional<float> UiSlider::value_target_height() const noexcept
@@ -557,11 +571,13 @@ std::optional<float> UiSlider::value_target_height() const noexcept
 void UiSlider::clear_value_target_height()
 {
     _value_number.clear_target_height();
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 void UiSlider::set_bar_thickness(float thickness) noexcept
 {
     _bar_thickness = clamp_non_negative(thickness);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 float UiSlider::bar_thickness() const noexcept
@@ -899,6 +915,7 @@ bool UiSlider::set_value_internal(float value,bool notify) noexcept
     _value = next_value;
     if (notify && _on_value_changed)
         _on_value_changed(_value);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
     return true;
 }
 

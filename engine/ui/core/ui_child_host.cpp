@@ -30,6 +30,8 @@ void UiChildHost::reset() noexcept
     _padding = UiLayoutPadding{};
     _clip_children = false;
     _layout_dirty = true;
+    _is_rebuilding_layout = false;
+    _layout_dirty_after_rebuild = false;
     _last_layout_rect = elysia::core::Rect::zero();
 }
 
@@ -112,6 +114,8 @@ bool UiChildHost::clips_children() const noexcept
 
 void UiChildHost::mark_layout_dirty() noexcept
 {
+    if (_is_rebuilding_layout)
+        _layout_dirty_after_rebuild = true;
     _layout_dirty = true;
 }
 
@@ -124,18 +128,28 @@ void UiChildHost::invalidate_intrinsic_layout() noexcept
 void UiChildHost::on_child_intrinsic_layout_invalidated(UiElement& child) noexcept
 {
     (void)child;
+    if (_is_rebuilding_layout)
+        return;
+
     mark_layout_dirty();
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 void UiChildHost::update_layout_if_dirty()
 {
+    if (_is_rebuilding_layout)
+        return;
+
     if (!needs_layout_rebuild())
         return;
 
+    _is_rebuilding_layout = true;
+    _layout_dirty_after_rebuild = false;
     rebuild_layout();
+    _is_rebuilding_layout = false;
     _last_layout_rect = screen_rect();
-    _layout_dirty = false;
+    _layout_dirty = _layout_dirty_after_rebuild;
+    _layout_dirty_after_rebuild = false;
 }
 
 void UiChildHost::update(double delta)

@@ -84,6 +84,7 @@ void UiLabel::submit_ui_render_commands(std::vector<elysia::core::UiRenderComman
 void UiLabel::set_text_key(std::string text_key)
 {
     _text_key = std::move(text_key);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 const std::string& UiLabel::text_key() const noexcept
@@ -94,6 +95,7 @@ const std::string& UiLabel::text_key() const noexcept
 void UiLabel::set_style(const UiLabelStyle& style) noexcept
 {
     _style = style;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 const UiLabelStyle& UiLabel::style() const noexcept
@@ -154,6 +156,7 @@ TextVerticalAlign UiLabel::vertical_align() const noexcept
 void UiLabel::set_text_point_size(int point_size)
 {
     _text_point_size = std::max(0,point_size);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 int UiLabel::text_point_size() const noexcept
@@ -164,6 +167,7 @@ int UiLabel::text_point_size() const noexcept
 void UiLabel::set_padding(int padding)
 {
     _padding = std::max(0,padding);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 int UiLabel::padding() const noexcept

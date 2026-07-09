@@ -108,18 +108,27 @@ protected:
     void rebuild_layout() override;
 
 private:
+    struct ScrollbarVisibilityState
+    {
+        bool horizontal = false;
+        bool vertical = false;
+    };
+
     [[nodiscard]] UiFocusScope* content_scope() noexcept;
     [[nodiscard]] const UiFocusScope* content_scope() const noexcept;
-    [[nodiscard]] UiElement* set_content_internal(std::unique_ptr<UiElement> content);
+    [[nodiscard]] UiElement* set_content_internal(std::unique_ptr<UiElement> content,UiLayoutChildOptions options = {});
     [[nodiscard]] bool dispatch_content_input_event(const UiInputEvent& event);
     [[nodiscard]] bool should_dispatch_content_input_event(const UiInputEvent& event) const noexcept;
     [[nodiscard]] bool should_dispatch_content_mouse_wheel(const UiInputEvent& event) const noexcept;
     [[nodiscard]] bool handle_mouse_wheel(const UiInputEvent& event);
     [[nodiscard]] bool dispatch_to_scrollbars(const UiInputEvent& event);
+    [[nodiscard]] bool supports_scroll_axis(UiScrollAxis axis) const noexcept;
     [[nodiscard]] bool can_scroll_axis(UiScrollAxis axis) const noexcept;
     [[nodiscard]] bool shows_scrollbar(UiScrollAxis axis) const noexcept;
+    [[nodiscard]] ScrollbarVisibilityState resolved_scrollbar_visibility() const noexcept;
     [[nodiscard]] elysia::core::Rect interactive_rect() const noexcept;
     [[nodiscard]] elysia::core::Rect viewport_rect() const noexcept;
+    [[nodiscard]] elysia::core::Rect viewport_rect(const ScrollbarVisibilityState& scrollbars) const noexcept;
     [[nodiscard]] bool is_pointer_in_interactive_rect(int mouse_x,int mouse_y) const noexcept;
     [[nodiscard]] bool is_pointer_in_viewport(int mouse_x,int mouse_y) const noexcept;
     [[nodiscard]] elysia::core::Rect scrollbar_track_rect(UiScrollAxis axis) const noexcept;
@@ -152,6 +161,7 @@ private:
     UiScrollState _scroll_state;
     UiScrollBarVisibility _scrollbar_visibility = UiScrollBarVisibility::Auto;
     UiScrollContainerStyle _style{};
+    UiLayoutChildOptions _content_layout{};
     UiDragHandle _horizontal_thumb;
     UiDragHandle _vertical_thumb;
     bool _scope_focused = false;

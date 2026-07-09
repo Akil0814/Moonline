@@ -289,9 +289,35 @@ void UiContainerTestScene::rebuild_ui()
     widget_scroll->set_scroll_step(elysia::core::Vector2(24.0f,24.0f));
     widget_scroll->set_draw_border(true);
 
-    auto widget_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,340,520 });
+    auto widget_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,340,580 });
     widget_content->set_draw_background(true);
     widget_content->set_draw_border(true);
+
+    auto* non_modal_overlay = _root_window->create_child<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,260,128 });
+    non_modal_overlay->set_draw_background(true);
+    non_modal_overlay->set_draw_border(true);
+    auto overlay_close_button = std::make_unique<elysia::ui::UiButton>(
+        elysia::core::Rect{ 40,42,180,44 },
+        make_button_config("menu_scene.exit"),
+        0);
+    overlay_close_button->set_on_click([this,non_modal_overlay]()
+    {
+        if (_root_window)
+            _root_window->set_overlay_open(*non_modal_overlay,false);
+    });
+    non_modal_overlay->add_child(std::move(overlay_close_button),elysia::ui::UiPanelInsertDirection::Down);
+    _root_window->register_overlay(
+        *non_modal_overlay,
+        elysia::ui::UiOverlayOptions{
+            .open = false,
+            .modal = false,
+            .close_on_cancel = true,
+            .close_on_outside_click = true,
+            .placement = elysia::ui::UiOverlayPlacement::Center,
+            .transition = elysia::ui::UiOverlayTransition::None,
+            .fallback_size = elysia::core::Vector2(260.0f,128.0f),
+            .order = 900
+        });
 
     widget_content->add_child(
         make_checkbox(
@@ -360,6 +386,37 @@ void UiContainerTestScene::rebuild_ui()
     widget_content->add_child(
         make_slider(elysia::core::Rect{ 18,394,280,78 },"menu_scene.start",0.42f,"widget"),
         elysia::ui::UiPanelInsertDirection::Down);
+
+    auto open_overlay_button = std::make_unique<elysia::ui::UiButton>(
+        elysia::core::Rect{ 18,488,150,40 },
+        make_button_config("menu_scene.about"),
+        0);
+    open_overlay_button->set_on_click([this,non_modal_overlay]()
+    {
+        if (_root_window)
+            _root_window->set_overlay_open(*non_modal_overlay,true);
+    });
+    widget_content->add_child(std::move(open_overlay_button),elysia::ui::UiPanelInsertDirection::Down);
+
+    auto anchored_options_button = std::make_unique<elysia::ui::UiButton>(
+        elysia::core::Rect{ 0,0,132,36 },
+        make_button_config("menu_scene.settings"),
+        0);
+    anchored_options_button->set_on_click([]()
+    {
+        std::cout << "widget anchored options button" << std::endl;
+    });
+    widget_content->add_child(
+        std::move(anchored_options_button),
+        elysia::ui::UiLayoutChildOptions{
+            ._anchor = elysia::ui::UiLayoutAnchor::BottomRight,
+            ._margin = elysia::ui::UiLayoutMargin{ 0.0f,0.0f,18.0f,18.0f },
+            ._cross_align = elysia::ui::UiLayoutAlign::Start,
+            ._size_override = elysia::core::Vector2(132.0f,36.0f),
+            ._use_custom_cross_align = false,
+            ._fill_cross_axis = false,
+            ._use_size_override = true
+        });
     widget_scroll->set_content(std::move(widget_content));
 
     _root_window->set_child_layout_options(0,make_window_child_options(0.0f,0.0f));

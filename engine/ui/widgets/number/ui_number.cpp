@@ -183,6 +183,7 @@ void UiNumber::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
 void UiNumber::set_value(double value)
 {
     _value = value;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 double UiNumber::value() const noexcept
@@ -193,6 +194,7 @@ double UiNumber::value() const noexcept
 void UiNumber::set_style(const UiNumberStyle& style) noexcept
 {
     _style = style;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 const UiNumberStyle& UiNumber::style() const noexcept
@@ -253,6 +255,7 @@ TextVerticalAlign UiNumber::vertical_align() const noexcept
 void UiNumber::set_text_point_size(int point_size)
 {
     _text_point_size = std::max(0,point_size);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 int UiNumber::text_point_size() const noexcept
@@ -263,6 +266,7 @@ int UiNumber::text_point_size() const noexcept
 void UiNumber::set_padding(int padding)
 {
     _padding = std::max(0,padding);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 int UiNumber::padding() const noexcept
@@ -273,6 +277,7 @@ int UiNumber::padding() const noexcept
 void UiNumber::set_digit_spacing(float spacing)
 {
     _digit_spacing = std::max(0.0f,spacing);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 float UiNumber::digit_spacing() const noexcept
@@ -283,6 +288,7 @@ float UiNumber::digit_spacing() const noexcept
 void UiNumber::set_fixed_glyph_advance(float advance)
 {
     _fixed_glyph_advance = std::max(0.0f,advance);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 std::optional<float> UiNumber::fixed_glyph_advance() const noexcept
@@ -293,11 +299,13 @@ std::optional<float> UiNumber::fixed_glyph_advance() const noexcept
 void UiNumber::clear_fixed_glyph_advance()
 {
     _fixed_glyph_advance.reset();
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 void UiNumber::set_target_height(float height)
 {
     _target_height = std::max(0.0f,height);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 std::optional<float> UiNumber::target_height() const noexcept
@@ -308,11 +316,13 @@ std::optional<float> UiNumber::target_height() const noexcept
 void UiNumber::clear_target_height()
 {
     _target_height.reset();
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 void UiNumber::set_decimal_places(int decimal_places)
 {
     _decimal_places = std::max(0,decimal_places);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 int UiNumber::decimal_places() const noexcept
@@ -323,6 +333,7 @@ int UiNumber::decimal_places() const noexcept
 void UiNumber::set_trim_trailing_zeros(bool trim_trailing_zeros)
 {
     _trim_trailing_zeros = trim_trailing_zeros;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 bool UiNumber::trims_trailing_zeros() const noexcept
@@ -333,6 +344,7 @@ bool UiNumber::trims_trailing_zeros() const noexcept
 void UiNumber::set_keep_decimal_point(bool keep_decimal_point)
 {
     _keep_decimal_point = keep_decimal_point;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 bool UiNumber::keeps_decimal_point() const noexcept
@@ -343,6 +355,7 @@ bool UiNumber::keeps_decimal_point() const noexcept
 void UiNumber::set_suffix(UiNumberSuffix suffix)
 {
     _suffix = suffix;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 UiNumberSuffix UiNumber::suffix() const noexcept

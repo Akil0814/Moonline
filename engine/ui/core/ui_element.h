@@ -58,10 +58,39 @@ public:
         _opacity = 255;
     }
 
-    void set_screen_rect(const elysia::core::Rect& rect) noexcept { _screen_rect = rect; }
-    void set_position(const elysia::core::Vector2& position) noexcept { _screen_rect.set_position(position); }
-    void set_center(const elysia::core::Vector2& center) noexcept { _screen_rect.set_center(center); }
-    void set_size(const elysia::core::Vector2& size) noexcept { _screen_rect.set_size(size); }
+    void set_screen_rect(const elysia::core::Rect& rect) noexcept
+    {
+        if (_screen_rect.nearly_equals(rect))
+            return;
+
+        const bool size_changed = !_screen_rect.size().nearly_equals(rect.size());
+        _screen_rect = rect;
+        if (size_changed)
+            notify_layout_parent_of_intrinsic_layout_invalidation();
+    }
+
+    void set_position(const elysia::core::Vector2& position) noexcept
+    {
+        if (_screen_rect.position().nearly_equals(position))
+            return;
+        _screen_rect.set_position(position);
+    }
+
+    void set_center(const elysia::core::Vector2& center) noexcept
+    {
+        if (_screen_rect.center().nearly_equals(center))
+            return;
+        _screen_rect.set_center(center);
+    }
+
+    void set_size(const elysia::core::Vector2& size) noexcept
+    {
+        if (_screen_rect.size().nearly_equals(size))
+            return;
+        elysia::core::Rect next_rect = _screen_rect;
+        next_rect.set_size(size);
+        set_screen_rect(next_rect);
+    }
 
     [[nodiscard]] const elysia::core::Rect& screen_rect() const noexcept { return _screen_rect; }
     [[nodiscard]] elysia::core::Vector2 position() const noexcept { return _screen_rect.position(); }
