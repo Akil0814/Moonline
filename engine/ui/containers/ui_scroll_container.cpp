@@ -779,6 +779,9 @@ void UiScrollContainer::initialize_scrollbar_handles()
     _horizontal_thumb.reset();
     _vertical_thumb.reset();
 
+    // Scrollbar thumbs stay internal to the container. The container owns the theme style and
+    // mirrors it into these drag handles through sync_scrollbar_handles() instead of registering
+    // the thumbs independently with UiThemeManager.
     _horizontal_thumb.set_use_theme(false);
     _vertical_thumb.set_use_theme(false);
 
@@ -1018,6 +1021,8 @@ void UiScrollContainer::submit_scrollbar_render_commands(std::vector<elysia::cor
 
 void UiScrollContainer::apply_theme(const UiTheme& theme)
 {
+    // The viewport owns one scroll-container style, then rebuilds the internal thumb visuals
+    // from that style so theme management never needs to reach into the private thumb controls.
     _style_state.set_theme_style(theme.scroll_container_style);
     sync_scrollbar_handles();
     mark_layout_dirty();

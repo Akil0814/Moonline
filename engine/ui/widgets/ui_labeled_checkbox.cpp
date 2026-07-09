@@ -239,6 +239,8 @@ elysia::core::Rect UiLabeledCheckbox::label_rect() const noexcept
 
 void UiLabeledCheckbox::apply_theme(const UiTheme& theme)
 {
+    // The composite owns one registration and forwards the resolved checkbox + label visuals to
+    // its private subcontrols instead of exposing them to the theme manager individually.
     UiCheckbox::apply_theme(theme);
     _text_color = theme.label(UiLabelThemeRole::Default).text;
     _disabled_text_color = theme.button(UiButtonThemeRole::Default).text.disabled;

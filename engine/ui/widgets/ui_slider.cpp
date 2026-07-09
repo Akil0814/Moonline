@@ -666,6 +666,8 @@ void UiSlider::apply_slider_config(const UiSliderConfig& config)
 
 void UiSlider::initialize_child_widgets()
 {
+    // Slider sub-widgets are implementation details. The outer slider owns theme participation
+    // and pushes resolved visuals into the bar/handle/label/value number manually.
     _bar.set_use_theme(false);
     _bar.set_padding(0);
     _bar.set_fill_direction(BarFillDirection::LeftToRight);
@@ -723,6 +725,8 @@ void UiSlider::sync_child_rects(const SliderLayout& layout) const
 
 void UiSlider::sync_child_visuals() const
 {
+    // Rebuild child visuals from the slider's resolved effective style so manual slider
+    // overrides and theme-driven updates both flow through one synchronization path.
     UiBarStyle bar_style = UiStyleDefaults::bar();
     bar_style.background = current_background_color();
     bar_style.fill = current_fill_color();
@@ -1076,6 +1080,8 @@ void UiSlider::play_slide_sound_if_allowed()
 
 void UiSlider::apply_theme(const UiTheme& theme)
 {
+    // Theme updates stop at the outer slider. Internal child widgets stay non-themed and receive
+    // the resolved style through sync_child_visuals() to keep the slider visually coherent.
     _style_state.set_theme_style(theme.slider_style);
     _handle.set_style(style().handle);
     sync_child_visuals();

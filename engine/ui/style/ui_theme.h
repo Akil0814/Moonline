@@ -15,6 +15,7 @@
 
 namespace elysia::ui
 {
+// Identifies one built-in, fully-specified UI theme.
 enum class UiBuiltinTheme
 {
     BlueGlassMoon,
@@ -26,6 +27,8 @@ enum class UiBuiltinTheme
     QuietSlate
 };
 
+// Stores the complete default style set for one theme, including both
+// role-based control variants and one-per-type fallbacks.
 struct UiTheme
 {
     static constexpr std::size_t panel_role_count = 4;
@@ -48,12 +51,16 @@ struct UiTheme
     UiTextInputStyle text_input_style{};
     UiScrollContainerStyle scroll_container_style{};
 
+    // Role-based accessors are only used by controls that opt into the
+    // corresponding theme-role API. Other controls read the type-default fields.
     [[nodiscard]] const UiPanelStyle& panel(UiPanelThemeRole role = UiPanelThemeRole::Default) const noexcept;
     [[nodiscard]] const UiLabelStyle& label(UiLabelThemeRole role = UiLabelThemeRole::Default) const noexcept;
     [[nodiscard]] const UiButtonStyle& button(UiButtonThemeRole role = UiButtonThemeRole::Default) const noexcept;
     [[nodiscard]] const UiBarStyle& bar(UiBarThemeRole role = UiBarThemeRole::Default) const noexcept;
 };
 
+// Builds an owned theme snapshot for the requested built-in theme.
 [[nodiscard]] UiTheme make_builtin_theme(UiBuiltinTheme theme) noexcept;
+// Returns a cached built-in theme instance for callers that only need a shared view.
 [[nodiscard]] const UiTheme& builtin_theme(UiBuiltinTheme theme) noexcept;
 }

@@ -105,6 +105,8 @@ public:
     void set_order(int order) noexcept { _order = order; }
     [[nodiscard]] int order() const noexcept { return _order; }
 
+    // Theme opt-in only allows managers to control this element. Callers still need to keep a
+    // UiThemeRegistration alive for any particular manager that should drive apply_theme().
     void set_use_theme(bool use_theme) noexcept;
     [[nodiscard]] bool uses_theme() const noexcept { return _use_theme; }
 
@@ -120,6 +122,7 @@ protected:
     virtual void apply_theme(const UiTheme& theme) { (void)theme; }
     // Tells the owning layout host that this element's intrinsic size may have changed.
     void notify_layout_parent_of_intrinsic_layout_invalidation() noexcept;
+    // Requests a refresh from already-attached managers only; it does not create registrations.
     void request_theme_reapply() noexcept;
 
     void apply_opacity(elysia::core::UiRenderCommand& command) const noexcept
