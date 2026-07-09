@@ -568,6 +568,11 @@ void UiChromeContainer::rebuild_layout()
     _title_slot->set_active(_header_visible);
     _right_actions->set_visible(_header_visible);
     _right_actions->set_active(_header_visible);
+
+    // UiDialog derives its body layout from the payload's rect immediately after
+    // updating chrome. Settle this nested slot now so the first overlay frame uses
+    // the final body bounds instead of the payload's construction-time bounds.
+    _body->update_layout_if_dirty();
 }
 
 void UiChromeContainer::rebuild_focus_registry()
