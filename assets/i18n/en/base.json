@@ -1,4 +1,4 @@
-﻿{
+{
   "menu_scene": {
     "project_name": "MoonLine",
     "start": "Start",
@@ -11,5 +11,14 @@
       "close": "X"
     },
     "about": "About"
+  },
+  "ui_test_scene": {
+    "theme_blue_glass_moon": "Glass Moon",
+    "theme_elysia_light": "Elysia Light",
+    "theme_elysia_dark": "Elysia Dark",
+    "theme_evangelion_unit_00": "EVA-00",
+    "theme_evangelion_unit_01": "EVA-01",
+    "theme_evangelion_unit_02": "EVA-02",
+    "theme_quiet_slate": "Quiet Slate"
   }
 }

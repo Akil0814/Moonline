@@ -118,6 +118,8 @@ public:
     [[nodiscard]] const UiCheckboxStyle& style() const noexcept;
     [[nodiscard]] bool has_style_override() const noexcept;
     void clear_style_override() noexcept;
+    void set_mark_style(UiCheckboxMarkStyle mark_style) noexcept;
+    [[nodiscard]] UiCheckboxMarkStyle mark_style() const noexcept;
 
     void set_padding(int padding) noexcept;
     [[nodiscard]] int padding() const noexcept;

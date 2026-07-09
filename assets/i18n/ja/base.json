@@ -1,14 +1,23 @@
 {
   "menu_scene": {
-    "start": "開始",
-    "settings": "設定",
-    "exit": "終了",
+    "start": "\u958b\u59cb",
+    "settings": "\u8a2d\u5b9a",
+    "exit": "\u7d42\u4e86",
     "exit_confirm": {
-      "title": "終了確認",
-      "message": "MoonLine を終了しますか？",
-      "cancel": "キャンセル",
+      "title": "\u7d42\u4e86\u78ba\u8a8d",
+      "message": "MoonLine \u3092\u7d42\u4e86\u3057\u307e\u3059\u304b\uff1f",
+      "cancel": "\u30ad\u30e3\u30f3\u30bb\u30eb",
       "close": "X"
     },
-    "about": "情報"
+    "about": "\u60c5\u5831"
+  },
+  "ui_test_scene": {
+    "theme_blue_glass_moon": "\u30b0\u30e9\u30b9\u30e0\u30fc\u30f3",
+    "theme_elysia_light": "\u30a8\u30ea\u30b7\u30a2\u30fb\u30e9\u30a4\u30c8",
+    "theme_elysia_dark": "\u30a8\u30ea\u30b7\u30a2\u30fb\u30c0\u30fc\u30af",
+    "theme_evangelion_unit_00": "EVA-00",
+    "theme_evangelion_unit_01": "EVA-01",
+    "theme_evangelion_unit_02": "EVA-02",
+    "theme_quiet_slate": "\u30af\u30ef\u30a4\u30a8\u30c3\u30c8\u30b9\u30ec\u30fc\u30c8"
   }
 }

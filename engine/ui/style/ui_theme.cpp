@@ -600,6 +600,750 @@ template<class Enum>
 
     return theme;
 }
+
+[[nodiscard]] UiTheme make_evangelion_unit00_theme() noexcept
+{
+    UiTheme theme;
+
+    const UiEnabledDisabledColors text = make_text_colors(
+        elysia::core::colors::eva_unit00_ivory,
+        elysia::core::colors::quiet_slate_gray);
+    const UiEnabledDisabledColors secondary_text = make_text_colors(
+        elysia::core::colors::alice_blue,
+        elysia::core::colors::quiet_slate_gray);
+    const UiEnabledDisabledColors placeholder_text = make_text_colors(
+        elysia::core::colors::quiet_slate_silver,
+        elysia::core::colors::gray_500);
+    const UiEnabledDisabledColors border = UiEnabledDisabledColors{
+        elysia::core::colors::eva_unit00_rei_blue,
+        elysia::core::colors::quiet_slate_gray
+    };
+    const UiInteractiveColors interactive_surface = make_surface_colors(
+        elysia::core::colors::eva_unit00_graphite,
+        elysia::core::colors::eva_unit00_cerulean,
+        elysia::core::colors::eva_unit00_rei_blue,
+        elysia::core::colors::gray_700);
+    const UiChromeStyle interactive_chrome = make_chrome(interactive_surface,border,true,true);
+
+    theme.label_styles[to_index(UiLabelThemeRole::Default)] = UiLabelStyle{
+        elysia::core::colors::eva_unit00_ivory,
+        elysia::core::colors::transparent,
+        false
+    };
+    theme.label_styles[to_index(UiLabelThemeRole::Title)] = UiLabelStyle{
+        elysia::core::colors::eva_unit00_signal_amber,
+        elysia::core::colors::transparent,
+        false
+    };
+    theme.label_styles[to_index(UiLabelThemeRole::Subtitle)] = UiLabelStyle{
+        elysia::core::colors::alice_blue,
+        elysia::core::colors::transparent,
+        false
+    };
+    theme.label_styles[to_index(UiLabelThemeRole::Muted)] = UiLabelStyle{
+        elysia::core::colors::quiet_slate_silver,
+        elysia::core::colors::transparent,
+        false
+    };
+
+    theme.number_style = UiNumberStyle{
+        elysia::core::colors::eva_unit00_ivory,
+        elysia::core::colors::transparent,
+        false
+    };
+
+    theme.bar_styles[to_index(UiBarThemeRole::Default)] = UiBarStyle{
+        elysia::core::colors::eva_unit00_graphite,
+        elysia::core::colors::eva_unit00_rei_blue,
+        elysia::core::colors::eva_unit00_rei_blue,
+        false
+    };
+    theme.bar_styles[to_index(UiBarThemeRole::Progress)] = UiBarStyle{
+        elysia::core::colors::eva_unit00_graphite,
+        elysia::core::colors::eva_unit00_signal_amber,
+        elysia::core::colors::eva_unit00_rei_blue,
+        false
+    };
+
+    theme.panel_styles[to_index(UiPanelThemeRole::Default)] = UiPanelStyle{
+        true,
+        true,
+        elysia::core::colors::eva_unit00_graphite,
+        elysia::core::colors::eva_unit00_rei_blue
+    };
+    theme.panel_styles[to_index(UiPanelThemeRole::Screen)] = UiPanelStyle{
+        true,
+        false,
+        elysia::core::colors::cobalt_blue,
+        elysia::core::colors::eva_unit00_cerulean
+    };
+    theme.panel_styles[to_index(UiPanelThemeRole::Dialog)] = UiPanelStyle{
+        true,
+        true,
+        elysia::core::colors::eva_unit00_graphite,
+        elysia::core::colors::eva_unit00_signal_amber
+    };
+    theme.panel_styles[to_index(UiPanelThemeRole::List)] = UiPanelStyle{
+        true,
+        true,
+        elysia::core::colors::eva_unit00_cerulean,
+        elysia::core::colors::eva_unit00_rei_blue
+    };
+
+    theme.window_style = UiWindowStyle{
+        true,
+        true,
+        elysia::core::colors::cobalt_blue,
+        elysia::core::colors::eva_unit00_rei_blue
+    };
+
+    theme.chrome_container_style = UiChromeContainerStyle{
+        true,
+        true,
+        true,
+        elysia::core::colors::eva_unit00_graphite,
+        elysia::core::colors::eva_unit00_rei_blue,
+        elysia::core::colors::eva_unit00_cerulean
+    };
+
+    theme.button_styles[to_index(UiButtonThemeRole::Default)] = UiButtonStyle{
+        interactive_chrome,
+        text
+    };
+    theme.button_styles[to_index(UiButtonThemeRole::Primary)] = UiButtonStyle{
+        make_chrome(
+            make_surface_colors(
+                elysia::core::colors::eva_unit00_signal_amber,
+                elysia::core::colors::yellow_300,
+                elysia::core::colors::orange_500,
+                elysia::core::colors::gray_700),
+            UiEnabledDisabledColors{ elysia::core::colors::eva_unit00_ivory,elysia::core::colors::gray_500 }),
+        make_text_colors(elysia::core::colors::eva_unit00_graphite,elysia::core::colors::gray_700)
+    };
+    theme.button_styles[to_index(UiButtonThemeRole::Danger)] = UiButtonStyle{
+        make_chrome(
+            make_surface_colors(
+                elysia::core::colors::brown_700,
+                elysia::core::colors::orange_700,
+                elysia::core::colors::orange_500,
+                elysia::core::colors::gray_700),
+            UiEnabledDisabledColors{ elysia::core::colors::eva_unit00_signal_amber,elysia::core::colors::gray_500 }),
+        text
+    };
+
+    theme.checkbox_style = UiCheckboxStyle{
+        interactive_chrome,
+        UiEnabledDisabledColors{ elysia::core::colors::eva_unit00_signal_amber,elysia::core::colors::quiet_slate_gray },
+        UiCheckboxMarkStyle::Checkmark
+    };
+
+    theme.radio_button_style = UiRadioButtonStyle{
+        interactive_chrome,
+        UiEnabledDisabledColors{ elysia::core::colors::eva_unit00_signal_amber,elysia::core::colors::quiet_slate_gray },
+        text
+    };
+
+    theme.drag_handle_style = UiDragHandleStyle{
+        elysia::core::Vector2{ 18.0f,18.0f },
+        std::nullopt,
+        interactive_chrome
+    };
+
+    theme.slider_style = UiSliderStyle{
+        UiChromeStyle{ interactive_surface,border,false,true },
+        UiEnabledDisabledColors{ elysia::core::colors::eva_unit00_signal_amber,elysia::core::colors::quiet_slate_gray },
+        text,
+        theme.drag_handle_style
+    };
+
+    theme.text_input_style = UiTextInputStyle{
+        interactive_chrome,
+        secondary_text,
+        placeholder_text,
+        elysia::core::colors::eva_unit00_signal_amber
+    };
+
+    theme.scroll_container_style = UiScrollContainerStyle{
+        UiScrollBarStyle{
+            10.0f,
+            4.0f,
+            24.0f,
+            true,
+            elysia::core::colors::cobalt_blue,
+            elysia::core::colors::eva_unit00_graphite,
+            elysia::core::colors::eva_unit00_cerulean,
+            elysia::core::colors::gray_700,
+            elysia::core::colors::eva_unit00_rei_blue,
+            elysia::core::colors::eva_unit00_signal_amber,
+            elysia::core::colors::yellow_300,
+            elysia::core::colors::quiet_slate_gray
+        },
+        true,
+        elysia::core::colors::eva_unit00_graphite,
+        true,
+        elysia::core::colors::eva_unit00_rei_blue
+    };
+
+    return theme;
+}
+
+[[nodiscard]] UiTheme make_evangelion_unit01_theme() noexcept
+{
+    UiTheme theme;
+
+    const UiEnabledDisabledColors text = make_text_colors(
+        elysia::core::colors::frosted_white,
+        elysia::core::colors::quiet_slate_gray);
+    const UiEnabledDisabledColors secondary_text = make_text_colors(
+        elysia::core::colors::eva_unit01_lime_glow,
+        elysia::core::colors::quiet_slate_gray);
+    const UiEnabledDisabledColors placeholder_text = make_text_colors(
+        elysia::core::colors::quiet_slate_silver,
+        elysia::core::colors::gray_500);
+    const UiEnabledDisabledColors border = UiEnabledDisabledColors{
+        elysia::core::colors::eva_unit01_toxic_green,
+        elysia::core::colors::quiet_slate_gray
+    };
+    const UiInteractiveColors interactive_surface = make_surface_colors(
+        elysia::core::colors::eva_unit01_deep_purple,
+        elysia::core::colors::eva_unit01_royal_purple,
+        elysia::core::colors::eva_unit01_toxic_green,
+        elysia::core::colors::gray_700);
+    const UiChromeStyle interactive_chrome = make_chrome(interactive_surface,border,true,true);
+
+    theme.label_styles[to_index(UiLabelThemeRole::Default)] = UiLabelStyle{
+        elysia::core::colors::frosted_white,
+        elysia::core::colors::transparent,
+        false
+    };
+    theme.label_styles[to_index(UiLabelThemeRole::Title)] = UiLabelStyle{
+        elysia::core::colors::eva_unit01_toxic_green,
+        elysia::core::colors::transparent,
+        false
+    };
+    theme.label_styles[to_index(UiLabelThemeRole::Subtitle)] = UiLabelStyle{
+        elysia::core::colors::eva_unit01_lime_glow,
+        elysia::core::colors::transparent,
+        false
+    };
+    theme.label_styles[to_index(UiLabelThemeRole::Muted)] = UiLabelStyle{
+        elysia::core::colors::quiet_slate_silver,
+        elysia::core::colors::transparent,
+        false
+    };
+
+    theme.number_style = UiNumberStyle{
+        elysia::core::colors::frosted_white,
+        elysia::core::colors::transparent,
+        false
+    };
+
+    theme.bar_styles[to_index(UiBarThemeRole::Default)] = UiBarStyle{
+        elysia::core::colors::eva_unit01_deep_purple,
+        elysia::core::colors::eva_unit01_royal_purple,
+        elysia::core::colors::eva_unit01_toxic_green,
+        false
+    };
+    theme.bar_styles[to_index(UiBarThemeRole::Progress)] = UiBarStyle{
+        elysia::core::colors::eva_unit01_deep_purple,
+        elysia::core::colors::eva_unit01_toxic_green,
+        elysia::core::colors::eva_unit01_lime_glow,
+        false
+    };
+
+    theme.panel_styles[to_index(UiPanelThemeRole::Default)] = UiPanelStyle{
+        true,
+        true,
+        elysia::core::colors::eva_unit01_deep_purple,
+        elysia::core::colors::eva_unit01_toxic_green
+    };
+    theme.panel_styles[to_index(UiPanelThemeRole::Screen)] = UiPanelStyle{
+        true,
+        false,
+        elysia::core::colors::purple_700,
+        elysia::core::colors::eva_unit01_royal_purple
+    };
+    theme.panel_styles[to_index(UiPanelThemeRole::Dialog)] = UiPanelStyle{
+        true,
+        true,
+        elysia::core::colors::eva_unit01_deep_purple,
+        elysia::core::colors::eva_unit01_orange_core
+    };
+    theme.panel_styles[to_index(UiPanelThemeRole::List)] = UiPanelStyle{
+        true,
+        true,
+        elysia::core::colors::eva_unit01_royal_purple,
+        elysia::core::colors::eva_unit01_toxic_green
+    };
+
+    theme.window_style = UiWindowStyle{
+        true,
+        true,
+        elysia::core::colors::purple_700,
+        elysia::core::colors::eva_unit01_toxic_green
+    };
+
+    theme.chrome_container_style = UiChromeContainerStyle{
+        true,
+        true,
+        true,
+        elysia::core::colors::eva_unit01_deep_purple,
+        elysia::core::colors::eva_unit01_toxic_green,
+        elysia::core::colors::eva_unit01_royal_purple
+    };
+
+    theme.button_styles[to_index(UiButtonThemeRole::Default)] = UiButtonStyle{
+        interactive_chrome,
+        text
+    };
+    theme.button_styles[to_index(UiButtonThemeRole::Primary)] = UiButtonStyle{
+        make_chrome(
+            make_surface_colors(
+                elysia::core::colors::eva_unit01_royal_purple,
+                elysia::core::colors::eva_unit01_toxic_green,
+                elysia::core::colors::eva_unit01_lime_glow,
+                elysia::core::colors::gray_700),
+            UiEnabledDisabledColors{ elysia::core::colors::eva_unit01_toxic_green,elysia::core::colors::quiet_slate_gray }),
+        text
+    };
+    theme.button_styles[to_index(UiButtonThemeRole::Danger)] = UiButtonStyle{
+        make_chrome(
+            make_surface_colors(
+                elysia::core::colors::eva_unit01_orange_core,
+                elysia::core::colors::orange_500,
+                elysia::core::colors::orange_300,
+                elysia::core::colors::gray_700),
+            UiEnabledDisabledColors{ elysia::core::colors::eva_unit01_lime_glow,elysia::core::colors::quiet_slate_gray }),
+        make_text_colors(elysia::core::colors::eva_unit01_deep_purple,elysia::core::colors::gray_700)
+    };
+
+    theme.checkbox_style = UiCheckboxStyle{
+        interactive_chrome,
+        UiEnabledDisabledColors{ elysia::core::colors::eva_unit01_toxic_green,elysia::core::colors::quiet_slate_gray },
+        UiCheckboxMarkStyle::Checkmark
+    };
+
+    theme.radio_button_style = UiRadioButtonStyle{
+        interactive_chrome,
+        UiEnabledDisabledColors{ elysia::core::colors::eva_unit01_toxic_green,elysia::core::colors::quiet_slate_gray },
+        text
+    };
+
+    theme.drag_handle_style = UiDragHandleStyle{
+        elysia::core::Vector2{ 18.0f,18.0f },
+        std::nullopt,
+        interactive_chrome
+    };
+
+    theme.slider_style = UiSliderStyle{
+        UiChromeStyle{ interactive_surface,border,false,true },
+        UiEnabledDisabledColors{ elysia::core::colors::eva_unit01_toxic_green,elysia::core::colors::quiet_slate_gray },
+        text,
+        theme.drag_handle_style
+    };
+
+    theme.text_input_style = UiTextInputStyle{
+        interactive_chrome,
+        secondary_text,
+        placeholder_text,
+        elysia::core::colors::eva_unit01_toxic_green
+    };
+
+    theme.scroll_container_style = UiScrollContainerStyle{
+        UiScrollBarStyle{
+            10.0f,
+            4.0f,
+            24.0f,
+            true,
+            elysia::core::colors::eva_unit01_deep_purple,
+            elysia::core::colors::eva_unit01_royal_purple,
+            elysia::core::colors::purple_700,
+            elysia::core::colors::gray_700,
+            elysia::core::colors::eva_unit01_toxic_green,
+            elysia::core::colors::eva_unit01_lime_glow,
+            elysia::core::colors::eva_unit01_orange_core,
+            elysia::core::colors::quiet_slate_gray
+        },
+        true,
+        elysia::core::colors::eva_unit01_deep_purple,
+        true,
+        elysia::core::colors::eva_unit01_toxic_green
+    };
+
+    return theme;
+}
+
+[[nodiscard]] UiTheme make_evangelion_unit02_theme() noexcept
+{
+    UiTheme theme;
+
+    const UiEnabledDisabledColors text = make_text_colors(
+        elysia::core::colors::eva_unit02_bone_white,
+        elysia::core::colors::quiet_slate_gray);
+    const UiEnabledDisabledColors secondary_text = make_text_colors(
+        elysia::core::colors::eva_unit02_sun_yellow,
+        elysia::core::colors::quiet_slate_gray);
+    const UiEnabledDisabledColors placeholder_text = make_text_colors(
+        elysia::core::colors::quiet_slate_silver,
+        elysia::core::colors::gray_500);
+    const UiEnabledDisabledColors border = UiEnabledDisabledColors{
+        elysia::core::colors::eva_unit02_orange,
+        elysia::core::colors::quiet_slate_gray
+    };
+    const UiInteractiveColors interactive_surface = make_surface_colors(
+        elysia::core::colors::eva_unit02_crimson,
+        elysia::core::colors::eva_unit02_vermilion,
+        elysia::core::colors::eva_unit02_orange,
+        elysia::core::colors::gray_700);
+    const UiChromeStyle interactive_chrome = make_chrome(interactive_surface,border,true,true);
+
+    theme.label_styles[to_index(UiLabelThemeRole::Default)] = UiLabelStyle{
+        elysia::core::colors::eva_unit02_bone_white,
+        elysia::core::colors::transparent,
+        false
+    };
+    theme.label_styles[to_index(UiLabelThemeRole::Title)] = UiLabelStyle{
+        elysia::core::colors::eva_unit02_sun_yellow,
+        elysia::core::colors::transparent,
+        false
+    };
+    theme.label_styles[to_index(UiLabelThemeRole::Subtitle)] = UiLabelStyle{
+        elysia::core::colors::eva_unit02_orange,
+        elysia::core::colors::transparent,
+        false
+    };
+    theme.label_styles[to_index(UiLabelThemeRole::Muted)] = UiLabelStyle{
+        elysia::core::colors::quiet_slate_silver,
+        elysia::core::colors::transparent,
+        false
+    };
+
+    theme.number_style = UiNumberStyle{
+        elysia::core::colors::eva_unit02_bone_white,
+        elysia::core::colors::transparent,
+        false
+    };
+
+    theme.bar_styles[to_index(UiBarThemeRole::Default)] = UiBarStyle{
+        elysia::core::colors::eva_unit02_crimson,
+        elysia::core::colors::eva_unit02_vermilion,
+        elysia::core::colors::eva_unit02_orange,
+        false
+    };
+    theme.bar_styles[to_index(UiBarThemeRole::Progress)] = UiBarStyle{
+        elysia::core::colors::eva_unit02_crimson,
+        elysia::core::colors::eva_unit02_sun_yellow,
+        elysia::core::colors::eva_unit02_orange,
+        false
+    };
+
+    theme.panel_styles[to_index(UiPanelThemeRole::Default)] = UiPanelStyle{
+        true,
+        true,
+        elysia::core::colors::eva_unit02_crimson,
+        elysia::core::colors::eva_unit02_orange
+    };
+    theme.panel_styles[to_index(UiPanelThemeRole::Screen)] = UiPanelStyle{
+        true,
+        false,
+        elysia::core::colors::brown_700,
+        elysia::core::colors::eva_unit02_vermilion
+    };
+    theme.panel_styles[to_index(UiPanelThemeRole::Dialog)] = UiPanelStyle{
+        true,
+        true,
+        elysia::core::colors::eva_unit02_crimson,
+        elysia::core::colors::eva_unit02_sun_yellow
+    };
+    theme.panel_styles[to_index(UiPanelThemeRole::List)] = UiPanelStyle{
+        true,
+        true,
+        elysia::core::colors::eva_unit02_vermilion,
+        elysia::core::colors::eva_unit02_orange
+    };
+
+    theme.window_style = UiWindowStyle{
+        true,
+        true,
+        elysia::core::colors::brown_700,
+        elysia::core::colors::eva_unit02_orange
+    };
+
+    theme.chrome_container_style = UiChromeContainerStyle{
+        true,
+        true,
+        true,
+        elysia::core::colors::eva_unit02_crimson,
+        elysia::core::colors::eva_unit02_orange,
+        elysia::core::colors::eva_unit02_vermilion
+    };
+
+    theme.button_styles[to_index(UiButtonThemeRole::Default)] = UiButtonStyle{
+        interactive_chrome,
+        text
+    };
+    theme.button_styles[to_index(UiButtonThemeRole::Primary)] = UiButtonStyle{
+        make_chrome(
+            make_surface_colors(
+                elysia::core::colors::eva_unit02_vermilion,
+                elysia::core::colors::eva_unit02_orange,
+                elysia::core::colors::eva_unit02_sun_yellow,
+                elysia::core::colors::gray_700),
+            UiEnabledDisabledColors{ elysia::core::colors::eva_unit02_bone_white,elysia::core::colors::quiet_slate_gray }),
+        make_text_colors(elysia::core::colors::eva_unit02_bone_white,elysia::core::colors::quiet_slate_silver)
+    };
+    theme.button_styles[to_index(UiButtonThemeRole::Danger)] = UiButtonStyle{
+        make_chrome(
+            make_surface_colors(
+                elysia::core::colors::red_700,
+                elysia::core::colors::eva_unit02_crimson,
+                elysia::core::colors::eva_unit02_vermilion,
+                elysia::core::colors::gray_700),
+            UiEnabledDisabledColors{ elysia::core::colors::eva_unit02_sun_yellow,elysia::core::colors::quiet_slate_gray }),
+        text
+    };
+
+    theme.checkbox_style = UiCheckboxStyle{
+        interactive_chrome,
+        UiEnabledDisabledColors{ elysia::core::colors::eva_unit02_sun_yellow,elysia::core::colors::quiet_slate_gray },
+        UiCheckboxMarkStyle::Checkmark
+    };
+
+    theme.radio_button_style = UiRadioButtonStyle{
+        interactive_chrome,
+        UiEnabledDisabledColors{ elysia::core::colors::eva_unit02_sun_yellow,elysia::core::colors::quiet_slate_gray },
+        text
+    };
+
+    theme.drag_handle_style = UiDragHandleStyle{
+        elysia::core::Vector2{ 18.0f,18.0f },
+        std::nullopt,
+        interactive_chrome
+    };
+
+    theme.slider_style = UiSliderStyle{
+        UiChromeStyle{ interactive_surface,border,false,true },
+        UiEnabledDisabledColors{ elysia::core::colors::eva_unit02_sun_yellow,elysia::core::colors::quiet_slate_gray },
+        text,
+        theme.drag_handle_style
+    };
+
+    theme.text_input_style = UiTextInputStyle{
+        interactive_chrome,
+        secondary_text,
+        placeholder_text,
+        elysia::core::colors::eva_unit02_sun_yellow
+    };
+
+    theme.scroll_container_style = UiScrollContainerStyle{
+        UiScrollBarStyle{
+            10.0f,
+            4.0f,
+            24.0f,
+            true,
+            elysia::core::colors::brown_700,
+            elysia::core::colors::eva_unit02_crimson,
+            elysia::core::colors::eva_unit02_vermilion,
+            elysia::core::colors::gray_700,
+            elysia::core::colors::eva_unit02_orange,
+            elysia::core::colors::eva_unit02_sun_yellow,
+            elysia::core::colors::yellow_300,
+            elysia::core::colors::quiet_slate_gray
+        },
+        true,
+        elysia::core::colors::eva_unit02_crimson,
+        true,
+        elysia::core::colors::eva_unit02_orange
+    };
+
+    return theme;
+}
+
+[[nodiscard]] UiTheme make_quiet_slate_theme() noexcept
+{
+    UiTheme theme;
+
+    const UiEnabledDisabledColors text = make_text_colors(
+        elysia::core::colors::quiet_slate_white,
+        elysia::core::colors::quiet_slate_gray);
+    const UiEnabledDisabledColors secondary_text = make_text_colors(
+        elysia::core::colors::quiet_slate_silver,
+        elysia::core::colors::quiet_slate_gray);
+    const UiEnabledDisabledColors placeholder_text = make_text_colors(
+        elysia::core::colors::quiet_slate_gray,
+        elysia::core::colors::gray_500);
+    const UiEnabledDisabledColors border = UiEnabledDisabledColors{
+        elysia::core::colors::quiet_slate_silver,
+        elysia::core::colors::quiet_slate_gray
+    };
+    const UiInteractiveColors interactive_surface = make_surface_colors(
+        elysia::core::colors::quiet_slate_charcoal,
+        elysia::core::colors::royal_blue,
+        elysia::core::colors::quiet_slate_silver,
+        elysia::core::colors::gray_700);
+    const UiChromeStyle interactive_chrome = make_chrome(interactive_surface,border,true,true);
+
+    theme.label_styles[to_index(UiLabelThemeRole::Default)] = UiLabelStyle{
+        elysia::core::colors::quiet_slate_white,
+        elysia::core::colors::transparent,
+        false
+    };
+    theme.label_styles[to_index(UiLabelThemeRole::Title)] = UiLabelStyle{
+        elysia::core::colors::alice_blue,
+        elysia::core::colors::transparent,
+        false
+    };
+    theme.label_styles[to_index(UiLabelThemeRole::Subtitle)] = UiLabelStyle{
+        elysia::core::colors::quiet_slate_silver,
+        elysia::core::colors::transparent,
+        false
+    };
+    theme.label_styles[to_index(UiLabelThemeRole::Muted)] = UiLabelStyle{
+        elysia::core::colors::quiet_slate_gray,
+        elysia::core::colors::transparent,
+        false
+    };
+
+    theme.number_style = UiNumberStyle{
+        elysia::core::colors::quiet_slate_white,
+        elysia::core::colors::transparent,
+        false
+    };
+
+    theme.bar_styles[to_index(UiBarThemeRole::Default)] = UiBarStyle{
+        elysia::core::colors::quiet_slate_charcoal,
+        elysia::core::colors::quiet_slate_silver,
+        elysia::core::colors::quiet_slate_silver,
+        false
+    };
+    theme.bar_styles[to_index(UiBarThemeRole::Progress)] = UiBarStyle{
+        elysia::core::colors::quiet_slate_charcoal,
+        elysia::core::colors::alice_blue,
+        elysia::core::colors::quiet_slate_silver,
+        false
+    };
+
+    theme.panel_styles[to_index(UiPanelThemeRole::Default)] = UiPanelStyle{
+        true,
+        true,
+        elysia::core::colors::quiet_slate_charcoal,
+        elysia::core::colors::quiet_slate_silver
+    };
+    theme.panel_styles[to_index(UiPanelThemeRole::Screen)] = UiPanelStyle{
+        true,
+        false,
+        elysia::core::colors::quiet_slate_ink,
+        elysia::core::colors::quiet_slate_charcoal
+    };
+    theme.panel_styles[to_index(UiPanelThemeRole::Dialog)] = UiPanelStyle{
+        true,
+        true,
+        elysia::core::colors::quiet_slate_charcoal,
+        elysia::core::colors::alice_blue
+    };
+    theme.panel_styles[to_index(UiPanelThemeRole::List)] = UiPanelStyle{
+        true,
+        true,
+        elysia::core::colors::quiet_slate_charcoal,
+        elysia::core::colors::quiet_slate_silver
+    };
+
+    theme.window_style = UiWindowStyle{
+        true,
+        true,
+        elysia::core::colors::quiet_slate_ink,
+        elysia::core::colors::quiet_slate_silver
+    };
+
+    theme.chrome_container_style = UiChromeContainerStyle{
+        true,
+        true,
+        true,
+        elysia::core::colors::quiet_slate_charcoal,
+        elysia::core::colors::quiet_slate_silver,
+        elysia::core::colors::quiet_slate_ink
+    };
+
+    theme.button_styles[to_index(UiButtonThemeRole::Default)] = UiButtonStyle{
+        interactive_chrome,
+        text
+    };
+    theme.button_styles[to_index(UiButtonThemeRole::Primary)] = UiButtonStyle{
+        make_chrome(
+            make_surface_colors(
+                elysia::core::colors::quiet_slate_charcoal,
+                elysia::core::colors::royal_blue,
+                elysia::core::colors::quiet_slate_silver,
+                elysia::core::colors::gray_700),
+            UiEnabledDisabledColors{ elysia::core::colors::alice_blue,elysia::core::colors::quiet_slate_gray }),
+        text
+    };
+    theme.button_styles[to_index(UiButtonThemeRole::Danger)] = UiButtonStyle{
+        make_chrome(
+            make_surface_colors(
+                elysia::core::colors::gray_700,
+                elysia::core::colors::brown_500,
+                elysia::core::colors::brown_300,
+                elysia::core::colors::gray_700),
+            UiEnabledDisabledColors{ elysia::core::colors::quiet_slate_silver,elysia::core::colors::quiet_slate_gray }),
+        text
+    };
+
+    theme.checkbox_style = UiCheckboxStyle{
+        interactive_chrome,
+        UiEnabledDisabledColors{ elysia::core::colors::alice_blue,elysia::core::colors::quiet_slate_gray },
+        UiCheckboxMarkStyle::Checkmark
+    };
+
+    theme.radio_button_style = UiRadioButtonStyle{
+        interactive_chrome,
+        UiEnabledDisabledColors{ elysia::core::colors::alice_blue,elysia::core::colors::quiet_slate_gray },
+        text
+    };
+
+    theme.drag_handle_style = UiDragHandleStyle{
+        elysia::core::Vector2{ 18.0f,18.0f },
+        std::nullopt,
+        interactive_chrome
+    };
+
+    theme.slider_style = UiSliderStyle{
+        UiChromeStyle{ interactive_surface,border,false,true },
+        UiEnabledDisabledColors{ elysia::core::colors::alice_blue,elysia::core::colors::quiet_slate_gray },
+        text,
+        theme.drag_handle_style
+    };
+
+    theme.text_input_style = UiTextInputStyle{
+        interactive_chrome,
+        secondary_text,
+        placeholder_text,
+        elysia::core::colors::alice_blue
+    };
+
+    theme.scroll_container_style = UiScrollContainerStyle{
+        UiScrollBarStyle{
+            10.0f,
+            4.0f,
+            24.0f,
+            true,
+            elysia::core::colors::quiet_slate_ink,
+            elysia::core::colors::quiet_slate_charcoal,
+            elysia::core::colors::gray_700,
+            elysia::core::colors::gray_700,
+            elysia::core::colors::quiet_slate_silver,
+            elysia::core::colors::alice_blue,
+            elysia::core::colors::quiet_slate_white,
+            elysia::core::colors::quiet_slate_gray
+        },
+        true,
+        elysia::core::colors::quiet_slate_charcoal,
+        true,
+        elysia::core::colors::quiet_slate_silver
+    };
+
+    return theme;
+}
 }
 
 const UiPanelStyle& UiTheme::panel(UiPanelThemeRole role) const noexcept
@@ -626,6 +1370,14 @@ UiTheme make_builtin_theme(UiBuiltinTheme theme) noexcept
 {
     switch (theme)
     {
+    case UiBuiltinTheme::EvangelionUnit00:
+        return make_evangelion_unit00_theme();
+    case UiBuiltinTheme::EvangelionUnit01:
+        return make_evangelion_unit01_theme();
+    case UiBuiltinTheme::EvangelionUnit02:
+        return make_evangelion_unit02_theme();
+    case UiBuiltinTheme::QuietSlate:
+        return make_quiet_slate_theme();
     case UiBuiltinTheme::ElysiaLight:
         return make_elysia_light_theme();
     case UiBuiltinTheme::ElysiaDark:
@@ -641,9 +1393,21 @@ const UiTheme& builtin_theme(UiBuiltinTheme theme) noexcept
     static const UiTheme blue_glass_moon = make_blue_glass_moon_theme();
     static const UiTheme elysia_light = make_elysia_light_theme();
     static const UiTheme elysia_dark = make_elysia_dark_theme();
+    static const UiTheme evangelion_unit00 = make_evangelion_unit00_theme();
+    static const UiTheme evangelion_unit01 = make_evangelion_unit01_theme();
+    static const UiTheme evangelion_unit02 = make_evangelion_unit02_theme();
+    static const UiTheme quiet_slate = make_quiet_slate_theme();
 
     switch (theme)
     {
+    case UiBuiltinTheme::EvangelionUnit00:
+        return evangelion_unit00;
+    case UiBuiltinTheme::EvangelionUnit01:
+        return evangelion_unit01;
+    case UiBuiltinTheme::EvangelionUnit02:
+        return evangelion_unit02;
+    case UiBuiltinTheme::QuietSlate:
+        return quiet_slate;
     case UiBuiltinTheme::ElysiaLight:
         return elysia_light;
     case UiBuiltinTheme::ElysiaDark:

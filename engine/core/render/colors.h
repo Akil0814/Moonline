@@ -90,6 +90,32 @@ inline constexpr Color elysia_phantom_sea{ 26, 56, 104, 255 };   // #1A3868
 inline constexpr Color elysia_mirage_blue{ 44, 84, 143, 255 };   // #2C548F
 inline constexpr Color elysia_deep_sea{ 14, 30, 66, 255 };       // #0E1E42
 
+// Evangelion-inspired palette tokens used by the built-in EVA themes.
+inline constexpr Color eva_unit00_ivory{ 238, 242, 246, 255 };         // #EEF2F6
+inline constexpr Color eva_unit00_cerulean{ 44, 84, 128, 255 };        // #2C5480
+inline constexpr Color eva_unit00_rei_blue{ 73, 111, 156, 255 };       // #496F9C
+inline constexpr Color eva_unit00_signal_amber{ 240, 176, 62, 255 };   // #F0B03E
+inline constexpr Color eva_unit00_graphite{ 46, 54, 68, 255 };         // #2E3644
+
+inline constexpr Color eva_unit01_deep_purple{ 49, 33, 76, 255 };      // #31214C
+inline constexpr Color eva_unit01_royal_purple{ 95, 62, 132, 255 };    // #5F3E84
+inline constexpr Color eva_unit01_toxic_green{ 126, 222, 76, 255 };    // #7EDE4C
+inline constexpr Color eva_unit01_lime_glow{ 176, 255, 92, 255 };      // #B0FF5C
+inline constexpr Color eva_unit01_orange_core{ 230, 138, 54, 255 };    // #E68A36
+
+inline constexpr Color eva_unit02_crimson{ 176, 38, 48, 255 };         // #B02630
+inline constexpr Color eva_unit02_vermilion{ 214, 72, 48, 255 };       // #D64830
+inline constexpr Color eva_unit02_orange{ 237, 142, 46, 255 };         // #ED8E2E
+inline constexpr Color eva_unit02_sun_yellow{ 246, 196, 74, 255 };     // #F6C44A
+inline constexpr Color eva_unit02_bone_white{ 244, 240, 234, 255 };    // #F4F0EA
+
+// Reserved, low-saturation neutral set for understated gray UI themes.
+inline constexpr Color quiet_slate_white{ 236, 240, 244, 255 };        // #ECF0F4
+inline constexpr Color quiet_slate_silver{ 179, 188, 198, 255 };       // #B3BCC6
+inline constexpr Color quiet_slate_gray{ 110, 122, 136, 255 };         // #6E7A88
+inline constexpr Color quiet_slate_charcoal{ 54, 63, 74, 255 };        // #363F4A
+inline constexpr Color quiet_slate_ink{ 32, 38, 46, 255 };             // #20262E
+
 }
 
 }

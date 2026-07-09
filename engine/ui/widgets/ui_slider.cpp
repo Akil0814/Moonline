@@ -77,6 +77,36 @@ constexpr float kValueChangeEpsilon = 0.0001f;
 {
     return std::min(std::max({ 24.0f,handle_size.y,target_height }) + 8.0f,std::max(0.0f,rect.height() * 0.35f));
 }
+
+[[nodiscard]] elysia::core::Rect inset_track_area_for_handle(
+    const elysia::core::Rect& rect,
+    const elysia::core::Vector2& handle_size,
+    UiSliderOrientation orientation
+) noexcept
+{
+    if (rect.is_empty())
+        return rect;
+
+    elysia::core::Rect inset = rect;
+    if (orientation == UiSliderOrientation::Horizontal)
+    {
+        const float horizontal_inset = std::min(
+            std::max(6.0f,handle_size.x * 0.5f),
+            std::max(0.0f,rect.width() * 0.5f));
+        inset.set_x(rect.x() + horizontal_inset);
+        inset.set_width(std::max(0.0f,rect.width() - horizontal_inset * 2.0f));
+    }
+    else
+    {
+        const float vertical_inset = std::min(
+            std::max(6.0f,handle_size.y * 0.5f),
+            std::max(0.0f,rect.height() * 0.5f));
+        inset.set_y(rect.y() + vertical_inset);
+        inset.set_height(std::max(0.0f,rect.height() - vertical_inset * 2.0f));
+    }
+
+    return inset;
+}
 }
 
 struct UiSlider::SliderLayout
@@ -511,6 +541,7 @@ void UiSlider::clear_style_override() noexcept
     _style_state.clear_style_override();
     _handle.clear_style_override();
     _handle.set_style(style().handle);
+    sync_child_visuals();
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
@@ -636,9 +667,6 @@ void UiSlider::apply_slider_config(const UiSliderConfig& config)
 void UiSlider::initialize_child_widgets()
 {
     _bar.set_use_theme(false);
-    UiBarStyle bar_style = _bar.style();
-    bar_style.draw_border = false;
-    _bar.set_style(bar_style);
     _bar.set_padding(0);
     _bar.set_fill_direction(BarFillDirection::LeftToRight);
     _handle.set_use_theme(false);
@@ -662,7 +690,8 @@ void UiSlider::initialize_child_widgets()
     _value_number.set_trim_trailing_zeros(true);
     _value_number.set_keep_decimal_point(false);
     _value_number.set_suffix(UiNumberSuffix::None);
-    set_style(UiStyleDefaults::slider());
+    _handle.set_style(style().handle);
+    sync_child_visuals();
     bind_handle_callbacks();
 }
 
@@ -695,7 +724,7 @@ void UiSlider::sync_child_rects(const SliderLayout& layout) const
 void UiSlider::sync_child_visuals() const
 {
     UiBarStyle bar_style = UiStyleDefaults::bar();
-    bar_style.background = current_border_color();
+    bar_style.background = current_background_color();
     bar_style.fill = current_fill_color();
     bar_style.draw_border = false;
 
@@ -791,7 +820,7 @@ UiSlider::SliderLayout UiSlider::compute_layout() const noexcept
         }
     }
 
-    layout.track_area = remaining;
+    layout.track_area = inset_track_area_for_handle(remaining,handle_size,_orientation);
     if (layout.track_area.is_empty())
         return layout;
 
@@ -1049,6 +1078,7 @@ void UiSlider::apply_theme(const UiTheme& theme)
 {
     _style_state.set_theme_style(theme.slider_style);
     _handle.set_style(style().handle);
+    sync_child_visuals();
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 }

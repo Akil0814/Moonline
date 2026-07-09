@@ -19,7 +19,11 @@ enum class UiBuiltinTheme
 {
     BlueGlassMoon,
     ElysiaLight,
-    ElysiaDark
+    ElysiaDark,
+    EvangelionUnit00,
+    EvangelionUnit01,
+    EvangelionUnit02,
+    QuietSlate
 };
 
 struct UiTheme

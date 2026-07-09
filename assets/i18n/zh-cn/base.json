@@ -1,14 +1,23 @@
 {
   "menu_scene": {
-    "start": "开始",
-    "settings": "设置",
-    "exit": "退出",
+    "start": "\u5f00\u59cb",
+    "settings": "\u8bbe\u7f6e",
+    "exit": "\u9000\u51fa",
     "exit_confirm": {
-      "title": "确认退出",
-      "message": "要退出 MoonLine 吗？",
-      "cancel": "取消",
+      "title": "\u786e\u8ba4\u9000\u51fa",
+      "message": "\u8981\u9000\u51fa MoonLine \u5417\uff1f",
+      "cancel": "\u53d6\u6d88",
       "close": "X"
     },
-    "about": "关于"
+    "about": "\u5173\u4e8e"
+  },
+  "ui_test_scene": {
+    "theme_blue_glass_moon": "\u73bb\u7483\u6708",
+    "theme_elysia_light": "\u7231\u8389\u4eae",
+    "theme_elysia_dark": "\u7231\u8389\u6697",
+    "theme_evangelion_unit_00": "EVA-00",
+    "theme_evangelion_unit_01": "EVA-01",
+    "theme_evangelion_unit_02": "EVA-02",
+    "theme_quiet_slate": "\u9759\u7070"
   }
 }

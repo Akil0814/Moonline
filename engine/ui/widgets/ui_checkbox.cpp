@@ -304,6 +304,22 @@ void UiCheckbox::clear_style_override() noexcept
     _style_state.clear_style_override();
 }
 
+void UiCheckbox::set_mark_style(UiCheckboxMarkStyle mark_style) noexcept
+{
+    UiCheckboxStyle next_style = style();
+    next_style.mark_style = mark_style;
+
+    if (_style_state.has_style_override())
+        _style_state.set_style_override(next_style);
+    else
+        _style_state.set_theme_style(next_style);
+}
+
+UiCheckboxMarkStyle UiCheckbox::mark_style() const noexcept
+{
+    return style().mark_style;
+}
+
 void UiCheckbox::set_state_textures(const UiCheckboxTextures& textures)
 {
     _textures = textures;
@@ -522,7 +538,9 @@ UiCheckboxState UiCheckbox::toggled_state(UiCheckboxState state) noexcept
 
 void UiCheckbox::apply_theme(const UiTheme& theme)
 {
-    _style_state.set_theme_style(theme.checkbox_style);
+    UiCheckboxStyle themed_style = theme.checkbox_style;
+    themed_style.mark_style = style().mark_style;
+    _style_state.set_theme_style(themed_style);
 }
 }
 
