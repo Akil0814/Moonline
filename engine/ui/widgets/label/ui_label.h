@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../../style/ui_style.h"
+#include "../../style/ui_theme_roles.h"
 #include "../../style/ui_visual_styles.h"
 #include "../../core/ui_element.h"
 #include "../../core/ui_text_align.h"
@@ -32,6 +34,11 @@ public:
 
     void set_style(const UiLabelStyle& style) noexcept;
     [[nodiscard]] const UiLabelStyle& style() const noexcept;
+    [[nodiscard]] bool has_style_override() const noexcept;
+    void clear_style_override() noexcept;
+
+    void set_theme_role(UiLabelThemeRole role) noexcept;
+    [[nodiscard]] UiLabelThemeRole theme_role() const noexcept;
 
     void set_text_color(elysia::core::Color color);
     [[nodiscard]] elysia::core::Color text_color() const noexcept;
@@ -59,10 +66,12 @@ private:
     [[nodiscard]] elysia::core::Rect content_rect() const noexcept;
     // Fits rendered text into the content rect using the active alignment and padding.
     [[nodiscard]] elysia::core::Rect text_render_rect(SDL_Texture* text_texture) const noexcept;
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     std::string _text_key;
-    UiLabelStyle _style{};
+    UiStyleState<UiLabelStyle> _style_state;
+    UiLabelThemeRole _theme_role = UiLabelThemeRole::Default;
     TextHorizontalAlign _horizontal_align = TextHorizontalAlign::Left;
     TextVerticalAlign _vertical_align = TextVerticalAlign::Top;
     int _text_point_size = 24;

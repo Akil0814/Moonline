@@ -2,6 +2,7 @@
 
 #include "../layout/ui_layout_geometry.h"
 #include "../style/ui_style_defaults.h"
+#include "../style/ui_theme.h"
 
 #include <algorithm>
 
@@ -98,7 +99,8 @@ void UiPanel::reset() noexcept
 {
     UiControlFocusScopeHost::reset();
     reset_delegated_focus_state();
-    _style = UiStyleDefaults::panel();
+    _style_state.reset(UiStyleDefaults::panel());
+    _theme_role = UiPanelThemeRole::Default;
     _focus_links.clear();
     _last_focusable = nullptr;
     _last_child_layout_origin = elysia::core::Vector2::zero();
@@ -223,11 +225,12 @@ void UiPanel::submit_ui_render_commands(std::vector<elysia::core::UiRenderComman
     self->apply_focus_state();
 
     const elysia::core::Rect& rect = screen_rect();
-    if (_style.draw_background && !rect.is_empty())
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(_style.background)));
+    const UiPanelStyle& style = _style_state.effective_style();
+    if (style.draw_background && !rect.is_empty())
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(style.background)));
     submit_child_render_commands(out_commands);
-    if (_style.draw_border && !rect.is_empty())
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(_style.border)));
+    if (style.draw_border && !rect.is_empty())
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(style.border)));
 }
 
 elysia::core::Vector2 UiPanel::content_extent() const noexcept
@@ -250,52 +253,73 @@ UiElement* UiPanel::add_child(std::unique_ptr<UiElement> child,UiLayoutChildOpti
 
 void UiPanel::set_style(const UiPanelStyle& style) noexcept
 {
-    _style = style;
+    _style_state.set_style_override(style);
 }
 
 const UiPanelStyle& UiPanel::style() const noexcept
 {
-    return _style;
+    return _style_state.effective_style();
+}
+
+bool UiPanel::has_style_override() const noexcept
+{
+    return _style_state.has_style_override();
+}
+
+void UiPanel::clear_style_override() noexcept
+{
+    _style_state.clear_style_override();
+}
+
+void UiPanel::set_theme_role(UiPanelThemeRole role) noexcept
+{
+    _theme_role = role;
+    request_theme_reapply();
+}
+
+UiPanelThemeRole UiPanel::theme_role() const noexcept
+{
+    return _theme_role;
 }
 
 void UiPanel::set_draw_background(bool draw_background) noexcept
 {
-    _style.draw_background = draw_background;
+    _style_state.ensure_style_override().draw_background = draw_background;
 }
 
 bool UiPanel::draws_background() const noexcept
 {
-    return _style.draw_background;
+    return style().draw_background;
 }
 
 void UiPanel::set_draw_border(bool draw_border) noexcept
 {
-    _style.draw_border = draw_border;
+    _style_state.ensure_style_override().draw_border = draw_border;
 }
 
 bool UiPanel::draws_border() const noexcept
 {
-    return _style.draw_border;
+    return style().draw_border;
 }
 
 void UiPanel::set_background_color(elysia::core::Color color) noexcept
 {
-    _style.background = color;
+    _style_state.ensure_style_override().background = color;
 }
 
 elysia::core::Color UiPanel::background_color() const noexcept
 {
-    return _style.background;
+    return style().background;
 }
 
 void UiPanel::set_border_color(elysia::core::Color color) noexcept
 {
-    _style.border = color;
+    _style_state.ensure_style_override().border = color;
 }
 
 elysia::core::Color UiPanel::border_color() const noexcept
 {
-    return _style.border;
+    return style().border;
 }
 
 void UiPanel::rebuild_layout()
@@ -457,6 +481,11 @@ const UiPanel::FocusLink* UiPanel::find_link(const UiElement& element) const noe
         return link.element == &element;
     });
     return found != _focus_links.end() ? &(*found) : nullptr;
+}
+
+void UiPanel::apply_theme(const UiTheme& theme)
+{
+    _style_state.set_theme_style(theme.panel(_theme_role));
 }
 }
 

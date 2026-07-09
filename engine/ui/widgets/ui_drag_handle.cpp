@@ -1,5 +1,7 @@
 #include "ui_drag_handle.h"
 
+#include "../style/ui_style_defaults.h"
+#include "../style/ui_theme.h"
 #include "../../core/render/render_command.h"
 
 #include <SDL.h>
@@ -61,6 +63,8 @@ void UiDragHandle::reset() noexcept
     UiControl::reset();
     set_use_theme(false);
     _config = UiDragHandleConfig{};
+    _style_state.reset(UiStyleDefaults::drag_handle());
+    _config.style = _style_state.effective_style();
     _on_dragged = nullptr;
     _on_drag_ended = nullptr;
     _grab_offset = elysia::core::Vector2{};
@@ -147,12 +151,12 @@ void UiDragHandle::submit_ui_render_commands(std::vector<elysia::core::UiRenderC
         apply_opacity(command);
         out_commands.push_back(command);
     }
-    else if (_config.style.chrome.draw_background)
+    else if (style().chrome.draw_background)
     {
         out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(current_background_color())));
     }
 
-    if (_config.style.chrome.draw_border)
+    if (style().chrome.draw_border)
         out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(current_border_color())));
 }
 
@@ -168,7 +172,8 @@ const UiDragHandleConfig& UiDragHandle::drag_handle_config() const noexcept
 
 void UiDragHandle::set_style(const UiDragHandleStyle& style)
 {
-    _config.style = style;
+    _style_state.set_style_override(style);
+    _config.style = _style_state.effective_style();
     _config.style.size = elysia::core::Vector2(
         clamp_non_negative(_config.style.size.x),
         clamp_non_negative(_config.style.size.y)
@@ -178,7 +183,19 @@ void UiDragHandle::set_style(const UiDragHandleStyle& style)
 
 const UiDragHandleStyle& UiDragHandle::style() const noexcept
 {
-    return _config.style;
+    return _style_state.effective_style();
+}
+
+bool UiDragHandle::has_style_override() const noexcept
+{
+    return _style_state.has_style_override();
+}
+
+void UiDragHandle::clear_style_override() noexcept
+{
+    _style_state.clear_style_override();
+    _config.style = _style_state.effective_style();
+    set_size(_config.style.size);
 }
 
 void UiDragHandle::set_drag_axis(UiDragAxis axis) noexcept
@@ -236,6 +253,7 @@ bool UiDragHandle::is_dragging() const noexcept
 void UiDragHandle::apply_drag_handle_config(const UiDragHandleConfig& config)
 {
     _config = config;
+    _style_state.set_style_override(config.style);
     _config.style.size = elysia::core::Vector2(
         clamp_non_negative(_config.style.size.x),
         clamp_non_negative(_config.style.size.y)
@@ -310,10 +328,10 @@ elysia::core::Rect UiDragHandle::clamped_rect(const elysia::core::Rect& rect) co
 
 SDL_Texture* UiDragHandle::current_state_texture() const noexcept
 {
-    if (!_config.style.textures)
+    if (!style().textures)
         return nullptr;
 
-    const UiDragHandleTextures& textures = *_config.style.textures;
+    const UiDragHandleTextures& textures = *style().textures;
     if (!is_enabled())
         return textures.disabled ? textures.disabled : textures.idle;
     if (_is_dragging)
@@ -325,11 +343,22 @@ SDL_Texture* UiDragHandle::current_state_texture() const noexcept
 
 elysia::core::Color UiDragHandle::current_background_color() const noexcept
 {
-    return resolve_interactive_color(_config.style.chrome.background,is_enabled(),is_focused(),_is_dragging);
+    return resolve_interactive_color(style().chrome.background,is_enabled(),is_focused(),_is_dragging);
 }
 
 elysia::core::Color UiDragHandle::current_border_color() const noexcept
 {
-    return resolve_enabled_disabled_color(_config.style.chrome.border,is_enabled());
+    return resolve_enabled_disabled_color(style().chrome.border,is_enabled());
+}
+
+void UiDragHandle::apply_theme(const UiTheme& theme)
+{
+    _style_state.set_theme_style(theme.drag_handle_style);
+    _config.style = _style_state.effective_style();
+    _config.style.size = elysia::core::Vector2(
+        clamp_non_negative(_config.style.size.x),
+        clamp_non_negative(_config.style.size.y)
+    );
+    set_size(_config.style.size);
 }
 }

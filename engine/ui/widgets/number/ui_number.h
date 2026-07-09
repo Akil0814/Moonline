@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../../style/ui_style.h"
 #include "../../style/ui_visual_styles.h"
 #include "../../../number/number_texture_provider.h"
 #include "../../core/ui_element.h"
@@ -45,6 +46,8 @@ public:
 
     void set_style(const UiNumberStyle& style) noexcept;
     [[nodiscard]] const UiNumberStyle& style() const noexcept;
+    [[nodiscard]] bool has_style_override() const noexcept;
+    void clear_style_override() noexcept;
 
     void set_text_color(elysia::core::Color color);
     [[nodiscard]] elysia::core::Color text_color() const noexcept;
@@ -102,11 +105,12 @@ private:
     );
     // Converts text alignment into the digit-renderer alignment enum.
     [[nodiscard]] elysia::number::DigitAlignment digit_alignment() const noexcept;
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     mutable elysia::number::NumberTextureProvider _texture_provider;
     double _value = 0.0;
-    UiNumberStyle _style{};
+    UiStyleState<UiNumberStyle> _style_state;
     TextHorizontalAlign _horizontal_align = TextHorizontalAlign::Left;
     TextVerticalAlign _vertical_align = TextVerticalAlign::Top;
     int _text_point_size = 24;

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../../core/render/colors.h"
+#include "../style/ui_style.h"
+#include "../style/ui_theme_roles.h"
 #include "../style/ui_interaction_style.h"
 #include "../core/ui_control.h"
 
@@ -123,6 +125,11 @@ public:
 
     void set_style(const UiButtonStyle& style);
     [[nodiscard]] const UiButtonStyle& style() const noexcept;
+    [[nodiscard]] bool has_style_override() const noexcept;
+    void clear_style_override() noexcept;
+
+    void set_theme_role(UiButtonThemeRole role) noexcept;
+    [[nodiscard]] UiButtonThemeRole theme_role() const noexcept;
 
     void set_text_point_size(int point_size);
     [[nodiscard]] int text_point_size() const noexcept;
@@ -157,6 +164,7 @@ private:
     void clear_pushed_state() noexcept;
     // Plays a configured sound only when the corresponding key is present.
     void play_sound_if_set(std::string_view sound_key) const;
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     std::string _text_key;
@@ -164,7 +172,8 @@ private:
     UiButtonTextures _state_textures;
     ClickCallback _on_click;
     UiButtonVisualMode _visual_mode = UiButtonVisualMode::None;
-    UiButtonStyle _style{};
+    UiStyleState<UiButtonStyle> _style_state;
+    UiButtonThemeRole _theme_role = UiButtonThemeRole::Default;
 
     int _text_point_size = 24;
     int _padding = 10;

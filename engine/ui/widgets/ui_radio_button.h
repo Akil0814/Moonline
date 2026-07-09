@@ -2,6 +2,7 @@
 
 #include "../../core/render/colors.h"
 #include "../core/ui_control.h"
+#include "../style/ui_style.h"
 #include "../style/ui_interaction_style.h"
 #include "ui_labeled_checkbox.h"
 
@@ -95,6 +96,8 @@ public:
 
     void set_style(const UiRadioButtonStyle& style) noexcept;
     [[nodiscard]] const UiRadioButtonStyle& style() const noexcept;
+    [[nodiscard]] bool has_style_override() const noexcept;
+    void clear_style_override() noexcept;
 
 private:
     // Applies the config payload without exposing intermediate label visuals.
@@ -109,12 +112,13 @@ private:
     [[nodiscard]] UiCheckboxSounds checkbox_sounds() const noexcept;
     [[nodiscard]] static UiLabeledCheckboxLabelPlacement to_checkbox_label_placement(UiRadioButtonLabelPlacement placement) noexcept;
     [[nodiscard]] static UiLabeledCheckboxTextPlacement to_checkbox_text_placement(UiRadioButtonTextPlacement placement) noexcept;
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     mutable UiLabeledCheckbox _checkbox;
     UiRadioButtonSelectedCallback _on_selected;
     std::optional<UiRadioButtonSounds> _sounds;
-    UiRadioButtonStyle _style{};
+    UiStyleState<UiRadioButtonStyle> _style_state;
     std::string _text_key;
     UiRadioButtonLabelPlacement _label_placement = UiRadioButtonLabelPlacement::Right;
     float _label_spacing = 8.0f;

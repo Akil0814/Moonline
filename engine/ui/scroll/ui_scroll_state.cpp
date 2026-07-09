@@ -162,7 +162,8 @@ elysia::core::Vector2 UiScrollState::step() const noexcept
 
 void UiScrollState::scroll_by(const elysia::core::Vector2& delta) noexcept
 {
-    set_offset(elysia::core::Vector2(_offset.x + filter_axis(delta).x,_offset.y + filter_axis(delta).y));
+    const elysia::core::Vector2 filtered_delta = filter_axis(delta);
+    set_offset(elysia::core::Vector2(_offset.x + filtered_delta.x,_offset.y + filtered_delta.y));
 }
 
 void UiScrollState::scroll_to_left() noexcept

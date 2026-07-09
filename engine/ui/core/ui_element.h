@@ -12,6 +12,7 @@ namespace elysia::ui
 {
 struct UiTheme;
 class UiChildHost;
+class UiThemeManager;
 // Tag type for constructors that interpret the supplied position as a center point.
 struct UiFromCenterTag
 {
@@ -34,7 +35,7 @@ public:
     UiElement(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag, int order = 0 )
         noexcept : _screen_rect(elysia::core::Rect::from_center(center, size)), _order(order) {}
 
-    virtual ~UiElement() = default;
+    ~UiElement() override;
 
     UiElement(const UiElement&) = delete;
     UiElement& operator=(const UiElement&) = delete;
@@ -104,7 +105,7 @@ public:
     void set_order(int order) noexcept { _order = order; }
     [[nodiscard]] int order() const noexcept { return _order; }
 
-    void set_use_theme(bool use_theme) noexcept { _use_theme = use_theme; }
+    void set_use_theme(bool use_theme) noexcept;
     [[nodiscard]] bool uses_theme() const noexcept { return _use_theme; }
 
     void set_opacity(std::uint8_t opacity) noexcept { _opacity = opacity; }
@@ -119,6 +120,7 @@ protected:
     virtual void apply_theme(const UiTheme& theme) { (void)theme; }
     // Tells the owning layout host that this element's intrinsic size may have changed.
     void notify_layout_parent_of_intrinsic_layout_invalidation() noexcept;
+    void request_theme_reapply() noexcept;
 
     void apply_opacity(elysia::core::UiRenderCommand& command) const noexcept
     {
@@ -147,6 +149,7 @@ protected:
 
 private:
     friend class UiChildHost;
+    friend class UiThemeManager;
 
     static std::uint8_t multiply_alpha(std::uint8_t a, std::uint8_t b) noexcept
     {
@@ -154,9 +157,13 @@ private:
     }
 
     void set_layout_parent(UiChildHost* parent) noexcept { _layout_parent = parent; }
+    void attach_theme_manager(UiThemeManager& manager);
+    void detach_theme_manager(UiThemeManager& manager) noexcept;
+    void detach_all_theme_managers() noexcept;
 
     elysia::core::Rect _screen_rect{};
     UiChildHost* _layout_parent = nullptr;
+    std::vector<UiThemeManager*> _theme_managers;
     int _order = 0;
     bool _use_theme = false;
     std::uint8_t _opacity = 255;

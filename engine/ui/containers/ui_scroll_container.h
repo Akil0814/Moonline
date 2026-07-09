@@ -3,6 +3,7 @@
 #include "../core/ui_child_host.h"
 #include "../focus/ui_focus_scope.h"
 #include "../scroll/ui_scroll_state.h"
+#include "../style/ui_style.h"
 #include "../widgets/ui_drag_handle.h"
 
 namespace elysia::ui
@@ -66,6 +67,8 @@ public:
 
     void set_style(const UiScrollContainerStyle& style) noexcept;
     [[nodiscard]] const UiScrollContainerStyle& style() const noexcept;
+    [[nodiscard]] bool has_style_override() const noexcept;
+    void clear_style_override() noexcept;
 
     void set_scrollbar_visibility(UiScrollBarVisibility visibility) noexcept;
     [[nodiscard]] UiScrollBarVisibility scrollbar_visibility() const noexcept;
@@ -117,6 +120,7 @@ public:
 protected:
     // Rebuilds the viewport, content rect, and scrollbar geometry from current state.
     void rebuild_layout() override;
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     // Captures which scrollbars should currently be visible after Auto resolution.
@@ -126,6 +130,9 @@ private:
         bool vertical = false;
     };
 
+    void ensure_layout_current() noexcept;
+    void reset_content_state() noexcept;
+    void mark_layout_dirty_if_offset_changed(const elysia::core::Vector2& previous_offset) noexcept;
     // Returns the nested content focus scope when the payload participates in focus navigation.
     [[nodiscard]] UiFocusScope* content_scope() noexcept;
     [[nodiscard]] const UiFocusScope* content_scope() const noexcept;
@@ -200,7 +207,7 @@ private:
 private:
     UiScrollState _scroll_state;
     UiScrollBarVisibility _scrollbar_visibility = UiScrollBarVisibility::Auto;
-    UiScrollContainerStyle _style{};
+    UiStyleState<UiScrollContainerStyle> _style_state;
     UiLayoutChildOptions _content_layout{};
     UiDragHandle _horizontal_thumb;
     UiDragHandle _vertical_thumb;

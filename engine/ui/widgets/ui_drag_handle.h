@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../core/render/colors.h"
+#include "../style/ui_style.h"
 #include "../style/ui_interaction_style.h"
 #include "../core/ui_control.h"
 
@@ -69,6 +70,8 @@ public:
     [[nodiscard]] const UiDragHandleConfig& drag_handle_config() const noexcept;
     void set_style(const UiDragHandleStyle& style);
     [[nodiscard]] const UiDragHandleStyle& style() const noexcept;
+    [[nodiscard]] bool has_style_override() const noexcept;
+    void clear_style_override() noexcept;
 
     void set_drag_axis(UiDragAxis axis) noexcept;
     [[nodiscard]] UiDragAxis drag_axis() const noexcept;
@@ -102,9 +105,11 @@ private:
     [[nodiscard]] SDL_Texture* current_state_texture() const noexcept;
     [[nodiscard]] elysia::core::Color current_background_color() const noexcept;
     [[nodiscard]] elysia::core::Color current_border_color() const noexcept;
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     UiDragHandleConfig _config{};
+    UiStyleState<UiDragHandleStyle> _style_state;
     UiDragHandleDraggedCallback _on_dragged;
     UiDragHandleDragEndedCallback _on_drag_ended;
     elysia::core::Vector2 _grab_offset{};

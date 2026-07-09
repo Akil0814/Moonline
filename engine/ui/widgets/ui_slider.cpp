@@ -1,6 +1,7 @@
 #include "ui_slider.h"
 
 #include "../style/ui_style_defaults.h"
+#include "../style/ui_theme.h"
 #include "../../audio/audio_service.h"
 #include "../../core/render/render_command.h"
 #include "../../localization/localization_manager.h"
@@ -131,7 +132,7 @@ void UiSlider::reset() noexcept
     _text_key.clear();
     _icon = nullptr;
     _sounds.reset();
-    _style = UiStyleDefaults::slider();
+    _style_state.reset(UiStyleDefaults::slider());
     _on_value_changed = nullptr;
     _label_placement = UiSliderLabelPlacement::None;
     _orientation = UiSliderOrientation::Horizontal;
@@ -298,7 +299,8 @@ void UiSlider::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
         return;
 
     const SliderLayout layout = compute_layout();
-    if (_style.chrome.draw_background)
+    const UiSliderStyle& style = _style_state.effective_style();
+    if (style.chrome.draw_background)
         out_commands.push_back(elysia::core::make_ui_fill_rect_command(slider_rect,apply_opacity(current_background_color())));
 
     sync_child_rects(layout);
@@ -324,7 +326,7 @@ void UiSlider::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
 
     if (_value_label_mode != UiSliderValueLabelMode::None)
         _value_number.submit_ui_render_commands(out_commands);
-    if (_style.chrome.draw_border)
+    if (style.chrome.draw_border)
         out_commands.push_back(elysia::core::make_ui_draw_rect_command(slider_rect,apply_opacity(current_border_color())));
 }
 
@@ -483,18 +485,33 @@ void UiSlider::set_on_value_changed(UiSliderValueChangedCallback on_value_change
 
 void UiSlider::set_style(const UiSliderStyle& style)
 {
-    _style = style;
-    _style.handle.size = elysia::core::Vector2(
-        clamp_non_negative(_style.handle.size.x),
-        clamp_non_negative(_style.handle.size.y)
+    _style_state.set_style_override(style);
+    UiSliderStyle resolved = _style_state.effective_style();
+    resolved.handle.size = elysia::core::Vector2(
+        clamp_non_negative(resolved.handle.size.x),
+        clamp_non_negative(resolved.handle.size.y)
     );
-    _handle.set_style(_style.handle);
+    _style_state.set_style_override(resolved);
+    _handle.set_style(resolved.handle);
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 const UiSliderStyle& UiSlider::style() const noexcept
 {
-    return _style;
+    return _style_state.effective_style();
+}
+
+bool UiSlider::has_style_override() const noexcept
+{
+    return _style_state.has_style_override();
+}
+
+void UiSlider::clear_style_override() noexcept
+{
+    _style_state.clear_style_override();
+    _handle.clear_style_override();
+    _handle.set_style(style().handle);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 void UiSlider::set_value_decimal_places(int decimal_places)
@@ -728,8 +745,8 @@ UiSlider::SliderLayout UiSlider::compute_layout() const noexcept
 
     const bool has_label = !_text_key.empty() || _icon;
     const elysia::core::Vector2 handle_size(
-        clamp_non_negative(_style.handle.size.x),
-        clamp_non_negative(_style.handle.size.y)
+        clamp_non_negative(style().handle.size.x),
+        clamp_non_negative(style().handle.size.y)
     );
     const float side_slot_extent = preferred_side_slot_extent(remaining,handle_size);
     const float target_height = _value_number.target_height().value_or(24.0f);
@@ -953,25 +970,25 @@ elysia::core::Color UiSlider::current_background_color() const noexcept
 {
     return resolve_enabled_disabled_color(
         UiEnabledDisabledColors{
-            _style.chrome.background.idle,
-            _style.chrome.background.disabled
+            style().chrome.background.idle,
+            style().chrome.background.disabled
         },
         is_enabled());
 }
 
 elysia::core::Color UiSlider::current_border_color() const noexcept
 {
-    return resolve_enabled_disabled_color(_style.chrome.border,is_enabled());
+    return resolve_enabled_disabled_color(style().chrome.border,is_enabled());
 }
 
 elysia::core::Color UiSlider::current_fill_color() const noexcept
 {
-    return resolve_enabled_disabled_color(_style.fill,is_enabled());
+    return resolve_enabled_disabled_color(style().fill,is_enabled());
 }
 
 elysia::core::Color UiSlider::current_text_color() const noexcept
 {
-    return resolve_enabled_disabled_color(_style.text,is_enabled());
+    return resolve_enabled_disabled_color(style().text,is_enabled());
 }
 void UiSlider::bind_handle_callbacks()
 {
@@ -1020,6 +1037,13 @@ void UiSlider::play_slide_sound_if_allowed()
         _last_slide_sound_ticks = now;
         _has_last_slide_sound_tick = true;
     }
+}
+
+void UiSlider::apply_theme(const UiTheme& theme)
+{
+    _style_state.set_theme_style(theme.slider_style);
+    _handle.set_style(style().handle);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 }
 

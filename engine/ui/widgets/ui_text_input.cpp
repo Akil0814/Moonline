@@ -1,6 +1,7 @@
 #include "ui_text_input.h"
 
 #include "../style/ui_style_defaults.h"
+#include "../style/ui_theme.h"
 
 #include "../../core/render/render_command.h"
 #include "../../localization/localization_manager.h"
@@ -127,7 +128,7 @@ void UiTextInput::reset() noexcept
     _composition_start = 0;
     _composition_length = 0;
     _max_length.reset();
-    _style = UiStyleDefaults::text_input();
+    _style_state.reset(UiStyleDefaults::text_input());
     _text_point_size = 24;
     _placeholder_point_size = 18;
     _padding = 10;
@@ -253,9 +254,10 @@ void UiTextInput::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
     if (input_rect.is_empty())
         return;
 
-    if (_style.chrome.draw_background)
+    const UiTextInputStyle& style = _style_state.effective_style();
+    if (style.chrome.draw_background)
         out_commands.push_back(elysia::core::make_ui_fill_rect_command(input_rect,apply_opacity(current_background_color())));
-    if (_style.chrome.draw_border)
+    if (style.chrome.draw_border)
         out_commands.push_back(elysia::core::make_ui_draw_rect_command(input_rect,apply_opacity(current_border_color())));
 
     const TextLayout layout = compute_text_layout();
@@ -306,7 +308,7 @@ void UiTextInput::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
             out_commands.push_back(elysia::core::make_ui_draw_line_command(
                 elysia::core::Vector2(layout.composition_highlight_start_x,underline_y),
                 elysia::core::Vector2(layout.composition_highlight_end_x,underline_y),
-                apply_opacity(_style.caret),
+                apply_opacity(style.caret),
                 layout.content_rect));
     }
 
@@ -320,7 +322,7 @@ void UiTextInput::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
             out_commands.push_back(elysia::core::make_ui_draw_line_command(
                 elysia::core::Vector2(layout.caret_x,caret_top),
                 elysia::core::Vector2(layout.caret_x,caret_bottom),
-                apply_opacity(_style.caret),
+                apply_opacity(style.caret),
                 layout.content_rect));
         }
 
@@ -383,13 +385,24 @@ const std::optional<std::size_t>& UiTextInput::max_length() const noexcept
 
 void UiTextInput::set_style(const UiTextInputStyle& style) noexcept
 {
-    _style = style;
+    _style_state.set_style_override(style);
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 const UiTextInputStyle& UiTextInput::style() const noexcept
 {
-    return _style;
+    return _style_state.effective_style();
+}
+
+bool UiTextInput::has_style_override() const noexcept
+{
+    return _style_state.has_style_override();
+}
+
+void UiTextInput::clear_style_override() noexcept
+{
+    _style_state.clear_style_override();
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 void UiTextInput::set_text_point_size(int point_size) noexcept
@@ -704,22 +717,22 @@ UiTextInput::TextLayout UiTextInput::compute_text_layout() const
 
 elysia::core::Color UiTextInput::current_background_color() const noexcept
 {
-    return resolve_interactive_color(_style.chrome.background,is_enabled(),is_focused(),_is_pushed);
+    return resolve_interactive_color(style().chrome.background,is_enabled(),is_focused(),_is_pushed);
 }
 
 elysia::core::Color UiTextInput::current_border_color() const noexcept
 {
-    return resolve_enabled_disabled_color(_style.chrome.border,is_enabled());
+    return resolve_enabled_disabled_color(style().chrome.border,is_enabled());
 }
 
 elysia::core::Color UiTextInput::current_text_color() const noexcept
 {
-    return resolve_enabled_disabled_color(_style.text,is_enabled());
+    return resolve_enabled_disabled_color(style().text,is_enabled());
 }
 
 elysia::core::Color UiTextInput::current_placeholder_color() const noexcept
 {
-    return resolve_enabled_disabled_color(_style.placeholder,is_enabled());
+    return resolve_enabled_disabled_color(style().placeholder,is_enabled());
 }
 
 void UiTextInput::acquire_text_input_ownership() const
@@ -744,6 +757,12 @@ void UiTextInput::notify_text_changed_if_needed(const std::string& previous_text
     if (previous_text == _text || !_on_text_changed)
         return;
     _on_text_changed(_text);
+}
+
+void UiTextInput::apply_theme(const UiTheme& theme)
+{
+    _style_state.set_theme_style(theme.text_input_style);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 }
 

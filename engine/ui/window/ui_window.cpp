@@ -1,6 +1,7 @@
 #include "ui_window.h"
 
 #include "../style/ui_style_defaults.h"
+#include "../style/ui_theme.h"
 #include "../focus/ui_focus_scope_utils.h"
 #include "../focus/ui_control_focus_scope_host.h"
 #include "../layout/ui_anchor_layout.h"
@@ -59,7 +60,7 @@ void UiWindow::reset() noexcept
     _overlay_entries.clear();
     _focused_scope = nullptr;
     _last_focused_scope = nullptr;
-    _style = UiStyleDefaults::window();
+    _style_state.reset(UiStyleDefaults::window());
     _hover_focus_enabled = true;
     _focus_input_device = elysia::input::InputDevice::Unknown;
     _on_cancel = {};
@@ -67,52 +68,62 @@ void UiWindow::reset() noexcept
 
 void UiWindow::set_style(const UiWindowStyle& style) noexcept
 {
-    _style = style;
+    _style_state.set_style_override(style);
 }
 
 const UiWindowStyle& UiWindow::style() const noexcept
 {
-    return _style;
+    return _style_state.effective_style();
+}
+
+bool UiWindow::has_style_override() const noexcept
+{
+    return _style_state.has_style_override();
+}
+
+void UiWindow::clear_style_override() noexcept
+{
+    _style_state.clear_style_override();
 }
 
 void UiWindow::set_draw_background(bool draw_background) noexcept
 {
-    _style.draw_background = draw_background;
+    _style_state.ensure_style_override().draw_background = draw_background;
 }
 
 bool UiWindow::draws_background() const noexcept
 {
-    return _style.draw_background;
+    return style().draw_background;
 }
 
 void UiWindow::set_draw_border(bool draw_border) noexcept
 {
-    _style.draw_border = draw_border;
+    _style_state.ensure_style_override().draw_border = draw_border;
 }
 
 bool UiWindow::draws_border() const noexcept
 {
-    return _style.draw_border;
+    return style().draw_border;
 }
 
 void UiWindow::set_background_color(elysia::core::Color color) noexcept
 {
-    _style.background = color;
+    _style_state.ensure_style_override().background = color;
 }
 
 elysia::core::Color UiWindow::background_color() const noexcept
 {
-    return _style.background;
+    return style().background;
 }
 
 void UiWindow::set_border_color(elysia::core::Color color) noexcept
 {
-    _style.border = color;
+    _style_state.ensure_style_override().border = color;
 }
 
 elysia::core::Color UiWindow::border_color() const noexcept
 {
-    return _style.border;
+    return style().border;
 }
 
 void UiWindow::set_hover_focus_enabled(bool enabled) noexcept
@@ -471,11 +482,12 @@ void UiWindow::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
     self->ensure_valid_scope_focus();
     self->apply_scope_focus();
 
-    if (_style.draw_background)
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(screen_rect(),apply_opacity(_style.background)));
+    const UiWindowStyle& style = _style_state.effective_style();
+    if (style.draw_background)
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(screen_rect(),apply_opacity(style.background)));
     submit_child_render_commands(out_commands);
-    if (_style.draw_border)
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(screen_rect(),apply_opacity(_style.border)));
+    if (style.draw_border)
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(screen_rect(),apply_opacity(style.border)));
 }
 
 void UiWindow::rebuild_layout()
@@ -865,6 +877,11 @@ bool UiWindow::is_live_child_element(const UiElement& element) const noexcept
 bool UiWindow::uses_pointer_focus_policy(elysia::input::InputDevice device) noexcept
 {
     return device == elysia::input::InputDevice::Mouse;
+}
+
+void UiWindow::apply_theme(const UiTheme& theme)
+{
+    _style_state.set_theme_style(theme.window_style);
 }
 }
 

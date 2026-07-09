@@ -218,14 +218,14 @@ void UiListContainer::submit_ui_render_commands(std::vector<elysia::core::UiRend
     UiChildHost::submit_ui_render_commands(out_commands);
 }
 
-void UiListContainer::add_front(std::unique_ptr<UiElement> child)
+UiElement* UiListContainer::add_front(std::unique_ptr<UiElement> child)
 {
-    (void)insert_child(std::move(child),0,UiLayoutChildOptions{});
+    return insert_child(std::move(child),0,UiLayoutChildOptions{});
 }
 
-void UiListContainer::add_back(std::unique_ptr<UiElement> child)
+UiElement* UiListContainer::add_back(std::unique_ptr<UiElement> child)
 {
-    (void)insert_child(std::move(child),child_count(),UiLayoutChildOptions{});
+    return insert_child(std::move(child),child_count(),UiLayoutChildOptions{});
 }
 
 UiElement* UiListContainer::add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options)

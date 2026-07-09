@@ -5,6 +5,7 @@
 #include "../layout/ui_anchor_layout.h"
 #include "../layout/ui_layout_geometry.h"
 #include "../style/ui_style_defaults.h"
+#include "../style/ui_theme.h"
 #include "../../core/render/render_command.h"
 
 #include <algorithm>
@@ -154,7 +155,7 @@ void UiChromeContainer::reset() noexcept
     UiControlFocusScopeHost::reset();
     reset_delegated_focus_state();
     clear_internal_host_pointers();
-    _style = UiStyleDefaults::chrome_container();
+    _style_state.reset(UiStyleDefaults::chrome_container());
     _header_padding = UiLayoutPadding{ 8.0f,6.0f,8.0f,6.0f };
     _body_padding = UiLayoutPadding{};
     _header_height = 48.0f;
@@ -272,13 +273,14 @@ void UiChromeContainer::submit_ui_render_commands(std::vector<elysia::core::UiRe
     self->apply_focus_state();
 
     const elysia::core::Rect& rect = screen_rect();
-    if (_style.draw_background && !rect.is_empty())
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(_style.background)));
-    if (_header_visible && _style.draw_header_background && !header_rect().is_empty())
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(header_rect(),apply_opacity(_style.header_background)));
+    const UiChromeContainerStyle& style = _style_state.effective_style();
+    if (style.draw_background && !rect.is_empty())
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(style.background)));
+    if (_header_visible && style.draw_header_background && !header_rect().is_empty())
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(header_rect(),apply_opacity(style.header_background)));
     submit_child_render_commands(out_commands);
-    if (_style.draw_border && !rect.is_empty())
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(_style.border)));
+    if (style.draw_border && !rect.is_empty())
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(style.border)));
 }
 
 elysia::core::Vector2 UiChromeContainer::content_extent() const noexcept
@@ -392,30 +394,14 @@ bool UiChromeContainer::can_navigate(UiAction action) const noexcept
     return false;
 }
 
-UiElement* UiChromeContainer::add_left_action_front(std::unique_ptr<UiElement> action)
+UiElement* UiChromeContainer::add_left_action(std::unique_ptr<UiElement> action,UiChromeActionInsertPosition position)
 {
-    if (!_left_actions || !action)
-        return nullptr;
-
-    UiElement* raw = action.get();
-    _left_actions->add_front(std::move(action));
-    return raw;
-}
-
-UiElement* UiChromeContainer::add_left_action_back(std::unique_ptr<UiElement> action)
-{
-    if (!_left_actions || !action)
-        return nullptr;
-
-    UiElement* raw = action.get();
-    _left_actions->add_back(std::move(action));
-    return raw;
+    return add_action(_left_actions,std::move(action),position);
 }
 
 void UiChromeContainer::clear_left_actions()
 {
-    if (_left_actions)
-        _left_actions->clear_children();
+    clear_children(_left_actions);
 }
 
 UiElement* UiChromeContainer::add_title_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options)
@@ -425,34 +411,17 @@ UiElement* UiChromeContainer::add_title_child(std::unique_ptr<UiElement> child,U
 
 void UiChromeContainer::clear_title_children()
 {
-    if (_title_slot)
-        _title_slot->clear_children();
+    clear_children(_title_slot);
 }
 
-UiElement* UiChromeContainer::add_right_action_front(std::unique_ptr<UiElement> action)
+UiElement* UiChromeContainer::add_right_action(std::unique_ptr<UiElement> action,UiChromeActionInsertPosition position)
 {
-    if (!_right_actions || !action)
-        return nullptr;
-
-    UiElement* raw = action.get();
-    _right_actions->add_front(std::move(action));
-    return raw;
-}
-
-UiElement* UiChromeContainer::add_right_action_back(std::unique_ptr<UiElement> action)
-{
-    if (!_right_actions || !action)
-        return nullptr;
-
-    UiElement* raw = action.get();
-    _right_actions->add_back(std::move(action));
-    return raw;
+    return add_action(_right_actions,std::move(action),position);
 }
 
 void UiChromeContainer::clear_right_actions()
 {
-    if (_right_actions)
-        _right_actions->clear_children();
+    clear_children(_right_actions);
 }
 
 UiElement* UiChromeContainer::set_body(std::unique_ptr<UiElement> body_element)
@@ -460,7 +429,7 @@ UiElement* UiChromeContainer::set_body(std::unique_ptr<UiElement> body_element)
     if (!_body)
         return nullptr;
 
-    _body->clear_children();
+    clear_children(_body);
     if (!body_element)
     {
         _body_scope_active = false;
@@ -497,7 +466,7 @@ void UiChromeContainer::clear_body()
 {
     if (!_body)
         return;
-    _body->clear_children();
+    clear_children(_body);
     _body_scope_active = false;
     sync_body_scope_focus();
     invalidate_intrinsic_layout();
@@ -555,72 +524,82 @@ const UiLayoutPadding& UiChromeContainer::body_padding() const noexcept
 
 void UiChromeContainer::set_style(const UiChromeContainerStyle& style) noexcept
 {
-    _style = style;
+    _style_state.set_style_override(style);
 }
 
 const UiChromeContainerStyle& UiChromeContainer::style() const noexcept
 {
-    return _style;
+    return _style_state.effective_style();
+}
+
+bool UiChromeContainer::has_style_override() const noexcept
+{
+    return _style_state.has_style_override();
+}
+
+void UiChromeContainer::clear_style_override() noexcept
+{
+    _style_state.clear_style_override();
 }
 
 void UiChromeContainer::set_draw_background(bool draw_background) noexcept
 {
-    _style.draw_background = draw_background;
+    _style_state.ensure_style_override().draw_background = draw_background;
 }
 
 bool UiChromeContainer::draws_background() const noexcept
 {
-    return _style.draw_background;
+    return style().draw_background;
 }
 
 void UiChromeContainer::set_draw_border(bool draw_border) noexcept
 {
-    _style.draw_border = draw_border;
+    _style_state.ensure_style_override().draw_border = draw_border;
 }
 
 bool UiChromeContainer::draws_border() const noexcept
 {
-    return _style.draw_border;
+    return style().draw_border;
 }
 
 void UiChromeContainer::set_draw_header_background(bool draw_header_background) noexcept
 {
-    _style.draw_header_background = draw_header_background;
+    _style_state.ensure_style_override().draw_header_background = draw_header_background;
 }
 
 bool UiChromeContainer::draws_header_background() const noexcept
 {
-    return _style.draw_header_background;
+    return style().draw_header_background;
 }
 
 void UiChromeContainer::set_background_color(elysia::core::Color color) noexcept
 {
-    _style.background = color;
+    _style_state.ensure_style_override().background = color;
 }
 
 elysia::core::Color UiChromeContainer::background_color() const noexcept
 {
-    return _style.background;
+    return style().background;
 }
 
 void UiChromeContainer::set_border_color(elysia::core::Color color) noexcept
 {
-    _style.border = color;
+    _style_state.ensure_style_override().border = color;
 }
 
 elysia::core::Color UiChromeContainer::border_color() const noexcept
 {
-    return _style.border;
+    return style().border;
 }
 
 void UiChromeContainer::set_header_background_color(elysia::core::Color color) noexcept
 {
-    _style.header_background = color;
+    _style_state.ensure_style_override().header_background = color;
 }
 
 elysia::core::Color UiChromeContainer::header_background_color() const noexcept
 {
-    return _style.header_background;
+    return style().header_background;
 }
 
 void UiChromeContainer::rebuild_layout()
@@ -748,6 +727,28 @@ void UiChromeContainer::collect_controls_from(
     collect_focusable_controls(element,out_controls,recurse_into_nested_scopes);
 }
 
+UiElement* UiChromeContainer::add_action(
+    UiListContainer* actions,
+    std::unique_ptr<UiElement> child,
+    UiChromeActionInsertPosition position)
+{
+    if (!actions || !child)
+        return nullptr;
+
+    UiElement* raw = child.get();
+    if (position == UiChromeActionInsertPosition::Front)
+        actions->add_front(std::move(child));
+    else
+        actions->add_back(std::move(child));
+    return raw;
+}
+
+void UiChromeContainer::clear_children(UiChildHost* host) noexcept
+{
+    if (host)
+        host->clear_children();
+}
+
 UiFocusScope* UiChromeContainer::delegated_body_scope() noexcept
 {
     return delegated_scope_for_region(delegated_focus_region(body_content_mutable()));
@@ -870,5 +871,10 @@ elysia::core::Rect UiChromeContainer::body_rect() const noexcept
         content.width(),
         std::max(0.0f,content.height() - header_height)
     );
+}
+
+void UiChromeContainer::apply_theme(const UiTheme& theme)
+{
+    _style_state.set_theme_style(theme.chrome_container_style);
 }
 }

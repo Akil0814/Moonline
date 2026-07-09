@@ -1,6 +1,7 @@
 #include "ui_bar.h"
 
 #include "../style/ui_style_defaults.h"
+#include "../style/ui_theme.h"
 #include "../../core/render/render_command.h"
 
 #include <algorithm>
@@ -32,7 +33,8 @@ void UiBar::reset() noexcept
     _min_value = 0.0f;
     _max_value = 1.0f;
     _value = 0.0f;
-    _style = UiStyleDefaults::bar();
+    _style_state.reset(UiStyleDefaults::bar());
+    _theme_role = UiBarThemeRole::Default;
     _fill_direction = BarFillDirection::LeftToRight;
     _padding = 0;
 }
@@ -84,52 +86,73 @@ float UiBar::ratio() const
 
 void UiBar::set_style(const UiBarStyle& style) noexcept
 {
-    _style = style;
+    _style_state.set_style_override(style);
 }
 
 const UiBarStyle& UiBar::style() const noexcept
 {
-    return _style;
+    return _style_state.effective_style();
+}
+
+bool UiBar::has_style_override() const noexcept
+{
+    return _style_state.has_style_override();
+}
+
+void UiBar::clear_style_override() noexcept
+{
+    _style_state.clear_style_override();
+}
+
+void UiBar::set_theme_role(UiBarThemeRole role) noexcept
+{
+    _theme_role = role;
+    request_theme_reapply();
+}
+
+UiBarThemeRole UiBar::theme_role() const noexcept
+{
+    return _theme_role;
 }
 
 void UiBar::set_background_color(elysia::core::Color color)
 {
-    _style.background = color;
+    _style_state.ensure_style_override().background = color;
 }
 
 elysia::core::Color UiBar::background_color() const
 {
-    return _style.background;
+    return style().background;
 }
 
 void UiBar::set_fill_color(elysia::core::Color color)
 {
-    _style.fill = color;
+    _style_state.ensure_style_override().fill = color;
 }
 
 elysia::core::Color UiBar::fill_color() const
 {
-    return _style.fill;
+    return style().fill;
 }
 
 void UiBar::set_border_color(elysia::core::Color color)
 {
-    _style.border = color;
+    _style_state.ensure_style_override().border = color;
 }
 
 elysia::core::Color UiBar::border_color() const
 {
-    return _style.border;
+    return style().border;
 }
 
 void UiBar::set_draw_border(bool draw_border)
 {
-    _style.draw_border = draw_border;
+    _style_state.ensure_style_override().draw_border = draw_border;
 }
 
 bool UiBar::draws_border() const
 {
-    return _style.draw_border;
+    return style().draw_border;
 }
 
 void UiBar::set_fill_direction(BarFillDirection direction)
@@ -161,14 +184,15 @@ void UiBar::submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>
     if (bar_rect.is_empty())
         return;
 
-    out_commands.push_back(elysia::core::make_ui_fill_rect_command(bar_rect, apply_opacity(_style.background)));
+    const UiBarStyle& style = _style_state.effective_style();
+    out_commands.push_back(elysia::core::make_ui_fill_rect_command(bar_rect, apply_opacity(style.background)));
 
     const elysia::core::Rect fill = fill_rect(bar_rect);
     if (!fill.is_empty())
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(fill, apply_opacity(_style.fill)));
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(fill, apply_opacity(style.fill)));
 
-    if (_style.draw_border)
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(bar_rect, apply_opacity(_style.border)));
+    if (style.draw_border)
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(bar_rect, apply_opacity(style.border)));
 }
 
 elysia::core::Rect UiBar::content_rect(const elysia::core::Rect& rect) const
@@ -221,6 +245,11 @@ elysia::core::Rect UiBar::fill_rect(const elysia::core::Rect& rect) const
     }
 
     return fill;
+}
+
+void UiBar::apply_theme(const UiTheme& theme)
+{
+    _style_state.set_theme_style(theme.bar(_theme_role));
 }
 
 }

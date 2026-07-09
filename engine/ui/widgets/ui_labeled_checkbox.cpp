@@ -1,6 +1,7 @@
 #include "ui_labeled_checkbox.h"
 
 #include "../style/ui_style_defaults.h"
+#include "../style/ui_theme.h"
 #include "../../core/render/render_command.h"
 
 #include <algorithm>
@@ -265,5 +266,12 @@ elysia::core::Rect UiLabeledCheckbox::label_rect() const noexcept
     const float x = box.right() + spacing;
     const float width = std::max(0.0f,content.right() - x);
     return elysia::core::Rect(x,content.y(),width,content.height());
+}
+
+void UiLabeledCheckbox::apply_theme(const UiTheme& theme)
+{
+    UiCheckbox::apply_theme(theme);
+    _text_color = theme.label(UiLabelThemeRole::Default).text;
+    _disabled_text_color = theme.button(UiButtonThemeRole::Default).text.disabled;
 }
 }

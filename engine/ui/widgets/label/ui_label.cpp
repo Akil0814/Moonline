@@ -1,6 +1,7 @@
 #include "ui_label.h"
 
 #include "../../style/ui_style_defaults.h"
+#include "../../style/ui_theme.h"
 #include "../../../core/render/render_command.h"
 #include "../../../localization/localization_manager.h"
 #include "../../../localization/localized_text_style.h"
@@ -37,7 +38,8 @@ void UiLabel::reset() noexcept
 {
     UiElement::reset();
     _text_key.clear();
-    _style = UiStyleDefaults::label();
+    _style_state.reset(UiStyleDefaults::label());
+    _theme_role = UiLabelThemeRole::Default;
     _horizontal_align = TextHorizontalAlign::Left;
     _vertical_align = TextVerticalAlign::Top;
     _text_point_size = 24;
@@ -53,8 +55,9 @@ void UiLabel::submit_ui_render_commands(std::vector<elysia::core::UiRenderComman
     if (label_rect.is_empty())
         return;
 
-    if (_style.draw_background)
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(label_rect,apply_opacity(_style.background)));
+    const UiLabelStyle& style = _style_state.effective_style();
+    if (style.draw_background)
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(label_rect,apply_opacity(style.background)));
 
     if (_text_key.empty())
         return;
@@ -65,7 +68,7 @@ void UiLabel::submit_ui_render_commands(std::vector<elysia::core::UiRenderComman
 
     elysia::localization::LocalizedTextStyle text_style;
     text_style.point_size = _text_point_size;
-    text_style.color = _style.text;
+    text_style.color = style.text;
     text_style.wrap_width = std::max(0,static_cast<int>(content_rect().width()));
 
     SDL_Texture* text_texture = localization_manager->get_text_texture(_text_key,text_style);
@@ -94,43 +97,65 @@ const std::string& UiLabel::text_key() const noexcept
 
 void UiLabel::set_style(const UiLabelStyle& style) noexcept
 {
-    _style = style;
+    _style_state.set_style_override(style);
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 const UiLabelStyle& UiLabel::style() const noexcept
 {
-    return _style;
+    return _style_state.effective_style();
+}
+
+bool UiLabel::has_style_override() const noexcept
+{
+    return _style_state.has_style_override();
+}
+
+void UiLabel::clear_style_override() noexcept
+{
+    _style_state.clear_style_override();
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+void UiLabel::set_theme_role(UiLabelThemeRole role) noexcept
+{
+    _theme_role = role;
+    request_theme_reapply();
+}
+
+UiLabelThemeRole UiLabel::theme_role() const noexcept
+{
+    return _theme_role;
 }
 
 void UiLabel::set_text_color(elysia::core::Color color)
 {
-    _style.text = color;
+    _style_state.ensure_style_override().text = color;
 }
 
 elysia::core::Color UiLabel::text_color() const noexcept
 {
-    return _style.text;
+    return style().text;
 }
 
 void UiLabel::set_background_color(elysia::core::Color color)
 {
-    _style.background = color;
+    _style_state.ensure_style_override().background = color;
 }
 
 elysia::core::Color UiLabel::background_color() const noexcept
 {
-    return _style.background;
+    return style().background;
 }
 
 void UiLabel::set_draw_background(bool draw_background)
 {
-    _style.draw_background = draw_background;
+    _style_state.ensure_style_override().draw_background = draw_background;
 }
 
 bool UiLabel::draws_background() const noexcept
 {
-    return _style.draw_background;
+    return style().draw_background;
 }
 
 void UiLabel::set_horizontal_align(TextHorizontalAlign align)
@@ -249,6 +274,12 @@ elysia::core::Rect UiLabel::text_render_rect(SDL_Texture* text_texture) const no
     }
 
     return elysia::core::Rect(x,y,render_size.x,render_size.y);
+}
+
+void UiLabel::apply_theme(const UiTheme& theme)
+{
+    _style_state.set_theme_style(theme.label(_theme_role));
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 }
 

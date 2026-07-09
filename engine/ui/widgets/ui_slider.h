@@ -6,6 +6,7 @@
 #include <string_view>
 #include <variant>
 #include "../core/ui_control.h"
+#include "../style/ui_style.h"
 #include "../style/ui_interaction_style.h"
 #include "label/ui_label.h"
 #include "number/ui_number.h"
@@ -121,6 +122,8 @@ namespace elysia::ui
 
         void set_style(const UiSliderStyle& style);
         [[nodiscard]] const UiSliderStyle& style() const noexcept;
+        [[nodiscard]] bool has_style_override() const noexcept;
+        void clear_style_override() noexcept;
 
         void set_value_decimal_places(int decimal_places);
         [[nodiscard]] int value_decimal_places() const noexcept;
@@ -189,6 +192,7 @@ namespace elysia::ui
         void play_sound_if_set(std::string_view sound_key) const;
         // Throttles repeated slide sounds while the thumb is actively moving.
         void play_slide_sound_if_allowed();
+        void apply_theme(const UiTheme& theme) override;
 
     private:
         mutable UiBar _bar;
@@ -198,7 +202,7 @@ namespace elysia::ui
         std::string _text_key;
         SDL_Texture* _icon = nullptr;
         std::optional<UiSliderSounds> _sounds;
-        UiSliderStyle _style{};
+        UiStyleState<UiSliderStyle> _style_state;
         UiSliderValueChangedCallback _on_value_changed;
         UiSliderLabelPlacement _label_placement = UiSliderLabelPlacement::None;
         UiSliderOrientation _orientation = UiSliderOrientation::Horizontal;

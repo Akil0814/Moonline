@@ -30,9 +30,9 @@ public:
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
 
     // Prepends a child to the list while preserving container ownership.
-    void add_front(std::unique_ptr<UiElement> child);
+    UiElement* add_front(std::unique_ptr<UiElement> child);
     // Appends a child to the list while preserving container ownership.
-    void add_back(std::unique_ptr<UiElement> child);
+    UiElement* add_back(std::unique_ptr<UiElement> child);
     UiElement* add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options) override;
     [[nodiscard]] elysia::core::Vector2 content_extent() const noexcept override;
 

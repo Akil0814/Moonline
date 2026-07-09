@@ -82,6 +82,7 @@ public:
 protected:
     // Shrinks the inherited checkbox indicator rect to make room for the label.
     [[nodiscard]] elysia::core::Rect checkbox_rect() const noexcept override;
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     // Applies the config payload without exposing intermediate label visuals.

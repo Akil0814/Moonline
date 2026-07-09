@@ -110,7 +110,7 @@ void MainMenuScene::rebuild_menu_buttons()
             {
                 close_overlay(_main_menu_window,_exit_confirmation);
             });
-            exit_confirmation->add_right_action_back(std::move(close_button));
+            exit_confirmation->add_right_action(std::move(close_button));
 
             auto body = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,380,152 });
 

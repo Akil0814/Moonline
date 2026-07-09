@@ -3,6 +3,7 @@
 #include "../focus/ui_focus_scope_utils.h"
 #include "../layout/ui_layout_geometry.h"
 #include "../style/ui_style_defaults.h"
+#include "../style/ui_theme.h"
 #include "../core/ui_control.h"
 #include "../../core/render/render_command.h"
 
@@ -60,7 +61,7 @@ void UiScrollContainer::reset() noexcept
     UiChildHost::set_clip_children(true);
     _scroll_state.reset();
     _scrollbar_visibility = UiScrollBarVisibility::Auto;
-    _style = UiStyleDefaults::scroll_container();
+    _style_state.reset(UiStyleDefaults::scroll_container());
     _content_layout = UiLayoutChildOptions{};
     _scope_focused = false;
     _content_pointer_active = false;
@@ -147,8 +148,9 @@ void UiScrollContainer::submit_ui_render_commands(std::vector<elysia::core::UiRe
     self->update_layout_if_dirty();
 
     const elysia::core::Rect rect = screen_rect();
-    if (_style.draw_background && !rect.is_empty())
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(_style.background_color)));
+    const UiScrollContainerStyle& style = _style_state.effective_style();
+    if (style.draw_background && !rect.is_empty())
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(style.background_color)));
 
     if (const UiElement* content_element = content())
     {
@@ -162,8 +164,8 @@ void UiScrollContainer::submit_ui_render_commands(std::vector<elysia::core::UiRe
 
     submit_scrollbar_render_commands(out_commands);
 
-    if (_style.draw_border && !rect.is_empty())
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(_style.border_color)));
+    if (style.draw_border && !rect.is_empty())
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(style.border_color)));
 }
 
 UiElement* UiScrollContainer::add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options)
@@ -188,11 +190,7 @@ const UiElement* UiScrollContainer::content() const noexcept
 
 void UiScrollContainer::clear_content()
 {
-    UiChildHost::clear_children();
-    _content_layout = UiLayoutChildOptions{};
-    clear_content_pointer_state();
-    set_content_focus_suppressed(false);
-    reset_scroll_offset();
+    reset_content_state();
 }
 
 void UiScrollContainer::set_scroll_axis(UiScrollAxis axis) noexcept
@@ -209,41 +207,52 @@ UiScrollAxis UiScrollContainer::scroll_axis() const noexcept
 UiScrollAxis UiScrollContainer::resolved_scroll_axis() const noexcept
 {
     auto* self = const_cast<UiScrollContainer*>(this);
-    self->cleanup_destroyed_children();
-    self->update_layout_if_dirty();
+    self->ensure_layout_current();
     return _scroll_state.resolved_axis();
 }
 
 void UiScrollContainer::set_style(const UiScrollContainerStyle& style) noexcept
 {
-    _style = style;
+    _style_state.set_style_override(style);
     sync_scrollbar_handles();
     mark_layout_dirty();
 }
 
 const UiScrollContainerStyle& UiScrollContainer::style() const noexcept
 {
-    return _style;
+    return _style_state.effective_style();
+}
+
+bool UiScrollContainer::has_style_override() const noexcept
+{
+    return _style_state.has_style_override();
+}
+
+void UiScrollContainer::clear_style_override() noexcept
+{
+    _style_state.clear_style_override();
+    sync_scrollbar_handles();
+    mark_layout_dirty();
 }
 
 void UiScrollContainer::set_draw_background(bool draw_background) noexcept
 {
-    _style.draw_background = draw_background;
+    _style_state.ensure_style_override().draw_background = draw_background;
 }
 
 bool UiScrollContainer::draws_background() const noexcept
 {
-    return _style.draw_background;
+    return style().draw_background;
 }
 
 void UiScrollContainer::set_background_color(elysia::core::Color color) noexcept
 {
-    _style.background_color = color;
+    _style_state.ensure_style_override().background_color = color;
 }
 
 elysia::core::Color UiScrollContainer::background_color() const noexcept
 {
-    return _style.background_color;
+    return style().background_color;
 }
 
 void UiScrollContainer::set_scrollbar_visibility(UiScrollBarVisibility visibility) noexcept
@@ -259,41 +268,40 @@ UiScrollBarVisibility UiScrollContainer::scrollbar_visibility() const noexcept
 
 void UiScrollContainer::set_scrollbar_style(const UiScrollBarStyle& style)
 {
-    _style.scrollbar = style;
+    _style_state.ensure_style_override().scrollbar = style;
     sync_scrollbar_handles();
     mark_layout_dirty();
 }
 
 const UiScrollBarStyle& UiScrollContainer::scrollbar_style() const noexcept
 {
-    return _style.scrollbar;
+    return style().scrollbar;
 }
 
 void UiScrollContainer::set_draw_border(bool draw_border) noexcept
 {
-    _style.draw_border = draw_border;
+    _style_state.ensure_style_override().draw_border = draw_border;
 }
 
 bool UiScrollContainer::draws_border() const noexcept
 {
-    return _style.draw_border;
+    return style().draw_border;
 }
 
 void UiScrollContainer::set_border_color(elysia::core::Color color) noexcept
 {
-    _style.border_color = color;
+    _style_state.ensure_style_override().border_color = color;
 }
 
 elysia::core::Color UiScrollContainer::border_color() const noexcept
 {
-    return _style.border_color;
+    return style().border_color;
 }
 
 elysia::core::Vector2 UiScrollContainer::content_size() const noexcept
 {
     auto* self = const_cast<UiScrollContainer*>(this);
-    self->cleanup_destroyed_children();
-    self->update_layout_if_dirty();
+    self->ensure_layout_current();
     return _scroll_state.content_size();
 }
 
@@ -301,8 +309,7 @@ void UiScrollContainer::set_scroll_offset(const elysia::core::Vector2& scroll_of
 {
     const elysia::core::Vector2 before = _scroll_state.offset();
     _scroll_state.set_offset(scroll_offset);
-    if (!_scroll_state.offset().nearly_equals(before))
-        mark_layout_dirty();
+    mark_layout_dirty_if_offset_changed(before);
 }
 
 elysia::core::Vector2 UiScrollContainer::scroll_offset() const noexcept
@@ -335,8 +342,7 @@ float UiScrollContainer::scroll_offset_y() const noexcept
 elysia::core::Vector2 UiScrollContainer::max_scroll_offset() const noexcept
 {
     auto* self = const_cast<UiScrollContainer*>(this);
-    self->cleanup_destroyed_children();
-    self->update_layout_if_dirty();
+    self->ensure_layout_current();
     return _scroll_state.max_offset();
 }
 
@@ -376,40 +382,35 @@ void UiScrollContainer::scroll_by(const elysia::core::Vector2& delta) noexcept
 {
     const elysia::core::Vector2 before = _scroll_state.offset();
     _scroll_state.scroll_by(delta);
-    if (!_scroll_state.offset().nearly_equals(before))
-        mark_layout_dirty();
+    mark_layout_dirty_if_offset_changed(before);
 }
 
 void UiScrollContainer::scroll_to_left() noexcept
 {
     const elysia::core::Vector2 before = _scroll_state.offset();
     _scroll_state.scroll_to_left();
-    if (!_scroll_state.offset().nearly_equals(before))
-        mark_layout_dirty();
+    mark_layout_dirty_if_offset_changed(before);
 }
 
 void UiScrollContainer::scroll_to_right() noexcept
 {
     const elysia::core::Vector2 before = _scroll_state.offset();
     _scroll_state.scroll_to_right();
-    if (!_scroll_state.offset().nearly_equals(before))
-        mark_layout_dirty();
+    mark_layout_dirty_if_offset_changed(before);
 }
 
 void UiScrollContainer::scroll_to_top() noexcept
 {
     const elysia::core::Vector2 before = _scroll_state.offset();
     _scroll_state.scroll_to_top();
-    if (!_scroll_state.offset().nearly_equals(before))
-        mark_layout_dirty();
+    mark_layout_dirty_if_offset_changed(before);
 }
 
 void UiScrollContainer::scroll_to_bottom() noexcept
 {
     const elysia::core::Vector2 before = _scroll_state.offset();
     _scroll_state.scroll_to_bottom();
-    if (!_scroll_state.offset().nearly_equals(before))
-        mark_layout_dirty();
+    mark_layout_dirty_if_offset_changed(before);
 }
 
 void UiScrollContainer::ensure_visible(const elysia::core::Rect& target_rect) noexcept
@@ -428,7 +429,27 @@ void UiScrollContainer::ensure_visible(const elysia::core::Rect& target_rect) no
 
     const elysia::core::Vector2 before = _scroll_state.offset();
     _scroll_state.ensure_visible(local_rect);
-    if (!_scroll_state.offset().nearly_equals(before))
+    mark_layout_dirty_if_offset_changed(before);
+}
+
+void UiScrollContainer::ensure_layout_current() noexcept
+{
+    cleanup_destroyed_children();
+    update_layout_if_dirty();
+}
+
+void UiScrollContainer::reset_content_state() noexcept
+{
+    UiChildHost::clear_children();
+    _content_layout = UiLayoutChildOptions{};
+    clear_content_pointer_state();
+    set_content_focus_suppressed(false);
+    reset_scroll_offset();
+}
+
+void UiScrollContainer::mark_layout_dirty_if_offset_changed(const elysia::core::Vector2& previous_offset) noexcept
+{
+    if (!_scroll_state.offset().nearly_equals(previous_offset))
         mark_layout_dirty();
 }
 
@@ -543,11 +564,7 @@ const UiFocusScope* UiScrollContainer::content_scope() const noexcept
 
 UiElement* UiScrollContainer::set_content_internal(std::unique_ptr<UiElement> content,UiLayoutChildOptions options)
 {
-    UiChildHost::clear_children();
-    _content_layout = UiLayoutChildOptions{};
-    clear_content_pointer_state();
-    set_content_focus_suppressed(false);
-    reset_scroll_offset();
+    reset_content_state();
 
     if (!content)
         return nullptr;
@@ -622,7 +639,7 @@ bool UiScrollContainer::handle_mouse_wheel(const UiInputEvent& event)
     if (_scroll_state.offset().nearly_equals(before))
         return false;
 
-    mark_layout_dirty();
+    mark_layout_dirty_if_offset_changed(before);
     return true;
 }
 
@@ -678,7 +695,7 @@ UiScrollContainer::ScrollbarVisibilityState UiScrollContainer::resolved_scrollba
 
     const elysia::core::Rect bounds = interactive_rect();
     const elysia::core::Vector2 content_size = _scroll_state.effective_content_size();
-    const float reserve = std::max(1.0f,_style.scrollbar.thickness) + clamp_non_negative(_style.scrollbar.margin);
+    const float reserve = std::max(1.0f,style().scrollbar.thickness) + clamp_non_negative(style().scrollbar.margin);
 
     for (int pass = 0; pass < 3; ++pass)
     {
@@ -707,7 +724,7 @@ elysia::core::Rect UiScrollContainer::viewport_rect() const noexcept
 elysia::core::Rect UiScrollContainer::viewport_rect(const ScrollbarVisibilityState& scrollbars) const noexcept
 {
     const elysia::core::Rect bounds = interactive_rect();
-    const float reserve = std::max(1.0f,_style.scrollbar.thickness) + clamp_non_negative(_style.scrollbar.margin);
+    const float reserve = std::max(1.0f,style().scrollbar.thickness) + clamp_non_negative(style().scrollbar.margin);
     const float reserved_width = scrollbars.vertical ? reserve : 0.0f;
     const float reserved_height = scrollbars.horizontal ? reserve : 0.0f;
     return elysia::core::Rect(
@@ -735,8 +752,8 @@ elysia::core::Rect UiScrollContainer::scrollbar_track_rect(UiScrollAxis axis) co
         return elysia::core::Rect::zero();
 
     const elysia::core::Rect viewport = UiChildHost::content_rect();
-    const float thickness = std::max(1.0f,_style.scrollbar.thickness);
-    const float margin = clamp_non_negative(_style.scrollbar.margin);
+    const float thickness = std::max(1.0f,style().scrollbar.thickness);
+    const float margin = clamp_non_negative(style().scrollbar.margin);
 
     if (is_horizontal_axis(axis))
     {
@@ -757,7 +774,7 @@ elysia::core::Rect UiScrollContainer::scrollbar_thumb_rect(UiScrollAxis axis,con
     if (track_rect.is_empty())
         return elysia::core::Rect::zero();
 
-    const float min_thumb_length = clamp_non_negative(_style.scrollbar.min_thumb_length);
+    const float min_thumb_length = clamp_non_negative(style().scrollbar.min_thumb_length);
     const elysia::core::Vector2 viewport = _scroll_state.viewport_size();
     const elysia::core::Vector2 content = _scroll_state.effective_content_size();
 
@@ -788,12 +805,12 @@ elysia::core::Rect UiScrollContainer::scrollbar_thumb_rect(UiScrollAxis axis,con
 elysia::core::Color UiScrollContainer::current_track_color(const UiDragHandle& thumb) const noexcept
 {
     if (!thumb.is_enabled())
-        return _style.scrollbar.track_disabled_color;
+        return style().scrollbar.track_disabled_color;
     if (thumb.is_dragging())
-        return _style.scrollbar.track_dragging_color;
+        return style().scrollbar.track_dragging_color;
     if (thumb.is_focused())
-        return _style.scrollbar.track_focused_color;
-    return _style.scrollbar.track_idle_color;
+        return style().scrollbar.track_focused_color;
+    return style().scrollbar.track_idle_color;
 }
 
 void UiScrollContainer::initialize_scrollbar_handles()
@@ -860,12 +877,12 @@ void UiScrollContainer::configure_scrollbar_thumb(
     config.style.size = thumb_rect.size();
     config.style.chrome.draw_background = true;
     config.style.chrome.draw_border = false;
-    config.style.chrome.background.idle = _style.scrollbar.thumb_idle_color;
-    config.style.chrome.background.focused = _style.scrollbar.thumb_focused_color;
-    config.style.chrome.background.active = _style.scrollbar.thumb_dragging_color;
-    config.style.chrome.background.disabled = _style.scrollbar.thumb_disabled_color;
-    config.style.chrome.border.enabled = _style.scrollbar.thumb_idle_color;
-    config.style.chrome.border.disabled = _style.scrollbar.thumb_disabled_color;
+    config.style.chrome.background.idle = style().scrollbar.thumb_idle_color;
+    config.style.chrome.background.focused = style().scrollbar.thumb_focused_color;
+    config.style.chrome.background.active = style().scrollbar.thumb_dragging_color;
+    config.style.chrome.background.disabled = style().scrollbar.thumb_disabled_color;
+    config.style.chrome.border.enabled = style().scrollbar.thumb_idle_color;
+    config.style.chrome.border.disabled = style().scrollbar.thumb_disabled_color;
     thumb.set_drag_handle_config(config);
     thumb.set_drag_axis(config.axis);
     thumb.set_drag_bounds(track_rect);
@@ -887,8 +904,7 @@ void UiScrollContainer::update_horizontal_offset_from_thumb() noexcept
     const float ratio = span > ScrollbarEpsilon ? clamp01((thumb_rect.x() - track_rect.x()) / span) : 0.0f;
     const elysia::core::Vector2 before = _scroll_state.offset();
     _scroll_state.set_horizontal_ratio(ratio);
-    if (!_scroll_state.offset().nearly_equals(before))
-        mark_layout_dirty();
+    mark_layout_dirty_if_offset_changed(before);
 }
 
 void UiScrollContainer::update_vertical_offset_from_thumb() noexcept
@@ -902,8 +918,7 @@ void UiScrollContainer::update_vertical_offset_from_thumb() noexcept
     const float ratio = span > ScrollbarEpsilon ? clamp01((thumb_rect.y() - track_rect.y()) / span) : 0.0f;
     const elysia::core::Vector2 before = _scroll_state.offset();
     _scroll_state.set_vertical_ratio(ratio);
-    if (!_scroll_state.offset().nearly_equals(before))
-        mark_layout_dirty();
+    mark_layout_dirty_if_offset_changed(before);
 }
 
 void UiScrollContainer::reset_scroll_offset() noexcept
@@ -1013,7 +1028,7 @@ void UiScrollContainer::submit_scrollbar_render_commands(std::vector<elysia::cor
 
     if (_horizontal_thumb.is_visible())
     {
-        if (_style.scrollbar.draw_track)
+        if (style().scrollbar.draw_track)
         {
             elysia::core::UiRenderCommand track = elysia::core::make_ui_fill_rect_command(
                 scrollbar_track_rect(UiScrollAxis::Horizontal),
@@ -1027,7 +1042,7 @@ void UiScrollContainer::submit_scrollbar_render_commands(std::vector<elysia::cor
 
     if (_vertical_thumb.is_visible())
     {
-        if (_style.scrollbar.draw_track)
+        if (style().scrollbar.draw_track)
         {
             elysia::core::UiRenderCommand track = elysia::core::make_ui_fill_rect_command(
                 scrollbar_track_rect(UiScrollAxis::Vertical),
@@ -1038,6 +1053,13 @@ void UiScrollContainer::submit_scrollbar_render_commands(std::vector<elysia::cor
         }
         submit_thumb(_vertical_thumb);
     }
+}
+
+void UiScrollContainer::apply_theme(const UiTheme& theme)
+{
+    _style_state.set_theme_style(theme.scroll_container_style);
+    sync_scrollbar_handles();
+    mark_layout_dirty();
 }
 
 }

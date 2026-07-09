@@ -2,6 +2,7 @@
 
 #include "../../audio/audio_service.h"
 #include "../style/ui_style_defaults.h"
+#include "../style/ui_theme.h"
 
 #include <utility>
 
@@ -43,13 +44,13 @@ void UiRadioButton::reset() noexcept
 
     _on_selected = nullptr;
     _sounds.reset();
-    _style = UiStyleDefaults::radio_button();
+    _style_state.reset(UiStyleDefaults::radio_button());
     _text_key.clear();
     _label_placement = UiRadioButtonLabelPlacement::Right;
     _label_spacing = 8.0f;
     _text_placement = UiRadioButtonTextPlacement::NearIndicator;
-    _text_color = _style.text.enabled;
-    _disabled_text_color = _style.text.disabled;
+    _text_color = style().text.enabled;
+    _disabled_text_color = style().text.disabled;
     _text_point_size = _checkbox.text_point_size();
     _padding = _checkbox.padding();
     _label_padding = _checkbox.label_padding();
@@ -136,14 +137,26 @@ const std::string& UiRadioButton::text_key() const noexcept
 
 void UiRadioButton::set_style(const UiRadioButtonStyle& style) noexcept
 {
-    _style = style;
-    _text_color = _style.text.enabled;
-    _disabled_text_color = _style.text.disabled;
+    _style_state.set_style_override(style);
+    _text_color = this->style().text.enabled;
+    _disabled_text_color = this->style().text.disabled;
 }
 
 const UiRadioButtonStyle& UiRadioButton::style() const noexcept
 {
-    return _style;
+    return _style_state.effective_style();
+}
+
+bool UiRadioButton::has_style_override() const noexcept
+{
+    return _style_state.has_style_override();
+}
+
+void UiRadioButton::clear_style_override() noexcept
+{
+    _style_state.clear_style_override();
+    _text_color = style().text.enabled;
+    _disabled_text_color = style().text.disabled;
 }
 
 void UiRadioButton::apply_radio_button_config(const UiRadioButtonConfig& config)
@@ -226,8 +239,8 @@ void UiRadioButton::play_sound_if_set(const std::string& sound_key) const
 UiCheckboxStyle UiRadioButton::checkbox_style() const noexcept
 {
     UiCheckboxStyle style{};
-    style.chrome = _style.chrome;
-    style.mark = _style.mark;
+    style.chrome = this->style().chrome;
+    style.mark = this->style().mark;
     style.mark_style = UiCheckboxMarkStyle::RadioDot;
     return style;
 }
@@ -255,5 +268,12 @@ UiLabeledCheckboxTextPlacement UiRadioButton::to_checkbox_text_placement(UiRadio
     return placement == UiRadioButtonTextPlacement::FarEdge
         ? UiLabeledCheckboxTextPlacement::FarEdge
         : UiLabeledCheckboxTextPlacement::NearBox;
+}
+
+void UiRadioButton::apply_theme(const UiTheme& theme)
+{
+    _style_state.set_theme_style(theme.radio_button_style);
+    _text_color = style().text.enabled;
+    _disabled_text_color = style().text.disabled;
 }
 }

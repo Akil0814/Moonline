@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../style/ui_style.h"
+#include "../style/ui_theme_roles.h"
 #include "../style/ui_visual_styles.h"
 #include "../core/ui_element.h"
 
@@ -36,6 +38,11 @@ public:
 
     void set_style(const UiBarStyle& style) noexcept;
     [[nodiscard]] const UiBarStyle& style() const noexcept;
+    [[nodiscard]] bool has_style_override() const noexcept;
+    void clear_style_override() noexcept;
+
+    void set_theme_role(UiBarThemeRole role) noexcept;
+    [[nodiscard]] UiBarThemeRole theme_role() const noexcept;
 
     void set_background_color(elysia::core::Color color);
     [[nodiscard]] elysia::core::Color background_color() const;
@@ -57,6 +64,7 @@ public:
 
     // Emits background, fill, and optional border commands for the current bar state.
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     // Returns the drawable interior after subtracting visual padding.
@@ -68,7 +76,8 @@ private:
     float _min_value = 0.0f;
     float _max_value = 1.0f;
     float _value = 0.0f;
-    UiBarStyle _style{};
+    UiStyleState<UiBarStyle> _style_state;
+    UiBarThemeRole _theme_role = UiBarThemeRole::Default;
     BarFillDirection _fill_direction = BarFillDirection::LeftToRight;
     int _padding = 0;
 };

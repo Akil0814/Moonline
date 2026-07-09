@@ -3,6 +3,7 @@
 #include "../core/ui_child_host.h"
 #include "../focus/ui_focus_scope.h"
 #include "../core/ui_control.h"
+#include "../style/ui_style.h"
 #include "../style/ui_visual_styles.h"
 #include "ui_overlay.h"
 #include "../../input/input_types.h"
@@ -26,6 +27,8 @@ public:
 
     void set_style(const UiWindowStyle& style) noexcept;
     [[nodiscard]] const UiWindowStyle& style() const noexcept;
+    [[nodiscard]] bool has_style_override() const noexcept;
+    void clear_style_override() noexcept;
 
     void set_draw_background(bool draw_background) noexcept;
     [[nodiscard]] bool draws_background() const noexcept;
@@ -66,6 +69,7 @@ public:
 protected:
     // Rebuilds child layout and reapplies overlay placement after size changes.
     void rebuild_layout() override;
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     // Stores one registered focus scope plus its directional window neighbors.
@@ -145,7 +149,7 @@ private:
     std::vector<OverlayEntry> _overlay_entries;
     UiFocusScope* _focused_scope = nullptr;
     UiFocusScope* _last_focused_scope = nullptr;
-    UiWindowStyle _style{};
+    UiStyleState<UiWindowStyle> _style_state;
     bool _hover_focus_enabled = true;
     elysia::input::InputDevice _focus_input_device = elysia::input::InputDevice::Unknown;
     UiWindowCancelCallback _on_cancel;

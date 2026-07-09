@@ -2,6 +2,7 @@
 
 #include "../focus/ui_control_focus_scope_host.h"
 #include "../focus/ui_delegated_focus_mixin.h"
+#include "../style/ui_style.h"
 #include "../style/ui_visual_styles.h"
 #include "ui_list_container.h"
 
@@ -10,6 +11,12 @@
 
 namespace elysia::ui
 {
+enum class UiChromeActionInsertPosition
+{
+    Front,
+    Back
+};
+
 class UiChromeContainer : public UiControlFocusScopeHost, private UiDelegatedFocusMixin
 {
 private:
@@ -47,16 +54,14 @@ public:
     [[nodiscard]] UiControl* focused_target() const noexcept override;
     [[nodiscard]] bool can_navigate(UiAction action) const noexcept override;
 
-    // Appends or prepends an action item inside the header's left action region.
-    UiElement* add_left_action_front(std::unique_ptr<UiElement> action);
-    UiElement* add_left_action_back(std::unique_ptr<UiElement> action);
+    // Adds an action item inside the header's left action region at the requested position.
+    UiElement* add_left_action(std::unique_ptr<UiElement> action,UiChromeActionInsertPosition position = UiChromeActionInsertPosition::Back);
     void clear_left_actions();
     // Adds a title-region child without exposing the internal slot host directly.
     UiElement* add_title_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options = {});
     void clear_title_children();
-    // Appends or prepends an action item inside the header's right action region.
-    UiElement* add_right_action_front(std::unique_ptr<UiElement> action);
-    UiElement* add_right_action_back(std::unique_ptr<UiElement> action);
+    // Adds an action item inside the header's right action region at the requested position.
+    UiElement* add_right_action(std::unique_ptr<UiElement> action,UiChromeActionInsertPosition position = UiChromeActionInsertPosition::Back);
     void clear_right_actions();
 
     // Replaces the body payload while keeping header slots intact.
@@ -75,6 +80,8 @@ public:
 
     void set_style(const UiChromeContainerStyle& style) noexcept;
     [[nodiscard]] const UiChromeContainerStyle& style() const noexcept;
+    [[nodiscard]] bool has_style_override() const noexcept;
+    void clear_style_override() noexcept;
     void set_draw_background(bool draw_background) noexcept;
     [[nodiscard]] bool draws_background() const noexcept;
     void set_draw_border(bool draw_border) noexcept;
@@ -93,6 +100,7 @@ protected:
     void rebuild_layout() override;
     // Rebuilds focus navigation across header controls and delegated body scope.
     void rebuild_focus_registry() override;
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     // Creates the owned header/body slot hosts used by the chrome container.
@@ -105,6 +113,8 @@ private:
     [[nodiscard]] UiFocusScope* delegated_body_scope() noexcept;
     [[nodiscard]] const UiFocusScope* delegated_body_scope() const noexcept;
     [[nodiscard]] UiElement* body_content_mutable() noexcept;
+    [[nodiscard]] static UiElement* add_action(UiListContainer* actions,std::unique_ptr<UiElement> child,UiChromeActionInsertPosition position);
+    static void clear_children(UiChildHost* host) noexcept;
     // Finds the first focusable control in the header chrome.
     [[nodiscard]] UiControl* first_header_focusable() const noexcept;
     [[nodiscard]] bool header_has_focusable_target() const noexcept;
@@ -128,7 +138,7 @@ private:
     SlotHost* _title_slot = nullptr;
     UiListContainer* _right_actions = nullptr;
     SlotHost* _body = nullptr;
-    UiChromeContainerStyle _style{};
+    UiStyleState<UiChromeContainerStyle> _style_state;
     UiLayoutPadding _header_padding{};
     UiLayoutPadding _body_padding{};
     float _header_height = 48.0f;

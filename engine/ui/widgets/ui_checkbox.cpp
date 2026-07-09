@@ -3,6 +3,7 @@
 #include "../../audio/audio_service.h"
 #include "../../core/render/render_command.h"
 #include "../style/ui_style_defaults.h"
+#include "../style/ui_theme.h"
 
 
 #include <algorithm>
@@ -55,7 +56,7 @@ void UiCheckbox::reset() noexcept
     _sounds.reset();
     _on_toggled = nullptr;
     _state = UiCheckboxState::Unchecked;
-    _style = UiStyleDefaults::checkbox();
+    _style_state.reset(UiStyleDefaults::checkbox());
     _padding = 4;
     _is_pushed = false;
 }
@@ -173,17 +174,18 @@ void UiCheckbox::submit_ui_render_commands(std::vector<elysia::core::UiRenderCom
     }
 
     const elysia::core::Color mark_color = apply_opacity(current_checkmark_color());
-    if (_style.mark_style == UiCheckboxMarkStyle::RadioDot)
+    const UiCheckboxStyle& style = _style_state.effective_style();
+    if (style.mark_style == UiCheckboxMarkStyle::RadioDot)
     {
         const elysia::core::Vector2 center = rect.center();
         const float radius = std::min(rect.width(),rect.height()) * 0.5f;
 
-        if (_style.chrome.draw_background)
+        if (style.chrome.draw_background)
             out_commands.push_back(elysia::core::make_ui_fill_circle_command(
                 center,
                 radius,
                 apply_opacity(current_background_color())));
-        if (_style.chrome.draw_border)
+        if (style.chrome.draw_border)
             out_commands.push_back(elysia::core::make_ui_draw_circle_command(
                 center,
                 radius,
@@ -191,11 +193,11 @@ void UiCheckbox::submit_ui_render_commands(std::vector<elysia::core::UiRenderCom
 
         const float inset = std::max(2.0f,std::min(rect.width(),rect.height()) * 0.14f);
         const float inner_radius = std::max(0.0f,radius - inset);
-        if (_style.chrome.draw_background && inner_radius > 0.0f)
+        if (style.chrome.draw_background && inner_radius > 0.0f)
         {
             const elysia::core::Color background_color = apply_opacity(current_background_color());
             out_commands.push_back(elysia::core::make_ui_fill_circle_command(center,inner_radius,background_color));
-            if (_style.chrome.draw_border)
+            if (style.chrome.draw_border)
                 out_commands.push_back(elysia::core::make_ui_draw_circle_command(center,inner_radius,background_color));
         }
 
@@ -212,14 +214,14 @@ void UiCheckbox::submit_ui_render_commands(std::vector<elysia::core::UiRenderCom
         return;
     }
 
-    if (_style.chrome.draw_background)
+    if (style.chrome.draw_background)
         out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(current_background_color())));
-    if (_style.chrome.draw_border)
+    if (style.chrome.draw_border)
         out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(current_border_color())));
 
     if (_state == UiCheckboxState::Checked)
     {
-        if (_style.mark_style == UiCheckboxMarkStyle::FilledBox)
+        if (style.mark_style == UiCheckboxMarkStyle::FilledBox)
         {
             const float inset = std::max(2.0f,std::min(rect.width(),rect.height()) * 0.22f);
             const float fill_side = std::max(0.0f,std::round(std::min(rect.width(),rect.height()) - inset * 2.0f));
@@ -284,12 +286,22 @@ void UiCheckbox::toggle()
 
 void UiCheckbox::set_style(const UiCheckboxStyle& style) noexcept
 {
-    _style = style;
+    _style_state.set_style_override(style);
 }
 
 const UiCheckboxStyle& UiCheckbox::style() const noexcept
 {
-    return _style;
+    return _style_state.effective_style();
+}
+
+bool UiCheckbox::has_style_override() const noexcept
+{
+    return _style_state.has_style_override();
+}
+
+void UiCheckbox::clear_style_override() noexcept
+{
+    _style_state.clear_style_override();
 }
 
 void UiCheckbox::set_state_textures(const UiCheckboxTextures& textures)
@@ -481,17 +493,17 @@ bool UiCheckbox::uses_texture_rendering() const noexcept
 
 elysia::core::Color UiCheckbox::current_background_color() const noexcept
 {
-    return resolve_interactive_color(_style.chrome.background,is_enabled(),is_focused(),_is_pushed);
+    return resolve_interactive_color(style().chrome.background,is_enabled(),is_focused(),_is_pushed);
 }
 
 elysia::core::Color UiCheckbox::current_border_color() const noexcept
 {
-    return resolve_enabled_disabled_color(_style.chrome.border,is_enabled());
+    return resolve_enabled_disabled_color(style().chrome.border,is_enabled());
 }
 
 elysia::core::Color UiCheckbox::current_checkmark_color() const noexcept
 {
-    return resolve_enabled_disabled_color(_style.mark,is_enabled());
+    return resolve_enabled_disabled_color(style().mark,is_enabled());
 }
 
 UiCheckboxState UiCheckbox::toggled_state(UiCheckboxState state) noexcept
@@ -506,6 +518,11 @@ UiCheckboxState UiCheckbox::toggled_state(UiCheckboxState state) noexcept
     default:
         return UiCheckboxState::Checked;
     }
+}
+
+void UiCheckbox::apply_theme(const UiTheme& theme)
+{
+    _style_state.set_theme_style(theme.checkbox_style);
 }
 }
 

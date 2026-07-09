@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../core/render/colors.h"
+#include "../style/ui_style.h"
 #include "../style/ui_interaction_style.h"
 #include "../core/ui_control.h"
 
@@ -57,6 +58,8 @@ public:
 
     void set_style(const UiTextInputStyle& style) noexcept;
     [[nodiscard]] const UiTextInputStyle& style() const noexcept;
+    [[nodiscard]] bool has_style_override() const noexcept;
+    void clear_style_override() noexcept;
 
     void set_text_point_size(int point_size) noexcept;
     [[nodiscard]] int text_point_size() const noexcept;
@@ -106,6 +109,7 @@ private:
     void release_text_input_ownership() const;
     // Emits text-changed only when the visible text buffer actually changed.
     void notify_text_changed_if_needed(const std::string& previous_text) const;
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     UiTextInputChangedCallback _on_text_changed;
@@ -118,7 +122,7 @@ private:
     int _composition_start = 0;
     int _composition_length = 0;
     std::optional<std::size_t> _max_length = std::nullopt;
-    UiTextInputStyle _style{};
+    UiStyleState<UiTextInputStyle> _style_state;
     int _text_point_size = 24;
     int _placeholder_point_size = 18;
     int _padding = 10;

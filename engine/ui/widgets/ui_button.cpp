@@ -1,6 +1,7 @@
 #include "ui_button.h"
 
 #include "../style/ui_style_defaults.h"
+#include "../style/ui_theme.h"
 
 #include "../../audio/audio_service.h"
 #include "../../core/render/colors.h"
@@ -49,7 +50,8 @@ void UiButton::reset() noexcept
     _state_textures = UiButtonTextures{};
     _on_click = nullptr;
     _visual_mode = UiButtonVisualMode::None;
-    _style = UiStyleDefaults::button();
+    _style_state.reset(UiStyleDefaults::button());
+    _theme_role = UiButtonThemeRole::Default;
     _text_point_size = 24;
     _padding = 10;
     _is_pushed = false;
@@ -178,9 +180,10 @@ void UiButton::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
         return;
     }
 
-    if (_style.chrome.draw_background)
+    const UiButtonStyle& style = _style_state.effective_style();
+    if (style.chrome.draw_background)
         out_commands.push_back(elysia::core::make_ui_fill_rect_command(button_rect,apply_opacity(current_background_color())));
-    if (_style.chrome.draw_border)
+    if (style.chrome.draw_border)
         out_commands.push_back(elysia::core::make_ui_draw_rect_command(button_rect,apply_opacity(current_border_color())));
 
     if (_visual_mode == UiButtonVisualMode::Icon)
@@ -292,13 +295,35 @@ void UiButton::set_on_click(ClickCallback on_click)
 
 void UiButton::set_style(const UiButtonStyle& style)
 {
-    _style = style;
+    _style_state.set_style_override(style);
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 const UiButtonStyle& UiButton::style() const noexcept
 {
-    return _style;
+    return _style_state.effective_style();
+}
+
+bool UiButton::has_style_override() const noexcept
+{
+    return _style_state.has_style_override();
+}
+
+void UiButton::clear_style_override() noexcept
+{
+    _style_state.clear_style_override();
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+void UiButton::set_theme_role(UiButtonThemeRole role) noexcept
+{
+    _theme_role = role;
+    request_theme_reapply();
+}
+
+UiButtonThemeRole UiButton::theme_role() const noexcept
+{
+    return _theme_role;
 }
 
 void UiButton::set_text_point_size(int point_size)
@@ -383,17 +408,17 @@ bool UiButton::can_receive_pointer() const noexcept
 
 elysia::core::Color UiButton::current_background_color() const noexcept
 {
-    return resolve_interactive_color(_style.chrome.background,is_enabled(),is_focused(),_is_pushed);
+    return resolve_interactive_color(style().chrome.background,is_enabled(),is_focused(),_is_pushed);
 }
 
 elysia::core::Color UiButton::current_border_color() const noexcept
 {
-    return resolve_enabled_disabled_color(_style.chrome.border,is_enabled());
+    return resolve_enabled_disabled_color(style().chrome.border,is_enabled());
 }
 
 elysia::core::Color UiButton::current_text_color() const noexcept
 {
-    return resolve_enabled_disabled_color(_style.text,is_enabled());
+    return resolve_enabled_disabled_color(style().text,is_enabled());
 }
 
 SDL_Texture* UiButton::current_state_texture() const noexcept
@@ -473,6 +498,12 @@ void UiButton::play_sound_if_set(std::string_view sound_key) const
     if (sound_key.empty())
         return;
     elysia::audio::AudioService::instance()->play_sound(sound_key);
+}
+
+void UiButton::apply_theme(const UiTheme& theme)
+{
+    _style_state.set_theme_style(theme.button(_theme_role));
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 }
 

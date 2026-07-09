@@ -2,6 +2,8 @@
 
 #include "../focus/ui_control_focus_scope_host.h"
 #include "../focus/ui_delegated_focus_mixin.h"
+#include "../style/ui_style.h"
+#include "../style/ui_theme_roles.h"
 #include "../style/ui_visual_styles.h"
 
 #include <vector>
@@ -40,6 +42,11 @@ public:
 
     void set_style(const UiPanelStyle& style) noexcept;
     [[nodiscard]] const UiPanelStyle& style() const noexcept;
+    [[nodiscard]] bool has_style_override() const noexcept;
+    void clear_style_override() noexcept;
+
+    void set_theme_role(UiPanelThemeRole role) noexcept;
+    [[nodiscard]] UiPanelThemeRole theme_role() const noexcept;
 
     void set_draw_background(bool draw_background) noexcept;
     [[nodiscard]] bool draws_background() const noexcept;
@@ -55,6 +62,7 @@ protected:
     void rebuild_layout() override;
     // Rebuilds directional focus neighbors based on insertion relationships.
     void rebuild_focus_registry() override;
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     // Stores directional navigation links for one focusable child in the panel flow.
@@ -79,7 +87,8 @@ private:
     const FocusLink* find_link(const UiElement& element) const noexcept;
 
 private:
-    UiPanelStyle _style{};
+    UiStyleState<UiPanelStyle> _style_state;
+    UiPanelThemeRole _theme_role = UiPanelThemeRole::Default;
     std::vector<FocusLink> _focus_links;
     UiElement* _last_focusable = nullptr;
     elysia::core::Vector2 _last_child_layout_origin{};

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../core/render/colors.h"
+#include "../style/ui_style.h"
 #include "../style/ui_interaction_style.h"
 #include "../core/ui_control.h"
 
@@ -115,6 +116,8 @@ public:
 
     void set_style(const UiCheckboxStyle& style) noexcept;
     [[nodiscard]] const UiCheckboxStyle& style() const noexcept;
+    [[nodiscard]] bool has_style_override() const noexcept;
+    void clear_style_override() noexcept;
 
     void set_padding(int padding) noexcept;
     [[nodiscard]] int padding() const noexcept;
@@ -143,6 +146,7 @@ protected:
     [[nodiscard]] virtual elysia::core::Rect checkbox_rect() const noexcept;
     [[nodiscard]] elysia::core::Color current_background_color() const noexcept;
     [[nodiscard]] elysia::core::Color current_border_color() const noexcept;
+    void apply_theme(const UiTheme& theme) override;
 
 private:
     // Chooses the texture bank for the current checkbox logical state.
@@ -160,7 +164,7 @@ private:
     std::optional<UiCheckboxSounds> _sounds;
     UiCheckboxToggledCallback _on_toggled;
     UiCheckboxState _state = UiCheckboxState::Unchecked;
-    UiCheckboxStyle _style{};
+    UiStyleState<UiCheckboxStyle> _style_state;
     int _padding = 4;
     bool _is_pushed = false;
 };

@@ -1,6 +1,7 @@
 #include "ui_number.h"
 
 #include "../../style/ui_style_defaults.h"
+#include "../../style/ui_theme.h"
 #include "../../../core/render/render_command.h"
 
 #include <SDL.h>
@@ -58,7 +59,7 @@ void UiNumber::reset() noexcept
     UiElement::reset();
     _texture_provider.reset();
     _value = 0.0;
-    _style = UiStyleDefaults::number();
+    _style_state.reset(UiStyleDefaults::number());
     _horizontal_align = TextHorizontalAlign::Left;
     _vertical_align = TextVerticalAlign::Top;
     _text_point_size = 24;
@@ -81,8 +82,9 @@ void UiNumber::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
     if (number_rect.is_empty())
         return;
 
-    if (_style.draw_background)
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(number_rect,apply_opacity(_style.background)));
+    const UiNumberStyle& style = _style_state.effective_style();
+    if (style.draw_background)
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(number_rect,apply_opacity(style.background)));
 
     const std::string text = formatted_text();
     if (text.empty())
@@ -93,7 +95,7 @@ void UiNumber::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
         return;
 
     const std::vector<elysia::number::NumberTextureGlyph> texture_set =
-        _texture_provider.get_texture_set(text,_text_point_size,_style.text);
+        _texture_provider.get_texture_set(text,_text_point_size,style.text);
     if (texture_set.empty())
         return;
 
@@ -193,43 +195,54 @@ double UiNumber::value() const noexcept
 
 void UiNumber::set_style(const UiNumberStyle& style) noexcept
 {
-    _style = style;
+    _style_state.set_style_override(style);
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 const UiNumberStyle& UiNumber::style() const noexcept
 {
-    return _style;
+    return _style_state.effective_style();
+}
+
+bool UiNumber::has_style_override() const noexcept
+{
+    return _style_state.has_style_override();
+}
+
+void UiNumber::clear_style_override() noexcept
+{
+    _style_state.clear_style_override();
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 void UiNumber::set_text_color(elysia::core::Color color)
 {
-    _style.text = color;
+    _style_state.ensure_style_override().text = color;
 }
 
 elysia::core::Color UiNumber::text_color() const noexcept
 {
-    return _style.text;
+    return style().text;
 }
 
 void UiNumber::set_background_color(elysia::core::Color color)
 {
-    _style.background = color;
+    _style_state.ensure_style_override().background = color;
 }
 
 elysia::core::Color UiNumber::background_color() const noexcept
 {
-    return _style.background;
+    return style().background;
 }
 
 void UiNumber::set_draw_background(bool draw_background)
 {
-    _style.draw_background = draw_background;
+    _style_state.ensure_style_override().draw_background = draw_background;
 }
 
 bool UiNumber::draws_background() const noexcept
 {
-    return _style.draw_background;
+    return style().draw_background;
 }
 
 void UiNumber::set_horizontal_align(TextHorizontalAlign align)
@@ -431,5 +444,11 @@ elysia::number::DigitAlignment UiNumber::digit_alignment() const noexcept
     default:
         return elysia::number::DigitAlignment::Left;
     }
+}
+
+void UiNumber::apply_theme(const UiTheme& theme)
+{
+    _style_state.set_theme_style(theme.number_style);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 }
