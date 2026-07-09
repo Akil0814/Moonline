@@ -1023,7 +1023,7 @@ void UiScrollContainer::apply_theme(const UiTheme& theme)
 {
     // The viewport owns one scroll-container style, then rebuilds the internal thumb visuals
     // from that style so theme management never needs to reach into the private thumb controls.
-    _style_state.set_theme_style(theme.scroll_container_style);
+    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.scroll_container_style));
     sync_scrollbar_handles();
     mark_layout_dirty();
 }

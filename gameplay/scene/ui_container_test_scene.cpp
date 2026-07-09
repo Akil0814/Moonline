@@ -230,7 +230,9 @@ void UiContainerTestScene::refresh_theme_preview_styles()
     if (!_root_window)
         return;
 
-    elysia::ui::UiWindowStyle window_style = _theme_manager.current_theme().window_style;
+    elysia::ui::UiWindowStyle window_style = elysia::ui::apply_theme_colors(
+        elysia::ui::UiWindowStyle{},
+        _theme_manager.current_theme().window_style);
     window_style.draw_background = true;
     window_style.draw_border = true;
     _root_window->set_style(window_style);

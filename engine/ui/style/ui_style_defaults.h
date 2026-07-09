@@ -42,77 +42,77 @@ struct UiStyleDefaults
 
     [[nodiscard]] static UiChromeStyle interactive_chrome() noexcept
     {
-        return theme().button(UiButtonThemeRole::Default).chrome;
+        return apply_theme_colors(UiChromeStyle{},theme().button(UiButtonThemeRole::Default).chrome);
     }
 
     [[nodiscard]] static UiLabelStyle label() noexcept
     {
-        return theme().label(UiLabelThemeRole::Default);
+        return apply_theme_colors(UiLabelStyle{},theme().label(UiLabelThemeRole::Default));
     }
 
     [[nodiscard]] static UiNumberStyle number() noexcept
     {
-        return theme().number_style;
+        return apply_theme_colors(UiNumberStyle{},theme().number_style);
     }
 
     [[nodiscard]] static UiBarStyle bar() noexcept
     {
-        return theme().bar(UiBarThemeRole::Default);
+        return apply_theme_colors(UiBarStyle{},theme().bar(UiBarThemeRole::Default));
     }
 
     [[nodiscard]] static UiPanelStyle panel() noexcept
     {
-        return theme().panel(UiPanelThemeRole::Default);
+        return apply_theme_colors(UiPanelStyle{},theme().panel(UiPanelThemeRole::Default));
     }
 
     [[nodiscard]] static UiChromeContainerStyle chrome_container() noexcept
     {
-        return theme().chrome_container_style;
+        return apply_theme_colors(UiChromeContainerStyle{},theme().chrome_container_style);
     }
 
     [[nodiscard]] static UiWindowStyle window() noexcept
     {
-        return theme().window_style;
+        return apply_theme_colors(UiWindowStyle{},theme().window_style);
     }
 
     [[nodiscard]] static UiButtonStyle button() noexcept
     {
-        return theme().button(UiButtonThemeRole::Default);
+        return apply_theme_colors(UiButtonStyle{},theme().button(UiButtonThemeRole::Default));
     }
 
     [[nodiscard]] static UiCheckboxStyle checkbox() noexcept
     {
-        return theme().checkbox_style;
+        return apply_theme_colors(UiCheckboxStyle{},theme().checkbox_style);
     }
 
     [[nodiscard]] static UiRadioButtonStyle radio_button() noexcept
     {
-        return theme().radio_button_style;
+        return apply_theme_colors(UiRadioButtonStyle{},theme().radio_button_style);
     }
 
     [[nodiscard]] static UiDragHandleStyle drag_handle() noexcept
     {
-        return theme().drag_handle_style;
+        return apply_theme_colors(UiDragHandleStyle{},theme().drag_handle_style);
     }
 
     [[nodiscard]] static UiSliderStyle slider() noexcept
     {
-        return theme().slider_style;
+        return apply_theme_colors(UiSliderStyle{},theme().slider_style);
     }
 
     [[nodiscard]] static UiTextInputStyle text_input() noexcept
     {
-        return theme().text_input_style;
+        return apply_theme_colors(UiTextInputStyle{},theme().text_input_style);
     }
 
     [[nodiscard]] static UiScrollBarStyle scrollbar() noexcept
     {
-        return theme().scroll_container_style.scrollbar;
+        return apply_theme_colors(UiScrollBarStyle{},theme().scroll_container_style.scrollbar);
     }
 
     [[nodiscard]] static UiScrollContainerStyle scroll_container() noexcept
     {
-        return theme().scroll_container_style;
+        return apply_theme_colors(UiScrollContainerStyle{},theme().scroll_container_style);
     }
 
     [[nodiscard]] static UiEnabledDisabledColors labeled_checkbox_text() noexcept
@@ -124,4 +124,3 @@ struct UiStyleDefaults
     }
 };
 }
-

@@ -841,7 +841,7 @@ bool UiWindow::uses_pointer_focus_policy(elysia::input::InputDevice device) noex
 
 void UiWindow::apply_theme(const UiTheme& theme)
 {
-    _style_state.set_theme_style(theme.window_style);
+    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.window_style));
 }
 }
 

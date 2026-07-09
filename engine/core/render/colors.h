@@ -86,6 +86,10 @@ inline constexpr Color elysia_rose_pink{ 236, 176, 211, 255 };   // #ECB0D3
 inline constexpr Color elysia_glow_pink{ 242, 170, 212, 255 };   // #F2AAD4
 inline constexpr Color elysia_lilac{ 204, 188, 243, 255 };       // #CCBCF3
 inline constexpr Color elysia_plum{ 111, 94, 156, 255 };         // #6F5E9C
+inline constexpr Color elysia_mist_blue{ 152, 173, 215, 255 };   // #98ADD7
+inline constexpr Color elysia_dusk_rose{ 214, 122, 171, 255 };   // #D67AAB
+inline constexpr Color elysia_velvet_rose{ 171, 84, 132, 255 };  // #AB5484
+inline constexpr Color elysia_twilight_rose{ 100, 60, 115, 255 }; // #643C73
 inline constexpr Color elysia_phantom_sea{ 26, 56, 104, 255 };   // #1A3868
 inline constexpr Color elysia_mirage_blue{ 44, 84, 143, 255 };   // #2C548F
 inline constexpr Color elysia_deep_sea{ 14, 30, 66, 255 };       // #0E1E42
@@ -97,6 +101,9 @@ inline constexpr Color eva_unit00_pale_blue{ 175, 200, 222, 255 };     // #AFC8D
 inline constexpr Color eva_unit00_warning_yellow{ 232, 188, 82, 255 }; // #E8BC52
 inline constexpr Color eva_unit00_soft_graphite{ 104, 116, 132, 255 }; // #687484
 inline constexpr Color eva_unit00_border_blue{ 199, 215, 230, 255 };   // #C7D7E6
+inline constexpr Color eva_unit00_mist_blue{ 134, 161, 191, 255 };     // #86A1BF
+inline constexpr Color eva_unit00_caution_gold{ 244, 208, 116, 255 };  // #F4D074
+inline constexpr Color eva_unit00_amber_ochre{ 188, 144, 78, 255 };    // #BC904E
 
 inline constexpr Color eva_unit00_ivory = eva_unit00_rei_white;        // #F3F6FA
 inline constexpr Color eva_unit00_cerulean = eva_unit00_frost_blue;    // #DCEAF6
@@ -109,12 +116,19 @@ inline constexpr Color eva_unit01_royal_purple{ 95, 62, 132, 255 };    // #5F3E8
 inline constexpr Color eva_unit01_toxic_green{ 126, 222, 76, 255 };    // #7EDE4C
 inline constexpr Color eva_unit01_lime_glow{ 176, 255, 92, 255 };      // #B0FF5C
 inline constexpr Color eva_unit01_orange_core{ 230, 138, 54, 255 };    // #E68A36
+inline constexpr Color eva_unit01_void_purple{ 34, 22, 53, 255 };      // #221635
+inline constexpr Color eva_unit01_muted_lime{ 146, 182, 111, 255 };    // #92B66F
+inline constexpr Color eva_unit01_alert_amber{ 246, 179, 92, 255 };    // #F6B35C
+inline constexpr Color eva_unit01_burnt_orange{ 173, 93, 46, 255 };    // #AD5D2E
 
 inline constexpr Color eva_unit02_crimson{ 176, 38, 48, 255 };         // #B02630
 inline constexpr Color eva_unit02_vermilion{ 214, 72, 48, 255 };       // #D64830
 inline constexpr Color eva_unit02_orange{ 237, 142, 46, 255 };         // #ED8E2E
 inline constexpr Color eva_unit02_sun_yellow{ 246, 196, 74, 255 };     // #F6C44A
 inline constexpr Color eva_unit02_bone_white{ 244, 240, 234, 255 };    // #F4F0EA
+inline constexpr Color eva_unit02_deep_maroon{ 108, 24, 31, 255 };     // #6C181F
+inline constexpr Color eva_unit02_glow_amber{ 251, 209, 99, 255 };     // #FBD163
+inline constexpr Color eva_unit02_muted_orange{ 197, 121, 68, 255 };   // #C57944
 
 // Reserved, low-saturation neutral set for understated gray UI themes.
 inline constexpr Color quiet_slate_white{ 236, 240, 244, 255 };        // #ECF0F4

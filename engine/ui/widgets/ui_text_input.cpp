@@ -761,7 +761,7 @@ void UiTextInput::notify_text_changed_if_needed(const std::string& previous_text
 
 void UiTextInput::apply_theme(const UiTheme& theme)
 {
-    _style_state.set_theme_style(theme.text_input_style);
+    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.text_input_style));
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 }

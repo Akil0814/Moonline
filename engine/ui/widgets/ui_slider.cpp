@@ -1083,7 +1083,7 @@ void UiSlider::apply_theme(const UiTheme& theme)
 {
     // Theme updates stop at the outer slider. Internal child widgets stay non-themed and receive
     // the resolved style through sync_child_visuals() to keep the slider visually coherent.
-    _style_state.set_theme_style(theme.slider_style);
+    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.slider_style));
     _handle.set_style(style().handle);
     sync_child_visuals();
     notify_layout_parent_of_intrinsic_layout_invalidation();

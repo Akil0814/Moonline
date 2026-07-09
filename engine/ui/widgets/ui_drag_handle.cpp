@@ -353,7 +353,7 @@ elysia::core::Color UiDragHandle::current_border_color() const noexcept
 
 void UiDragHandle::apply_theme(const UiTheme& theme)
 {
-    _style_state.set_theme_style(theme.drag_handle_style);
+    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.drag_handle_style));
     _config.style = _style_state.effective_style();
     _config.style.size = elysia::core::Vector2(
         clamp_non_negative(_config.style.size.x),

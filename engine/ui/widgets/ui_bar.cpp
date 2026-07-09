@@ -209,7 +209,7 @@ elysia::core::Rect UiBar::fill_rect(const elysia::core::Rect& rect) const
 
 void UiBar::apply_theme(const UiTheme& theme)
 {
-    _style_state.set_theme_style(theme.bar(_theme_role));
+    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.bar(_theme_role)));
 }
 
 }

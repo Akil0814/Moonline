@@ -445,7 +445,7 @@ const UiPanel::FocusLink* UiPanel::find_link(const UiElement& element) const noe
 
 void UiPanel::apply_theme(const UiTheme& theme)
 {
-    _style_state.set_theme_style(theme.panel(_theme_role));
+    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.panel(_theme_role)));
 }
 }
 

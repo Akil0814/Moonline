@@ -815,6 +815,6 @@ elysia::core::Rect UiChromeContainer::body_rect() const noexcept
 
 void UiChromeContainer::apply_theme(const UiTheme& theme)
 {
-    _style_state.set_theme_style(theme.chrome_container_style);
+    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.chrome_container_style));
 }
 }

@@ -538,9 +538,7 @@ UiCheckboxState UiCheckbox::toggled_state(UiCheckboxState state) noexcept
 
 void UiCheckbox::apply_theme(const UiTheme& theme)
 {
-    UiCheckboxStyle themed_style = theme.checkbox_style;
-    themed_style.mark_style = style().mark_style;
-    _style_state.set_theme_style(themed_style);
+    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.checkbox_style));
 }
 }
 

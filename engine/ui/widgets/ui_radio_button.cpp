@@ -274,7 +274,7 @@ void UiRadioButton::apply_theme(const UiTheme& theme)
     // The outer radio button owns theme participation and translates it into local text colors.
     // Its internal checkbox remains an implementation detail rather than a separately registered
     // themed element.
-    _style_state.set_theme_style(theme.radio_button_style);
+    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.radio_button_style));
     _text_color = style().text.enabled;
     _disabled_text_color = style().text.disabled;
 }

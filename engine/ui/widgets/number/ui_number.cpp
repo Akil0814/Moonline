@@ -418,7 +418,7 @@ elysia::number::DigitAlignment UiNumber::digit_alignment() const noexcept
 
 void UiNumber::apply_theme(const UiTheme& theme)
 {
-    _style_state.set_theme_style(theme.number_style);
+    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.number_style));
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 }

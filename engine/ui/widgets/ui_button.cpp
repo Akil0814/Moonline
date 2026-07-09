@@ -502,7 +502,7 @@ void UiButton::play_sound_if_set(std::string_view sound_key) const
 
 void UiButton::apply_theme(const UiTheme& theme)
 {
-    _style_state.set_theme_style(theme.button(_theme_role));
+    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.button(_theme_role)));
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 }
