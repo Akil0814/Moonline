@@ -92,6 +92,20 @@ void UiRadioGroup::sync_selection(bool notify)
 
     std::optional<std::size_t> first_selected = std::nullopt;
     std::optional<std::size_t> first_radio = std::nullopt;
+    std::optional<std::size_t> preferred_selected = std::nullopt;
+
+    if (UiControl* focused = UiListContainer::focused_target())
+    {
+        for (std::size_t index = 0; index < child_count(); ++index)
+        {
+            UiRadioButton* button = radio_button_at(index);
+            if (button == focused)
+            {
+                preferred_selected = index;
+                break;
+            }
+        }
+    }
 
     for (std::size_t index = 0; index < child_count(); ++index)
     {
@@ -106,22 +120,39 @@ void UiRadioGroup::sync_selection(bool notify)
         {
             if (!first_selected)
                 first_selected = index;
-            else
-                button->set_selected(false);
         }
     }
 
-    if (!first_selected && first_radio)
+    std::optional<std::size_t> keep_selected = first_selected;
+    if (preferred_selected)
+    {
+        if (UiRadioButton* preferred_button = radio_button_at(*preferred_selected))
+        {
+            if (preferred_button->is_selected())
+                keep_selected = preferred_selected;
+        }
+    }
+
+    for (std::size_t index = 0; index < child_count(); ++index)
+    {
+        UiRadioButton* button = radio_button_at(index);
+        if (!button || !button->is_selected())
+            continue;
+        if (!keep_selected || index != *keep_selected)
+            button->set_selected(false);
+    }
+
+    if (!keep_selected && first_radio)
     {
         if (UiRadioButton* button = radio_button_at(*first_radio))
         {
             button->set_selected(true);
-            first_selected = first_radio;
+            keep_selected = first_radio;
         }
     }
 
     const std::optional<std::size_t> previous = _selected_index;
-    _selected_index = first_selected;
+    _selected_index = keep_selected;
 
     _is_syncing_selection = false;
 

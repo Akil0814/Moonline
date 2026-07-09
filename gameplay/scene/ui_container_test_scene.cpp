@@ -220,7 +220,38 @@ void UiContainerTestScene::rebuild_ui()
     auto vertical_list = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,260,760 });
     vertical_list->set_padding(elysia::ui::UiLayoutPadding{ 20.0f,20.0f,20.0f,20.0f });
     vertical_list->set_item_spacing(18.0f);
-    for (int index = 0; index < 10; ++index)
+    for (int index = 0; index < 4; ++index)
+        vertical_list->add_back(make_button(index,"vertical"));
+
+    auto nested_radio_group = std::make_unique<elysia::ui::UiRadioGroup>(elysia::core::Rect{ 0,0,220,54 });
+    nested_radio_group->set_direction(elysia::ui::UiListDirection::Horizontal);
+    nested_radio_group->set_item_spacing(14.0f);
+    nested_radio_group->set_padding(elysia::ui::UiLayoutPadding{ 10.0f,8.0f,10.0f,8.0f });
+    nested_radio_group->set_on_selection_changed([](std::optional<std::size_t> selected_index)
+    {
+        if (selected_index)
+            std::cout << "vertical nested radio group " << *selected_index << std::endl;
+        else
+            std::cout << "vertical nested radio group none" << std::endl;
+    });
+    nested_radio_group->add_back(make_radio_button(
+        elysia::core::Rect{ 0,0,60,36 },
+        "menu_scene.start",
+        true,
+        "vertical-nested"));
+    nested_radio_group->add_back(make_radio_button(
+        elysia::core::Rect{ 0,0,60,36 },
+        "menu_scene.settings",
+        false,
+        "vertical-nested"));
+    nested_radio_group->add_back(make_radio_button(
+        elysia::core::Rect{ 0,0,60,36 },
+        "menu_scene.about",
+        false,
+        "vertical-nested"));
+    vertical_list->add_back(std::move(nested_radio_group));
+
+    for (int index = 4; index < 10; ++index)
         vertical_list->add_back(make_button(index,"vertical"));
     vertical_scroll->set_content(std::move(vertical_list));
 

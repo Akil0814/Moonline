@@ -10,8 +10,12 @@
 
 namespace elysia::ui
 {
+class UiDelegatedFocusMixin;
+
 class UiControlFocusScopeHost : public UiChildHost, public UiFocusScope
 {
+    friend class UiDelegatedFocusMixin;
+
 public:
     // Binds a focusable child to its directional neighbors within this scope.
     struct FocusEntry

@@ -3,7 +3,7 @@
 #include "../../core/render/colors.h"
 #include "../core/ui_control.h"
 #include "../style/ui_interaction_style.h"
-#include "label/ui_label.h"
+#include "ui_labeled_checkbox.h"
 
 #include <functional>
 #include <optional>
@@ -93,71 +93,25 @@ public:
     void set_text_key(std::string text_key);
     [[nodiscard]] const std::string& text_key() const noexcept;
 
-    void set_label_placement(UiRadioButtonLabelPlacement placement) noexcept;
-    [[nodiscard]] UiRadioButtonLabelPlacement label_placement() const noexcept;
-
-    void set_label_spacing(float spacing) noexcept;
-    [[nodiscard]] float label_spacing() const noexcept;
-
-    void set_text_placement(UiRadioButtonTextPlacement placement) noexcept;
-    [[nodiscard]] UiRadioButtonTextPlacement text_placement() const noexcept;
-
     void set_style(const UiRadioButtonStyle& style) noexcept;
     [[nodiscard]] const UiRadioButtonStyle& style() const noexcept;
-
-    void set_text_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color text_color() const noexcept;
-
-    void set_disabled_text_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color disabled_text_color() const noexcept;
-
-    void set_sounds(const UiRadioButtonSounds& sounds);
-    void clear_sounds() noexcept;
-    [[nodiscard]] const std::optional<UiRadioButtonSounds>& sounds() const noexcept;
-
-    void set_text_point_size(int point_size) noexcept;
-    [[nodiscard]] int text_point_size() const noexcept;
-
-    void set_padding(int padding) noexcept;
-    [[nodiscard]] int padding() const noexcept;
-
-    void set_label_padding(int padding) noexcept;
-    [[nodiscard]] int label_padding() const noexcept;
-
-    void set_draw_background(bool draw_background) noexcept;
-    [[nodiscard]] bool draws_background() const noexcept;
-    void set_draw_border(bool draw_border) noexcept;
-    [[nodiscard]] bool draws_border() const noexcept;
 
 private:
     // Applies the config payload without exposing intermediate label visuals.
     void apply_radio_button_config(const UiRadioButtonConfig& config);
+    // Mirrors the outer radio state into the owned labeled checkbox before input or render.
+    void sync_checkbox_state() const;
     // Updates selection and emits callbacks only when the value actually changes.
     [[nodiscard]] bool set_selected_internal(bool selected,bool notify) noexcept;
-    // Returns true only when the radio button should react to confirm or pointer input.
-    [[nodiscard]] bool can_interact() const noexcept;
-    [[nodiscard]] bool can_receive_pointer() const noexcept;
-    [[nodiscard]] bool contains_pointer(int mouse_x,int mouse_y) const noexcept;
-    [[nodiscard]] bool is_primary_pointer_event(const UiInputEvent& event) const noexcept;
-    // Clears any pressed state left behind by focus loss or input cancellation.
-    void clear_pushed_state() noexcept;
     // Plays a configured sound only when the corresponding key is present.
     void play_sound_if_set(const std::string& sound_key) const;
-    // Mirrors radio-button enabled/focus visuals into the owned label widget.
-    void sync_label_visuals() const;
-    // Returns the padded interior used to place the indicator and label.
-    [[nodiscard]] elysia::core::Rect content_rect() const noexcept;
-    // Returns the rect used to render and hit-test the selection indicator.
-    [[nodiscard]] elysia::core::Rect indicator_rect() const noexcept;
-    // Returns the rect used to render the label beside the indicator.
-    [[nodiscard]] elysia::core::Rect label_rect() const noexcept;
-    [[nodiscard]] elysia::core::Color current_background_color() const noexcept;
-    [[nodiscard]] elysia::core::Color current_border_color() const noexcept;
-    [[nodiscard]] elysia::core::Color current_mark_color() const noexcept;
-    [[nodiscard]] elysia::core::Color current_text_color() const noexcept;
+    [[nodiscard]] UiCheckboxStyle checkbox_style() const noexcept;
+    [[nodiscard]] UiCheckboxSounds checkbox_sounds() const noexcept;
+    [[nodiscard]] static UiLabeledCheckboxLabelPlacement to_checkbox_label_placement(UiRadioButtonLabelPlacement placement) noexcept;
+    [[nodiscard]] static UiLabeledCheckboxTextPlacement to_checkbox_text_placement(UiRadioButtonTextPlacement placement) noexcept;
 
 private:
-    mutable UiLabel _label;
+    mutable UiLabeledCheckbox _checkbox;
     UiRadioButtonSelectedCallback _on_selected;
     std::optional<UiRadioButtonSounds> _sounds;
     UiRadioButtonStyle _style{};
@@ -165,10 +119,13 @@ private:
     UiRadioButtonLabelPlacement _label_placement = UiRadioButtonLabelPlacement::Right;
     float _label_spacing = 8.0f;
     UiRadioButtonTextPlacement _text_placement = UiRadioButtonTextPlacement::NearIndicator;
-    int _padding = 4;
+    elysia::core::Color _text_color{};
+    elysia::core::Color _disabled_text_color{};
+    int _text_point_size = 0;
+    int _padding = 0;
+    int _label_padding = 0;
     bool _selected = false;
     bool _draw_background = false;
     bool _draw_border = false;
-    bool _is_pushed = false;
 };
 }

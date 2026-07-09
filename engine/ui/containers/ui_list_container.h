@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../focus/ui_control_focus_scope_host.h"
+#include "../focus/ui_delegated_focus_mixin.h"
 #include "../layout/ui_list_layout.h"
 
 namespace elysia::ui
@@ -11,7 +12,7 @@ enum class UiListDirection
     Horizontal
 };
 
-class UiListContainer : public UiControlFocusScopeHost
+class UiListContainer : public UiControlFocusScopeHost, private UiDelegatedFocusMixin
 {
 public:
     explicit UiListContainer(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0) noexcept;
@@ -20,6 +21,13 @@ public:
     ~UiListContainer() override = default;
 
     void reset() noexcept override;
+    void set_scope_focused(bool focused) noexcept override;
+    bool focus_first_available() override;
+    [[nodiscard]] bool can_navigate(UiAction action) const noexcept override;
+    void update(double delta) override;
+    void on_ui_input_frame(const UiInputFrame& input) override;
+    bool on_ui_input_event(const UiInputEvent& event) override;
+    void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
 
     // Prepends a child to the list while preserving container ownership.
     void add_front(std::unique_ptr<UiElement> child);
@@ -38,6 +46,11 @@ protected:
     void rebuild_layout() override;
     // Refreshes focus neighbors after list ordering or geometry changes.
     void rebuild_focus_registry() override;
+
+private:
+    [[nodiscard]] UiElement* neighbor_region_of(const UiControl* control,UiAction action) const noexcept;
+    void sync_child_scope_focus() noexcept;
+    [[nodiscard]] bool is_primary_axis_navigation(UiAction action) const noexcept;
 
 private:
     layout::UiListLayoutConfig _layout{};

@@ -152,6 +152,7 @@ UiChromeContainer::UiChromeContainer(const elysia::core::Vector2& center,const e
 void UiChromeContainer::reset() noexcept
 {
     UiControlFocusScopeHost::reset();
+    reset_delegated_focus_state();
     clear_internal_host_pointers();
     _style = UiStyleDefaults::chrome_container();
     _header_padding = UiLayoutPadding{ 8.0f,6.0f,8.0f,6.0f };
@@ -726,12 +727,12 @@ void UiChromeContainer::collect_controls_from(
 
 UiFocusScope* UiChromeContainer::delegated_body_scope() noexcept
 {
-    return dynamic_cast<UiFocusScope*>(body_content());
+    return delegated_scope_for_region(delegated_focus_region(body_content()));
 }
 
 const UiFocusScope* UiChromeContainer::delegated_body_scope() const noexcept
 {
-    return dynamic_cast<const UiFocusScope*>(body_content());
+    return delegated_scope_for_region(delegated_focus_region(body_content()));
 }
 
 UiControl* UiChromeContainer::first_header_focusable() const noexcept
@@ -758,19 +759,13 @@ bool UiChromeContainer::header_has_focusable_target() const noexcept
 
 bool UiChromeContainer::enter_body_scope(bool focus_first)
 {
-    UiFocusScope* body_scope = delegated_body_scope();
+    UiElement* body_region = delegated_focus_region(body_content());
+    UiFocusScope* body_scope = delegated_scope_for_region(body_region);
     if (!body_scope || !body_scope->has_focusable_target())
         return false;
 
-    if (focus_first)
-    {
-        if (!body_scope->focus_first_available())
-            return false;
-    }
-    else if (!body_scope->focused_target() && !body_scope->focus_first_available())
-    {
+    if (!focus_delegated_region(body_region,focus_first))
         return false;
-    }
 
     _body_scope_active = true;
     sync_body_scope_focus();
@@ -797,14 +792,17 @@ bool UiChromeContainer::leave_body_scope()
 
 void UiChromeContainer::sync_body_scope_focus() noexcept
 {
-    UiFocusScope* body_scope = delegated_body_scope();
+    UiElement* body_region = delegated_focus_region(body_content());
+    UiFocusScope* body_scope = delegated_scope_for_region(body_region);
     if (_body_scope_active && !body_scope)
         _body_scope_active = false;
 
     UiControlFocusScopeHost::set_scope_focused(_scope_focused && !_body_scope_active);
 
-    if (body_scope)
-        body_scope->set_scope_focused(_scope_focused && _body_scope_active);
+    std::vector<UiElement*> regions;
+    if (body_scope && body_region)
+        regions.push_back(body_region);
+    sync_delegated_scope_focus(_body_scope_active ? body_region : nullptr,_scope_focused,regions);
 }
 
 bool UiChromeContainer::event_targets_header(const UiInputEvent& event) const noexcept

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../focus/ui_control_focus_scope_host.h"
+#include "../focus/ui_delegated_focus_mixin.h"
 #include "../style/ui_visual_styles.h"
 
 #include <vector>
@@ -15,7 +16,7 @@ enum class UiPanelInsertDirection
     Right
 };
 
-class UiPanel : public UiControlFocusScopeHost
+class UiPanel : public UiControlFocusScopeHost, private UiDelegatedFocusMixin
 {
 public:
     explicit UiPanel(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0) noexcept;
@@ -24,6 +25,12 @@ public:
     ~UiPanel() override = default;
 
     void reset() noexcept override;
+    void set_scope_focused(bool focused) noexcept override;
+    bool focus_first_available() override;
+    [[nodiscard]] bool can_navigate(UiAction action) const noexcept override;
+    void update(double delta) override;
+    void on_ui_input_frame(const UiInputFrame& input) override;
+    bool on_ui_input_event(const UiInputEvent& event) override;
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
     [[nodiscard]] elysia::core::Vector2 content_extent() const noexcept override;
 
@@ -53,24 +60,28 @@ private:
     // Stores directional navigation links for one focusable child in the panel flow.
     struct FocusLink
     {
-        UiControl* control = nullptr;
-        UiFocusNeighbors neighbors;
+        UiElement* element = nullptr;
+        UiElement* up = nullptr;
+        UiElement* down = nullptr;
+        UiElement* left = nullptr;
+        UiElement* right = nullptr;
     };
 
 private:
     // Performs directional child insertion and returns the adopted child pointer.
     UiElement* insert_panel_child(std::unique_ptr<UiElement> child,UiPanelInsertDirection direction);
+    void sync_child_scope_focus() noexcept;
     // Removes focus links that no longer reference live child controls.
     void prune_panel_links();
-    // Returns or creates the focus-link record for a child control.
-    FocusLink& ensure_link(UiControl& control);
-    FocusLink* find_link(UiControl& control) noexcept;
-    const FocusLink* find_link(const UiControl& control) const noexcept;
+    // Returns or creates the focus-link record for a focusable direct child region.
+    FocusLink& ensure_link(UiElement& element);
+    FocusLink* find_link(UiElement& element) noexcept;
+    const FocusLink* find_link(const UiElement& element) const noexcept;
 
 private:
     UiPanelStyle _style{};
     std::vector<FocusLink> _focus_links;
-    UiControl* _last_focusable = nullptr;
+    UiElement* _last_focusable = nullptr;
     elysia::core::Vector2 _last_child_layout_origin{};
     bool _has_child_layout_origin = false;
 };

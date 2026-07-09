@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../focus/ui_control_focus_scope_host.h"
+#include "../focus/ui_delegated_focus_mixin.h"
 #include "../style/ui_visual_styles.h"
 #include "ui_list_container.h"
 
@@ -9,7 +10,7 @@
 
 namespace elysia::ui
 {
-class UiChromeContainer : public UiControlFocusScopeHost
+class UiChromeContainer : public UiControlFocusScopeHost, private UiDelegatedFocusMixin
 {
 private:
     class SlotHost : public UiChildHost
