@@ -47,18 +47,20 @@ public:
     [[nodiscard]] UiControl* focused_target() const noexcept override;
     [[nodiscard]] bool can_navigate(UiAction action) const noexcept override;
 
-    [[nodiscard]] UiListContainer& left_actions() noexcept;
-    [[nodiscard]] const UiListContainer& left_actions() const noexcept;
-    [[nodiscard]] UiChildHost& title_slot() noexcept;
-    [[nodiscard]] const UiChildHost& title_slot() const noexcept;
-    [[nodiscard]] UiListContainer& right_actions() noexcept;
-    [[nodiscard]] const UiListContainer& right_actions() const noexcept;
-    [[nodiscard]] UiChildHost& body() noexcept;
-    [[nodiscard]] const UiChildHost& body() const noexcept;
+    // Appends or prepends an action item inside the header's left action region.
+    UiElement* add_left_action_front(std::unique_ptr<UiElement> action);
+    UiElement* add_left_action_back(std::unique_ptr<UiElement> action);
+    void clear_left_actions();
+    // Adds a title-region child without exposing the internal slot host directly.
+    UiElement* add_title_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options = {});
+    void clear_title_children();
+    // Appends or prepends an action item inside the header's right action region.
+    UiElement* add_right_action_front(std::unique_ptr<UiElement> action);
+    UiElement* add_right_action_back(std::unique_ptr<UiElement> action);
+    void clear_right_actions();
 
     // Replaces the body payload while keeping header slots intact.
     UiElement* set_body(std::unique_ptr<UiElement> body);
-    [[nodiscard]] UiElement* body_content() noexcept;
     [[nodiscard]] const UiElement* body_content() const noexcept;
     void clear_body();
 
@@ -102,6 +104,7 @@ private:
     // Returns the body payload as a delegated focus scope when supported.
     [[nodiscard]] UiFocusScope* delegated_body_scope() noexcept;
     [[nodiscard]] const UiFocusScope* delegated_body_scope() const noexcept;
+    [[nodiscard]] UiElement* body_content_mutable() noexcept;
     // Finds the first focusable control in the header chrome.
     [[nodiscard]] UiControl* first_header_focusable() const noexcept;
     [[nodiscard]] bool header_has_focusable_target() const noexcept;

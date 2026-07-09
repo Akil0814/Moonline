@@ -392,44 +392,67 @@ bool UiChromeContainer::can_navigate(UiAction action) const noexcept
     return false;
 }
 
-UiListContainer& UiChromeContainer::left_actions() noexcept
+UiElement* UiChromeContainer::add_left_action_front(std::unique_ptr<UiElement> action)
 {
-    return *_left_actions;
+    if (!_left_actions || !action)
+        return nullptr;
+
+    UiElement* raw = action.get();
+    _left_actions->add_front(std::move(action));
+    return raw;
 }
 
-const UiListContainer& UiChromeContainer::left_actions() const noexcept
+UiElement* UiChromeContainer::add_left_action_back(std::unique_ptr<UiElement> action)
 {
-    return *_left_actions;
+    if (!_left_actions || !action)
+        return nullptr;
+
+    UiElement* raw = action.get();
+    _left_actions->add_back(std::move(action));
+    return raw;
 }
 
-UiChildHost& UiChromeContainer::title_slot() noexcept
+void UiChromeContainer::clear_left_actions()
 {
-    return *_title_slot;
+    if (_left_actions)
+        _left_actions->clear_children();
 }
 
-const UiChildHost& UiChromeContainer::title_slot() const noexcept
+UiElement* UiChromeContainer::add_title_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options)
 {
-    return *_title_slot;
+    return _title_slot ? _title_slot->add_child(std::move(child),options) : nullptr;
 }
 
-UiListContainer& UiChromeContainer::right_actions() noexcept
+void UiChromeContainer::clear_title_children()
 {
-    return *_right_actions;
+    if (_title_slot)
+        _title_slot->clear_children();
 }
 
-const UiListContainer& UiChromeContainer::right_actions() const noexcept
+UiElement* UiChromeContainer::add_right_action_front(std::unique_ptr<UiElement> action)
 {
-    return *_right_actions;
+    if (!_right_actions || !action)
+        return nullptr;
+
+    UiElement* raw = action.get();
+    _right_actions->add_front(std::move(action));
+    return raw;
 }
 
-UiChildHost& UiChromeContainer::body() noexcept
+UiElement* UiChromeContainer::add_right_action_back(std::unique_ptr<UiElement> action)
 {
-    return *_body;
+    if (!_right_actions || !action)
+        return nullptr;
+
+    UiElement* raw = action.get();
+    _right_actions->add_back(std::move(action));
+    return raw;
 }
 
-const UiChildHost& UiChromeContainer::body() const noexcept
+void UiChromeContainer::clear_right_actions()
 {
-    return *_body;
+    if (_right_actions)
+        _right_actions->clear_children();
 }
 
 UiElement* UiChromeContainer::set_body(std::unique_ptr<UiElement> body_element)
@@ -452,7 +475,7 @@ UiElement* UiChromeContainer::set_body(std::unique_ptr<UiElement> body_element)
     return added;
 }
 
-UiElement* UiChromeContainer::body_content() noexcept
+UiElement* UiChromeContainer::body_content_mutable() noexcept
 {
     if (!_body)
         return nullptr;
@@ -727,7 +750,7 @@ void UiChromeContainer::collect_controls_from(
 
 UiFocusScope* UiChromeContainer::delegated_body_scope() noexcept
 {
-    return delegated_scope_for_region(delegated_focus_region(body_content()));
+    return delegated_scope_for_region(delegated_focus_region(body_content_mutable()));
 }
 
 const UiFocusScope* UiChromeContainer::delegated_body_scope() const noexcept
@@ -759,7 +782,7 @@ bool UiChromeContainer::header_has_focusable_target() const noexcept
 
 bool UiChromeContainer::enter_body_scope(bool focus_first)
 {
-    UiElement* body_region = delegated_focus_region(body_content());
+    UiElement* body_region = delegated_focus_region(body_content_mutable());
     UiFocusScope* body_scope = delegated_scope_for_region(body_region);
     if (!body_scope || !body_scope->has_focusable_target())
         return false;
@@ -792,7 +815,7 @@ bool UiChromeContainer::leave_body_scope()
 
 void UiChromeContainer::sync_body_scope_focus() noexcept
 {
-    UiElement* body_region = delegated_focus_region(body_content());
+    UiElement* body_region = delegated_focus_region(body_content_mutable());
     UiFocusScope* body_scope = delegated_scope_for_region(body_region);
     if (_body_scope_active && !body_scope)
         _body_scope_active = false;

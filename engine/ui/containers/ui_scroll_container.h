@@ -57,7 +57,6 @@ public:
     UiElement* add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options = {}) override;
     // Swaps the scrollable content while preserving viewport-owned layout state.
     UiElement* set_content(std::unique_ptr<UiElement> content);
-    [[nodiscard]] UiElement* content() noexcept;
     [[nodiscard]] const UiElement* content() const noexcept;
     void clear_content();
 
@@ -130,6 +129,7 @@ private:
     // Returns the nested content focus scope when the payload participates in focus navigation.
     [[nodiscard]] UiFocusScope* content_scope() noexcept;
     [[nodiscard]] const UiFocusScope* content_scope() const noexcept;
+    [[nodiscard]] UiElement* content_mutable() noexcept;
     // Swaps the content child without re-entering the public ownership path.
     [[nodiscard]] UiElement* set_content_internal(std::unique_ptr<UiElement> content,UiLayoutChildOptions options = {});
     // Routes an event into the content payload when viewport policy allows it.

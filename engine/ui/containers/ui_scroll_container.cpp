@@ -176,7 +176,7 @@ UiElement* UiScrollContainer::set_content(std::unique_ptr<UiElement> content)
     return set_content_internal(std::move(content),UiLayoutChildOptions{});
 }
 
-UiElement* UiScrollContainer::content() noexcept
+UiElement* UiScrollContainer::content_mutable() noexcept
 {
     return child_at(0);
 }
@@ -414,7 +414,7 @@ void UiScrollContainer::scroll_to_bottom() noexcept
 
 void UiScrollContainer::ensure_visible(const elysia::core::Rect& target_rect) noexcept
 {
-    UiElement* content_element = content();
+    UiElement* content_element = content_mutable();
     if (!content_element || target_rect.is_empty())
         return;
 
@@ -533,7 +533,7 @@ void UiScrollContainer::rebuild_layout()
 
 UiFocusScope* UiScrollContainer::content_scope() noexcept
 {
-    return dynamic_cast<UiFocusScope*>(content());
+    return dynamic_cast<UiFocusScope*>(content_mutable());
 }
 
 const UiFocusScope* UiScrollContainer::content_scope() const noexcept

@@ -103,14 +103,14 @@ void MainMenuScene::rebuild_menu_buttons()
                 elysia::core::Rect{ 0,0,280,36 },0,
                 "menu_scene.exit_confirm.title");
             title->set_vertical_align(elysia::ui::TextVerticalAlign::Center);
-            exit_confirmation->title_slot().add_child(std::move(title));
+            exit_confirmation->add_title_child(std::move(title));
 
             auto close_button = make_menu_button(elysia::core::Rect{ 0,0,40,36 },"menu_scene.exit_confirm.close");
             close_button->set_on_click([this]
             {
                 close_overlay(_main_menu_window,_exit_confirmation);
             });
-            exit_confirmation->right_actions().add_back(std::move(close_button));
+            exit_confirmation->add_right_action_back(std::move(close_button));
 
             auto body = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,380,152 });
 
