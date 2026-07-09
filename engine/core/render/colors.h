@@ -91,11 +91,18 @@ inline constexpr Color elysia_mirage_blue{ 44, 84, 143, 255 };   // #2C548F
 inline constexpr Color elysia_deep_sea{ 14, 30, 66, 255 };       // #0E1E42
 
 // Evangelion-inspired palette tokens used by the built-in EVA themes.
-inline constexpr Color eva_unit00_ivory{ 238, 242, 246, 255 };         // #EEF2F6
-inline constexpr Color eva_unit00_cerulean{ 44, 84, 128, 255 };        // #2C5480
-inline constexpr Color eva_unit00_rei_blue{ 73, 111, 156, 255 };       // #496F9C
-inline constexpr Color eva_unit00_signal_amber{ 240, 176, 62, 255 };   // #F0B03E
-inline constexpr Color eva_unit00_graphite{ 46, 54, 68, 255 };         // #2E3644
+inline constexpr Color eva_unit00_rei_white{ 243, 246, 250, 255 };     // #F3F6FA
+inline constexpr Color eva_unit00_frost_blue{ 220, 234, 246, 255 };    // #DCEAF6
+inline constexpr Color eva_unit00_pale_blue{ 175, 200, 222, 255 };     // #AFC8DE
+inline constexpr Color eva_unit00_warning_yellow{ 232, 188, 82, 255 }; // #E8BC52
+inline constexpr Color eva_unit00_soft_graphite{ 104, 116, 132, 255 }; // #687484
+inline constexpr Color eva_unit00_border_blue{ 199, 215, 230, 255 };   // #C7D7E6
+
+inline constexpr Color eva_unit00_ivory = eva_unit00_rei_white;        // #F3F6FA
+inline constexpr Color eva_unit00_cerulean = eva_unit00_frost_blue;    // #DCEAF6
+inline constexpr Color eva_unit00_rei_blue = eva_unit00_pale_blue;     // #AFC8DE
+inline constexpr Color eva_unit00_signal_amber = eva_unit00_warning_yellow; // #E8BC52
+inline constexpr Color eva_unit00_graphite = eva_unit00_soft_graphite; // #687484
 
 inline constexpr Color eva_unit01_deep_purple{ 49, 33, 76, 255 };      // #31214C
 inline constexpr Color eva_unit01_royal_purple{ 95, 62, 132, 255 };    // #5F3E84

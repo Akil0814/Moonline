@@ -606,104 +606,104 @@ template<class Enum>
     UiTheme theme;
 
     const UiEnabledDisabledColors text = make_text_colors(
-        elysia::core::colors::eva_unit00_ivory,
+        elysia::core::colors::eva_unit00_soft_graphite,
         elysia::core::colors::quiet_slate_gray);
     const UiEnabledDisabledColors secondary_text = make_text_colors(
-        elysia::core::colors::alice_blue,
+        elysia::core::colors::steel_blue,
         elysia::core::colors::quiet_slate_gray);
     const UiEnabledDisabledColors placeholder_text = make_text_colors(
-        elysia::core::colors::quiet_slate_silver,
+        elysia::core::colors::eva_unit00_border_blue,
         elysia::core::colors::gray_500);
     const UiEnabledDisabledColors border = UiEnabledDisabledColors{
-        elysia::core::colors::eva_unit00_rei_blue,
+        elysia::core::colors::eva_unit00_pale_blue,
         elysia::core::colors::quiet_slate_gray
     };
     const UiInteractiveColors interactive_surface = make_surface_colors(
-        elysia::core::colors::eva_unit00_graphite,
-        elysia::core::colors::eva_unit00_cerulean,
-        elysia::core::colors::eva_unit00_rei_blue,
-        elysia::core::colors::gray_700);
+        elysia::core::colors::eva_unit00_rei_white,
+        elysia::core::colors::eva_unit00_frost_blue,
+        elysia::core::colors::eva_unit00_pale_blue,
+        elysia::core::colors::gray_300);
     const UiChromeStyle interactive_chrome = make_chrome(interactive_surface,border,true,true);
 
     theme.label_styles[to_index(UiLabelThemeRole::Default)] = UiLabelStyle{
-        elysia::core::colors::eva_unit00_ivory,
+        elysia::core::colors::eva_unit00_soft_graphite,
         elysia::core::colors::transparent,
         false
     };
     theme.label_styles[to_index(UiLabelThemeRole::Title)] = UiLabelStyle{
-        elysia::core::colors::eva_unit00_signal_amber,
+        elysia::core::colors::eva_unit00_warning_yellow,
         elysia::core::colors::transparent,
         false
     };
     theme.label_styles[to_index(UiLabelThemeRole::Subtitle)] = UiLabelStyle{
-        elysia::core::colors::alice_blue,
+        elysia::core::colors::steel_blue,
         elysia::core::colors::transparent,
         false
     };
     theme.label_styles[to_index(UiLabelThemeRole::Muted)] = UiLabelStyle{
-        elysia::core::colors::quiet_slate_silver,
+        elysia::core::colors::eva_unit00_border_blue,
         elysia::core::colors::transparent,
         false
     };
 
     theme.number_style = UiNumberStyle{
-        elysia::core::colors::eva_unit00_ivory,
+        elysia::core::colors::eva_unit00_soft_graphite,
         elysia::core::colors::transparent,
         false
     };
 
     theme.bar_styles[to_index(UiBarThemeRole::Default)] = UiBarStyle{
-        elysia::core::colors::eva_unit00_graphite,
-        elysia::core::colors::eva_unit00_rei_blue,
-        elysia::core::colors::eva_unit00_rei_blue,
+        elysia::core::colors::eva_unit00_frost_blue,
+        elysia::core::colors::eva_unit00_pale_blue,
+        elysia::core::colors::eva_unit00_border_blue,
         false
     };
     theme.bar_styles[to_index(UiBarThemeRole::Progress)] = UiBarStyle{
-        elysia::core::colors::eva_unit00_graphite,
-        elysia::core::colors::eva_unit00_signal_amber,
-        elysia::core::colors::eva_unit00_rei_blue,
+        elysia::core::colors::eva_unit00_frost_blue,
+        elysia::core::colors::eva_unit00_warning_yellow,
+        elysia::core::colors::eva_unit00_pale_blue,
         false
     };
 
     theme.panel_styles[to_index(UiPanelThemeRole::Default)] = UiPanelStyle{
         true,
         true,
-        elysia::core::colors::eva_unit00_graphite,
-        elysia::core::colors::eva_unit00_rei_blue
+        elysia::core::colors::eva_unit00_rei_white,
+        elysia::core::colors::eva_unit00_pale_blue
     };
     theme.panel_styles[to_index(UiPanelThemeRole::Screen)] = UiPanelStyle{
         true,
         false,
-        elysia::core::colors::cobalt_blue,
-        elysia::core::colors::eva_unit00_cerulean
+        elysia::core::colors::eva_unit00_frost_blue,
+        elysia::core::colors::eva_unit00_border_blue
     };
     theme.panel_styles[to_index(UiPanelThemeRole::Dialog)] = UiPanelStyle{
         true,
         true,
-        elysia::core::colors::eva_unit00_graphite,
-        elysia::core::colors::eva_unit00_signal_amber
+        elysia::core::colors::eva_unit00_rei_white,
+        elysia::core::colors::eva_unit00_pale_blue
     };
     theme.panel_styles[to_index(UiPanelThemeRole::List)] = UiPanelStyle{
         true,
         true,
-        elysia::core::colors::eva_unit00_cerulean,
-        elysia::core::colors::eva_unit00_rei_blue
+        elysia::core::colors::eva_unit00_frost_blue,
+        elysia::core::colors::eva_unit00_pale_blue
     };
 
     theme.window_style = UiWindowStyle{
         true,
         true,
-        elysia::core::colors::cobalt_blue,
-        elysia::core::colors::eva_unit00_rei_blue
+        elysia::core::colors::eva_unit00_rei_white,
+        elysia::core::colors::eva_unit00_pale_blue
     };
 
     theme.chrome_container_style = UiChromeContainerStyle{
         true,
         true,
         true,
-        elysia::core::colors::eva_unit00_graphite,
-        elysia::core::colors::eva_unit00_rei_blue,
-        elysia::core::colors::eva_unit00_cerulean
+        elysia::core::colors::eva_unit00_rei_white,
+        elysia::core::colors::eva_unit00_pale_blue,
+        elysia::core::colors::eva_unit00_frost_blue
     };
 
     theme.button_styles[to_index(UiButtonThemeRole::Default)] = UiButtonStyle{
@@ -713,33 +713,33 @@ template<class Enum>
     theme.button_styles[to_index(UiButtonThemeRole::Primary)] = UiButtonStyle{
         make_chrome(
             make_surface_colors(
-                elysia::core::colors::eva_unit00_signal_amber,
+                elysia::core::colors::eva_unit00_warning_yellow,
                 elysia::core::colors::yellow_300,
-                elysia::core::colors::orange_500,
-                elysia::core::colors::gray_700),
-            UiEnabledDisabledColors{ elysia::core::colors::eva_unit00_ivory,elysia::core::colors::gray_500 }),
-        make_text_colors(elysia::core::colors::eva_unit00_graphite,elysia::core::colors::gray_700)
+                elysia::core::colors::orange_300,
+                elysia::core::colors::gray_300),
+            UiEnabledDisabledColors{ elysia::core::colors::eva_unit00_warning_yellow,elysia::core::colors::gray_500 }),
+        make_text_colors(elysia::core::colors::eva_unit00_soft_graphite,elysia::core::colors::gray_700)
     };
     theme.button_styles[to_index(UiButtonThemeRole::Danger)] = UiButtonStyle{
         make_chrome(
             make_surface_colors(
-                elysia::core::colors::brown_700,
-                elysia::core::colors::orange_700,
-                elysia::core::colors::orange_500,
-                elysia::core::colors::gray_700),
-            UiEnabledDisabledColors{ elysia::core::colors::eva_unit00_signal_amber,elysia::core::colors::gray_500 }),
+                elysia::core::colors::brown_300,
+                elysia::core::colors::orange_300,
+                elysia::core::colors::eva_unit00_warning_yellow,
+                elysia::core::colors::gray_300),
+            UiEnabledDisabledColors{ elysia::core::colors::brown_500,elysia::core::colors::gray_500 }),
         text
     };
 
     theme.checkbox_style = UiCheckboxStyle{
         interactive_chrome,
-        UiEnabledDisabledColors{ elysia::core::colors::eva_unit00_signal_amber,elysia::core::colors::quiet_slate_gray },
+        UiEnabledDisabledColors{ elysia::core::colors::eva_unit00_warning_yellow,elysia::core::colors::quiet_slate_gray },
         UiCheckboxMarkStyle::Checkmark
     };
 
     theme.radio_button_style = UiRadioButtonStyle{
         interactive_chrome,
-        UiEnabledDisabledColors{ elysia::core::colors::eva_unit00_signal_amber,elysia::core::colors::quiet_slate_gray },
+        UiEnabledDisabledColors{ elysia::core::colors::eva_unit00_warning_yellow,elysia::core::colors::quiet_slate_gray },
         text
     };
 
@@ -751,7 +751,7 @@ template<class Enum>
 
     theme.slider_style = UiSliderStyle{
         UiChromeStyle{ interactive_surface,border,false,true },
-        UiEnabledDisabledColors{ elysia::core::colors::eva_unit00_signal_amber,elysia::core::colors::quiet_slate_gray },
+        UiEnabledDisabledColors{ elysia::core::colors::eva_unit00_warning_yellow,elysia::core::colors::quiet_slate_gray },
         text,
         theme.drag_handle_style
     };
@@ -760,7 +760,7 @@ template<class Enum>
         interactive_chrome,
         secondary_text,
         placeholder_text,
-        elysia::core::colors::eva_unit00_signal_amber
+        elysia::core::colors::eva_unit00_warning_yellow
     };
 
     theme.scroll_container_style = UiScrollContainerStyle{
@@ -769,19 +769,19 @@ template<class Enum>
             4.0f,
             24.0f,
             true,
-            elysia::core::colors::cobalt_blue,
-            elysia::core::colors::eva_unit00_graphite,
-            elysia::core::colors::eva_unit00_cerulean,
-            elysia::core::colors::gray_700,
-            elysia::core::colors::eva_unit00_rei_blue,
-            elysia::core::colors::eva_unit00_signal_amber,
+            elysia::core::colors::eva_unit00_rei_white,
+            elysia::core::colors::eva_unit00_frost_blue,
+            elysia::core::colors::eva_unit00_frost_blue,
+            elysia::core::colors::gray_300,
+            elysia::core::colors::eva_unit00_pale_blue,
+            elysia::core::colors::eva_unit00_warning_yellow,
             elysia::core::colors::yellow_300,
             elysia::core::colors::quiet_slate_gray
         },
         true,
-        elysia::core::colors::eva_unit00_graphite,
+        elysia::core::colors::eva_unit00_rei_white,
         true,
-        elysia::core::colors::eva_unit00_rei_blue
+        elysia::core::colors::eva_unit00_pale_blue
     };
 
     return theme;
