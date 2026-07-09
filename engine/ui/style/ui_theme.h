@@ -180,6 +180,16 @@ struct UiTheme
     return style;
 }
 
+[[nodiscard]] inline UiTextBlockStyle apply_theme_colors(
+    UiTextBlockStyle style,
+    const UiLabelThemeColors& colors
+) noexcept
+{
+    style.text = colors.text;
+    style.background = colors.background;
+    return style;
+}
+
 [[nodiscard]] inline UiNumberStyle apply_theme_colors(
     UiNumberStyle style,
     const UiNumberThemeColors& colors

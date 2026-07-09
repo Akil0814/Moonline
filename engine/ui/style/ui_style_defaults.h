@@ -50,6 +50,11 @@ struct UiStyleDefaults
         return apply_theme_colors(UiLabelStyle{},theme().label(UiLabelThemeRole::Default));
     }
 
+    [[nodiscard]] static UiTextBlockStyle text_block() noexcept
+    {
+        return apply_theme_colors(UiTextBlockStyle{},theme().label(UiLabelThemeRole::Default));
+    }
+
     [[nodiscard]] static UiNumberStyle number() noexcept
     {
         return apply_theme_colors(UiNumberStyle{},theme().number_style);

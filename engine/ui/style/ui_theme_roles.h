@@ -18,6 +18,12 @@ enum class UiLabelThemeRole
     Muted
 };
 
+enum class UiTextBlockThemeRole
+{
+    Default,
+    Muted
+};
+
 enum class UiButtonThemeRole
 {
     Default,
@@ -29,6 +35,11 @@ enum class UiBarThemeRole
 {
     Default,
     Progress
+};
+
+enum class UiDialogThemeRole
+{
+    Default
 };
 
 }

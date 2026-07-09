@@ -38,6 +38,7 @@ void UiLabel::reset() noexcept
 {
     UiElement::reset();
     _text_key.clear();
+    _raw_text.clear();
     _style_state.reset(UiStyleDefaults::label());
     _theme_role = UiLabelThemeRole::Default;
     _horizontal_align = TextHorizontalAlign::Left;
@@ -59,7 +60,7 @@ void UiLabel::submit_ui_render_commands(std::vector<elysia::core::UiRenderComman
     if (style.draw_background)
         out_commands.push_back(elysia::core::make_ui_fill_rect_command(label_rect,apply_opacity(style.background)));
 
-    if (_text_key.empty())
+    if (_text_key.empty() && _raw_text.empty())
         return;
 
     elysia::localization::LocalizationManager* localization_manager = elysia::localization::LocalizationManager::instance();
@@ -71,7 +72,9 @@ void UiLabel::submit_ui_render_commands(std::vector<elysia::core::UiRenderComman
     text_style.color = style.text;
     text_style.wrap_width = std::max(0,static_cast<int>(content_rect().width()));
 
-    SDL_Texture* text_texture = localization_manager->get_text_texture(_text_key,text_style);
+    SDL_Texture* text_texture = _text_key.empty()
+        ? localization_manager->get_raw_text_texture(_raw_text,text_style)
+        : localization_manager->get_text_texture(_text_key,text_style);
     if (!text_texture)
         return;
 
@@ -87,12 +90,25 @@ void UiLabel::submit_ui_render_commands(std::vector<elysia::core::UiRenderComman
 void UiLabel::set_text_key(std::string text_key)
 {
     _text_key = std::move(text_key);
+    _raw_text.clear();
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 const std::string& UiLabel::text_key() const noexcept
 {
     return _text_key;
+}
+
+void UiLabel::set_raw_text(std::string raw_text)
+{
+    _raw_text = std::move(raw_text);
+    _text_key.clear();
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+const std::string& UiLabel::raw_text() const noexcept
+{
+    return _raw_text;
 }
 
 void UiLabel::set_style(const UiLabelStyle& style) noexcept

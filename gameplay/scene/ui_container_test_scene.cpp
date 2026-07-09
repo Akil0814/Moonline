@@ -10,6 +10,7 @@
 #include "../../engine/ui/containers/ui_panel.h"
 #include "../../engine/ui/containers/ui_radio_group.h"
 #include "../../engine/ui/containers/ui_scroll_container.h"
+#include "../../engine/ui/containers/ui_dialog.h"
 #include "../../engine/ui/widgets/ui_button.h"
 #include "../../engine/ui/widgets/ui_checkbox.h"
 #include "../../engine/ui/widgets/ui_labeled_checkbox.h"
@@ -443,7 +444,7 @@ void UiContainerTestScene::rebuild_ui()
     widget_scroll->set_scroll_step(elysia::core::Vector2(24.0f,24.0f));
     register_themed(widget_scroll);
 
-    auto widget_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,340,860 });
+    auto widget_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,340,980 });
     widget_content->set_theme_role(elysia::ui::UiPanelThemeRole::Dialog);
     register_themed(widget_content.get());
 
@@ -473,6 +474,23 @@ void UiContainerTestScene::rebuild_ui()
             .fallback_size = elysia::core::Vector2(260.0f,128.0f),
             .order = 900
         });
+
+    auto* localized_dialog = _root_window->create_child<elysia::ui::UiDialog>(elysia::core::Rect{ 0,0,520,360 });
+    localized_dialog->set_title_key("ui_test_scene.reading_dialog.title");
+    localized_dialog->set_body_text_key("ui_test_scene.reading_dialog.body");
+    localized_dialog->set_close_button_text_key("ui_test_scene.reading_dialog.close");
+    localized_dialog->register_as_overlay(*_root_window);
+    register_themed(localized_dialog);
+
+    auto* raw_text_dialog = _root_window->create_child<elysia::ui::UiDialog>(elysia::core::Rect{ 0,0,500,340 });
+    raw_text_dialog->set_title_raw_text("Raw Text Preview");
+    raw_text_dialog->set_body_raw_text(
+        "This dialog bypasses the localization dictionary on purpose.\n\n"
+        "It is useful for debug notes, generated copy, or temporary editor strings.\n\n"
+        "The body text still wraps and scrolls like the i18n-backed reading dialog.");
+    raw_text_dialog->set_close_button_raw_text("Close");
+    raw_text_dialog->register_as_overlay(*_root_window);
+    register_themed(raw_text_dialog);
 
     auto checkbox_0 = make_checkbox(
         elysia::core::Rect{ 18,18,36,36 },
@@ -628,6 +646,30 @@ void UiContainerTestScene::rebuild_ui()
     });
     register_themed(open_overlay_button.get());
     widget_content->add_child(std::move(open_overlay_button),elysia::ui::UiPanelInsertDirection::Down);
+
+    auto open_localized_dialog_button = std::make_unique<elysia::ui::UiButton>(
+        elysia::core::Rect{ 18,780,150,40 },
+        make_button_config("ui_test_scene.reading_dialog.open"),
+        0);
+    open_localized_dialog_button->set_on_click([this,localized_dialog]()
+    {
+        if (_root_window && localized_dialog)
+            localized_dialog->open(*_root_window);
+    });
+    register_themed(open_localized_dialog_button.get());
+    widget_content->add_child(std::move(open_localized_dialog_button),elysia::ui::UiPanelInsertDirection::Down);
+
+    auto open_raw_dialog_button = std::make_unique<elysia::ui::UiButton>(
+        elysia::core::Rect{ 18,830,150,40 },
+        make_button_config("ui_test_scene.reading_dialog.open_raw"),
+        0);
+    open_raw_dialog_button->set_on_click([this,raw_text_dialog]()
+    {
+        if (_root_window && raw_text_dialog)
+            raw_text_dialog->open(*_root_window);
+    });
+    register_themed(open_raw_dialog_button.get());
+    widget_content->add_child(std::move(open_raw_dialog_button),elysia::ui::UiPanelInsertDirection::Down);
 
     auto anchored_options_button = std::make_unique<elysia::ui::UiButton>(
         elysia::core::Rect{ 0,0,132,36 },

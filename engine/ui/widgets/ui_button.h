@@ -32,6 +32,12 @@ struct UiButtonTextContent
     std::string text_key{};
 };
 
+// Raw-text button content rendered without i18n lookup.
+struct UiButtonRawTextContent
+{
+    std::string raw_text{};
+};
+
 // Icon-only button content rendered from a caller-owned texture.
 struct UiButtonIconContent
 {
@@ -47,6 +53,7 @@ struct UiButtonTextureSetContent
 using UiButtonContent = std::variant<
     std::monostate,
     UiButtonTextContent,
+    UiButtonRawTextContent,
     UiButtonIconContent,
     UiButtonTextureSetContent
 >;
@@ -111,6 +118,8 @@ public:
 
     void set_text_key(std::string text_key);
     [[nodiscard]] const std::string& text_key() const noexcept;
+    void set_raw_text(std::string raw_text);
+    [[nodiscard]] const std::string& raw_text() const noexcept;
 
     void set_state_textures(const UiButtonTextures& textures);
     void clear_state_textures();
@@ -168,6 +177,7 @@ private:
 
 private:
     std::string _text_key;
+    std::string _raw_text;
     UiButtonSounds _sounds;
     UiButtonTextures _state_textures;
     ClickCallback _on_click;

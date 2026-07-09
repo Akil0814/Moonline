@@ -19,6 +19,13 @@
     "theme_evangelion_unit_00": "EVA-00",
     "theme_evangelion_unit_01": "EVA-01",
     "theme_evangelion_unit_02": "EVA-02",
-    "theme_quiet_slate": "Quiet Slate"
+    "theme_quiet_slate": "Quiet Slate",
+    "reading_dialog": {
+      "title": "Reading Dialog",
+      "body": "MoonLine's reusable reading dialog is designed for long-form UI copy.\n\nThis sample body intentionally spans multiple paragraphs so the viewport must scroll instead of shrinking the text.\n\nIn production, the same dialog can host lore, tutorials, settings explanations, or patch notes while keeping focus and modal behavior consistent.",
+      "close": "Close",
+      "open": "Open I18N Dialog",
+      "open_raw": "Open Raw Dialog"
+    }
   }
 }

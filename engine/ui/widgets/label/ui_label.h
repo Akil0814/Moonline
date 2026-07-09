@@ -31,6 +31,8 @@ public:
 
     void set_text_key(std::string text_key);
     [[nodiscard]] const std::string& text_key() const noexcept;
+    void set_raw_text(std::string raw_text);
+    [[nodiscard]] const std::string& raw_text() const noexcept;
 
     void set_style(const UiLabelStyle& style) noexcept;
     [[nodiscard]] const UiLabelStyle& style() const noexcept;
@@ -61,6 +63,7 @@ private:
 
 private:
     std::string _text_key;
+    std::string _raw_text;
     UiStyleState<UiLabelStyle> _style_state;
     UiLabelThemeRole _theme_role = UiLabelThemeRole::Default;
     TextHorizontalAlign _horizontal_align = TextHorizontalAlign::Left;

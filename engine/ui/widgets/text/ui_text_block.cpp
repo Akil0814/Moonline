@@ -1,0 +1,309 @@
+#include "ui_text_block.h"
+
+#include "../../style/ui_style_defaults.h"
+#include "../../style/ui_theme.h"
+#include "../../../core/render/render_command.h"
+#include "../../../localization/localization_manager.h"
+#include "../../../localization/localized_text_style.h"
+
+#include <SDL.h>
+
+#include <algorithm>
+#include <utility>
+
+namespace elysia::ui
+{
+namespace
+{
+[[nodiscard]] UiLabelThemeRole label_role_for_text_block(UiTextBlockThemeRole role) noexcept
+{
+    switch (role)
+    {
+    case UiTextBlockThemeRole::Muted:
+        return UiLabelThemeRole::Muted;
+    case UiTextBlockThemeRole::Default:
+    default:
+        return UiLabelThemeRole::Default;
+    }
+}
+}
+
+UiTextBlock::UiTextBlock(const elysia::core::Rect& rect,int order) noexcept
+    : UiElement(rect,order)
+{
+    reset();
+}
+
+UiTextBlock::UiTextBlock(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order) noexcept
+    : UiElement(position,size,order)
+{
+    reset();
+}
+
+UiTextBlock::UiTextBlock(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order) noexcept
+    : UiElement(center,size,from_center,order)
+{
+    reset();
+}
+
+void UiTextBlock::reset() noexcept
+{
+    UiElement::reset();
+    _text_source = UiTextSource{};
+    _style_state.reset(UiStyleDefaults::text_block());
+    _theme_role = UiTextBlockThemeRole::Default;
+    _horizontal_align = TextHorizontalAlign::Left;
+    _text_point_size = 24;
+    _padding = 0;
+}
+
+elysia::core::Vector2 UiTextBlock::content_extent() const noexcept
+{
+    const elysia::core::Rect content = content_rect();
+    const float width = content.width();
+    if (!has_text() || width <= 0.0f)
+        return elysia::core::Vector2(std::max(0.0f,size().x),std::max(0.0f,size().y));
+
+    auto* localization_manager = elysia::localization::LocalizationManager::instance();
+    if (!localization_manager)
+        return elysia::core::Vector2(std::max(0.0f,size().x),std::max(0.0f,size().y));
+
+    elysia::localization::LocalizedTextStyle text_style;
+    text_style.point_size = _text_point_size;
+    text_style.color = _style_state.effective_style().text;
+    text_style.wrap_width = std::max(0,static_cast<int>(width));
+
+    int measured_width = 0;
+    int measured_height = 0;
+    const std::string text = resolved_text();
+    if (!localization_manager->measure_raw_text(text,text_style,measured_width,measured_height))
+        return elysia::core::Vector2(std::max(0.0f,size().x),std::max(0.0f,size().y));
+
+    const float padding = static_cast<float>(_padding);
+    return elysia::core::Vector2(
+        std::max(width + padding * 2.0f,size().x),
+        std::max(static_cast<float>(measured_height) + padding * 2.0f,size().y));
+}
+
+void UiTextBlock::submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const
+{
+    if (!is_visible())
+        return;
+
+    const elysia::core::Rect block_rect = screen_rect();
+    if (block_rect.is_empty())
+        return;
+
+    const UiTextBlockStyle& style = _style_state.effective_style();
+    if (style.draw_background)
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(block_rect,apply_opacity(style.background)));
+
+    if (!has_text())
+        return;
+
+    auto* localization_manager = elysia::localization::LocalizationManager::instance();
+    if (!localization_manager)
+        return;
+
+    elysia::localization::LocalizedTextStyle text_style;
+    text_style.point_size = _text_point_size;
+    text_style.color = style.text;
+    text_style.wrap_width = std::max(0,static_cast<int>(content_rect().width()));
+
+    SDL_Texture* text_texture = nullptr;
+    switch (_text_source.kind)
+    {
+    case UiTextSourceKind::TextKey:
+        text_texture = localization_manager->get_text_texture(_text_source.value,text_style);
+        break;
+    case UiTextSourceKind::RawText:
+        text_texture = localization_manager->get_raw_text_texture(_text_source.value,text_style);
+        break;
+    case UiTextSourceKind::None:
+    default:
+        return;
+    }
+    if (!text_texture)
+        return;
+
+    const elysia::core::Rect text_rect = text_render_rect(text_texture);
+    if (text_rect.is_empty())
+        return;
+
+    auto command = elysia::core::make_ui_texture_command(text_texture,text_rect);
+    apply_opacity(command);
+    out_commands.push_back(command);
+}
+
+void UiTextBlock::set_text_source(UiTextSource text_source)
+{
+    _text_source = std::move(text_source);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+const UiTextSource& UiTextBlock::text_source() const noexcept
+{
+    return _text_source;
+}
+
+void UiTextBlock::set_text_key(std::string text_key)
+{
+    set_text_source(UiTextSource{ UiTextSourceKind::TextKey,std::move(text_key) });
+}
+
+void UiTextBlock::set_raw_text(std::string raw_text)
+{
+    set_text_source(UiTextSource{ UiTextSourceKind::RawText,std::move(raw_text) });
+}
+
+void UiTextBlock::clear_text()
+{
+    set_text_source(UiTextSource{});
+}
+
+void UiTextBlock::set_style(const UiTextBlockStyle& style) noexcept
+{
+    _style_state.set_style_override(style);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+const UiTextBlockStyle& UiTextBlock::style() const noexcept
+{
+    return _style_state.effective_style();
+}
+
+bool UiTextBlock::has_style_override() const noexcept
+{
+    return _style_state.has_style_override();
+}
+
+void UiTextBlock::clear_style_override() noexcept
+{
+    _style_state.clear_style_override();
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+void UiTextBlock::set_theme_role(UiTextBlockThemeRole role) noexcept
+{
+    _theme_role = role;
+    request_theme_reapply();
+}
+
+UiTextBlockThemeRole UiTextBlock::theme_role() const noexcept
+{
+    return _theme_role;
+}
+
+void UiTextBlock::set_text_point_size(int point_size) noexcept
+{
+    _text_point_size = std::max(0,point_size);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+int UiTextBlock::text_point_size() const noexcept
+{
+    return _text_point_size;
+}
+
+void UiTextBlock::set_padding(int padding) noexcept
+{
+    _padding = std::max(0,padding);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+int UiTextBlock::padding() const noexcept
+{
+    return _padding;
+}
+
+void UiTextBlock::set_horizontal_align(TextHorizontalAlign align) noexcept
+{
+    _horizontal_align = align;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+TextHorizontalAlign UiTextBlock::horizontal_align() const noexcept
+{
+    return _horizontal_align;
+}
+
+bool UiTextBlock::has_text() const noexcept
+{
+    return _text_source.kind != UiTextSourceKind::None && !_text_source.value.empty();
+}
+
+elysia::core::Rect UiTextBlock::content_rect() const noexcept
+{
+    const elysia::core::Rect& rect = screen_rect();
+    const float width = std::max(0.0f,rect.width());
+    const float height = std::max(0.0f,rect.height());
+    const float padding = static_cast<float>(_padding);
+    const float pad_x = std::min(padding,width * 0.5f);
+    const float pad_y = std::min(padding,height * 0.5f);
+
+    elysia::core::Rect content = rect;
+    content.set_x(rect.x() + pad_x);
+    content.set_y(rect.y() + pad_y);
+    content.set_width(width - pad_x * 2.0f);
+    content.set_height(height - pad_y * 2.0f);
+    return content;
+}
+
+elysia::core::Rect UiTextBlock::text_render_rect(SDL_Texture* text_texture) const noexcept
+{
+    if (!text_texture)
+        return elysia::core::Rect::zero();
+
+    int texture_width = 0;
+    int texture_height = 0;
+    if (SDL_QueryTexture(text_texture,nullptr,nullptr,&texture_width,&texture_height) != 0)
+        return elysia::core::Rect::zero();
+    if (texture_width <= 0 || texture_height <= 0)
+        return elysia::core::Rect::zero();
+
+    const elysia::core::Rect available_rect = content_rect();
+    if (available_rect.is_empty())
+        return elysia::core::Rect::zero();
+
+    float x = available_rect.x();
+    switch (_horizontal_align)
+    {
+    case TextHorizontalAlign::Center:
+        x = available_rect.center().x - static_cast<float>(texture_width) * 0.5f;
+        break;
+    case TextHorizontalAlign::Right:
+        x = available_rect.right() - static_cast<float>(texture_width);
+        break;
+    case TextHorizontalAlign::Left:
+    default:
+        x = available_rect.x();
+        break;
+    }
+
+    return elysia::core::Rect(
+        x,
+        available_rect.y(),
+        std::min(available_rect.width(),static_cast<float>(texture_width)),
+        std::min(available_rect.height(),static_cast<float>(texture_height)));
+}
+
+std::string UiTextBlock::resolved_text() const
+{
+    if (!has_text())
+        return {};
+
+    if (_text_source.kind == UiTextSourceKind::RawText)
+        return _text_source.value;
+
+    auto* localization_manager = elysia::localization::LocalizationManager::instance();
+    if (!localization_manager)
+        return {};
+    return std::string(localization_manager->tr(_text_source.value));
+}
+
+void UiTextBlock::apply_theme(const UiTheme& theme)
+{
+    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.label(label_role_for_text_block(_theme_role))));
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+}
