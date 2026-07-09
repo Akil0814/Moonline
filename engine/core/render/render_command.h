@@ -21,7 +21,9 @@ enum class UiRenderCommandType
     Texture,
     FillRect,
     DrawRect,
-    DrawLine
+    DrawLine,
+    FillCircle,
+    DrawCircle
 };
 
 struct RenderCommand
@@ -86,6 +88,10 @@ struct UiRenderCommand
     // Used by DrawLine.
     Vector2 line_start{};
     Vector2 line_end{};
+
+    // Used by FillCircle and DrawCircle.
+    Vector2 circle_center{};
+    float circle_radius = 0.0f;
 
     // Used by Texture.
     Uint8 alpha = 255;
@@ -206,6 +212,58 @@ inline void set_ui_command_clip_rect(UiRenderCommand& command, const Rect& clip_
 ) noexcept
 {
     UiRenderCommand command = make_ui_draw_line_command(line_start, line_end, color);
+    set_ui_command_clip_rect(command, clip_rect);
+    return command;
+}
+
+[[nodiscard]] inline UiRenderCommand make_ui_fill_circle_command(
+    const Vector2& circle_center,
+    float circle_radius,
+    Color color
+) noexcept
+{
+    UiRenderCommand command;
+    command.type = UiRenderCommandType::FillCircle;
+    command.circle_center = circle_center;
+    command.circle_radius = circle_radius;
+    command.color = color;
+    return command;
+}
+
+[[nodiscard]] inline UiRenderCommand make_ui_fill_circle_command(
+    const Vector2& circle_center,
+    float circle_radius,
+    Color color,
+    const Rect& clip_rect
+) noexcept
+{
+    UiRenderCommand command = make_ui_fill_circle_command(circle_center, circle_radius, color);
+    set_ui_command_clip_rect(command, clip_rect);
+    return command;
+}
+
+[[nodiscard]] inline UiRenderCommand make_ui_draw_circle_command(
+    const Vector2& circle_center,
+    float circle_radius,
+    Color color
+) noexcept
+{
+    UiRenderCommand command;
+    command.type = UiRenderCommandType::DrawCircle;
+    command.circle_center = circle_center;
+    command.circle_radius = circle_radius;
+    command.color = color;
+    return command;
+}
+
+[[nodiscard]] inline UiRenderCommand make_ui_draw_circle_command(
+    const Vector2& circle_center,
+    float circle_radius,
+    Color color,
+    const Rect& clip_rect
+) noexcept
+{
+    UiRenderCommand command = make_ui_draw_circle_command(circle_center, circle_radius, color);
     set_ui_command_clip_rect(command, clip_rect);
     return command;
 }

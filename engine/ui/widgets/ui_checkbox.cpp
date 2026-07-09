@@ -6,7 +6,6 @@
 
 
 #include <algorithm>
-#include <cmath>
 #include <utility>
 
 namespace elysia::ui
@@ -21,42 +20,6 @@ namespace
         && textures.disabled;
 }
 
-void submit_fill_disc(
-    std::vector<elysia::core::UiRenderCommand>& out_commands,
-    const elysia::core::Rect& bounds,
-    elysia::core::Color color
-)
-{
-    if (bounds.is_empty())
-        return;
-
-    const float diameter = std::min(bounds.width(),bounds.height());
-    if (diameter <= 0.0f)
-        return;
-
-    const float radius = diameter * 0.5f;
-    const float center_x = bounds.center().x;
-    const float center_y = bounds.center().y;
-    const int slice_count = std::max(1,static_cast<int>(std::round(diameter)));
-    const float slice_height = diameter / static_cast<float>(slice_count);
-
-    for (int index = 0; index < slice_count; ++index)
-    {
-        const float y0 = center_y - radius + slice_height * static_cast<float>(index);
-        const float y1 = std::min(center_y + radius,y0 + slice_height);
-        const float sample_y = std::min(center_y + radius,std::max(center_y - radius,y0 + (y1 - y0) * 0.5f));
-        const float distance_y = sample_y - center_y;
-        const float distance_x = std::sqrt(std::max(0.0f,radius * radius - distance_y * distance_y));
-        const elysia::core::Rect slice(
-            center_x - distance_x,
-            y0,
-            distance_x * 2.0f,
-            std::max(1.0f,y1 - y0)
-        );
-        if (!slice.is_empty())
-            out_commands.push_back(elysia::core::make_ui_fill_rect_command(slice,color));
-    }
-}
 }
 
 UiCheckbox::UiCheckbox(const elysia::core::Rect& rect,int order) noexcept
@@ -208,43 +171,50 @@ void UiCheckbox::submit_ui_render_commands(std::vector<elysia::core::UiRenderCom
         return;
     }
 
-    if (_style.chrome.draw_background)
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(current_background_color())));
-    if (_style.chrome.draw_border)
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(current_border_color())));
-
     const elysia::core::Color mark_color = apply_opacity(current_checkmark_color());
     if (_style.mark_style == UiCheckboxMarkStyle::RadioDot)
     {
+        const elysia::core::Vector2 center = rect.center();
+        const float radius = std::min(rect.width(),rect.height()) * 0.5f;
+
         if (_style.chrome.draw_background)
-            submit_fill_disc(out_commands,rect,apply_opacity(current_background_color()));
+            out_commands.push_back(elysia::core::make_ui_fill_circle_command(
+                center,
+                radius,
+                apply_opacity(current_background_color())));
         if (_style.chrome.draw_border)
-            submit_fill_disc(out_commands,rect,apply_opacity(current_border_color()));
+            out_commands.push_back(elysia::core::make_ui_draw_circle_command(
+                center,
+                radius,
+                apply_opacity(current_border_color())));
 
         const float inset = std::max(2.0f,std::min(rect.width(),rect.height()) * 0.14f);
-        const elysia::core::Rect inner_rect(
-            rect.x() + inset,
-            rect.y() + inset,
-            std::max(0.0f,rect.width() - inset * 2.0f),
-            std::max(0.0f,rect.height() - inset * 2.0f)
-        );
-        if (_style.chrome.draw_background && !inner_rect.is_empty())
-            submit_fill_disc(out_commands,inner_rect,apply_opacity(current_background_color()));
+        const float inner_radius = std::max(0.0f,radius - inset);
+        if (_style.chrome.draw_background && inner_radius > 0.0f)
+        {
+            const elysia::core::Color background_color = apply_opacity(current_background_color());
+            out_commands.push_back(elysia::core::make_ui_fill_circle_command(center,inner_radius,background_color));
+            if (_style.chrome.draw_border)
+                out_commands.push_back(elysia::core::make_ui_draw_circle_command(center,inner_radius,background_color));
+        }
 
         if (_state == UiCheckboxState::Checked)
         {
             const float dot_inset = std::max(4.0f,std::min(rect.width(),rect.height()) * 0.32f);
-            const elysia::core::Rect dot_rect(
-                rect.x() + dot_inset,
-                rect.y() + dot_inset,
-                std::max(0.0f,rect.width() - dot_inset * 2.0f),
-                std::max(0.0f,rect.height() - dot_inset * 2.0f)
-            );
-            if (!dot_rect.is_empty())
-                submit_fill_disc(out_commands,dot_rect,mark_color);
+            const float dot_radius = std::max(0.0f,radius - dot_inset);
+            if (dot_radius > 0.0f)
+            {
+                out_commands.push_back(elysia::core::make_ui_fill_circle_command(center,dot_radius,mark_color));
+                out_commands.push_back(elysia::core::make_ui_draw_circle_command(center,dot_radius,mark_color));
+            }
         }
         return;
     }
+
+    if (_style.chrome.draw_background)
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(current_background_color())));
+    if (_style.chrome.draw_border)
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(current_border_color())));
 
     if (_state == UiCheckboxState::Checked)
     {

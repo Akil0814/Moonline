@@ -1,14 +1,27 @@
 #pragma once
 
 #include <SDL.h>
+#include <SDL2_gfxPrimitives.h>
 
 #include "render_command.h"
 #include "sdl_convert.h"
 
+#include <cmath>
+#include <limits>
 #include <vector>
 
 namespace elysia::core
 {
+[[nodiscard]] inline Sint16 clamp_circle_component(float value) noexcept
+{
+    const long rounded = std::lround(value);
+    if (rounded < static_cast<long>(std::numeric_limits<Sint16>::min()))
+        return std::numeric_limits<Sint16>::min();
+    if (rounded > static_cast<long>(std::numeric_limits<Sint16>::max()))
+        return std::numeric_limits<Sint16>::max();
+    return static_cast<Sint16>(rounded);
+}
+
 [[nodiscard]] inline SDL_RendererFlip to_sdl_renderer_flip(SpriteFlip flip) noexcept
 {
     switch (flip)
@@ -180,6 +193,24 @@ inline void execute_render_command(SDL_Renderer* renderer, const UiRenderCommand
         SDL_RenderDrawLine(renderer, start.x, start.y, end.x, end.y);
 
         SDL_SetRenderDrawColor(renderer, old_r, old_g, old_b, old_a);
+        break;
+    }
+
+    case UiRenderCommandType::FillCircle:
+    case UiRenderCommandType::DrawCircle:
+    {
+        const Sint16 radius = clamp_circle_component(render_command.circle_radius);
+        if (radius <= 0)
+            break;
+
+        const SDL_Color color = to_sdl_color(render_command.color);
+        const Sint16 x = clamp_circle_component(render_command.circle_center.x);
+        const Sint16 y = clamp_circle_component(render_command.circle_center.y);
+
+        if (render_command.type == UiRenderCommandType::FillCircle)
+            filledCircleRGBA(renderer, x, y, radius, color.r, color.g, color.b, color.a);
+        else
+            aacircleRGBA(renderer, x, y, radius, color.r, color.g, color.b, color.a);
         break;
     }
     }

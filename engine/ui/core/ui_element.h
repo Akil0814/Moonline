@@ -130,6 +130,8 @@ protected:
         case elysia::core::UiRenderCommandType::FillRect:
         case elysia::core::UiRenderCommandType::DrawRect:
         case elysia::core::UiRenderCommandType::DrawLine:
+        case elysia::core::UiRenderCommandType::FillCircle:
+        case elysia::core::UiRenderCommandType::DrawCircle:
             command.color = apply_opacity(command.color);
             break;
         default:
