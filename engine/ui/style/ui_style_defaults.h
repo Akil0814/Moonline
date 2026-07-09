@@ -204,6 +204,8 @@ struct UiStyleDefaults
     {
         UiScrollContainerStyle style;
         style.scrollbar = scrollbar();
+        style.draw_background = true;
+        style.background_color = UiPalette::surface_elevated;
         style.draw_border = false;
         style.border_color = UiPalette::border_default;
         return style;

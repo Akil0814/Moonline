@@ -146,6 +146,10 @@ void UiScrollContainer::submit_ui_render_commands(std::vector<elysia::core::UiRe
     self->cleanup_destroyed_children();
     self->update_layout_if_dirty();
 
+    const elysia::core::Rect rect = screen_rect();
+    if (_style.draw_background && !rect.is_empty())
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(_style.background_color)));
+
     if (const UiElement* content_element = content())
     {
         if (!content_element->is_destroyed() && content_element->is_visible())
@@ -158,7 +162,6 @@ void UiScrollContainer::submit_ui_render_commands(std::vector<elysia::core::UiRe
 
     submit_scrollbar_render_commands(out_commands);
 
-    const elysia::core::Rect rect = screen_rect();
     if (_style.draw_border && !rect.is_empty())
         out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(_style.border_color)));
 }
@@ -221,6 +224,26 @@ void UiScrollContainer::set_style(const UiScrollContainerStyle& style) noexcept
 const UiScrollContainerStyle& UiScrollContainer::style() const noexcept
 {
     return _style;
+}
+
+void UiScrollContainer::set_draw_background(bool draw_background) noexcept
+{
+    _style.draw_background = draw_background;
+}
+
+bool UiScrollContainer::draws_background() const noexcept
+{
+    return _style.draw_background;
+}
+
+void UiScrollContainer::set_background_color(elysia::core::Color color) noexcept
+{
+    _style.background_color = color;
+}
+
+elysia::core::Color UiScrollContainer::background_color() const noexcept
+{
+    return _style.background_color;
 }
 
 void UiScrollContainer::set_scrollbar_visibility(UiScrollBarVisibility visibility) noexcept
