@@ -101,6 +101,8 @@ public:
     [[nodiscard]] elysia::core::Vector2 position() const noexcept { return _screen_rect.position(); }
     [[nodiscard]] elysia::core::Vector2 center() const noexcept { return _screen_rect.center(); }
     [[nodiscard]] elysia::core::Vector2 size() const noexcept { return _screen_rect.size(); }
+    [[nodiscard]] UiChildHost* layout_parent() noexcept { return _layout_parent; }
+    [[nodiscard]] const UiChildHost* layout_parent() const noexcept { return _layout_parent; }
 
     void set_order(int order) noexcept { _order = order; }
     [[nodiscard]] int order() const noexcept { return _order; }

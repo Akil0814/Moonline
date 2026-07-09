@@ -178,11 +178,17 @@ void MainMenuScene::build_menu_buttons()
         elysia::ui::UiElement* list_added = _main_menu_window->add_child(std::move(ui_list), layout);
         elysia::ui::UiWindowStyle window_style = _main_menu_window->style();
         window_style.draw_background = true;
+        window_style.draw_border = false;
         _main_menu_window->set_style(window_style);
 
         if (auto* list = dynamic_cast<elysia::ui::UiListContainer*>(list_added))
             _main_menu_window->register_focus_scope(*list);
     }
+
+    _main_menu_window->set_on_cancel([this] {
+        if (_main_menu_window && _exit_confirmation)
+            _main_menu_window->set_overlay_open(*_exit_confirmation, true);
+        });
 }
 
 void MainMenuScene::reset_exit_overlay()

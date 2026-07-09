@@ -43,6 +43,7 @@ public:
     [[nodiscard]] UiFocusScope* focused_scope() const noexcept;
     // Chooses the first usable registered scope when the window gains focus.
     bool focus_first_available_scope();
+    [[nodiscard]] elysia::input::InputDevice focus_input_device() const noexcept { return _focus_input_device; }
 
     // Registers an owned child element as a window-managed overlay surface.
     void register_overlay(UiElement& element,UiOverlayOptions options = {});

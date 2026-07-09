@@ -5,6 +5,7 @@
 #include "../style/ui_interaction_style.h"
 #include "../core/ui_control.h"
 #include "../text/ui_text_content.h"
+#include "../../input/input_types.h"
 #include "../text/ui_typography.h"
 
 #include <cstddef>
@@ -105,6 +106,9 @@ private:
     [[nodiscard]] elysia::core::Color current_border_color() const noexcept;
     [[nodiscard]] elysia::core::Color current_text_color() const noexcept;
     [[nodiscard]] elysia::core::Color current_placeholder_color() const noexcept;
+    void sync_text_input_rect() const;
+    [[nodiscard]] elysia::input::InputDevice resolve_focus_input_device() const noexcept;
+    [[nodiscard]] bool should_try_show_screen_keyboard() const noexcept;
     // Claims global text-input ownership so IME/text events route to this control.
     void acquire_text_input_ownership() const;
     // Releases global text-input ownership when the control no longer accepts typing.

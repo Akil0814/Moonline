@@ -1,7 +1,9 @@
 #include "ui_text_input.h"
 
+#include "../focus/ui_control_focus_scope_host.h"
 #include "../style/ui_style_defaults.h"
 #include "../style/ui_theme.h"
+#include "../window/ui_window.h"
 
 #include "../../core/render/render_command.h"
 #include "../../localization/localization_manager.h"
@@ -336,13 +338,7 @@ void UiTextInput::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
                 layout.content_rect));
         }
 
-        SDL_Rect ime_rect{
-            static_cast<int>(layout.caret_x),
-            static_cast<int>(layout.text_y),
-            1,
-            static_cast<int>(std::max(layout.text_height,1.0f))
-        };
-        SDL_SetTextInputRect(&ime_rect);
+        sync_text_input_rect();
     }
 }
 
@@ -747,9 +743,45 @@ elysia::core::Color UiTextInput::current_placeholder_color() const noexcept
     return resolve_enabled_disabled_color(style().placeholder,is_enabled());
 }
 
+void UiTextInput::sync_text_input_rect() const
+{
+    const TextLayout layout = compute_text_layout();
+    SDL_Rect ime_rect{
+        static_cast<int>(layout.caret_x),
+        static_cast<int>(layout.text_y),
+        1,
+        static_cast<int>(std::max(layout.text_height,1.0f))
+    };
+    SDL_SetTextInputRect(&ime_rect);
+}
+
+elysia::input::InputDevice UiTextInput::resolve_focus_input_device() const noexcept
+{
+    const UiChildHost* ancestor = layout_parent();
+    while (ancestor)
+    {
+        if (const auto* focus_scope = dynamic_cast<const UiControlFocusScopeHost*>(ancestor))
+            return focus_scope->focus_input_device();
+        if (const auto* window = dynamic_cast<const UiWindow*>(ancestor))
+            return window->focus_input_device();
+        ancestor = ancestor->layout_parent();
+    }
+    return elysia::input::InputDevice::Unknown;
+}
+
+bool UiTextInput::should_try_show_screen_keyboard() const noexcept
+{
+    const elysia::input::InputDevice device = resolve_focus_input_device();
+    return device != elysia::input::InputDevice::Keyboard
+        && device != elysia::input::InputDevice::Mouse;
+}
+
 void UiTextInput::acquire_text_input_ownership() const
 {
     s_text_input_owner = this;
+    sync_text_input_rect();
+    if (should_try_show_screen_keyboard())
+        SDL_SetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD,"1");
     if (!SDL_IsTextInputActive())
         SDL_StartTextInput();
 }

@@ -38,6 +38,7 @@ public:
     bool focus_first_available() override;
     [[nodiscard]] bool has_focusable_target() const noexcept override;
     [[nodiscard]] bool can_navigate(UiAction action) const noexcept override;
+    [[nodiscard]] elysia::input::InputDevice focus_input_device() const noexcept { return _focus_input_device; }
 
     [[nodiscard]] UiElement& focus_scope_element() noexcept override;
     [[nodiscard]] const UiElement& focus_scope_element() const noexcept override;
