@@ -217,7 +217,29 @@ bool LocalizationManager::measure_raw_text(
 		return true;
 	}
 
-	if (TTF_SizeUTF8(font,std::string(text).c_str(),&out_width,&out_height) != 0)
+	const std::string raw_text(text);
+	if (style.wrap_width > 0)
+	{
+		// SDL_ttf has no wrapped measurement API. Rendering to a temporary surface is
+		// the same layout path used for the final texture, so its extent is authoritative.
+		SDL_Surface* surface = TTF_RenderUTF8_Blended_Wrapped(
+			font,
+			raw_text.c_str(),
+			SDL_Color{ 255,255,255,255 },
+			style.wrap_width);
+		if (!surface)
+		{
+			std::cout << "Measure wrapped raw text failed, error: " << TTF_GetError() << std::endl;
+			return false;
+		}
+
+		out_width = surface->w;
+		out_height = surface->h;
+		SDL_FreeSurface(surface);
+		return true;
+	}
+
+	if (TTF_SizeUTF8(font,raw_text.c_str(),&out_width,&out_height) != 0)
 	{
 		std::cout << "Measure raw text failed, error: " << TTF_GetError() << std::endl;
 		return false;

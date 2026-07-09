@@ -55,6 +55,11 @@ struct UiStyleDefaults
         return apply_theme_colors(UiTextBlockStyle{},theme().label(UiLabelThemeRole::Default));
     }
 
+    [[nodiscard]] static UiDropdownButtonSetStyle dropdown_button_set() noexcept
+    {
+        return UiDropdownButtonSetStyle{};
+    }
+
     [[nodiscard]] static UiNumberStyle number() noexcept
     {
         return apply_theme_colors(UiNumberStyle{},theme().number_style);

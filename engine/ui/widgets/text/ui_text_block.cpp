@@ -82,7 +82,7 @@ elysia::core::Vector2 UiTextBlock::content_extent() const noexcept
 
     const float padding = static_cast<float>(_padding);
     return elysia::core::Vector2(
-        std::max(width + padding * 2.0f,size().x),
+        std::max(static_cast<float>(measured_width) + padding * 2.0f,size().x),
         std::max(static_cast<float>(measured_height) + padding * 2.0f,size().y));
 }
 
@@ -276,8 +276,8 @@ elysia::core::Rect UiTextBlock::text_render_rect(SDL_Texture* text_texture) cons
     return elysia::core::Rect(
         x,
         available_rect.y(),
-        std::min(available_rect.width(),static_cast<float>(texture_width)),
-        std::min(available_rect.height(),static_cast<float>(texture_height)));
+        static_cast<float>(texture_width),
+        static_cast<float>(texture_height));
 }
 
 std::string UiTextBlock::resolved_text() const

@@ -14,9 +14,9 @@ namespace elysia::ui
 {
 namespace
 {
-[[nodiscard]] bool contains_child_element(const UiElement& root,const UiElement& target) noexcept
+[[nodiscard]] bool contains_child_element(const UiElement& root,const UiElement* target) noexcept
 {
-    if (&root == &target)
+    if (&root == target)
         return true;
 
     const auto* child_host = dynamic_cast<const UiChildHost*>(&root);
@@ -53,15 +53,24 @@ UiWindow::UiWindow(const elysia::core::Vector2& center,const elysia::core::Vecto
     reset();
 }
 
+UiWindow::~UiWindow()
+{
+    _active_transient_popup = nullptr;
+    _transient_popups.clear();
+}
+
 void UiWindow::reset() noexcept
 {
     UiChildHost::reset();
     _scope_entries.clear();
     _overlay_entries.clear();
+    _transient_popups.clear();
+    _active_transient_popup = nullptr;
     _focused_scope = nullptr;
     _last_focused_scope = nullptr;
     _style_state.reset(UiStyleDefaults::window());
     _hover_focus_enabled = true;
+    _transient_popup_pointer_active = false;
     _focus_input_device = elysia::input::InputDevice::Unknown;
     _on_cancel = {};
 }
@@ -263,10 +272,48 @@ UiOverlayOptions* UiWindow::overlay_options(UiElement& element) noexcept
     return entry ? &entry->options : nullptr;
 }
 
+void UiWindow::register_transient_popup(UiTransientPopup& popup)
+{
+    const auto found = std::find_if(_transient_popups.begin(),_transient_popups.end(),[&popup](const TransientPopupEntry& entry)
+    {
+        return entry.popup == &popup;
+    });
+    if (found == _transient_popups.end())
+        _transient_popups.push_back(TransientPopupEntry{ &popup,&popup.transient_popup_owner() });
+}
+
+void UiWindow::unregister_transient_popup(UiTransientPopup& popup)
+{
+    _transient_popups.erase(std::remove_if(_transient_popups.begin(),_transient_popups.end(),[&popup](const TransientPopupEntry& entry)
+    {
+        return entry.popup == &popup;
+    }),_transient_popups.end());
+    if (_active_transient_popup == &popup)
+    {
+        _active_transient_popup = nullptr;
+        _transient_popup_pointer_active = false;
+    }
+}
+
+void UiWindow::activate_transient_popup(UiTransientPopup& popup)
+{
+    register_transient_popup(popup);
+    if (_active_transient_popup && _active_transient_popup != &popup)
+        _active_transient_popup->close_transient_popup();
+    _active_transient_popup = &popup;
+    _transient_popup_pointer_active = false;
+}
+
+elysia::core::Rect UiWindow::content_bounds() const noexcept
+{
+    return content_rect();
+}
+
 void UiWindow::update(double delta)
 {
     cleanup_destroyed_children();
     prune_overlays();
+    prune_transient_popups();
     sync_overlay_visibility_all();
     update_layout_if_dirty();
     prune_focus_scopes();
@@ -275,6 +322,7 @@ void UiWindow::update(double delta)
     update_child_objects(delta);
     cleanup_destroyed_children();
     prune_overlays();
+    prune_transient_popups();
     sync_overlay_visibility_all();
     prune_focus_scopes();
     ensure_valid_scope_focus();
@@ -285,6 +333,7 @@ void UiWindow::on_ui_input_frame(const UiInputFrame& input)
 {
     cleanup_destroyed_children();
     prune_overlays();
+    prune_transient_popups();
     sync_overlay_visibility_all();
     update_layout_if_dirty();
     prune_focus_scopes();
@@ -318,6 +367,7 @@ bool UiWindow::on_ui_input_event(const UiInputEvent& event)
     update_focus_input_device(event.device);
     cleanup_destroyed_children();
     prune_overlays();
+    prune_transient_popups();
     sync_overlay_visibility_all();
     update_layout_if_dirty();
     prune_focus_scopes();
@@ -343,6 +393,34 @@ bool UiWindow::on_ui_input_event(const UiInputEvent& event)
         ensure_valid_scope_focus();
         apply_scope_focus();
         return handled || blocks_background_input;
+    }
+
+    if (UiTransientPopup* popup = active_transient_popup())
+    {
+        const bool pointer_event = event.type == UiInputEventType::MouseMoved
+            || event.type == UiInputEventType::PointerPressed
+            || event.type == UiInputEventType::PointerReleased
+            || event.type == UiInputEventType::MouseWheel;
+        const bool contains_pointer = pointer_event
+            && popup->contains_transient_popup_point(event.mouse_x,event.mouse_y);
+
+        if (is_primary_mouse_press(event) && !contains_pointer)
+        {
+            popup->close_transient_popup();
+            _active_transient_popup = nullptr;
+            _transient_popup_pointer_active = false;
+        }
+        else if (!pointer_event || contains_pointer || _transient_popup_pointer_active)
+        {
+            const bool handled = dispatch_to_transient_popup(*popup,event);
+            if (event.type == UiInputEventType::PointerPressed && contains_pointer)
+                _transient_popup_pointer_active = true;
+            if (event.type == UiInputEventType::PointerReleased)
+                _transient_popup_pointer_active = false;
+
+            if (handled || contains_pointer || _transient_popup_pointer_active)
+                return true;
+        }
     }
 
     if (OverlayEntry* overlay = active_overlay())
@@ -436,6 +514,7 @@ void UiWindow::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
     auto* self = const_cast<UiWindow*>(this);
     self->cleanup_destroyed_children();
     self->prune_overlays();
+    self->prune_transient_popups();
     self->sync_overlay_visibility_all();
     self->update_layout_if_dirty();
     self->prune_focus_scopes();
@@ -446,6 +525,8 @@ void UiWindow::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
     if (style.draw_background)
         out_commands.push_back(elysia::core::make_ui_fill_rect_command(screen_rect(),apply_opacity(style.background)));
     submit_child_render_commands(out_commands);
+    if (!active_modal_overlay())
+        submit_active_transient_popup_render_commands(out_commands);
     if (style.draw_border)
         out_commands.push_back(elysia::core::make_ui_draw_rect_command(screen_rect(),apply_opacity(style.border)));
 }
@@ -475,8 +556,26 @@ void UiWindow::prune_overlays()
 {
     _overlay_entries.erase(std::remove_if(_overlay_entries.begin(),_overlay_entries.end(),[this](const OverlayEntry& entry)
     {
-        return !entry.element || entry.element->is_destroyed() || !is_live_child_element(*entry.element);
+        return !entry.element || entry.element->is_destroyed() || !is_live_child_element(entry.element);
     }),_overlay_entries.end());
+}
+
+void UiWindow::prune_transient_popups()
+{
+    _transient_popups.erase(std::remove_if(_transient_popups.begin(),_transient_popups.end(),[this](const TransientPopupEntry& entry)
+    {
+        return !entry.popup || !is_live_child_element(entry.owner);
+    }),_transient_popups.end());
+
+    if (_active_transient_popup
+        && std::none_of(_transient_popups.begin(),_transient_popups.end(),[this](const TransientPopupEntry& entry)
+        {
+            return entry.popup == _active_transient_popup;
+        }))
+    {
+        _active_transient_popup = nullptr;
+        _transient_popup_pointer_active = false;
+    }
 }
 
 void UiWindow::ensure_valid_scope_focus()
@@ -829,7 +928,38 @@ bool UiWindow::contains_overlay_point(const OverlayEntry& entry,int mouse_x,int 
     return entry.element->screen_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
 }
 
-bool UiWindow::is_live_child_element(const UiElement& element) const noexcept
+UiTransientPopup* UiWindow::active_transient_popup() noexcept
+{
+    return _active_transient_popup && _active_transient_popup->is_transient_popup_open()
+        ? _active_transient_popup
+        : nullptr;
+}
+
+const UiTransientPopup* UiWindow::active_transient_popup() const noexcept
+{
+    return _active_transient_popup && _active_transient_popup->is_transient_popup_open()
+        ? _active_transient_popup
+        : nullptr;
+}
+
+bool UiWindow::dispatch_to_transient_popup(UiTransientPopup& popup,const UiInputEvent& event)
+{
+    return popup.is_transient_popup_open() && popup.on_transient_popup_input_event(event);
+}
+
+void UiWindow::submit_active_transient_popup_render_commands(
+    std::vector<elysia::core::UiRenderCommand>& out_commands) const
+{
+    const UiTransientPopup* popup = active_transient_popup();
+    if (!popup)
+        return;
+
+    const std::size_t begin = out_commands.size();
+    popup->submit_transient_popup_render_commands(out_commands);
+    apply_clip_to_range(out_commands,begin,content_rect());
+}
+
+bool UiWindow::is_live_child_element(const UiElement* element) const noexcept
 {
     return contains_child_element(*this,element);
 }

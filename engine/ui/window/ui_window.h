@@ -6,6 +6,7 @@
 #include "../style/ui_style.h"
 #include "../style/ui_visual_styles.h"
 #include "ui_overlay.h"
+#include "ui_transient_popup.h"
 #include "../../input/input_types.h"
 
 #include <functional>
@@ -21,7 +22,7 @@ public:
     explicit UiWindow(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0) noexcept;
     UiWindow(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order = 0) noexcept;
     UiWindow(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order = 0) noexcept;
-    ~UiWindow() override = default;
+    ~UiWindow() override;
 
     void reset() noexcept override;
 
@@ -53,6 +54,13 @@ public:
     [[nodiscard]] bool is_overlay_open(const UiElement& element) const noexcept;
     [[nodiscard]] UiOverlayOptions* overlay_options(UiElement& element) noexcept;
 
+    // Registers a non-modal popup that the window draws above ordinary child content.
+    void register_transient_popup(UiTransientPopup& popup);
+    void unregister_transient_popup(UiTransientPopup& popup);
+    // Makes one registered popup active and closes the previously active popup.
+    void activate_transient_popup(UiTransientPopup& popup);
+    [[nodiscard]] elysia::core::Rect content_bounds() const noexcept;
+
     void update(double delta) override;
     void on_ui_input_frame(const UiInputFrame& input) override;
     bool on_ui_input_event(const UiInputEvent& event) override;
@@ -79,11 +87,18 @@ private:
         UiFocusScope* restore_focus_scope = nullptr;
     };
 
+    struct TransientPopupEntry
+    {
+        UiTransientPopup* popup = nullptr;
+        UiElement* owner = nullptr;
+    };
+
 private:
     // Removes registered scopes that no longer point at live window children.
     void prune_focus_scopes();
     // Removes overlay entries whose elements are no longer live window children.
     void prune_overlays();
+    void prune_transient_popups();
     // Repairs scope focus after scope removal, disablement, or overlay changes.
     void ensure_valid_scope_focus();
     // Pushes window-level focus state into registered scopes.
@@ -122,8 +137,12 @@ private:
     [[nodiscard]] bool should_close_overlay_from_event(const OverlayEntry& entry,const UiInputEvent& event) const noexcept;
     // Checks whether a pointer event landed inside the overlay's current bounds.
     [[nodiscard]] bool contains_overlay_point(const OverlayEntry& entry,int mouse_x,int mouse_y) const noexcept;
+    [[nodiscard]] UiTransientPopup* active_transient_popup() noexcept;
+    [[nodiscard]] const UiTransientPopup* active_transient_popup() const noexcept;
+    [[nodiscard]] bool dispatch_to_transient_popup(UiTransientPopup& popup,const UiInputEvent& event);
+    void submit_active_transient_popup_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const;
     // Verifies that an element is still an owned child before window bookkeeping uses it.
-    [[nodiscard]] bool is_live_child_element(const UiElement& element) const noexcept;
+    [[nodiscard]] bool is_live_child_element(const UiElement* element) const noexcept;
     // Finds the registered focus scope under a pointer position for hover focus.
     [[nodiscard]] UiFocusScope* find_registered_scope_at(int mouse_x,int mouse_y) const;
     // Returns the neighbor scope to navigate to for a directional action.
@@ -139,10 +158,13 @@ private:
 private:
     std::vector<ScopeEntry> _scope_entries;
     std::vector<OverlayEntry> _overlay_entries;
+    std::vector<TransientPopupEntry> _transient_popups;
+    UiTransientPopup* _active_transient_popup = nullptr;
     UiFocusScope* _focused_scope = nullptr;
     UiFocusScope* _last_focused_scope = nullptr;
     UiStyleState<UiWindowStyle> _style_state;
     bool _hover_focus_enabled = true;
+    bool _transient_popup_pointer_active = false;
     elysia::input::InputDevice _focus_input_device = elysia::input::InputDevice::Unknown;
     UiWindowCancelCallback _on_cancel;
 };

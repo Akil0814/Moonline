@@ -12,6 +12,7 @@
 #include "../../engine/ui/containers/ui_scroll_container.h"
 #include "../../engine/ui/containers/ui_dialog.h"
 #include "../../engine/ui/widgets/ui_button.h"
+#include "../../engine/ui/widgets/ui_dropdown_button_set.h"
 #include "../../engine/ui/widgets/ui_checkbox.h"
 #include "../../engine/ui/widgets/ui_labeled_checkbox.h"
 #include "../../engine/ui/widgets/ui_radio_button.h"
@@ -444,7 +445,7 @@ void UiContainerTestScene::rebuild_ui()
     widget_scroll->set_scroll_step(elysia::core::Vector2(24.0f,24.0f));
     register_themed(widget_scroll);
 
-    auto widget_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,340,980 });
+    auto widget_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,340,1040 });
     widget_content->set_theme_role(elysia::ui::UiPanelThemeRole::Dialog);
     register_themed(widget_content.get());
 
@@ -670,6 +671,29 @@ void UiContainerTestScene::rebuild_ui()
     });
     register_themed(open_raw_dialog_button.get());
     widget_content->add_child(std::move(open_raw_dialog_button),elysia::ui::UiPanelInsertDirection::Down);
+
+    auto dropdown = std::make_unique<elysia::ui::UiDropdownButtonSet>(elysia::core::Rect{ 18,882,280,42 });
+    dropdown->set_options({
+        elysia::ui::UiDropdownOption{ elysia::ui::ui_text_key("menu_scene.start") },
+        elysia::ui::UiDropdownOption{ elysia::ui::ui_text_key("menu_scene.settings") },
+        elysia::ui::UiDropdownOption{ elysia::ui::ui_text_key("menu_scene.about") },
+        elysia::ui::UiDropdownOption{ elysia::ui::ui_text_key("menu_scene.exit") },
+        elysia::ui::UiDropdownOption{ elysia::ui::ui_raw_text("Raw option A") },
+        elysia::ui::UiDropdownOption{ elysia::ui::ui_raw_text("Raw option B") },
+        elysia::ui::UiDropdownOption{ elysia::ui::ui_raw_text("Raw option C") },
+        elysia::ui::UiDropdownOption{ elysia::ui::ui_raw_text("Raw option D") }
+    });
+    update_style(*dropdown,[](elysia::ui::UiDropdownButtonSetStyle& style)
+    {
+        style.popup_max_height = 126.0f;
+    });
+    dropdown->set_on_selection_changed([](std::size_t selected_index)
+    {
+        std::cout << "widget dropdown selected " << selected_index << std::endl;
+    });
+    dropdown->register_as_transient_popup(*_root_window);
+    register_themed(dropdown.get());
+    widget_content->add_child(std::move(dropdown),elysia::ui::UiPanelInsertDirection::Down);
 
     auto anchored_options_button = std::make_unique<elysia::ui::UiButton>(
         elysia::core::Rect{ 0,0,132,36 },

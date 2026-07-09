@@ -42,4 +42,9 @@ enum class UiDialogThemeRole
     Default
 };
 
+enum class UiDropdownButtonSetThemeRole
+{
+    Default
+};
+
 }
