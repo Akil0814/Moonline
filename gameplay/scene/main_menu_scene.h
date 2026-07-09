@@ -33,11 +33,12 @@ public:
 
 private:
 
-    void rebuild_menu_buttons();
-    void clear_menu_buttons();
+    void build_menu_buttons();
+    void reset_exit_overlay();
     void restore_menu_state();
 
 private:
+    bool _has_entered = false;
     elysia::ui::UiWindow* _main_menu_window = nullptr;
     elysia::ui::UiChromeContainer* _exit_confirmation = nullptr;
 

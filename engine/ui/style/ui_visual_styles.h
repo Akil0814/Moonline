@@ -35,13 +35,13 @@ struct UiBarStyle
     elysia::core::Color background{};
     elysia::core::Color fill{};
     elysia::core::Color border{};
-    bool draw_border = false;
+    bool draw_border = true;
 };
 
 // Visual settings for simple panel containers.
 struct UiPanelStyle
 {
-    bool draw_background = false;
+    bool draw_background = true;
     bool draw_border = true;
     elysia::core::Color background{};
     elysia::core::Color border{};
@@ -61,7 +61,7 @@ struct UiChromeContainerStyle
 // Visual settings for top-level UI windows.
 struct UiWindowStyle
 {
-    bool draw_background = false;
+    bool draw_background = true;
     bool draw_border = true;
     elysia::core::Color background{};
     elysia::core::Color border{};
