@@ -2,6 +2,8 @@
 
 #include "ui_palette.h"
 
+#include <utility>
+
 namespace elysia::ui
 {
 namespace
@@ -36,6 +38,13 @@ template<class Enum>
 ) noexcept
 {
     return UiChromeThemeColors{ background,border };
+}
+
+[[nodiscard]] UiTheme finalize_dialog_theme(UiTheme theme) noexcept
+{
+    // Keep the initial action appearance familiar while reserving a distinct semantic slot.
+    theme.dialog_style.action_button = theme.button(UiButtonThemeRole::Default);
+    return theme;
 }
 
 [[nodiscard]] UiScrollBarThemeColors make_scrollbar_colors(
@@ -208,7 +217,7 @@ template<class Enum>
         UiPalette::border_default
     };
 
-    return theme;
+    return finalize_dialog_theme(std::move(theme));
 }
 
 [[nodiscard]] UiTheme make_elysia_light_theme() noexcept
@@ -364,7 +373,7 @@ template<class Enum>
         elysia::core::colors::elysia_hair_rose
     };
 
-    return theme;
+    return finalize_dialog_theme(std::move(theme));
 }
 
 [[nodiscard]] UiTheme make_elysia_dark_theme() noexcept
@@ -535,7 +544,7 @@ template<class Enum>
         elysia::core::colors::elysia_starlight_lilac
     };
 
-    return theme;
+    return finalize_dialog_theme(std::move(theme));
 }
 
 [[nodiscard]] UiTheme make_evangelion_unit00_theme() noexcept
@@ -691,7 +700,7 @@ template<class Enum>
         elysia::core::colors::eva_unit00_pale_blue
     };
 
-    return theme;
+    return finalize_dialog_theme(std::move(theme));
 }
 
 [[nodiscard]] UiTheme make_evangelion_unit01_theme() noexcept
@@ -847,7 +856,7 @@ template<class Enum>
         elysia::core::colors::eva_unit01_toxic_green
     };
 
-    return theme;
+    return finalize_dialog_theme(std::move(theme));
 }
 
 [[nodiscard]] UiTheme make_evangelion_unit02_theme() noexcept
@@ -1003,7 +1012,7 @@ template<class Enum>
         elysia::core::colors::eva_unit02_orange
     };
 
-    return theme;
+    return finalize_dialog_theme(std::move(theme));
 }
 
 [[nodiscard]] UiTheme make_quiet_slate_theme() noexcept
@@ -1159,7 +1168,7 @@ template<class Enum>
         elysia::core::colors::gray_700
     };
 
-    return theme;
+    return finalize_dialog_theme(std::move(theme));
 }
 }
 

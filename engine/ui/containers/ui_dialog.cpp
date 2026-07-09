@@ -65,18 +65,31 @@ void UiDialog::update(double delta)
 {
     UiControlFocusScopeHost::update(delta);
     sync_delegated_scope_focus(UiControlFocusScopeHost::focused_target(),is_scope_focused(),delegated_focus_regions(*this));
+    sync_body_scroll_gamepad_focus();
 }
 
 void UiDialog::on_ui_input_frame(const UiInputFrame& input)
 {
     UiControlFocusScopeHost::on_ui_input_frame(input);
     sync_delegated_scope_focus(UiControlFocusScopeHost::focused_target(),is_scope_focused(),delegated_focus_regions(*this));
+    sync_body_scroll_gamepad_focus();
 }
 
 bool UiDialog::on_ui_input_event(const UiInputEvent& event)
 {
+    sync_body_scroll_gamepad_focus();
+    if (event.type == UiInputEventType::MouseWheel
+        && event.device == elysia::input::InputDevice::Gamepad
+        && _body_scroll_enabled
+        && _body_scroll
+        && _body_scroll->on_ui_input_event(event))
+    {
+        return true;
+    }
+
     const bool handled = UiControlFocusScopeHost::on_ui_input_event(event);
     sync_delegated_scope_focus(UiControlFocusScopeHost::focused_target(),is_scope_focused(),delegated_focus_regions(*this));
+    sync_body_scroll_gamepad_focus();
     return handled;
 }
 
@@ -153,6 +166,7 @@ void UiDialog::set_body_scroll_enabled(bool enabled) noexcept
 {
     _body_scroll_enabled = enabled;
     sync_style_to_children();
+    sync_body_scroll_gamepad_focus();
 }
 
 bool UiDialog::body_scroll_enabled() const noexcept
@@ -392,7 +406,13 @@ void UiDialog::sync_theme_to_children(const UiTheme* theme)
     if (_body_scroll)
         _body_scroll->set_style(apply_theme_colors(UiScrollContainerStyle{},resolved_theme.scroll_container_style));
     if (_close_button)
-        _close_button->set_style(apply_theme_colors(UiButtonStyle{},resolved_theme.button(UiButtonThemeRole::Default)));
+        _close_button->set_style(apply_theme_colors(UiButtonStyle{},resolved_theme.dialog_style.action_button));
+}
+
+void UiDialog::sync_body_scroll_gamepad_focus() noexcept
+{
+    if (_body_scroll)
+        _body_scroll->set_scope_focused(_body_scroll_enabled && is_scope_focused());
 }
 
 bool UiDialog::is_default_overlay_options(const UiOverlayOptions& options) noexcept

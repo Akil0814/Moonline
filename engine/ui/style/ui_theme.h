@@ -77,6 +77,12 @@ struct UiButtonThemeColors
     UiEnabledDisabledColors text{};
 };
 
+// Theme colors for dialog-owned controls that should not depend on generic button roles.
+struct UiDialogThemeColors
+{
+    UiButtonThemeColors action_button{};
+};
+
 struct UiCheckboxThemeColors
 {
     UiChromeThemeColors chrome{};
@@ -147,6 +153,7 @@ struct UiTheme
     UiNumberThemeColors number_style{};
     UiWindowThemeColors window_style{};
     UiChromeContainerThemeColors chrome_container_style{};
+    UiDialogThemeColors dialog_style{};
     UiCheckboxThemeColors checkbox_style{};
     UiRadioButtonThemeColors radio_button_style{};
     UiDragHandleThemeColors drag_handle_style{};

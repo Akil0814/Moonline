@@ -1,22 +1,34 @@
 #include "setting_scene.h"
 namespace arcneco::scene
 {
-	class SettingScene final : public ApplicationScene
-	{
-	public:
-		SettingScene() = default;
-		~SettingScene()override = default;
+void SettingScene::on_update(double delta)
+{
+    elysia::scene::Scene::on_update(delta);
+}
 
-		void on_update(double delta) override;
-		void on_render(SDL_Renderer* renderer) override;
-		void on_input(const elysia::input::RawInputFrame& input, const std::vector<elysia::input::RawInputEvent>& events) override;
+void SettingScene::on_render(SDL_Renderer* renderer)
+{
+    (void)renderer;
+}
 
-		void on_enter(const elysia::scene::ScenePayload& payload) override;
-		void on_exit() override;
-		void reset() override;
+void SettingScene::on_input(
+    const elysia::input::RawInputFrame& input,
+    const std::vector<elysia::input::RawInputEvent>& events)
+{
+    (void)input;
+    (void)events;
+}
 
-	private:
-		elysia::ui::UiWindow* _main_setting_window = nullptr;
+void SettingScene::on_enter(const elysia::scene::ScenePayload& payload)
+{
+    (void)payload;
+}
 
-	};
+void SettingScene::on_exit()
+{
+}
+
+void SettingScene::reset()
+{
+}
 }

@@ -64,6 +64,8 @@ protected:
     void apply_theme(const UiTheme& theme) override;
 
 private:
+    // Keeps the reading viewport logically focused for gamepad scrolling without moving Close focus.
+    void sync_body_scroll_gamepad_focus() noexcept;
     void create_internal_children();
     void sync_sources_to_children();
     void sync_style_to_children();
