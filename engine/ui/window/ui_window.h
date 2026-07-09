@@ -141,6 +141,8 @@ private:
     [[nodiscard]] const UiTransientPopup* active_transient_popup() const noexcept;
     [[nodiscard]] bool dispatch_to_transient_popup(UiTransientPopup& popup,const UiInputEvent& event);
     void submit_active_transient_popup_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const;
+    // Routes gamepad wheel events through logically focused nested scroll containers, deepest first.
+    [[nodiscard]] bool dispatch_gamepad_scroll_to_focused_containers(UiElement& root,const UiInputEvent& event);
     // Verifies that an element is still an owned child before window bookkeeping uses it.
     [[nodiscard]] bool is_live_child_element(const UiElement* element) const noexcept;
     // Finds the registered focus scope under a pointer position for hover focus.

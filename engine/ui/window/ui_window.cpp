@@ -4,6 +4,7 @@
 #include "../style/ui_theme.h"
 #include "../focus/ui_focus_scope_utils.h"
 #include "../focus/ui_control_focus_scope_host.h"
+#include "../containers/ui_scroll_container.h"
 #include "../layout/ui_anchor_layout.h"
 #include "../layout/ui_layout_geometry.h"
 #include "../../core/render/render_command.h"
@@ -37,6 +38,24 @@ namespace
     return event.type == UiInputEventType::PointerPressed
         && event.device == elysia::input::InputDevice::Mouse
         && event.control == elysia::input::RawInputControl::MouseLeft;
+}
+
+void collect_focused_scroll_containers(UiElement& element,std::vector<UiScrollContainer*>& out_containers)
+{
+    if (element.is_destroyed() || !element.is_active() || !element.is_visible())
+        return;
+
+    if (auto* child_host = dynamic_cast<UiChildHost*>(&element))
+    {
+        for (std::size_t index = 0; index < child_host->child_count(); ++index)
+        {
+            if (UiElement* child = child_host->child_at(index))
+                collect_focused_scroll_containers(*child,out_containers);
+        }
+    }
+
+    if (auto* scroll = dynamic_cast<UiScrollContainer*>(&element); scroll && scroll->is_scope_focused())
+        out_containers.push_back(scroll);
 }
 }
 
@@ -386,6 +405,9 @@ bool UiWindow::on_ui_input_event(const UiInputEvent& event)
             return true;
         }
 
+        if (dispatch_gamepad_scroll_to_focused_containers(*overlay->element,event))
+            return true;
+
         const bool handled = dispatch_to_overlay(*overlay,event);
         cleanup_destroyed_children();
         prune_overlays();
@@ -425,6 +447,9 @@ bool UiWindow::on_ui_input_event(const UiInputEvent& event)
 
     if (OverlayEntry* overlay = active_overlay())
     {
+        if (dispatch_gamepad_scroll_to_focused_containers(*overlay->element,event))
+            return true;
+
         if (should_close_overlay_from_event(*overlay,event))
         {
             set_overlay_open(*overlay->element,false);
@@ -443,6 +468,12 @@ bool UiWindow::on_ui_input_event(const UiInputEvent& event)
     }
 
     bool handled = false;
+
+    if (_focused_scope
+        && dispatch_gamepad_scroll_to_focused_containers(_focused_scope->focus_scope_element(),event))
+    {
+        return true;
+    }
 
     if (event.type == UiInputEventType::ActionPressed && event.action == UiAction::Cancel)
     {
@@ -945,6 +976,21 @@ const UiTransientPopup* UiWindow::active_transient_popup() const noexcept
 bool UiWindow::dispatch_to_transient_popup(UiTransientPopup& popup,const UiInputEvent& event)
 {
     return popup.is_transient_popup_open() && popup.on_transient_popup_input_event(event);
+}
+
+bool UiWindow::dispatch_gamepad_scroll_to_focused_containers(UiElement& root,const UiInputEvent& event)
+{
+    if (event.type != UiInputEventType::MouseWheel || event.device != elysia::input::InputDevice::Gamepad)
+        return false;
+
+    std::vector<UiScrollContainer*> containers;
+    collect_focused_scroll_containers(root,containers);
+    for (UiScrollContainer* container : containers)
+    {
+        if (container && container->on_ui_input_event(event))
+            return true;
+    }
+    return false;
 }
 
 void UiWindow::submit_active_transient_popup_render_commands(

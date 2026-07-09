@@ -78,15 +78,6 @@ void UiDialog::on_ui_input_frame(const UiInputFrame& input)
 bool UiDialog::on_ui_input_event(const UiInputEvent& event)
 {
     sync_body_scroll_gamepad_focus();
-    if (event.type == UiInputEventType::MouseWheel
-        && event.device == elysia::input::InputDevice::Gamepad
-        && _body_scroll_enabled
-        && _body_scroll
-        && _body_scroll->on_ui_input_event(event))
-    {
-        return true;
-    }
-
     const bool handled = UiControlFocusScopeHost::on_ui_input_event(event);
     sync_delegated_scope_focus(UiControlFocusScopeHost::focused_target(),is_scope_focused(),delegated_focus_regions(*this));
     sync_body_scroll_gamepad_focus();
