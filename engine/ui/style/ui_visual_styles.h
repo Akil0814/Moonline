@@ -21,6 +21,14 @@ struct UiTextBlockStyle
     bool draw_background = false;
 };
 
+// Layout settings for a transient dropdown menu. Child colors come from existing themes.
+struct UiDropdownButtonSetStyle
+{
+    float popup_gap = 4.0f;
+    float option_height = 42.0f;
+    float popup_max_height = 240.0f;
+};
+
 // Visual settings for numeric glyph widgets.
 struct UiNumberStyle
 {
