@@ -19,6 +19,7 @@ namespace elysia::ui
 namespace
 {
 constexpr float kValueChangeEpsilon = 0.0001f;
+constexpr float kHorizontalTrackEdgePadding = 6.0f;
 
 [[nodiscard]] bool nearly_equal(float a,float b) noexcept
 {
@@ -91,7 +92,7 @@ constexpr float kValueChangeEpsilon = 0.0001f;
     if (orientation == UiSliderOrientation::Horizontal)
     {
         const float horizontal_inset = std::min(
-            std::max(6.0f,handle_size.x * 0.5f),
+            std::max(6.0f + kHorizontalTrackEdgePadding,handle_size.x * 0.5f + kHorizontalTrackEdgePadding),
             std::max(0.0f,rect.width() * 0.5f));
         inset.set_x(rect.x() + horizontal_inset);
         inset.set_width(std::max(0.0f,rect.width() - horizontal_inset * 2.0f));
