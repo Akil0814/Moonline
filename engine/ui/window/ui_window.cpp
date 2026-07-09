@@ -2,6 +2,7 @@
 
 #include "../style/ui_style_defaults.h"
 #include "../focus/ui_focus_scope_utils.h"
+#include "../focus/ui_control_focus_scope_host.h"
 #include "../layout/ui_anchor_layout.h"
 #include "../layout/ui_layout_geometry.h"
 #include "../../core/render/render_command.h"
@@ -750,9 +751,12 @@ bool UiWindow::focus_overlay(OverlayEntry& entry)
     if (!scope)
         return false;
 
+    const bool pointer_focus = uses_pointer_focus_policy(_focus_input_device);
+    auto* host = dynamic_cast<UiControlFocusScopeHost*>(scope);
+
     if (_focused_scope == scope && is_scope_usable(scope))
     {
-        if (!scope->focused_target())
+        if (!pointer_focus && !scope->focused_target())
             return scope->focus_first_available();
         return true;
     }
@@ -762,7 +766,11 @@ bool UiWindow::focus_overlay(OverlayEntry& entry)
         return false;
 
     const bool focused = set_focused_scope_internal(scope);
+    if (focused && pointer_focus && host)
+        host->set_focused_target(nullptr);
     apply_scope_focus();
+    if (focused && !pointer_focus && !scope->focused_target())
+        return scope->focus_first_available();
     return focused;
 }
 
