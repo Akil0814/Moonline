@@ -60,6 +60,8 @@ public:
 
     void set_text_point_size(int point_size) noexcept;
     [[nodiscard]] int text_point_size() const noexcept;
+    void set_placeholder_point_size(int point_size) noexcept;
+    [[nodiscard]] int placeholder_point_size() const noexcept;
     void set_padding(int padding) noexcept;
     [[nodiscard]] int padding() const noexcept;
 
@@ -118,6 +120,7 @@ private:
     std::optional<std::size_t> _max_length = std::nullopt;
     UiTextInputStyle _style{};
     int _text_point_size = 24;
+    int _placeholder_point_size = 18;
     int _padding = 10;
     bool _is_pushed = false;
 };

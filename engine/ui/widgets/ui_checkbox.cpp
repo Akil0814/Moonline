@@ -6,6 +6,7 @@
 
 
 #include <algorithm>
+#include <cmath>
 #include <utility>
 
 namespace elysia::ui
@@ -221,12 +222,11 @@ void UiCheckbox::submit_ui_render_commands(std::vector<elysia::core::UiRenderCom
         if (_style.mark_style == UiCheckboxMarkStyle::FilledBox)
         {
             const float inset = std::max(2.0f,std::min(rect.width(),rect.height()) * 0.22f);
-            const elysia::core::Rect fill_rect(
-                rect.x() + inset,
-                rect.y() + inset,
-                std::max(0.0f,rect.width() - inset * 2.0f),
-                std::max(0.0f,rect.height() - inset * 2.0f)
-            );
+            const float fill_side = std::max(0.0f,std::round(std::min(rect.width(),rect.height()) - inset * 2.0f));
+            const elysia::core::Vector2 fill_size(fill_side,fill_side);
+            const elysia::core::Rect fill_rect = elysia::core::Rect::from_center(
+                elysia::core::Vector2(std::round(rect.center().x),std::round(rect.center().y)),
+                fill_size);
             if (!fill_rect.is_empty())
                 out_commands.push_back(elysia::core::make_ui_fill_rect_command(fill_rect,mark_color));
         }

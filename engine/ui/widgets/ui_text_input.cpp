@@ -129,6 +129,7 @@ void UiTextInput::reset() noexcept
     _max_length.reset();
     _style = UiStyleDefaults::text_input();
     _text_point_size = 24;
+    _placeholder_point_size = 18;
     _padding = 10;
     _is_pushed = false;
 }
@@ -270,7 +271,7 @@ void UiTextInput::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
     if (!render_text.empty())
     {
         elysia::localization::LocalizedTextStyle style;
-        style.point_size = _text_point_size;
+        style.point_size = show_placeholder ? _placeholder_point_size : _text_point_size;
         style.color = show_placeholder ? current_placeholder_color() : current_text_color();
         style.wrap_width = 0;
 
@@ -283,9 +284,12 @@ void UiTextInput::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
                 && texture_width > 0
                 && texture_height > 0)
             {
+                const float text_y = show_placeholder
+                    ? (layout.content_rect.center().y - static_cast<float>(texture_height) * 0.5f)
+                    : layout.text_y;
                 const elysia::core::Rect text_rect(
                     layout.text_x,
-                    layout.text_y,
+                    text_y,
                     static_cast<float>(texture_width),
                     static_cast<float>(texture_height)
                 );
@@ -397,6 +401,17 @@ void UiTextInput::set_text_point_size(int point_size) noexcept
 int UiTextInput::text_point_size() const noexcept
 {
     return _text_point_size;
+}
+
+void UiTextInput::set_placeholder_point_size(int point_size) noexcept
+{
+    _placeholder_point_size = std::max(0,point_size);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+int UiTextInput::placeholder_point_size() const noexcept
+{
+    return _placeholder_point_size;
 }
 
 void UiTextInput::set_padding(int padding) noexcept
