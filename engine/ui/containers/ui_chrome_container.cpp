@@ -13,6 +13,32 @@ namespace elysia::ui
 {
 namespace
 {
+class HeaderActionList : public UiListContainer
+{
+public:
+    using UiListContainer::UiListContainer;
+
+    void update(double delta) override
+    {
+        UiChildHost::update(delta);
+    }
+
+    void on_ui_input_frame(const UiInputFrame& input) override
+    {
+        UiChildHost::on_ui_input_frame(input);
+    }
+
+    bool on_ui_input_event(const UiInputEvent& event) override
+    {
+        return UiChildHost::on_ui_input_event(event);
+    }
+
+    void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override
+    {
+        UiChildHost::submit_ui_render_commands(out_commands);
+    }
+};
+
 [[nodiscard]] bool is_mouse_position_event(const UiInputEvent& event) noexcept
 {
     if (event.device != elysia::input::InputDevice::Mouse)
@@ -83,6 +109,7 @@ void collect_focusable_controls(
         collect_focusable_controls(*child,out_controls,recurse_into_nested_scopes);
     }
 }
+
 }
 
 UiChromeContainer::SlotHost::SlotHost(const elysia::core::Rect& rect,int order) noexcept
@@ -658,7 +685,7 @@ void UiChromeContainer::rebuild_focus_registry()
 
 void UiChromeContainer::create_internal_hosts()
 {
-    auto left_actions = std::make_unique<UiListContainer>();
+    auto left_actions = std::make_unique<HeaderActionList>();
     left_actions->set_direction(UiListDirection::Horizontal);
     left_actions->set_item_spacing(8.0f);
     _left_actions = left_actions.get();
@@ -668,7 +695,7 @@ void UiChromeContainer::create_internal_hosts()
     _title_slot = title_slot.get();
     UiChildHost::add_child(std::move(title_slot));
 
-    auto right_actions = std::make_unique<UiListContainer>();
+    auto right_actions = std::make_unique<HeaderActionList>();
     right_actions->set_direction(UiListDirection::Horizontal);
     right_actions->set_item_spacing(8.0f);
     _right_actions = right_actions.get();
