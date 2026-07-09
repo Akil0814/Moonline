@@ -148,7 +148,7 @@ void UiPanel::update(double delta)
 {
     sync_child_scope_focus();
     UiControlFocusScopeHost::update(delta);
-    sync_delegated_owner_scope_target(UiControlFocusScopeHost::focused_target());
+    sync_host_delegated_focus_target(*this);
     sync_child_scope_focus();
 }
 
@@ -156,7 +156,7 @@ void UiPanel::on_ui_input_frame(const UiInputFrame& input)
 {
     sync_child_scope_focus();
     UiControlFocusScopeHost::on_ui_input_frame(input);
-    sync_delegated_owner_scope_target(UiControlFocusScopeHost::focused_target());
+    sync_host_delegated_focus_target(*this);
     sync_child_scope_focus();
 }
 
@@ -181,8 +181,7 @@ bool UiPanel::on_ui_input_event(const UiInputEvent& event)
             const bool should_delegate_confirm = event.action == UiAction::Confirm
                 && (event.type == UiInputEventType::ActionPressed || event.type == UiInputEventType::ActionReleased);
             const bool should_delegate_navigation = event.type == UiInputEventType::ActionPressed
-                && is_navigation_action(event.action)
-                && scope->can_navigate(event.action);
+                && is_navigation_action(event.action);
 
             if (should_delegate_confirm || should_delegate_navigation)
             {
@@ -193,16 +192,18 @@ bool UiPanel::on_ui_input_event(const UiInputEvent& event)
                 cleanup_destroyed_children();
                 refresh_focus_registry();
                 ensure_valid_focus();
-                sync_delegated_owner_scope_target(scope->focused_target());
+                sync_host_delegated_focus_target(*this);
                 sync_child_scope_focus();
                 apply_focus_state();
-                return handled;
+
+                if (should_delegate_confirm || handled)
+                    return handled;
             }
         }
     }
 
     const bool handled = UiControlFocusScopeHost::on_ui_input_event(event);
-    sync_delegated_owner_scope_target(UiControlFocusScopeHost::focused_target());
+    sync_host_delegated_focus_target(*this);
     sync_child_scope_focus();
     return handled;
 }
@@ -217,7 +218,7 @@ void UiPanel::submit_ui_render_commands(std::vector<elysia::core::UiRenderComman
     self->update_layout_if_dirty();
     self->refresh_focus_registry();
     self->ensure_valid_focus();
-    self->sync_delegated_owner_scope_target(UiControlFocusScopeHost::focused_target());
+    self->sync_host_delegated_focus_target(*self);
     self->sync_child_scope_focus();
     self->apply_focus_state();
 

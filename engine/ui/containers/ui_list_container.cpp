@@ -106,7 +106,7 @@ void UiListContainer::update(double delta)
 {
     sync_child_scope_focus();
     UiControlFocusScopeHost::update(delta);
-    sync_delegated_owner_scope_target(UiControlFocusScopeHost::focused_target());
+    sync_host_delegated_focus_target(*this);
     sync_child_scope_focus();
 }
 
@@ -114,7 +114,7 @@ void UiListContainer::on_ui_input_frame(const UiInputFrame& input)
 {
     sync_child_scope_focus();
     UiControlFocusScopeHost::on_ui_input_frame(input);
-    sync_delegated_owner_scope_target(UiControlFocusScopeHost::focused_target());
+    sync_host_delegated_focus_target(*this);
     sync_child_scope_focus();
 }
 
@@ -153,7 +153,7 @@ bool UiListContainer::on_ui_input_event(const UiInputEvent& event)
         cleanup_destroyed_children();
         refresh_focus_registry();
         ensure_valid_focus();
-        sync_delegated_owner_scope_target(scope ? scope->focused_target() : UiControlFocusScopeHost::focused_target());
+        sync_host_delegated_focus_target(*this);
         sync_child_scope_focus();
         apply_focus_state();
         return handled;
@@ -162,7 +162,7 @@ bool UiListContainer::on_ui_input_event(const UiInputEvent& event)
     if (event.type == UiInputEventType::ActionPressed && is_navigation_action(event.action))
     {
         bool handled = false;
-        if (scope && scope->can_navigate(event.action))
+        if (scope)
         {
             if (auto* receiver = dynamic_cast<UiInputEventReceiver*>(&scope->focus_scope_element()))
                 handled = receiver->on_ui_input_event(event);
@@ -173,8 +173,16 @@ bool UiListContainer::on_ui_input_event(const UiInputEvent& event)
                 handled = receiver->on_ui_input_event(event);
         }
 
-        if (!handled && target)
+        cleanup_destroyed_children();
+        refresh_focus_registry();
+        ensure_valid_focus();
+        sync_host_delegated_focus_target(*this);
+        sync_child_scope_focus();
+        apply_focus_state();
+
+        if (!handled)
         {
+            target = UiControlFocusScopeHost::focused_target();
             if (UiElement* neighbor_region = neighbor_region_of(target,event.action))
                 handled = enter_delegated_region(*this,neighbor_region);
         }
@@ -189,7 +197,7 @@ bool UiListContainer::on_ui_input_event(const UiInputEvent& event)
     }
 
     const bool handled = UiControlFocusScopeHost::on_ui_input_event(event);
-    sync_delegated_owner_scope_target(UiControlFocusScopeHost::focused_target());
+    sync_host_delegated_focus_target(*this);
     sync_child_scope_focus();
     return handled;
 }
@@ -204,7 +212,7 @@ void UiListContainer::submit_ui_render_commands(std::vector<elysia::core::UiRend
     self->update_layout_if_dirty();
     self->refresh_focus_registry();
     self->ensure_valid_focus();
-    self->sync_delegated_owner_scope_target(UiControlFocusScopeHost::focused_target());
+    self->sync_host_delegated_focus_target(*self);
     self->sync_child_scope_focus();
     self->apply_focus_state();
     UiChildHost::submit_ui_render_commands(out_commands);

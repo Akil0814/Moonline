@@ -38,6 +38,7 @@ protected:
     [[nodiscard]] UiElement* delegated_region_of(const UiControl* control,const std::vector<UiElement*>& regions) const noexcept;
     [[nodiscard]] bool focus_delegated_region(UiElement* region,bool focus_first);
     [[nodiscard]] bool enter_delegated_region(UiControlFocusScopeHost& host,UiElement* region);
+    void sync_host_delegated_focus_target(UiControlFocusScopeHost& host) noexcept;
     void sync_delegated_owner_scope_target(UiControl* control) noexcept;
     void sync_delegated_scope_focus(UiControl* focused_target,bool scope_focused,const std::vector<UiElement*>& regions) noexcept;
     void sync_delegated_scope_focus(UiElement* active_region,bool scope_focused,const std::vector<UiElement*>& regions) noexcept;

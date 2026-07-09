@@ -173,6 +173,22 @@ bool UiDelegatedFocusMixin::enter_delegated_region(UiControlFocusScopeHost& host
     return true;
 }
 
+void UiDelegatedFocusMixin::sync_host_delegated_focus_target(UiControlFocusScopeHost& host) noexcept
+{
+    UiControl* target = host._focused_target;
+    if (UiFocusScope* scope = delegated_owner_scope_of(target))
+    {
+        UiControl* scope_target = scope->focused_target();
+        if (is_control_usable(scope_target) && host.is_registered_focus_target(scope_target))
+        {
+            (void)host.set_focused_target_internal(scope_target);
+            target = scope_target;
+        }
+    }
+
+    sync_delegated_owner_scope_target(target);
+}
+
 void UiDelegatedFocusMixin::sync_delegated_owner_scope_target(UiControl* control) noexcept
 {
     if (UiFocusScope* scope = delegated_owner_scope_of(control))
