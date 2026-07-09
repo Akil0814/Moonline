@@ -77,6 +77,23 @@ inline constexpr Color midnight_blue{ 12, 34, 78, 255 };    // #0C224E
 inline constexpr Color slate_blue{ 18, 28, 42, 224 };       // #121C2AE0
 inline constexpr Color abyss_blue{ 8, 16, 28, 255 };        // #08101C
 
+// Elysia-inspired palette tokens. Balanced for soft pink highlights,
+// delicate gold accents, and deep indigo night surfaces.
+inline constexpr Color petal_white{ 255, 247, 251, 255 };      // #FFF7FB
+inline constexpr Color blush_white{ 252, 238, 246, 255 };      // #FCEEF6
+inline constexpr Color opal_blush{ 247, 223, 239, 255 };       // #F7DFEF
+inline constexpr Color crystal_pink{ 243, 194, 232, 255 };     // #F3C2E8
+inline constexpr Color petal_pink{ 232, 161, 218, 255 };       // #E8A1DA
+inline constexpr Color rose_lilac{ 199, 153, 227, 255 };       // #C799E3
+inline constexpr Color champagne_gold{ 238, 214, 175, 255 };   // #EED6AF
+inline constexpr Color halo_gold{ 214, 186, 136, 255 };        // #D6BA88
+inline constexpr Color starlight_gold{ 248, 231, 204, 255 };   // #F8E7CC
+inline constexpr Color starsea_indigo{ 84, 91, 191, 255 };     // #545BBF
+inline constexpr Color dreamsea_indigo{ 55, 62, 158, 255 };    // #373E9E
+inline constexpr Color phantom_night_blue{ 28, 34, 104, 255 }; // #1C2268
+inline constexpr Color moonlit_navy{ 18, 22, 74, 255 };        // #12164A
+inline constexpr Color midnight_iris{ 10, 12, 48, 255 };       // #0A0C30
+
 }
 
 }
