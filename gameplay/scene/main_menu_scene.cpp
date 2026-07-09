@@ -99,7 +99,7 @@ void MainMenuScene::build_menu_buttons()
 
             auto title = std::make_unique<elysia::ui::UiLabel>(
                 elysia::core::Rect{ 0,0,280,36 },0,
-                "menu_scene.exit_confirm.title");
+                elysia::ui::ui_text_key("menu_scene.exit_confirm.title"));
             title->set_vertical_align(elysia::ui::TextVerticalAlign::Center);
             _exit_confirmation->add_title_child(std::move(title));
 
