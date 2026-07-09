@@ -93,6 +93,14 @@ inline constexpr Color elysia_twilight_rose{ 100, 60, 115, 255 }; // #643C73
 inline constexpr Color elysia_phantom_sea{ 26, 56, 104, 255 };   // #1A3868
 inline constexpr Color elysia_mirage_blue{ 44, 84, 143, 255 };   // #2C548F
 inline constexpr Color elysia_deep_sea{ 14, 30, 66, 255 };       // #0E1E42
+inline constexpr Color elysia_starsea_navy{ 20, 29, 76, 255 };   // #141D4C
+inline constexpr Color elysia_twilight_mist{ 46, 61, 124, 255 }; // #2E3D7C
+inline constexpr Color elysia_aurora_haze{ 86, 105, 181, 255 };  // #5669B5
+inline constexpr Color elysia_starlight_lilac{ 198, 206, 255, 255 }; // #C6CEFF
+inline constexpr Color elysia_moonlit_lavender{ 237, 231, 255, 255 }; // #EDE7FF
+inline constexpr Color elysia_crystal_orchid{ 233, 170, 255, 255 }; // #E9AAFF
+inline constexpr Color elysia_dream_rose{ 196, 123, 221, 255 };  // #C47BDD
+inline constexpr Color elysia_silver_mist{ 136, 145, 178, 255 }; // #8891B2
 
 // Evangelion-inspired palette tokens used by the built-in EVA themes.
 inline constexpr Color eva_unit00_rei_white{ 243, 246, 250, 255 };     // #F3F6FA

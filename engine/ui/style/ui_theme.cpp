@@ -354,10 +354,10 @@ template<class Enum>
         make_scrollbar_colors(
             elysia::core::colors::elysia_blush_white,
             elysia::core::colors::elysia_petal_pink,
-            elysia::core::colors::elysia_rose_pink,
+            elysia::core::colors::elysia_petal_pink,
             elysia::core::colors::gray_300,
             elysia::core::colors::elysia_rose_pink,
-            elysia::core::colors::elysia_lilac,
+            elysia::core::colors::elysia_glow_pink,
             elysia::core::colors::elysia_glow_pink,
             elysia::core::colors::gray_500),
         elysia::core::colors::elysia_silk_white,
@@ -372,84 +372,84 @@ template<class Enum>
     UiTheme theme;
 
     const UiEnabledDisabledColors text = make_text_colors(
-        elysia::core::colors::frosted_white,
-        elysia::core::colors::gray_500);
+        elysia::core::colors::elysia_moonlit_lavender,
+        elysia::core::colors::elysia_silver_mist);
     const UiEnabledDisabledColors secondary_text = make_text_colors(
-        elysia::core::colors::elysia_mist_blue,
-        elysia::core::colors::gray_500);
+        elysia::core::colors::elysia_starlight_lilac,
+        elysia::core::colors::elysia_silver_mist);
     const UiEnabledDisabledColors placeholder_text = make_text_colors(
-        elysia::core::colors::elysia_mirage_blue,
-        elysia::core::colors::gray_500);
+        elysia::core::colors::elysia_silver_mist,
+        elysia::core::colors::elysia_silver_mist);
     const UiEnabledDisabledColors border = UiEnabledDisabledColors{
-        elysia::core::colors::elysia_lilac,
-        elysia::core::colors::gray_700
+        elysia::core::colors::elysia_starlight_lilac,
+        elysia::core::colors::elysia_silver_mist
     };
     const UiInteractiveColors interactive_surface = make_surface_colors(
-        elysia::core::colors::elysia_phantom_sea,
-        elysia::core::colors::elysia_mirage_blue,
-        elysia::core::colors::elysia_lilac,
-        elysia::core::colors::gray_700);
+        elysia::core::colors::elysia_twilight_mist,
+        elysia::core::colors::elysia_aurora_haze,
+        elysia::core::colors::elysia_starlight_lilac,
+        elysia::core::colors::elysia_phantom_sea);
     const UiChromeThemeColors interactive_chrome = make_chrome(interactive_surface,border);
 
     theme.label_styles[to_index(UiLabelThemeRole::Default)] = UiLabelThemeColors{
-        elysia::core::colors::frosted_white,
+        elysia::core::colors::elysia_moonlit_lavender,
         elysia::core::colors::transparent
     };
     theme.label_styles[to_index(UiLabelThemeRole::Title)] = UiLabelThemeColors{
-        elysia::core::colors::elysia_glow_pink,
+        elysia::core::colors::elysia_crystal_orchid,
         elysia::core::colors::transparent
     };
     theme.label_styles[to_index(UiLabelThemeRole::Subtitle)] = UiLabelThemeColors{
-        elysia::core::colors::elysia_mist_blue,
+        elysia::core::colors::elysia_starlight_lilac,
         elysia::core::colors::transparent
     };
     theme.label_styles[to_index(UiLabelThemeRole::Muted)] = UiLabelThemeColors{
-        elysia::core::colors::elysia_mirage_blue,
+        elysia::core::colors::elysia_silver_mist,
         elysia::core::colors::transparent
     };
 
     theme.number_style = UiNumberThemeColors{
-        elysia::core::colors::frosted_white,
+        elysia::core::colors::elysia_moonlit_lavender,
         elysia::core::colors::transparent
     };
 
     theme.bar_styles[to_index(UiBarThemeRole::Default)] = UiBarThemeColors{
-        elysia::core::colors::elysia_phantom_sea,
-        elysia::core::colors::elysia_mirage_blue,
-        elysia::core::colors::elysia_lilac
+        elysia::core::colors::elysia_twilight_mist,
+        elysia::core::colors::elysia_aurora_haze,
+        elysia::core::colors::elysia_starlight_lilac
     };
     theme.bar_styles[to_index(UiBarThemeRole::Progress)] = UiBarThemeColors{
-        elysia::core::colors::elysia_phantom_sea,
-        elysia::core::colors::elysia_glow_pink,
-        elysia::core::colors::elysia_rose_pink
+        elysia::core::colors::elysia_twilight_mist,
+        elysia::core::colors::elysia_crystal_orchid,
+        elysia::core::colors::elysia_dream_rose
     };
 
     theme.panel_styles[to_index(UiPanelThemeRole::Default)] = UiPanelThemeColors{
-        elysia::core::colors::elysia_phantom_sea,
-        elysia::core::colors::elysia_lilac
+        elysia::core::colors::elysia_twilight_mist,
+        elysia::core::colors::elysia_starlight_lilac
     };
     theme.panel_styles[to_index(UiPanelThemeRole::Screen)] = UiPanelThemeColors{
-        elysia::core::colors::elysia_deep_sea,
-        elysia::core::colors::elysia_mirage_blue
+        elysia::core::colors::elysia_starsea_navy,
+        elysia::core::colors::elysia_aurora_haze
     };
     theme.panel_styles[to_index(UiPanelThemeRole::Dialog)] = UiPanelThemeColors{
-        elysia::core::colors::elysia_phantom_sea,
-        elysia::core::colors::elysia_glow_pink
+        elysia::core::colors::elysia_twilight_mist,
+        elysia::core::colors::elysia_crystal_orchid
     };
     theme.panel_styles[to_index(UiPanelThemeRole::List)] = UiPanelThemeColors{
-        elysia::core::colors::elysia_phantom_sea,
-        elysia::core::colors::elysia_mirage_blue
+        elysia::core::colors::elysia_twilight_mist,
+        elysia::core::colors::elysia_aurora_haze
     };
 
     theme.window_style = UiWindowThemeColors{
-        elysia::core::colors::elysia_deep_sea,
-        elysia::core::colors::elysia_lilac
+        elysia::core::colors::elysia_starsea_navy,
+        elysia::core::colors::elysia_starlight_lilac
     };
 
     theme.chrome_container_style = UiChromeContainerThemeColors{
-        elysia::core::colors::elysia_phantom_sea,
-        elysia::core::colors::elysia_lilac,
-        elysia::core::colors::elysia_mirage_blue
+        elysia::core::colors::elysia_twilight_mist,
+        elysia::core::colors::elysia_starlight_lilac,
+        elysia::core::colors::elysia_aurora_haze
     };
 
     theme.button_styles[to_index(UiButtonThemeRole::Default)] = UiButtonThemeColors{
@@ -459,32 +459,44 @@ template<class Enum>
     theme.button_styles[to_index(UiButtonThemeRole::Primary)] = UiButtonThemeColors{
         make_chrome(
             make_surface_colors(
-                elysia::core::colors::elysia_phantom_sea,
-                elysia::core::colors::elysia_mirage_blue,
+                elysia::core::colors::elysia_aurora_haze,
                 elysia::core::colors::elysia_lilac,
-                elysia::core::colors::gray_700),
-            UiEnabledDisabledColors{ elysia::core::colors::elysia_lilac,elysia::core::colors::gray_500 }),
+                elysia::core::colors::elysia_crystal_orchid,
+                elysia::core::colors::elysia_phantom_sea),
+            UiEnabledDisabledColors{
+                elysia::core::colors::elysia_crystal_orchid,
+                elysia::core::colors::elysia_silver_mist
+            }),
         text
     };
     theme.button_styles[to_index(UiButtonThemeRole::Danger)] = UiButtonThemeColors{
         make_chrome(
             make_surface_colors(
                 elysia::core::colors::elysia_twilight_rose,
-                elysia::core::colors::elysia_velvet_rose,
-                elysia::core::colors::elysia_glow_pink,
-                elysia::core::colors::gray_700),
-            UiEnabledDisabledColors{ elysia::core::colors::elysia_glow_pink,elysia::core::colors::gray_500 }),
+                elysia::core::colors::elysia_dream_rose,
+                elysia::core::colors::elysia_crystal_orchid,
+                elysia::core::colors::elysia_phantom_sea),
+            UiEnabledDisabledColors{
+                elysia::core::colors::elysia_crystal_orchid,
+                elysia::core::colors::elysia_silver_mist
+            }),
         text
     };
 
     theme.checkbox_style = UiCheckboxThemeColors{
         interactive_chrome,
-        UiEnabledDisabledColors{ elysia::core::colors::elysia_glow_pink,elysia::core::colors::gray_500 }
+        UiEnabledDisabledColors{
+            elysia::core::colors::elysia_crystal_orchid,
+            elysia::core::colors::elysia_silver_mist
+        }
     };
 
     theme.radio_button_style = UiRadioButtonThemeColors{
         interactive_chrome,
-        UiEnabledDisabledColors{ elysia::core::colors::elysia_glow_pink,elysia::core::colors::gray_500 },
+        UiEnabledDisabledColors{
+            elysia::core::colors::elysia_crystal_orchid,
+            elysia::core::colors::elysia_silver_mist
+        },
         text
     };
 
@@ -494,7 +506,10 @@ template<class Enum>
 
     theme.slider_style = UiSliderThemeColors{
         make_chrome(interactive_surface,border),
-        UiEnabledDisabledColors{ elysia::core::colors::elysia_glow_pink,elysia::core::colors::gray_500 },
+        UiEnabledDisabledColors{
+            elysia::core::colors::elysia_crystal_orchid,
+            elysia::core::colors::elysia_silver_mist
+        },
         text,
         theme.drag_handle_style
     };
@@ -503,21 +518,21 @@ template<class Enum>
         interactive_chrome,
         secondary_text,
         placeholder_text,
-        elysia::core::colors::elysia_glow_pink
+        elysia::core::colors::elysia_crystal_orchid
     };
 
     theme.scroll_container_style = UiScrollContainerThemeColors{
         make_scrollbar_colors(
-            elysia::core::colors::elysia_deep_sea,
+            elysia::core::colors::elysia_starsea_navy,
+            elysia::core::colors::elysia_twilight_mist,
+            elysia::core::colors::elysia_aurora_haze,
             elysia::core::colors::elysia_phantom_sea,
-            elysia::core::colors::elysia_mirage_blue,
-            elysia::core::colors::gray_700,
-            elysia::core::colors::elysia_lilac,
-            elysia::core::colors::elysia_glow_pink,
-            elysia::core::colors::elysia_rose_pink,
-            elysia::core::colors::gray_500),
-        elysia::core::colors::elysia_phantom_sea,
-        elysia::core::colors::elysia_lilac
+            elysia::core::colors::elysia_dream_rose,
+            elysia::core::colors::elysia_crystal_orchid,
+            elysia::core::colors::elysia_moonlit_lavender,
+            elysia::core::colors::elysia_silver_mist),
+        elysia::core::colors::elysia_twilight_mist,
+        elysia::core::colors::elysia_starlight_lilac
     };
 
     return theme;
