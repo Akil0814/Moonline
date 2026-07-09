@@ -5,6 +5,7 @@
 #include "../../../number/number_texture_provider.h"
 #include "../../core/ui_element.h"
 #include "../../core/ui_text_align.h"
+#include "../../text/ui_typography.h"
 
 #include <optional>
 #include <string>
@@ -55,8 +56,8 @@ public:
     void set_vertical_align(TextVerticalAlign align);
     [[nodiscard]] TextVerticalAlign vertical_align() const noexcept;
 
-    void set_text_point_size(int point_size);
-    [[nodiscard]] int text_point_size() const noexcept;
+    void set_typography_role(UiTypographyRole role) noexcept;
+    [[nodiscard]] UiTypographyRole typography_role() const noexcept;
 
     void set_padding(int padding);
     [[nodiscard]] int padding() const noexcept;
@@ -102,9 +103,9 @@ private:
     mutable elysia::number::NumberTextureProvider _texture_provider;
     double _value = 0.0;
     UiStyleState<UiNumberStyle> _style_state;
+    UiTypographyRole _typography_role = UiTypographyRole::Number;
     TextHorizontalAlign _horizontal_align = TextHorizontalAlign::Left;
     TextVerticalAlign _vertical_align = TextVerticalAlign::Top;
-    int _text_point_size = 24;
     int _padding = 0;
     float _digit_spacing = 0.0f;
     std::optional<float> _fixed_glyph_advance;

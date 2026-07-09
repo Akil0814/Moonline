@@ -13,11 +13,11 @@ class UiFadeLabel : public UiLabel, public elysia::core::Updatable
 public:
     using FadeLabelOnEnd = std::function<void()>;
 
-    explicit UiFadeLabel(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0,std::string text_key = {}) noexcept;
+    explicit UiFadeLabel(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0,UiTextContent text_content = {}) noexcept;
     UiFadeLabel(const elysia::core::Vector2& position,const elysia::core::Vector2& size,
-        int order = 0,std::string text_key = {}) noexcept;
+        int order = 0,UiTextContent text_content = {}) noexcept;
     UiFadeLabel(const elysia::core::Vector2& center, const elysia::core::Vector2& size,
-        UiFromCenterTag, int order = 0, std::string text_key = {}) noexcept;
+        UiFromCenterTag, int order = 0, UiTextContent text_content = {}) noexcept;
 
     void reset() noexcept override;
     // Configures the fade sequence that modulates label opacity over time.

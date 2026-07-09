@@ -4,6 +4,8 @@
 #include "../style/ui_style.h"
 #include "../style/ui_interaction_style.h"
 #include "../core/ui_control.h"
+#include "../text/ui_text_content.h"
+#include "../text/ui_typography.h"
 
 #include <cstddef>
 #include <functional>
@@ -47,8 +49,8 @@ public:
     void clear_text();
 
     // Sets placeholder content shown only when the text buffer is empty.
-    void set_placeholder_text(std::string placeholder_text);
-    [[nodiscard]] const std::string& placeholder_text() const noexcept;
+    void set_placeholder_content(UiTextContent placeholder_content);
+    [[nodiscard]] const UiTextContent& placeholder_content() const noexcept;
 
     void set_on_text_changed(UiTextInputChangedCallback on_text_changed);
     void set_on_submit(UiTextInputSubmitCallback on_submit);
@@ -61,10 +63,10 @@ public:
     [[nodiscard]] bool has_style_override() const noexcept;
     void clear_style_override() noexcept;
 
-    void set_text_point_size(int point_size) noexcept;
-    [[nodiscard]] int text_point_size() const noexcept;
-    void set_placeholder_point_size(int point_size) noexcept;
-    [[nodiscard]] int placeholder_point_size() const noexcept;
+    void set_typography_role(UiTypographyRole role) noexcept;
+    [[nodiscard]] UiTypographyRole typography_role() const noexcept;
+    void set_placeholder_typography_role(UiTypographyRole role) noexcept;
+    [[nodiscard]] UiTypographyRole placeholder_typography_role() const noexcept;
     void set_padding(int padding) noexcept;
     [[nodiscard]] int padding() const noexcept;
 
@@ -115,7 +117,7 @@ private:
     UiTextInputChangedCallback _on_text_changed;
     UiTextInputSubmitCallback _on_submit;
     std::string _text;
-    std::string _placeholder_text;
+    UiTextContent _placeholder_content;
     std::string _composition_text;
     std::size_t _caret_codepoint_index = 0;
     std::size_t _composition_insert_codepoint_index = 0;
@@ -123,8 +125,8 @@ private:
     int _composition_length = 0;
     std::optional<std::size_t> _max_length = std::nullopt;
     UiStyleState<UiTextInputStyle> _style_state;
-    int _text_point_size = 24;
-    int _placeholder_point_size = 18;
+    UiTypographyRole _typography_role = UiTypographyRole::Input;
+    UiTypographyRole _placeholder_typography_role = UiTypographyRole::InputPlaceholder;
     int _padding = 10;
     bool _is_pushed = false;
 };

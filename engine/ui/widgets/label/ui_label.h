@@ -5,6 +5,8 @@
 #include "../../style/ui_visual_styles.h"
 #include "../../core/ui_element.h"
 #include "../../core/ui_text_align.h"
+#include "../../text/ui_text_content.h"
+#include "../../text/ui_typography.h"
 
 #include <string>
 
@@ -15,13 +17,13 @@ namespace elysia::ui
 class UiLabel : public UiElement
 {
 public:
-    explicit UiLabel(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0,std::string text_key = {}) noexcept;
+    explicit UiLabel(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0,UiTextContent text_content = {}) noexcept;
 
     UiLabel(const elysia::core::Vector2& position,const elysia::core::Vector2& size,
-        int order = 0,std::string text_key = {}) noexcept;
+        int order = 0,UiTextContent text_content = {}) noexcept;
 
     UiLabel(const elysia::core::Vector2& center,const elysia::core::Vector2& size,
-        UiFromCenterTag,int order = 0,std::string text_key = {}) noexcept;
+        UiFromCenterTag,int order = 0,UiTextContent text_content = {}) noexcept;
 
     ~UiLabel() override = default;
 
@@ -29,10 +31,8 @@ public:
     // Emits background and text commands for the current label content and alignment.
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
 
-    void set_text_key(std::string text_key);
-    [[nodiscard]] const std::string& text_key() const noexcept;
-    void set_raw_text(std::string raw_text);
-    [[nodiscard]] const std::string& raw_text() const noexcept;
+    void set_text_content(UiTextContent text_content);
+    [[nodiscard]] const UiTextContent& text_content() const noexcept;
 
     void set_style(const UiLabelStyle& style) noexcept;
     [[nodiscard]] const UiLabelStyle& style() const noexcept;
@@ -48,8 +48,8 @@ public:
     void set_vertical_align(TextVerticalAlign align);
     [[nodiscard]] TextVerticalAlign vertical_align() const noexcept;
 
-    void set_text_point_size(int point_size);
-    [[nodiscard]] int text_point_size() const noexcept;
+    void set_typography_role(UiTypographyRole role) noexcept;
+    [[nodiscard]] UiTypographyRole typography_role() const noexcept;
 
     void set_padding(int padding);
     [[nodiscard]] int padding() const noexcept;
@@ -62,13 +62,12 @@ private:
     void apply_theme(const UiTheme& theme) override;
 
 private:
-    std::string _text_key;
-    std::string _raw_text;
+    UiTextContent _text_content;
     UiStyleState<UiLabelStyle> _style_state;
     UiLabelThemeRole _theme_role = UiLabelThemeRole::Default;
+    UiTypographyRole _typography_role = UiTypographyRole::Label;
     TextHorizontalAlign _horizontal_align = TextHorizontalAlign::Left;
     TextVerticalAlign _vertical_align = TextVerticalAlign::Top;
-    int _text_point_size = 24;
     int _padding = 0;
 };
 }

@@ -45,13 +45,13 @@ void UiRadioButton::reset() noexcept
     _on_selected = nullptr;
     _sounds.reset();
     _style_state.reset(UiStyleDefaults::radio_button());
-    _text_key.clear();
+    _text_content = UiTextContent{};
+    _typography_role = UiTypographyRole::RadioLabel;
     _label_placement = UiRadioButtonLabelPlacement::Right;
     _label_spacing = 8.0f;
     _text_placement = UiRadioButtonTextPlacement::NearIndicator;
     _text_color = style().text.enabled;
     _disabled_text_color = style().text.disabled;
-    _text_point_size = _checkbox.text_point_size();
     _padding = _checkbox.padding();
     _label_padding = _checkbox.label_padding();
     _selected = false;
@@ -124,15 +124,26 @@ void UiRadioButton::set_on_selected(UiRadioButtonSelectedCallback on_selected)
     _on_selected = std::move(on_selected);
 }
 
-void UiRadioButton::set_text_key(std::string text_key)
+void UiRadioButton::set_text_content(UiTextContent text_content)
 {
-    _text_key = std::move(text_key);
+    _text_content = std::move(text_content);
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-const std::string& UiRadioButton::text_key() const noexcept
+const UiTextContent& UiRadioButton::text_content() const noexcept
 {
-    return _text_key;
+    return _text_content;
+}
+
+void UiRadioButton::set_typography_role(UiTypographyRole role) noexcept
+{
+    _typography_role = role;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+UiTypographyRole UiRadioButton::typography_role() const noexcept
+{
+    return _typography_role;
 }
 
 void UiRadioButton::set_style(const UiRadioButtonStyle& style) noexcept
@@ -165,7 +176,7 @@ void UiRadioButton::apply_radio_button_config(const UiRadioButtonConfig& config)
     if (config.style)
         set_style(*config.style);
 
-    _text_key = config.text_key;
+    _text_content = config.text_content;
     _label_placement = config.label_placement;
     _label_spacing = config.label_spacing;
     _text_placement = config.text_placement;
@@ -173,8 +184,6 @@ void UiRadioButton::apply_radio_button_config(const UiRadioButtonConfig& config)
         _text_color = *config.text_color;
     if (config.disabled_text_color)
         _disabled_text_color = *config.disabled_text_color;
-    if (config.text_point_size)
-        _text_point_size = *config.text_point_size;
     if (config.padding)
         _padding = *config.padding;
     if (config.label_padding)
@@ -188,7 +197,7 @@ void UiRadioButton::apply_radio_button_config(const UiRadioButtonConfig& config)
 void UiRadioButton::sync_checkbox_state() const
 {
     UiLabeledCheckboxConfig config{};
-    config.text_key = _text_key;
+    config.text_content = _text_content;
     config.label_placement = to_checkbox_label_placement(_label_placement);
     config.label_spacing = _label_spacing;
     config.text_placement = to_checkbox_text_placement(_text_placement);
@@ -209,7 +218,7 @@ void UiRadioButton::sync_checkbox_state() const
     _checkbox.set_focused(is_focused());
     _checkbox.set_opacity(opacity());
     _checkbox.set_labeled_checkbox_config(config);
-    _checkbox.set_text_point_size(_text_point_size);
+    _checkbox.set_typography_role(_typography_role);
     _checkbox.set_padding(_padding);
     _checkbox.set_label_padding(_label_padding);
     _checkbox.set_checked(_selected);

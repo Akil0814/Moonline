@@ -60,9 +60,9 @@ void UiNumber::reset() noexcept
     _texture_provider.reset();
     _value = 0.0;
     _style_state.reset(UiStyleDefaults::number());
+    _typography_role = UiTypographyRole::Number;
     _horizontal_align = TextHorizontalAlign::Left;
     _vertical_align = TextVerticalAlign::Top;
-    _text_point_size = 24;
     _padding = 0;
     _digit_spacing = 0.0f;
     _fixed_glyph_advance.reset();
@@ -94,8 +94,9 @@ void UiNumber::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
     if (available_rect.is_empty())
         return;
 
+    const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
     const std::vector<elysia::number::NumberTextureGlyph> texture_set =
-        _texture_provider.get_texture_set(text,_text_point_size,style.text);
+        _texture_provider.get_texture_set(text,typography.point_size,style.text);
     if (texture_set.empty())
         return;
 
@@ -235,15 +236,15 @@ TextVerticalAlign UiNumber::vertical_align() const noexcept
     return _vertical_align;
 }
 
-void UiNumber::set_text_point_size(int point_size)
+void UiNumber::set_typography_role(UiTypographyRole role) noexcept
 {
-    _text_point_size = std::max(0,point_size);
+    _typography_role = role;
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-int UiNumber::text_point_size() const noexcept
+UiTypographyRole UiNumber::typography_role() const noexcept
 {
-    return _text_point_size;
+    return _typography_role;
 }
 
 void UiNumber::set_padding(int padding)

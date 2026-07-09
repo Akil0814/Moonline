@@ -38,7 +38,7 @@ void update_style(Widget& widget,Mutator&& mutator)
 
 [[nodiscard]] elysia::ui::UiButtonConfig make_button_config(const char* text_key)
 {
-    return elysia::ui::UiButtonConfig{ .content = elysia::ui::UiButtonTextContent{ text_key } };
+    return elysia::ui::UiButtonConfig{ .content = elysia::ui::ui_text_key(text_key) };
 }
 
 [[nodiscard]] const char* button_text_key_for_index(int index) noexcept
@@ -120,7 +120,7 @@ std::unique_ptr<elysia::ui::UiLabeledCheckbox> make_labeled_checkbox(
 )
 {
     elysia::ui::UiLabeledCheckboxConfig config{};
-    config.text_key = text_key;
+    config.text_content = elysia::ui::ui_text_key(text_key);
     config.label_placement = label_placement;
     config.text_placement = text_placement;
     config.draw_background = draw_background;
@@ -143,7 +143,7 @@ std::unique_ptr<elysia::ui::UiTextInput> make_text_input(
 )
 {
     auto input = std::make_unique<elysia::ui::UiTextInput>(rect,0);
-    input->set_placeholder_text(std::move(placeholder_text));
+    input->set_placeholder_content(elysia::ui::ui_raw_text(std::move(placeholder_text)));
     input->set_max_length(max_length);
     input->set_on_text_changed([scope](std::string_view text)
     {
@@ -164,7 +164,7 @@ std::unique_ptr<elysia::ui::UiSlider> make_slider(
 )
 {
     auto slider = std::make_unique<elysia::ui::UiSlider>(rect,0);
-    slider->set_text_key(text_key);
+    slider->set_text_content(elysia::ui::ui_text_key(text_key));
     slider->set_label_placement(elysia::ui::UiSliderLabelPlacement::Above);
     slider->set_value_label_mode(elysia::ui::UiSliderValueLabelMode::Percent);
     slider->set_range(0.0f,1.0f);
@@ -184,7 +184,7 @@ std::unique_ptr<elysia::ui::UiRadioButton> make_radio_button(
 )
 {
     auto radio_button = std::make_unique<elysia::ui::UiRadioButton>(rect,0);
-    radio_button->set_text_key(text_key);
+    radio_button->set_text_content(elysia::ui::ui_text_key(text_key));
     radio_button->set_selected(selected);
     radio_button->set_on_selected([scope]()
     {
@@ -476,19 +476,19 @@ void UiContainerTestScene::rebuild_ui()
         });
 
     auto* localized_dialog = _root_window->create_child<elysia::ui::UiDialog>(elysia::core::Rect{ 0,0,520,360 });
-    localized_dialog->set_title_key("ui_test_scene.reading_dialog.title");
-    localized_dialog->set_body_text_key("ui_test_scene.reading_dialog.body");
-    localized_dialog->set_close_button_text_key("ui_test_scene.reading_dialog.close");
+    localized_dialog->set_title_content(elysia::ui::ui_text_key("ui_test_scene.reading_dialog.title"));
+    localized_dialog->set_body_content(elysia::ui::ui_text_key("ui_test_scene.reading_dialog.body"));
+    localized_dialog->set_action_content(elysia::ui::ui_text_key("ui_test_scene.reading_dialog.close"));
     localized_dialog->register_as_overlay(*_root_window);
     register_themed(localized_dialog);
 
     auto* raw_text_dialog = _root_window->create_child<elysia::ui::UiDialog>(elysia::core::Rect{ 0,0,500,340 });
-    raw_text_dialog->set_title_raw_text("Raw Text Preview");
-    raw_text_dialog->set_body_raw_text(
+    raw_text_dialog->set_title_content(elysia::ui::ui_raw_text("Raw Text Preview"));
+    raw_text_dialog->set_body_content(elysia::ui::ui_raw_text(
         "This dialog bypasses the localization dictionary on purpose.\n\n"
         "It is useful for debug notes, generated copy, or temporary editor strings.\n\n"
-        "The body text still wraps and scrolls like the i18n-backed reading dialog.");
-    raw_text_dialog->set_close_button_raw_text("Close");
+        "The body text still wraps and scrolls like the i18n-backed reading dialog."));
+    raw_text_dialog->set_action_content(elysia::ui::ui_raw_text("Close"));
     raw_text_dialog->register_as_overlay(*_root_window);
     register_themed(raw_text_dialog);
 
@@ -709,7 +709,7 @@ void UiContainerTestScene::rebuild_ui()
         if (!button_slot)
             return;
 
-        button_slot->set_text_point_size(16);
+        button_slot->set_typography_role(elysia::ui::UiTypographyRole::ButtonCompact);
         button_slot->set_on_click([this,theme]()
         {
             set_active_theme(theme);

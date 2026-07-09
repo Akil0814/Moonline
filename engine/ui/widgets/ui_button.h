@@ -5,6 +5,8 @@
 #include "../style/ui_theme_roles.h"
 #include "../style/ui_interaction_style.h"
 #include "../core/ui_control.h"
+#include "../text/ui_text_content.h"
+#include "../text/ui_typography.h"
 
 #include <functional>
 #include <optional>
@@ -26,18 +28,6 @@ struct UiButtonTextures
     SDL_Texture* disabled = nullptr;
 };
 
-// Text-only button content resolved through the localized text system.
-struct UiButtonTextContent
-{
-    std::string text_key{};
-};
-
-// Raw-text button content rendered without i18n lookup.
-struct UiButtonRawTextContent
-{
-    std::string raw_text{};
-};
-
 // Icon-only button content rendered from a caller-owned texture.
 struct UiButtonIconContent
 {
@@ -52,8 +42,7 @@ struct UiButtonTextureSetContent
 
 using UiButtonContent = std::variant<
     std::monostate,
-    UiButtonTextContent,
-    UiButtonRawTextContent,
+    UiTextContent,
     UiButtonIconContent,
     UiButtonTextureSetContent
 >;
@@ -116,10 +105,8 @@ public:
     // Applies content, sounds, and style as one atomic button configuration update.
     void set_button_config(const UiButtonConfig& config);
 
-    void set_text_key(std::string text_key);
-    [[nodiscard]] const std::string& text_key() const noexcept;
-    void set_raw_text(std::string raw_text);
-    [[nodiscard]] const std::string& raw_text() const noexcept;
+    void set_text_content(UiTextContent text_content);
+    [[nodiscard]] const UiTextContent& text_content() const noexcept;
 
     void set_state_textures(const UiButtonTextures& textures);
     void clear_state_textures();
@@ -140,8 +127,8 @@ public:
     void set_theme_role(UiButtonThemeRole role) noexcept;
     [[nodiscard]] UiButtonThemeRole theme_role() const noexcept;
 
-    void set_text_point_size(int point_size);
-    [[nodiscard]] int text_point_size() const noexcept;
+    void set_typography_role(UiTypographyRole role) noexcept;
+    [[nodiscard]] UiTypographyRole typography_role() const noexcept;
 
     void set_padding(int padding);
     [[nodiscard]] int padding() const noexcept;
@@ -176,16 +163,15 @@ private:
     void apply_theme(const UiTheme& theme) override;
 
 private:
-    std::string _text_key;
-    std::string _raw_text;
+    UiTextContent _text_content;
     UiButtonSounds _sounds;
     UiButtonTextures _state_textures;
     ClickCallback _on_click;
     UiButtonVisualMode _visual_mode = UiButtonVisualMode::None;
     UiStyleState<UiButtonStyle> _style_state;
     UiButtonThemeRole _theme_role = UiButtonThemeRole::Default;
+    UiTypographyRole _typography_role = UiTypographyRole::Button;
 
-    int _text_point_size = 24;
     int _padding = 10;
     bool _is_pushed = false;
 };

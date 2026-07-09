@@ -53,11 +53,13 @@ void UiLabeledCheckbox::reset() noexcept
         .background = elysia::core::colors::transparent,
         .draw_background = false
     });
+    _label.set_typography_role(UiTypographyRole::CheckboxLabel);
     _label.set_horizontal_align(TextHorizontalAlign::Left);
     _label.set_vertical_align(TextVerticalAlign::Center);
     _label.set_padding(0);
 
-    _text_key.clear();
+    _text_content = UiTextContent{};
+    _typography_role = UiTypographyRole::CheckboxLabel;
     _label_placement = UiLabeledCheckboxLabelPlacement::Right;
     _label_spacing = 8.0f;
     _text_placement = UiLabeledCheckboxTextPlacement::NearBox;
@@ -92,15 +94,15 @@ void UiLabeledCheckbox::set_labeled_checkbox_config(const UiLabeledCheckboxConfi
     apply_labeled_checkbox_config(config);
 }
 
-void UiLabeledCheckbox::set_text_key(std::string text_key)
+void UiLabeledCheckbox::set_text_content(UiTextContent text_content)
 {
-    _text_key = std::move(text_key);
+    _text_content = std::move(text_content);
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-const std::string& UiLabeledCheckbox::text_key() const noexcept
+const UiTextContent& UiLabeledCheckbox::text_content() const noexcept
 {
-    return _text_key;
+    return _text_content;
 }
 
 void UiLabeledCheckbox::set_label_placement(UiLabeledCheckboxLabelPlacement placement) noexcept
@@ -136,15 +138,16 @@ UiLabeledCheckboxTextPlacement UiLabeledCheckbox::text_placement() const noexcep
     return _text_placement;
 }
 
-void UiLabeledCheckbox::set_text_point_size(int point_size) noexcept
+void UiLabeledCheckbox::set_typography_role(UiTypographyRole role) noexcept
 {
-    _label.set_text_point_size(point_size);
+    _typography_role = role;
+    _label.set_typography_role(role);
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-int UiLabeledCheckbox::text_point_size() const noexcept
+UiTypographyRole UiLabeledCheckbox::typography_role() const noexcept
 {
-    return _label.text_point_size();
+    return _typography_role;
 }
 
 void UiLabeledCheckbox::set_label_padding(int padding) noexcept
@@ -177,7 +180,7 @@ elysia::core::Rect UiLabeledCheckbox::checkbox_rect() const noexcept
 void UiLabeledCheckbox::apply_labeled_checkbox_config(const UiLabeledCheckboxConfig& config)
 {
     set_checkbox_config(config.checkbox);
-    set_text_key(config.text_key);
+    set_text_content(config.text_content);
     set_label_placement(config.label_placement);
     set_label_spacing(config.label_spacing);
     set_text_placement(config.text_placement);
@@ -197,9 +200,10 @@ void UiLabeledCheckbox::sync_label_visuals() const
     label_style.draw_background = false;
 
     _label.set_screen_rect(label_rect());
-    _label.set_visible(!_text_key.empty() && !_label.screen_rect().is_empty() && is_visible());
+    _label.set_visible(!_text_content.empty() && !_label.screen_rect().is_empty() && is_visible());
     _label.set_opacity(opacity());
-    _label.set_text_key(_text_key);
+    _label.set_text_content(_text_content);
+    _label.set_typography_role(_typography_role);
     _label.set_style(label_style);
     _label.set_vertical_align(TextVerticalAlign::Center);
     if (_label_placement == UiLabeledCheckboxLabelPlacement::Left)
@@ -225,7 +229,7 @@ elysia::core::Rect UiLabeledCheckbox::label_rect() const noexcept
     if (content.is_empty() || box.is_empty())
         return elysia::core::Rect::zero();
 
-    const float spacing = _text_key.empty() ? 0.0f : _label_spacing;
+    const float spacing = _text_content.empty() ? 0.0f : _label_spacing;
     if (_label_placement == UiLabeledCheckboxLabelPlacement::Left)
     {
         const float width = std::max(0.0f,box.x() - content.x() - spacing);

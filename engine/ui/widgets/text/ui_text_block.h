@@ -2,10 +2,11 @@
 
 #include "../../core/ui_element.h"
 #include "../../core/ui_text_align.h"
-#include "../../core/ui_text_source.h"
 #include "../../style/ui_style.h"
 #include "../../style/ui_theme_roles.h"
 #include "../../style/ui_visual_styles.h"
+#include "../../text/ui_text_content.h"
+#include "../../text/ui_typography.h"
 
 #include <string>
 
@@ -25,10 +26,8 @@ public:
     [[nodiscard]] elysia::core::Vector2 content_extent() const noexcept override;
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
 
-    void set_text_source(UiTextSource text_source);
-    [[nodiscard]] const UiTextSource& text_source() const noexcept;
-    void set_text_key(std::string text_key);
-    void set_raw_text(std::string raw_text);
+    void set_text_content(UiTextContent text_content);
+    [[nodiscard]] const UiTextContent& text_content() const noexcept;
     void clear_text();
 
     void set_style(const UiTextBlockStyle& style) noexcept;
@@ -39,8 +38,8 @@ public:
     void set_theme_role(UiTextBlockThemeRole role) noexcept;
     [[nodiscard]] UiTextBlockThemeRole theme_role() const noexcept;
 
-    void set_text_point_size(int point_size) noexcept;
-    [[nodiscard]] int text_point_size() const noexcept;
+    void set_typography_role(UiTypographyRole role) noexcept;
+    [[nodiscard]] UiTypographyRole typography_role() const noexcept;
     void set_padding(int padding) noexcept;
     [[nodiscard]] int padding() const noexcept;
     void set_horizontal_align(TextHorizontalAlign align) noexcept;
@@ -54,11 +53,11 @@ private:
     void apply_theme(const UiTheme& theme) override;
 
 private:
-    UiTextSource _text_source;
+    UiTextContent _text_content;
     UiStyleState<UiTextBlockStyle> _style_state;
     UiTextBlockThemeRole _theme_role = UiTextBlockThemeRole::Default;
+    UiTypographyRole _typography_role = UiTypographyRole::DialogBody;
     TextHorizontalAlign _horizontal_align = TextHorizontalAlign::Left;
-    int _text_point_size = 24;
     int _padding = 0;
 };
 }

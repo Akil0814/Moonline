@@ -23,7 +23,7 @@ namespace
 std::unique_ptr<elysia::ui::UiButton> make_menu_button(const elysia::core::Rect& rect,const char* text_key)
 {
     auto button = std::make_unique<elysia::ui::UiButton>(rect);
-    button->set_text_key(text_key);
+    button->set_text_content(elysia::ui::ui_text_key(text_key));
     return button;
 }
 
@@ -97,8 +97,9 @@ void MainMenuScene::build_menu_buttons()
             _exit_confirmation->set_header_padding(elysia::ui::UiLayoutPadding{ 12.0f,6.0f,12.0f,6.0f });
             _exit_confirmation->set_body_padding(elysia::ui::UiLayoutPadding{ 20.0f,20.0f,20.0f,20.0f });
 
-            //pop up title
-            auto title = std::make_unique<elysia::ui::UiLabel>(elysia::core::Rect{ 0,0,280,36 },0,"menu_scene.exit_confirm.title");
+            auto title = std::make_unique<elysia::ui::UiLabel>(
+                elysia::core::Rect{ 0,0,280,36 },0,
+                "menu_scene.exit_confirm.title");
             title->set_vertical_align(elysia::ui::TextVerticalAlign::Center);
             _exit_confirmation->add_title_child(std::move(title));
 
@@ -113,8 +114,10 @@ void MainMenuScene::build_menu_buttons()
             body_style.draw_border = false;
             body->set_style(body_style);
 
-            //lable
-            auto message = std::make_unique<elysia::ui::UiLabel>(elysia::core::Rect{ 0,0,380,56 },0,"menu_scene.exit_confirm.message");
+            auto message = std::make_unique<elysia::ui::UiLabel>(
+                elysia::core::Rect{ 0,0,380,56 },
+                0,
+                "menu_scene.exit_confirm.message");
             message->set_horizontal_align(elysia::ui::TextHorizontalAlign::Center);
             message->set_vertical_align(elysia::ui::TextVerticalAlign::Center);
             body->add_child(std::move(message),elysia::ui::UiPanelInsertDirection::Down);
@@ -149,12 +152,12 @@ void MainMenuScene::build_menu_buttons()
 
         //start button
         std::unique_ptr<elysia::ui::UiButton> ui_button = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,200,75 });
-        ui_button->set_text_key("menu_scene.start");
+        ui_button->set_text_content(elysia::ui::ui_text_key("menu_scene.start"));
         ui_list->add_back(std::move(ui_button));
 
         //setting button
         ui_button = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,200,75 });
-        ui_button->set_text_key("menu_scene.settings");
+        ui_button->set_text_content(elysia::ui::ui_text_key("menu_scene.settings"));
         ui_button->set_on_click([this] {Scene::request_scene_switch(AppSceneKeys::UiContainerTest);});
         ui_list->add_back(std::move(ui_button));
 
@@ -166,7 +169,7 @@ void MainMenuScene::build_menu_buttons()
 
         //exit button
         ui_button = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,200,75 });
-        ui_button->set_text_key("menu_scene.exit");
+        ui_button->set_text_content(elysia::ui::ui_text_key("menu_scene.exit"));
         ui_button->set_on_click([this]
         {
             if (_main_menu_window && _exit_confirmation)

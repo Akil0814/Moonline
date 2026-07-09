@@ -8,6 +8,7 @@
 #include "../core/ui_control.h"
 #include "../style/ui_style.h"
 #include "../style/ui_interaction_style.h"
+#include "../text/ui_text_content.h"
 #include "label/ui_label.h"
 #include "number/ui_number.h"
 #include "ui_bar.h"
@@ -30,12 +31,10 @@ namespace elysia::ui
         double min_slide_sound_interval = 0.05;
     };
 
-    // Text label content resolved through the localized text system.
-    struct UiSliderTextContent { std::string text_key{}; };
     // Icon label content rendered from a caller-owned texture.
     struct UiSliderIconContent { SDL_Texture* texture = nullptr; };
 
-    using UiSliderLabelContent = std::variant<std::monostate,UiSliderTextContent,UiSliderIconContent>;
+    using UiSliderLabelContent = std::variant<std::monostate,UiTextContent,UiSliderIconContent>;
 
     // Visual styling for slider chrome, fill, label text, and drag handle.
     struct UiSliderStyle
@@ -104,8 +103,8 @@ namespace elysia::ui
 
         void set_label_content(const UiSliderLabelContent& content);
         void clear_label_content() noexcept;
-        void set_text_key(std::string text_key);
-        [[nodiscard]] const std::string& text_key() const noexcept;
+        void set_text_content(UiTextContent text_content);
+        [[nodiscard]] const UiTextContent& text_content() const noexcept;
         void set_icon_texture(SDL_Texture* texture) noexcept;
 
         void set_label_placement(UiSliderLabelPlacement placement) noexcept;
@@ -199,7 +198,7 @@ namespace elysia::ui
         mutable UiDragHandle _handle;
         mutable UiLabel _label;
         mutable UiNumber _value_number;
-        std::string _text_key;
+        UiTextContent _text_content;
         SDL_Texture* _icon = nullptr;
         std::optional<UiSliderSounds> _sounds;
         UiStyleState<UiSliderStyle> _style_state;
