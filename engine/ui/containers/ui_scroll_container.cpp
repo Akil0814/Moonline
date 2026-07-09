@@ -235,26 +235,6 @@ void UiScrollContainer::clear_style_override() noexcept
     mark_layout_dirty();
 }
 
-void UiScrollContainer::set_draw_background(bool draw_background) noexcept
-{
-    _style_state.ensure_style_override().draw_background = draw_background;
-}
-
-bool UiScrollContainer::draws_background() const noexcept
-{
-    return style().draw_background;
-}
-
-void UiScrollContainer::set_background_color(elysia::core::Color color) noexcept
-{
-    _style_state.ensure_style_override().background_color = color;
-}
-
-elysia::core::Color UiScrollContainer::background_color() const noexcept
-{
-    return style().background_color;
-}
-
 void UiScrollContainer::set_scrollbar_visibility(UiScrollBarVisibility visibility) noexcept
 {
     _scrollbar_visibility = visibility;
@@ -278,25 +258,6 @@ const UiScrollBarStyle& UiScrollContainer::scrollbar_style() const noexcept
     return style().scrollbar;
 }
 
-void UiScrollContainer::set_draw_border(bool draw_border) noexcept
-{
-    _style_state.ensure_style_override().draw_border = draw_border;
-}
-
-bool UiScrollContainer::draws_border() const noexcept
-{
-    return style().draw_border;
-}
-
-void UiScrollContainer::set_border_color(elysia::core::Color color) noexcept
-{
-    _style_state.ensure_style_override().border_color = color;
-}
-
-elysia::core::Color UiScrollContainer::border_color() const noexcept
-{
-    return style().border_color;
-}
 
 elysia::core::Vector2 UiScrollContainer::content_size() const noexcept
 {

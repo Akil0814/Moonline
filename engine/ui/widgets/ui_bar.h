@@ -44,18 +44,6 @@ public:
     void set_theme_role(UiBarThemeRole role) noexcept;
     [[nodiscard]] UiBarThemeRole theme_role() const noexcept;
 
-    void set_background_color(elysia::core::Color color);
-    [[nodiscard]] elysia::core::Color background_color() const;
-
-    void set_fill_color(elysia::core::Color color);
-    [[nodiscard]] elysia::core::Color fill_color() const;
-
-    void set_border_color(elysia::core::Color color);
-    [[nodiscard]] elysia::core::Color border_color() const;
-
-    void set_draw_border(bool draw_border);
-    [[nodiscard]] bool draws_border() const;
-
     void set_fill_direction(BarFillDirection direction);
     [[nodiscard]] BarFillDirection fill_direction() const;
 

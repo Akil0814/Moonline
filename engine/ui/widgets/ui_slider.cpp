@@ -636,17 +636,23 @@ void UiSlider::apply_slider_config(const UiSliderConfig& config)
 void UiSlider::initialize_child_widgets()
 {
     _bar.set_use_theme(false);
-    _bar.set_draw_border(false);
+    UiBarStyle bar_style = _bar.style();
+    bar_style.draw_border = false;
+    _bar.set_style(bar_style);
     _bar.set_padding(0);
     _bar.set_fill_direction(BarFillDirection::LeftToRight);
     _handle.set_use_theme(false);
     _label.set_use_theme(false);
-    _label.set_draw_background(false);
+    UiLabelStyle label_style = _label.style();
+    label_style.draw_background = false;
+    _label.set_style(label_style);
     _label.set_horizontal_align(TextHorizontalAlign::Center);
     _label.set_vertical_align(TextVerticalAlign::Center);
     _label.set_padding(0);
     _value_number.set_use_theme(false);
-    _value_number.set_draw_background(false);
+    UiNumberStyle number_style = _value_number.style();
+    number_style.draw_background = false;
+    _value_number.set_style(number_style);
     _value_number.set_horizontal_align(TextHorizontalAlign::Center);
     _value_number.set_vertical_align(TextVerticalAlign::Center);
     _value_number.set_text_point_size(22);

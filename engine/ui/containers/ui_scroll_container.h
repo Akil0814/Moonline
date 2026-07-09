@@ -74,14 +74,6 @@ public:
     [[nodiscard]] UiScrollBarVisibility scrollbar_visibility() const noexcept;
     void set_scrollbar_style(const UiScrollBarStyle& style);
     [[nodiscard]] const UiScrollBarStyle& scrollbar_style() const noexcept;
-    void set_draw_background(bool draw_background) noexcept;
-    [[nodiscard]] bool draws_background() const noexcept;
-    void set_background_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color background_color() const noexcept;
-    void set_draw_border(bool draw_border) noexcept;
-    [[nodiscard]] bool draws_border() const noexcept;
-    void set_border_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color border_color() const noexcept;
     [[nodiscard]] elysia::core::Vector2 content_size() const noexcept;
 
     void set_scroll_offset(const elysia::core::Vector2& scroll_offset) noexcept;

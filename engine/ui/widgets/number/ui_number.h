@@ -49,15 +49,6 @@ public:
     [[nodiscard]] bool has_style_override() const noexcept;
     void clear_style_override() noexcept;
 
-    void set_text_color(elysia::core::Color color);
-    [[nodiscard]] elysia::core::Color text_color() const noexcept;
-
-    void set_background_color(elysia::core::Color color);
-    [[nodiscard]] elysia::core::Color background_color() const noexcept;
-
-    void set_draw_background(bool draw_background);
-    [[nodiscard]] bool draws_background() const noexcept;
-
     void set_horizontal_align(TextHorizontalAlign align);
     [[nodiscard]] TextHorizontalAlign horizontal_align() const noexcept;
 

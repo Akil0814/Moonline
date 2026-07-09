@@ -128,36 +128,6 @@ UiLabelThemeRole UiLabel::theme_role() const noexcept
     return _theme_role;
 }
 
-void UiLabel::set_text_color(elysia::core::Color color)
-{
-    _style_state.ensure_style_override().text = color;
-}
-
-elysia::core::Color UiLabel::text_color() const noexcept
-{
-    return style().text;
-}
-
-void UiLabel::set_background_color(elysia::core::Color color)
-{
-    _style_state.ensure_style_override().background = color;
-}
-
-elysia::core::Color UiLabel::background_color() const noexcept
-{
-    return style().background;
-}
-
-void UiLabel::set_draw_background(bool draw_background)
-{
-    _style_state.ensure_style_override().draw_background = draw_background;
-}
-
-bool UiLabel::draws_background() const noexcept
-{
-    return style().draw_background;
-}
-
 void UiLabel::set_horizontal_align(TextHorizontalAlign align)
 {
     _horizontal_align = align;

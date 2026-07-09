@@ -215,36 +215,6 @@ void UiNumber::clear_style_override() noexcept
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-void UiNumber::set_text_color(elysia::core::Color color)
-{
-    _style_state.ensure_style_override().text = color;
-}
-
-elysia::core::Color UiNumber::text_color() const noexcept
-{
-    return style().text;
-}
-
-void UiNumber::set_background_color(elysia::core::Color color)
-{
-    _style_state.ensure_style_override().background = color;
-}
-
-elysia::core::Color UiNumber::background_color() const noexcept
-{
-    return style().background;
-}
-
-void UiNumber::set_draw_background(bool draw_background)
-{
-    _style_state.ensure_style_override().draw_background = draw_background;
-}
-
-bool UiNumber::draws_background() const noexcept
-{
-    return style().draw_background;
-}
-
 void UiNumber::set_horizontal_align(TextHorizontalAlign align)
 {
     _horizontal_align = align;

@@ -170,7 +170,9 @@ void MainMenuScene::rebuild_menu_buttons()
         ui_list->add_back(std::move(ui_button));
 
         elysia::ui::UiElement* added = _main_menu_window->add_child(std::move(ui_list), layout);
-        _main_menu_window->set_draw_background(true);
+        elysia::ui::UiWindowStyle window_style = _main_menu_window->style();
+        window_style.draw_background = true;
+        _main_menu_window->set_style(window_style);
 
         if (auto* list = dynamic_cast<elysia::ui::UiListContainer*>(added))
             _main_menu_window->register_focus_scope(*list);

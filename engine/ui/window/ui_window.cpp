@@ -86,46 +86,6 @@ void UiWindow::clear_style_override() noexcept
     _style_state.clear_style_override();
 }
 
-void UiWindow::set_draw_background(bool draw_background) noexcept
-{
-    _style_state.ensure_style_override().draw_background = draw_background;
-}
-
-bool UiWindow::draws_background() const noexcept
-{
-    return style().draw_background;
-}
-
-void UiWindow::set_draw_border(bool draw_border) noexcept
-{
-    _style_state.ensure_style_override().draw_border = draw_border;
-}
-
-bool UiWindow::draws_border() const noexcept
-{
-    return style().draw_border;
-}
-
-void UiWindow::set_background_color(elysia::core::Color color) noexcept
-{
-    _style_state.ensure_style_override().background = color;
-}
-
-elysia::core::Color UiWindow::background_color() const noexcept
-{
-    return style().background;
-}
-
-void UiWindow::set_border_color(elysia::core::Color color) noexcept
-{
-    _style_state.ensure_style_override().border = color;
-}
-
-elysia::core::Color UiWindow::border_color() const noexcept
-{
-    return style().border;
-}
-
 void UiWindow::set_hover_focus_enabled(bool enabled) noexcept
 {
     _hover_focus_enabled = enabled;

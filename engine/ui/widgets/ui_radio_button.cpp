@@ -192,6 +192,7 @@ void UiRadioButton::sync_checkbox_state() const
     config.label_placement = to_checkbox_label_placement(_label_placement);
     config.label_spacing = _label_spacing;
     config.text_placement = to_checkbox_text_placement(_text_placement);
+    config.text_colors = UiEnabledDisabledColors{ _text_color,_disabled_text_color };
     config.draw_background = _draw_background;
     config.draw_border = _draw_border;
 
@@ -208,8 +209,6 @@ void UiRadioButton::sync_checkbox_state() const
     _checkbox.set_focused(is_focused());
     _checkbox.set_opacity(opacity());
     _checkbox.set_labeled_checkbox_config(config);
-    _checkbox.set_text_color(_text_color);
-    _checkbox.set_disabled_text_color(_disabled_text_color);
     _checkbox.set_text_point_size(_text_point_size);
     _checkbox.set_padding(_padding);
     _checkbox.set_label_padding(_label_padding);

@@ -48,7 +48,11 @@ void UiLabeledCheckbox::reset() noexcept
     UiCheckbox::reset();
     _label.reset();
     _label.set_use_theme(false);
-    _label.set_draw_background(false);
+    _label.set_style(UiLabelStyle{
+        .text = UiStyleDefaults::label().text,
+        .background = elysia::core::colors::transparent,
+        .draw_background = false
+    });
     _label.set_horizontal_align(TextHorizontalAlign::Left);
     _label.set_vertical_align(TextVerticalAlign::Center);
     _label.set_padding(0);
@@ -132,26 +136,6 @@ UiLabeledCheckboxTextPlacement UiLabeledCheckbox::text_placement() const noexcep
     return _text_placement;
 }
 
-void UiLabeledCheckbox::set_text_color(elysia::core::Color color) noexcept
-{
-    _text_color = color;
-}
-
-elysia::core::Color UiLabeledCheckbox::text_color() const noexcept
-{
-    return _text_color;
-}
-
-void UiLabeledCheckbox::set_disabled_text_color(elysia::core::Color color) noexcept
-{
-    _disabled_text_color = color;
-}
-
-elysia::core::Color UiLabeledCheckbox::disabled_text_color() const noexcept
-{
-    return _disabled_text_color;
-}
-
 void UiLabeledCheckbox::set_text_point_size(int point_size) noexcept
 {
     _label.set_text_point_size(point_size);
@@ -172,26 +156,6 @@ void UiLabeledCheckbox::set_label_padding(int padding) noexcept
 int UiLabeledCheckbox::label_padding() const noexcept
 {
     return _label.padding();
-}
-
-void UiLabeledCheckbox::set_draw_background(bool draw_background) noexcept
-{
-    _draw_background = draw_background;
-}
-
-bool UiLabeledCheckbox::draws_background() const noexcept
-{
-    return _draw_background;
-}
-
-void UiLabeledCheckbox::set_draw_border(bool draw_border) noexcept
-{
-    _draw_border = draw_border;
-}
-
-bool UiLabeledCheckbox::draws_border() const noexcept
-{
-    return _draw_border;
 }
 
 elysia::core::Rect UiLabeledCheckbox::checkbox_rect() const noexcept
@@ -217,8 +181,13 @@ void UiLabeledCheckbox::apply_labeled_checkbox_config(const UiLabeledCheckboxCon
     set_label_placement(config.label_placement);
     set_label_spacing(config.label_spacing);
     set_text_placement(config.text_placement);
-    set_draw_background(config.draw_background);
-    set_draw_border(config.draw_border);
+    if (config.text_colors)
+    {
+        _text_color = config.text_colors->enabled;
+        _disabled_text_color = config.text_colors->disabled;
+    }
+    _draw_background = config.draw_background;
+    _draw_border = config.draw_border;
 }
 
 void UiLabeledCheckbox::sync_label_visuals() const

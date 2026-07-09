@@ -27,6 +27,14 @@ namespace arcneco::scene
 {
 namespace
 {
+template<class Widget,class Mutator>
+void update_style(Widget& widget,Mutator&& mutator)
+{
+    auto style = widget.style();
+    mutator(style);
+    widget.set_style(style);
+}
+
 [[nodiscard]] elysia::ui::UiButtonConfig make_button_config(const char* text_key)
 {
     return elysia::ui::UiButtonConfig{ .content = elysia::ui::UiButtonTextContent{ text_key } };
@@ -99,13 +107,15 @@ std::unique_ptr<elysia::ui::UiLabeledCheckbox> make_labeled_checkbox(
     const char* scope
 )
 {
-    auto checkbox = std::make_unique<elysia::ui::UiLabeledCheckbox>(rect,0);
-    checkbox->set_text_key(text_key);
+    elysia::ui::UiLabeledCheckboxConfig config{};
+    config.text_key = text_key;
+    config.label_placement = label_placement;
+    config.text_placement = text_placement;
+    config.draw_background = draw_background;
+    config.draw_border = draw_border;
+
+    auto checkbox = std::make_unique<elysia::ui::UiLabeledCheckbox>(rect,config,0);
     checkbox->set_checked(checked);
-    checkbox->set_label_placement(label_placement);
-    checkbox->set_text_placement(text_placement);
-    checkbox->set_draw_background(draw_background);
-    checkbox->set_draw_border(draw_border);
     checkbox->set_on_toggled([scope](elysia::ui::UiCheckboxState state)
     {
         std::cout << scope << " labeled checkbox state " << static_cast<int>(state) << std::endl;
@@ -203,8 +213,11 @@ void UiContainerTestScene::rebuild_ui()
     clear_ui();
 
     _root_window = Scene::create_and_add_object<elysia::ui::UiWindow>(elysia::core::Rect{ 120,80,1040,560 },100);
-    _root_window->set_draw_background(true);
-    _root_window->set_draw_border(true);
+    update_style(*_root_window,[](elysia::ui::UiWindowStyle& style)
+    {
+        style.draw_background = true;
+        style.draw_border = true;
+    });
     _root_window->set_padding(elysia::ui::UiLayoutPadding{ 24.0f,24.0f,24.0f,24.0f });
     _root_window->set_on_cancel([this]()
     {
@@ -215,7 +228,10 @@ void UiContainerTestScene::rebuild_ui()
     vertical_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Auto);
     vertical_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
     vertical_scroll->set_scroll_step(elysia::core::Vector2(32.0f,32.0f));
-    vertical_scroll->set_draw_border(true);
+    update_style(*vertical_scroll,[](elysia::ui::UiScrollContainerStyle& style)
+    {
+        style.draw_border = true;
+    });
 
     auto vertical_list = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,260,760 });
     vertical_list->set_padding(elysia::ui::UiLayoutPadding{ 20.0f,20.0f,20.0f,20.0f });
@@ -259,11 +275,17 @@ void UiContainerTestScene::rebuild_ui()
     horizontal_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Auto);
     horizontal_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
     horizontal_scroll->set_scroll_step(elysia::core::Vector2(36.0f,36.0f));
-    horizontal_scroll->set_draw_border(true);
+    update_style(*horizontal_scroll,[](elysia::ui::UiScrollContainerStyle& style)
+    {
+        style.draw_border = true;
+    });
 
     auto horizontal_panel = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,760,180 });
-    horizontal_panel->set_draw_background(true);
-    horizontal_panel->set_draw_border(true);
+    update_style(*horizontal_panel,[](elysia::ui::UiPanelStyle& style)
+    {
+        style.draw_background = true;
+        style.draw_border = true;
+    });
 
     auto horizontal_button_0 = std::make_unique<elysia::ui::UiButton>(
         elysia::core::Rect{ 70,68,120,44 },
@@ -293,7 +315,10 @@ void UiContainerTestScene::rebuild_ui()
     grid_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Auto);
     grid_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
     grid_scroll->set_scroll_step(elysia::core::Vector2(28.0f,28.0f));
-    grid_scroll->set_draw_border(true);
+    update_style(*grid_scroll,[](elysia::ui::UiScrollContainerStyle& style)
+    {
+        style.draw_border = true;
+    });
 
     auto grid_content = std::make_unique<elysia::ui::UiGridContainer>(elysia::core::Rect{ 0,0,520,360 });
     grid_content->set_padding(elysia::ui::UiLayoutPadding{ 18.0f,18.0f,18.0f,18.0f });
@@ -317,7 +342,10 @@ void UiContainerTestScene::rebuild_ui()
     hidden_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Auto);
     hidden_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Hidden);
     hidden_scroll->set_scroll_step(elysia::core::Vector2(30.0f,30.0f));
-    hidden_scroll->set_draw_border(true);
+    update_style(*hidden_scroll,[](elysia::ui::UiScrollContainerStyle& style)
+    {
+        style.draw_border = true;
+    });
 
     auto first_hidden_content = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,320,360 });
     first_hidden_content->set_padding(elysia::ui::UiLayoutPadding{ 18.0f,18.0f,18.0f,18.0f });
@@ -337,15 +365,24 @@ void UiContainerTestScene::rebuild_ui()
     widget_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Auto);
     widget_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
     widget_scroll->set_scroll_step(elysia::core::Vector2(24.0f,24.0f));
-    widget_scroll->set_draw_border(true);
+    update_style(*widget_scroll,[](elysia::ui::UiScrollContainerStyle& style)
+    {
+        style.draw_border = true;
+    });
 
     auto widget_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,340,860 });
-    widget_content->set_draw_background(true);
-    widget_content->set_draw_border(true);
+    update_style(*widget_content,[](elysia::ui::UiPanelStyle& style)
+    {
+        style.draw_background = true;
+        style.draw_border = true;
+    });
 
     auto* non_modal_overlay = _root_window->create_child<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,260,128 });
-    non_modal_overlay->set_draw_background(true);
-    non_modal_overlay->set_draw_border(true);
+    update_style(*non_modal_overlay,[](elysia::ui::UiPanelStyle& style)
+    {
+        style.draw_background = true;
+        style.draw_border = true;
+    });
     auto overlay_close_button = std::make_unique<elysia::ui::UiButton>(
         elysia::core::Rect{ 40,42,180,44 },
         make_button_config("menu_scene.exit"),

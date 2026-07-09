@@ -82,18 +82,6 @@ public:
     [[nodiscard]] const UiChromeContainerStyle& style() const noexcept;
     [[nodiscard]] bool has_style_override() const noexcept;
     void clear_style_override() noexcept;
-    void set_draw_background(bool draw_background) noexcept;
-    [[nodiscard]] bool draws_background() const noexcept;
-    void set_draw_border(bool draw_border) noexcept;
-    [[nodiscard]] bool draws_border() const noexcept;
-    void set_draw_header_background(bool draw_header_background) noexcept;
-    [[nodiscard]] bool draws_header_background() const noexcept;
-    void set_background_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color background_color() const noexcept;
-    void set_border_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color border_color() const noexcept;
-    void set_header_background_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color header_background_color() const noexcept;
 
 protected:
     // Rebuilds header and body slot geometry from the current chrome settings.

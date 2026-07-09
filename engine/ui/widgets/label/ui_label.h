@@ -40,15 +40,6 @@ public:
     void set_theme_role(UiLabelThemeRole role) noexcept;
     [[nodiscard]] UiLabelThemeRole theme_role() const noexcept;
 
-    void set_text_color(elysia::core::Color color);
-    [[nodiscard]] elysia::core::Color text_color() const noexcept;
-
-    void set_background_color(elysia::core::Color color);
-    [[nodiscard]] elysia::core::Color background_color() const noexcept;
-
-    void set_draw_background(bool draw_background);
-    [[nodiscard]] bool draws_background() const noexcept;
-
     void set_horizontal_align(TextHorizontalAlign align);
     [[nodiscard]] TextHorizontalAlign horizontal_align() const noexcept;
 

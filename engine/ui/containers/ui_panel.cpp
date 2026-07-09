@@ -282,46 +282,6 @@ UiPanelThemeRole UiPanel::theme_role() const noexcept
     return _theme_role;
 }
 
-void UiPanel::set_draw_background(bool draw_background) noexcept
-{
-    _style_state.ensure_style_override().draw_background = draw_background;
-}
-
-bool UiPanel::draws_background() const noexcept
-{
-    return style().draw_background;
-}
-
-void UiPanel::set_draw_border(bool draw_border) noexcept
-{
-    _style_state.ensure_style_override().draw_border = draw_border;
-}
-
-bool UiPanel::draws_border() const noexcept
-{
-    return style().draw_border;
-}
-
-void UiPanel::set_background_color(elysia::core::Color color) noexcept
-{
-    _style_state.ensure_style_override().background = color;
-}
-
-elysia::core::Color UiPanel::background_color() const noexcept
-{
-    return style().background;
-}
-
-void UiPanel::set_border_color(elysia::core::Color color) noexcept
-{
-    _style_state.ensure_style_override().border = color;
-}
-
-elysia::core::Color UiPanel::border_color() const noexcept
-{
-    return style().border;
-}
-
 void UiPanel::rebuild_layout()
 {
     const elysia::core::Rect bounds = content_rect();

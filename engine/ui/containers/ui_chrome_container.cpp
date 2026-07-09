@@ -542,66 +542,6 @@ void UiChromeContainer::clear_style_override() noexcept
     _style_state.clear_style_override();
 }
 
-void UiChromeContainer::set_draw_background(bool draw_background) noexcept
-{
-    _style_state.ensure_style_override().draw_background = draw_background;
-}
-
-bool UiChromeContainer::draws_background() const noexcept
-{
-    return style().draw_background;
-}
-
-void UiChromeContainer::set_draw_border(bool draw_border) noexcept
-{
-    _style_state.ensure_style_override().draw_border = draw_border;
-}
-
-bool UiChromeContainer::draws_border() const noexcept
-{
-    return style().draw_border;
-}
-
-void UiChromeContainer::set_draw_header_background(bool draw_header_background) noexcept
-{
-    _style_state.ensure_style_override().draw_header_background = draw_header_background;
-}
-
-bool UiChromeContainer::draws_header_background() const noexcept
-{
-    return style().draw_header_background;
-}
-
-void UiChromeContainer::set_background_color(elysia::core::Color color) noexcept
-{
-    _style_state.ensure_style_override().background = color;
-}
-
-elysia::core::Color UiChromeContainer::background_color() const noexcept
-{
-    return style().background;
-}
-
-void UiChromeContainer::set_border_color(elysia::core::Color color) noexcept
-{
-    _style_state.ensure_style_override().border = color;
-}
-
-elysia::core::Color UiChromeContainer::border_color() const noexcept
-{
-    return style().border;
-}
-
-void UiChromeContainer::set_header_background_color(elysia::core::Color color) noexcept
-{
-    _style_state.ensure_style_override().header_background = color;
-}
-
-elysia::core::Color UiChromeContainer::header_background_color() const noexcept
-{
-    return style().header_background;
-}
-
 void UiChromeContainer::rebuild_layout()
 {
     if (!_left_actions || !_title_slot || !_right_actions || !_body)

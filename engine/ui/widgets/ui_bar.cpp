@@ -115,46 +115,6 @@ UiBarThemeRole UiBar::theme_role() const noexcept
     return _theme_role;
 }
 
-void UiBar::set_background_color(elysia::core::Color color)
-{
-    _style_state.ensure_style_override().background = color;
-}
-
-elysia::core::Color UiBar::background_color() const
-{
-    return style().background;
-}
-
-void UiBar::set_fill_color(elysia::core::Color color)
-{
-    _style_state.ensure_style_override().fill = color;
-}
-
-elysia::core::Color UiBar::fill_color() const
-{
-    return style().fill;
-}
-
-void UiBar::set_border_color(elysia::core::Color color)
-{
-    _style_state.ensure_style_override().border = color;
-}
-
-elysia::core::Color UiBar::border_color() const
-{
-    return style().border;
-}
-
-void UiBar::set_draw_border(bool draw_border)
-{
-    _style_state.ensure_style_override().draw_border = draw_border;
-}
-
-bool UiBar::draws_border() const
-{
-    return style().draw_border;
-}
-
 void UiBar::set_fill_direction(BarFillDirection direction)
 {
     _fill_direction = direction;

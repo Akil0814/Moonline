@@ -3,6 +3,7 @@
 #include "ui_checkbox.h"
 #include "label/ui_label.h"
 
+#include <optional>
 #include <string>
 
 namespace elysia::ui
@@ -27,6 +28,7 @@ struct UiLabeledCheckboxConfig
     UiLabeledCheckboxLabelPlacement label_placement = UiLabeledCheckboxLabelPlacement::Right;
     float label_spacing = 8.0f;
     UiLabeledCheckboxTextPlacement text_placement = UiLabeledCheckboxTextPlacement::NearBox;
+    std::optional<UiEnabledDisabledColors> text_colors = std::nullopt;
     bool draw_background = false;
     bool draw_border = false;
 };
@@ -62,22 +64,11 @@ public:
     void set_text_placement(UiLabeledCheckboxTextPlacement placement) noexcept;
     [[nodiscard]] UiLabeledCheckboxTextPlacement text_placement() const noexcept;
 
-    void set_text_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color text_color() const noexcept;
-
-    void set_disabled_text_color(elysia::core::Color color) noexcept;
-    [[nodiscard]] elysia::core::Color disabled_text_color() const noexcept;
-
     void set_text_point_size(int point_size) noexcept;
     [[nodiscard]] int text_point_size() const noexcept;
 
     void set_label_padding(int padding) noexcept;
     [[nodiscard]] int label_padding() const noexcept;
-
-    void set_draw_background(bool draw_background) noexcept;
-    [[nodiscard]] bool draws_background() const noexcept;
-    void set_draw_border(bool draw_border) noexcept;
-    [[nodiscard]] bool draws_border() const noexcept;
 
 protected:
     // Shrinks the inherited checkbox indicator rect to make room for the label.
