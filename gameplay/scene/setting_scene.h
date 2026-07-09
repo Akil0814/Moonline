@@ -10,7 +10,7 @@ namespace arcneco::scene
 
 	void SettingScene::on_update(double delta)
 	{
-		Scene::on_update(delta);
+		elysia::scene::Scene::on_update(delta);
 	}
 	void SettingScene::on_render(SDL_Renderer* renderer)
 	{
