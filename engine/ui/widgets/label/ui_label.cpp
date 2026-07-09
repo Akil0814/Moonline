@@ -13,37 +13,36 @@
 
 namespace elysia::ui
 {
-UiLabel::UiLabel(const elysia::core::Rect& rect,int order,std::string text_key) noexcept
+UiLabel::UiLabel(const elysia::core::Rect& rect,int order,UiTextContent text_content) noexcept
     : UiElement(rect,order)
 {
     reset();
-    _text_key = std::move(text_key);
+    _text_content = std::move(text_content);
 }
 
 UiLabel::UiLabel(const elysia::core::Vector2& position,const elysia::core::Vector2& size,
-    int order,std::string text_key) noexcept : UiElement(position,size,order)
+    int order,UiTextContent text_content) noexcept : UiElement(position,size,order)
 {
     reset();
-    _text_key = std::move(text_key);
+    _text_content = std::move(text_content);
 }
 
 UiLabel::UiLabel(const elysia::core::Vector2& center,const elysia::core::Vector2& size,
-    UiFromCenterTag,int order,std::string text_key) noexcept : UiElement(center,size,from_center,order)
+    UiFromCenterTag,int order,UiTextContent text_content) noexcept : UiElement(center,size,from_center,order)
 {
     reset();
-    _text_key = std::move(text_key);
+    _text_content = std::move(text_content);
 }
 
 void UiLabel::reset() noexcept
 {
     UiElement::reset();
-    _text_key.clear();
-    _raw_text.clear();
+    _text_content = UiTextContent{};
     _style_state.reset(UiStyleDefaults::label());
     _theme_role = UiLabelThemeRole::Default;
-    _horizontal_align = TextHorizontalAlign::Left;
+    _typography_role = UiTypographyRole::Label;
+    _horizontal_align = resolve_ui_typography(_typography_role).horizontal_align_default;
     _vertical_align = TextVerticalAlign::Top;
-    _text_point_size = 24;
     _padding = 0;
 }
 
@@ -60,21 +59,24 @@ void UiLabel::submit_ui_render_commands(std::vector<elysia::core::UiRenderComman
     if (style.draw_background)
         out_commands.push_back(elysia::core::make_ui_fill_rect_command(label_rect,apply_opacity(style.background)));
 
-    if (_text_key.empty() && _raw_text.empty())
+    if (_text_content.empty())
         return;
 
     elysia::localization::LocalizationManager* localization_manager = elysia::localization::LocalizationManager::instance();
     if (!localization_manager)
         return;
 
+    const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
     elysia::localization::LocalizedTextStyle text_style;
-    text_style.point_size = _text_point_size;
+    text_style.point_size = typography.point_size;
     text_style.color = style.text;
-    text_style.wrap_width = std::max(0,static_cast<int>(content_rect().width()));
+    text_style.wrap_width = typography.wrap_allowed ? std::max(0,static_cast<int>(content_rect().width())) : 0;
 
-    SDL_Texture* text_texture = _text_key.empty()
-        ? localization_manager->get_raw_text_texture(_raw_text,text_style)
-        : localization_manager->get_text_texture(_text_key,text_style);
+    SDL_Texture* text_texture = nullptr;
+    if (_text_content.kind == UiTextContentKind::TextKey)
+        text_texture = localization_manager->get_text_texture(_text_content.value,text_style);
+    else if (_text_content.kind == UiTextContentKind::RawText)
+        text_texture = localization_manager->get_raw_text_texture(_text_content.value,text_style);
     if (!text_texture)
         return;
 
@@ -87,28 +89,27 @@ void UiLabel::submit_ui_render_commands(std::vector<elysia::core::UiRenderComman
     out_commands.push_back(command);
 }
 
-void UiLabel::set_text_key(std::string text_key)
+void UiLabel::set_text_content(UiTextContent text_content)
 {
-    _text_key = std::move(text_key);
-    _raw_text.clear();
+    _text_content = std::move(text_content);
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-const std::string& UiLabel::text_key() const noexcept
+const UiTextContent& UiLabel::text_content() const noexcept
 {
-    return _text_key;
+    return _text_content;
 }
 
-void UiLabel::set_raw_text(std::string raw_text)
+void UiLabel::set_typography_role(UiTypographyRole role) noexcept
 {
-    _raw_text = std::move(raw_text);
-    _text_key.clear();
+    _typography_role = role;
+    _horizontal_align = resolve_ui_typography(_typography_role).horizontal_align_default;
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-const std::string& UiLabel::raw_text() const noexcept
+UiTypographyRole UiLabel::typography_role() const noexcept
 {
-    return _raw_text;
+    return _typography_role;
 }
 
 void UiLabel::set_style(const UiLabelStyle& style) noexcept
@@ -162,17 +163,6 @@ void UiLabel::set_vertical_align(TextVerticalAlign align)
 TextVerticalAlign UiLabel::vertical_align() const noexcept
 {
     return _vertical_align;
-}
-
-void UiLabel::set_text_point_size(int point_size)
-{
-    _text_point_size = std::max(0,point_size);
-    notify_layout_parent_of_intrinsic_layout_invalidation();
-}
-
-int UiLabel::text_point_size() const noexcept
-{
-    return _text_point_size;
 }
 
 void UiLabel::set_padding(int padding)

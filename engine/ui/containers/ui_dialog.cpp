@@ -38,9 +38,9 @@ void UiDialog::reset() noexcept
     _body_text = nullptr;
     _close_button = nullptr;
     _registered_window = nullptr;
-    _title_source = UiTextSource{};
-    _body_source = UiTextSource{};
-    _close_button_source = UiTextSource{ UiTextSourceKind::TextKey,"menu_scene.exit_confirm.cancel" };
+    _title_content = UiTextContent{};
+    _body_content = UiTextContent{};
+    _action_content = ui_text_key("menu_scene.exit_confirm.cancel");
     _style_state.reset(UiDialogStyle{});
     _theme_role = UiDialogThemeRole::Default;
     _body_scroll_enabled = true;
@@ -112,71 +112,41 @@ elysia::core::Vector2 UiDialog::content_extent() const noexcept
     return explicit_size;
 }
 
-void UiDialog::set_title_source(UiTextSource title_source)
+void UiDialog::set_title_content(UiTextContent title_content)
 {
-    _title_source = std::move(title_source);
+    _title_content = std::move(title_content);
     sync_sources_to_children();
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-const UiTextSource& UiDialog::title_source() const noexcept
+const UiTextContent& UiDialog::title_content() const noexcept
 {
-    return _title_source;
+    return _title_content;
 }
 
-void UiDialog::set_title_key(std::string text_key)
+void UiDialog::set_body_content(UiTextContent body_content)
 {
-    set_title_source(UiTextSource{ UiTextSourceKind::TextKey,std::move(text_key) });
-}
-
-void UiDialog::set_title_raw_text(std::string raw_text)
-{
-    set_title_source(UiTextSource{ UiTextSourceKind::RawText,std::move(raw_text) });
-}
-
-void UiDialog::set_body_source(UiTextSource body_source)
-{
-    _body_source = std::move(body_source);
+    _body_content = std::move(body_content);
     sync_sources_to_children();
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-const UiTextSource& UiDialog::body_source() const noexcept
+const UiTextContent& UiDialog::body_content() const noexcept
 {
-    return _body_source;
+    return _body_content;
 }
 
-void UiDialog::set_body_text_key(std::string text_key)
+void UiDialog::set_action_content(UiTextContent action_content)
 {
-    set_body_source(UiTextSource{ UiTextSourceKind::TextKey,std::move(text_key) });
-}
-
-void UiDialog::set_body_raw_text(std::string raw_text)
-{
-    set_body_source(UiTextSource{ UiTextSourceKind::RawText,std::move(raw_text) });
-}
-
-void UiDialog::set_close_button_source(UiTextSource close_button_source)
-{
-    _close_button_source = std::move(close_button_source);
-    if (_close_button_source.kind == UiTextSourceKind::None || _close_button_source.value.empty())
-        _close_button_source = UiTextSource{ UiTextSourceKind::TextKey,"menu_scene.exit_confirm.cancel" };
+    _action_content = std::move(action_content);
+    if (_action_content.empty())
+        _action_content = ui_text_key("menu_scene.exit_confirm.cancel");
     sync_sources_to_children();
 }
 
-const UiTextSource& UiDialog::close_button_source() const noexcept
+const UiTextContent& UiDialog::action_content() const noexcept
 {
-    return _close_button_source;
-}
-
-void UiDialog::set_close_button_text_key(std::string text_key)
-{
-    set_close_button_source(UiTextSource{ UiTextSourceKind::TextKey,std::move(text_key) });
-}
-
-void UiDialog::set_close_button_raw_text(std::string raw_text)
-{
-    set_close_button_source(UiTextSource{ UiTextSourceKind::RawText,std::move(raw_text) });
+    return _action_content;
 }
 
 void UiDialog::set_body_scroll_enabled(bool enabled) noexcept
@@ -337,6 +307,7 @@ void UiDialog::create_internal_children()
 
     auto title = std::make_unique<UiLabel>(elysia::core::Rect{ 0,0,280,36 });
     title->set_theme_role(UiLabelThemeRole::Title);
+    title->set_typography_role(UiTypographyRole::DialogTitle);
     title->set_vertical_align(TextVerticalAlign::Center);
     title->set_horizontal_align(TextHorizontalAlign::Left);
     title->set_use_theme(false);
@@ -356,12 +327,14 @@ void UiDialog::create_internal_children()
 
     auto text = std::make_unique<UiTextBlock>(elysia::core::Rect{ 0,0,360,0 });
     text->set_use_theme(false);
+    text->set_typography_role(UiTypographyRole::DialogBody);
     text->set_horizontal_align(TextHorizontalAlign::Left);
     _body_text = text.get();
     _body_scroll->set_content(std::move(text));
 
     auto close_button = std::make_unique<UiButton>(elysia::core::Rect{ 0,0,160,42 });
     close_button->set_use_theme(false);
+    close_button->set_typography_role(UiTypographyRole::DialogAction);
     close_button->set_on_click([this]()
     {
         if (_registered_window)
@@ -377,25 +350,13 @@ void UiDialog::create_internal_children()
 void UiDialog::sync_sources_to_children()
 {
     if (_title_label)
-    {
-        if (_title_source.kind == UiTextSourceKind::RawText)
-            _title_label->set_raw_text(_title_source.value);
-        else if (_title_source.kind == UiTextSourceKind::TextKey)
-            _title_label->set_text_key(_title_source.value);
-        else
-            _title_label->set_text_key({});
-    }
+        _title_label->set_text_content(_title_content);
 
     if (_body_text)
-        _body_text->set_text_source(_body_source);
+        _body_text->set_text_content(_body_content);
 
     if (_close_button)
-    {
-        if (_close_button_source.kind == UiTextSourceKind::RawText)
-            _close_button->set_raw_text(_close_button_source.value);
-        else
-            _close_button->set_text_key(_close_button_source.value);
-    }
+        _close_button->set_text_content(_action_content);
 }
 
 void UiDialog::sync_style_to_children()
@@ -410,10 +371,10 @@ void UiDialog::sync_style_to_children()
         static_cast<float>(current_style.body_padding),
         static_cast<float>(current_style.body_padding)
     });
-    _title_label->set_text_point_size(current_style.title_point_size);
-    _body_text->set_text_point_size(current_style.body_point_size);
+    _title_label->set_typography_role(UiTypographyRole::DialogTitle);
+    _body_text->set_typography_role(UiTypographyRole::DialogBody);
     _body_text->set_padding(current_style.text_padding);
-    _close_button->set_text_point_size(18);
+    _close_button->set_typography_role(UiTypographyRole::DialogAction);
     _body_scroll->set_scrollbar_visibility(_body_scroll_enabled ? UiScrollBarVisibility::Auto : UiScrollBarVisibility::Hidden);
     mark_layout_dirty();
 }

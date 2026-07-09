@@ -45,15 +45,14 @@ void UiButton::reset() noexcept
     UiControl::reset();
     set_use_theme(false);
 
-    _text_key.clear();
-    _raw_text.clear();
+    _text_content = UiTextContent{};
     _sounds = UiButtonSounds{};
     _state_textures = UiButtonTextures{};
     _on_click = nullptr;
     _visual_mode = UiButtonVisualMode::None;
     _style_state.reset(UiStyleDefaults::button());
     _theme_role = UiButtonThemeRole::Default;
-    _text_point_size = 24;
+    _typography_role = UiTypographyRole::Button;
     _padding = 10;
     _is_pushed = false;
 }
@@ -203,21 +202,24 @@ void UiButton::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
         return;
     }
 
-    if (_text_key.empty() && _raw_text.empty())
+    if (_text_content.empty())
         return;
 
     elysia::localization::LocalizationManager* localization_manager = elysia::localization::LocalizationManager::instance();
     if (!localization_manager)
         return;
 
+    const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
     elysia::localization::LocalizedTextStyle text_style;
-    text_style.point_size = _text_point_size;
+    text_style.point_size = typography.point_size;
     text_style.color = current_text_color();
-    text_style.wrap_width = std::max(0,static_cast<int>(content_rect().width()));
+    text_style.wrap_width = typography.wrap_allowed ? std::max(0,static_cast<int>(content_rect().width())) : 0;
 
-    SDL_Texture* text_texture = _text_key.empty()
-        ? localization_manager->get_raw_text_texture(_raw_text,text_style)
-        : localization_manager->get_text_texture(_text_key,text_style);
+    SDL_Texture* text_texture = nullptr;
+    if (_text_content.kind == UiTextContentKind::TextKey)
+        text_texture = localization_manager->get_text_texture(_text_content.value,text_style);
+    else if (_text_content.kind == UiTextContentKind::RawText)
+        text_texture = localization_manager->get_raw_text_texture(_text_content.value,text_style);
     if (!text_texture)
         return;
 
@@ -235,30 +237,28 @@ void UiButton::set_button_config(const UiButtonConfig& config)
     apply_button_config(config);
 }
 
-void UiButton::set_text_key(std::string text_key)
+void UiButton::set_text_content(UiTextContent text_content)
 {
     clear_content();
-    _text_key = std::move(text_key);
-    _visual_mode = _text_key.empty() ? UiButtonVisualMode::None : UiButtonVisualMode::Text;
+    _text_content = std::move(text_content);
+    _visual_mode = _text_content.empty() ? UiButtonVisualMode::None : UiButtonVisualMode::Text;
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-const std::string& UiButton::text_key() const noexcept
+const UiTextContent& UiButton::text_content() const noexcept
 {
-    return _text_key;
+    return _text_content;
 }
 
-void UiButton::set_raw_text(std::string raw_text)
+void UiButton::set_typography_role(UiTypographyRole role) noexcept
 {
-    clear_content();
-    _raw_text = std::move(raw_text);
-    _visual_mode = _raw_text.empty() ? UiButtonVisualMode::None : UiButtonVisualMode::Text;
+    _typography_role = role;
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-const std::string& UiButton::raw_text() const noexcept
+UiTypographyRole UiButton::typography_role() const noexcept
 {
-    return _raw_text;
+    return _typography_role;
 }
 
 void UiButton::set_state_textures(const UiButtonTextures& textures)
@@ -342,17 +342,6 @@ UiButtonThemeRole UiButton::theme_role() const noexcept
     return _theme_role;
 }
 
-void UiButton::set_text_point_size(int point_size)
-{
-    _text_point_size = std::max(0,point_size);
-    notify_layout_parent_of_intrinsic_layout_invalidation();
-}
-
-int UiButton::text_point_size() const noexcept
-{
-    return _text_point_size;
-}
-
 void UiButton::set_padding(int padding)
 {
     _padding = std::max(0,padding);
@@ -382,10 +371,8 @@ void UiButton::apply_button_content(const UiButtonContent& content)
         using T = std::decay_t<decltype(value)>;
         if constexpr (std::is_same_v<T,std::monostate>)
             clear_content();
-        else if constexpr (std::is_same_v<T,UiButtonTextContent>)
-            set_text_key(value.text_key);
-        else if constexpr (std::is_same_v<T,UiButtonRawTextContent>)
-            set_raw_text(value.raw_text);
+        else if constexpr (std::is_same_v<T,UiTextContent>)
+            set_text_content(value);
         else if constexpr (std::is_same_v<T,UiButtonIconContent>)
             set_icon_texture(value.texture);
         else if constexpr (std::is_same_v<T,UiButtonTextureSetContent>)
@@ -409,8 +396,7 @@ void UiButton::set_icon_texture(SDL_Texture* texture) noexcept
 
 void UiButton::clear_content() noexcept
 {
-    _text_key.clear();
-    _raw_text.clear();
+    _text_content = UiTextContent{};
     _state_textures = UiButtonTextures{};
     _visual_mode = UiButtonVisualMode::None;
 }

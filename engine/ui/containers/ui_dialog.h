@@ -1,11 +1,11 @@
 #pragma once
 
-#include "../core/ui_text_source.h"
 #include "../focus/ui_control_focus_scope_host.h"
 #include "../focus/ui_delegated_focus_mixin.h"
 #include "../style/ui_style.h"
 #include "../style/ui_theme_roles.h"
 #include "../style/ui_visual_styles.h"
+#include "../text/ui_text_content.h"
 
 namespace elysia::ui
 {
@@ -32,20 +32,14 @@ public:
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
     [[nodiscard]] elysia::core::Vector2 content_extent() const noexcept override;
 
-    void set_title_source(UiTextSource title_source);
-    [[nodiscard]] const UiTextSource& title_source() const noexcept;
-    void set_title_key(std::string text_key);
-    void set_title_raw_text(std::string raw_text);
+    void set_title_content(UiTextContent title_content);
+    [[nodiscard]] const UiTextContent& title_content() const noexcept;
 
-    void set_body_source(UiTextSource body_source);
-    [[nodiscard]] const UiTextSource& body_source() const noexcept;
-    void set_body_text_key(std::string text_key);
-    void set_body_raw_text(std::string raw_text);
+    void set_body_content(UiTextContent body_content);
+    [[nodiscard]] const UiTextContent& body_content() const noexcept;
 
-    void set_close_button_source(UiTextSource close_button_source);
-    [[nodiscard]] const UiTextSource& close_button_source() const noexcept;
-    void set_close_button_text_key(std::string text_key);
-    void set_close_button_raw_text(std::string raw_text);
+    void set_action_content(UiTextContent action_content);
+    [[nodiscard]] const UiTextContent& action_content() const noexcept;
 
     void set_body_scroll_enabled(bool enabled) noexcept;
     [[nodiscard]] bool body_scroll_enabled() const noexcept;
@@ -84,9 +78,9 @@ private:
     UiTextBlock* _body_text = nullptr;
     UiButton* _close_button = nullptr;
     UiWindow* _registered_window = nullptr;
-    UiTextSource _title_source{ UiTextSourceKind::None,{} };
-    UiTextSource _body_source{ UiTextSourceKind::None,{} };
-    UiTextSource _close_button_source{ UiTextSourceKind::TextKey,"menu_scene.exit_confirm.cancel" };
+    UiTextContent _title_content{};
+    UiTextContent _body_content{};
+    UiTextContent _action_content = ui_text_key("menu_scene.exit_confirm.cancel");
     UiStyleState<UiDialogStyle> _style_state;
     UiDialogThemeRole _theme_role = UiDialogThemeRole::Default;
     bool _body_scroll_enabled = true;

@@ -14,11 +14,11 @@ class UiBlinkLabel : public UiLabel, public elysia::core::Updatable
 public:
     using BlinkLabelOnEnd = std::function<void()>;
 
-    explicit UiBlinkLabel(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0,std::string text_key = {}) noexcept;
+    explicit UiBlinkLabel(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0,UiTextContent text_content = {}) noexcept;
     UiBlinkLabel(const elysia::core::Vector2& position, const elysia::core::Vector2& size,
-        int order = 0, std::string text_key = {}) noexcept;
+        int order = 0, UiTextContent text_content = {}) noexcept;
     UiBlinkLabel(const elysia::core::Vector2& center,const elysia::core::Vector2& size,
-        UiFromCenterTag,int order = 0, std::string text_key = {}) noexcept;
+        UiFromCenterTag,int order = 0, UiTextContent text_content = {}) noexcept;
 
     void reset() noexcept override;
     // Configures the blinking sequence that modulates label opacity over time.

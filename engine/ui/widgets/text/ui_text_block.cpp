@@ -49,11 +49,11 @@ UiTextBlock::UiTextBlock(const elysia::core::Vector2& center,const elysia::core:
 void UiTextBlock::reset() noexcept
 {
     UiElement::reset();
-    _text_source = UiTextSource{};
+    _text_content = UiTextContent{};
     _style_state.reset(UiStyleDefaults::text_block());
     _theme_role = UiTextBlockThemeRole::Default;
-    _horizontal_align = TextHorizontalAlign::Left;
-    _text_point_size = 24;
+    _typography_role = UiTypographyRole::DialogBody;
+    _horizontal_align = resolve_ui_typography(_typography_role).horizontal_align_default;
     _padding = 0;
 }
 
@@ -68,10 +68,11 @@ elysia::core::Vector2 UiTextBlock::content_extent() const noexcept
     if (!localization_manager)
         return elysia::core::Vector2(std::max(0.0f,size().x),std::max(0.0f,size().y));
 
+    const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
     elysia::localization::LocalizedTextStyle text_style;
-    text_style.point_size = _text_point_size;
+    text_style.point_size = typography.point_size;
     text_style.color = _style_state.effective_style().text;
-    text_style.wrap_width = std::max(0,static_cast<int>(width));
+    text_style.wrap_width = typography.wrap_allowed ? std::max(0,static_cast<int>(width)) : 0;
 
     int measured_width = 0;
     int measured_height = 0;
@@ -105,21 +106,22 @@ void UiTextBlock::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
     if (!localization_manager)
         return;
 
+    const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
     elysia::localization::LocalizedTextStyle text_style;
-    text_style.point_size = _text_point_size;
+    text_style.point_size = typography.point_size;
     text_style.color = style.text;
-    text_style.wrap_width = std::max(0,static_cast<int>(content_rect().width()));
+    text_style.wrap_width = typography.wrap_allowed ? std::max(0,static_cast<int>(content_rect().width())) : 0;
 
     SDL_Texture* text_texture = nullptr;
-    switch (_text_source.kind)
+    switch (_text_content.kind)
     {
-    case UiTextSourceKind::TextKey:
-        text_texture = localization_manager->get_text_texture(_text_source.value,text_style);
+    case UiTextContentKind::TextKey:
+        text_texture = localization_manager->get_text_texture(_text_content.value,text_style);
         break;
-    case UiTextSourceKind::RawText:
-        text_texture = localization_manager->get_raw_text_texture(_text_source.value,text_style);
+    case UiTextContentKind::RawText:
+        text_texture = localization_manager->get_raw_text_texture(_text_content.value,text_style);
         break;
-    case UiTextSourceKind::None:
+    case UiTextContentKind::None:
     default:
         return;
     }
@@ -135,30 +137,20 @@ void UiTextBlock::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
     out_commands.push_back(command);
 }
 
-void UiTextBlock::set_text_source(UiTextSource text_source)
+void UiTextBlock::set_text_content(UiTextContent text_content)
 {
-    _text_source = std::move(text_source);
+    _text_content = std::move(text_content);
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-const UiTextSource& UiTextBlock::text_source() const noexcept
+const UiTextContent& UiTextBlock::text_content() const noexcept
 {
-    return _text_source;
-}
-
-void UiTextBlock::set_text_key(std::string text_key)
-{
-    set_text_source(UiTextSource{ UiTextSourceKind::TextKey,std::move(text_key) });
-}
-
-void UiTextBlock::set_raw_text(std::string raw_text)
-{
-    set_text_source(UiTextSource{ UiTextSourceKind::RawText,std::move(raw_text) });
+    return _text_content;
 }
 
 void UiTextBlock::clear_text()
 {
-    set_text_source(UiTextSource{});
+    set_text_content(UiTextContent{});
 }
 
 void UiTextBlock::set_style(const UiTextBlockStyle& style) noexcept
@@ -194,15 +186,16 @@ UiTextBlockThemeRole UiTextBlock::theme_role() const noexcept
     return _theme_role;
 }
 
-void UiTextBlock::set_text_point_size(int point_size) noexcept
+void UiTextBlock::set_typography_role(UiTypographyRole role) noexcept
 {
-    _text_point_size = std::max(0,point_size);
+    _typography_role = role;
+    _horizontal_align = resolve_ui_typography(_typography_role).horizontal_align_default;
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-int UiTextBlock::text_point_size() const noexcept
+UiTypographyRole UiTextBlock::typography_role() const noexcept
 {
-    return _text_point_size;
+    return _typography_role;
 }
 
 void UiTextBlock::set_padding(int padding) noexcept
@@ -229,7 +222,7 @@ TextHorizontalAlign UiTextBlock::horizontal_align() const noexcept
 
 bool UiTextBlock::has_text() const noexcept
 {
-    return _text_source.kind != UiTextSourceKind::None && !_text_source.value.empty();
+    return !_text_content.empty();
 }
 
 elysia::core::Rect UiTextBlock::content_rect() const noexcept
@@ -292,13 +285,13 @@ std::string UiTextBlock::resolved_text() const
     if (!has_text())
         return {};
 
-    if (_text_source.kind == UiTextSourceKind::RawText)
-        return _text_source.value;
+    if (_text_content.kind == UiTextContentKind::RawText)
+        return _text_content.value;
 
     auto* localization_manager = elysia::localization::LocalizationManager::instance();
     if (!localization_manager)
         return {};
-    return std::string(localization_manager->tr(_text_source.value));
+    return std::string(localization_manager->tr(_text_content.value));
 }
 
 void UiTextBlock::apply_theme(const UiTheme& theme)

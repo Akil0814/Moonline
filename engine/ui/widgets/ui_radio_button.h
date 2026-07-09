@@ -4,6 +4,8 @@
 #include "../core/ui_control.h"
 #include "../style/ui_style.h"
 #include "../style/ui_interaction_style.h"
+#include "../text/ui_text_content.h"
+#include "../text/ui_typography.h"
 #include "ui_labeled_checkbox.h"
 
 #include <functional>
@@ -45,13 +47,12 @@ struct UiRadioButtonConfig
 {
     std::optional<UiRadioButtonSounds> sounds = std::nullopt;
     std::optional<UiRadioButtonStyle> style = std::nullopt;
-    std::string text_key{};
+    UiTextContent text_content{};
     UiRadioButtonLabelPlacement label_placement = UiRadioButtonLabelPlacement::Right;
     float label_spacing = 8.0f;
     UiRadioButtonTextPlacement text_placement = UiRadioButtonTextPlacement::NearIndicator;
     std::optional<elysia::core::Color> text_color = std::nullopt;
     std::optional<elysia::core::Color> disabled_text_color = std::nullopt;
-    std::optional<int> text_point_size = std::nullopt;
     std::optional<int> padding = std::nullopt;
     std::optional<int> label_padding = std::nullopt;
     bool draw_background = false;
@@ -91,8 +92,11 @@ public:
     void select();
     void set_on_selected(UiRadioButtonSelectedCallback on_selected);
 
-    void set_text_key(std::string text_key);
-    [[nodiscard]] const std::string& text_key() const noexcept;
+    void set_text_content(UiTextContent text_content);
+    [[nodiscard]] const UiTextContent& text_content() const noexcept;
+
+    void set_typography_role(UiTypographyRole role) noexcept;
+    [[nodiscard]] UiTypographyRole typography_role() const noexcept;
 
     void set_style(const UiRadioButtonStyle& style) noexcept;
     [[nodiscard]] const UiRadioButtonStyle& style() const noexcept;
@@ -119,13 +123,13 @@ private:
     UiRadioButtonSelectedCallback _on_selected;
     std::optional<UiRadioButtonSounds> _sounds;
     UiStyleState<UiRadioButtonStyle> _style_state;
-    std::string _text_key;
+    UiTextContent _text_content;
+    UiTypographyRole _typography_role = UiTypographyRole::RadioLabel;
     UiRadioButtonLabelPlacement _label_placement = UiRadioButtonLabelPlacement::Right;
     float _label_spacing = 8.0f;
     UiRadioButtonTextPlacement _text_placement = UiRadioButtonTextPlacement::NearIndicator;
     elysia::core::Color _text_color{};
     elysia::core::Color _disabled_text_color{};
-    int _text_point_size = 0;
     int _padding = 0;
     int _label_padding = 0;
     bool _selected = false;

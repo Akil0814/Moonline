@@ -75,7 +75,5 @@ struct UiDialogStyle
     float body_footer_spacing = 12.0f;
     int body_padding = 18;
     int text_padding = 10;
-    int title_point_size = 26;
-    int body_point_size = 20;
 };
 }

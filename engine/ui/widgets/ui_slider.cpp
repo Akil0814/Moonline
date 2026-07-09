@@ -4,8 +4,6 @@
 #include "../style/ui_theme.h"
 #include "../../audio/audio_service.h"
 #include "../../core/render/render_command.h"
-#include "../../localization/localization_manager.h"
-#include "../../localization/localized_text_style.h"
 
 #include <SDL.h>
 
@@ -160,7 +158,7 @@ void UiSlider::reset() noexcept
     _value_number.reset();
     set_use_theme(false);
 
-    _text_key.clear();
+    _text_content = UiTextContent{};
     _icon = nullptr;
     _sounds.reset();
     _style_state.reset(UiStyleDefaults::slider());
@@ -437,21 +435,21 @@ void UiSlider::set_label_content(const UiSliderLabelContent& content)
 
 void UiSlider::clear_label_content() noexcept
 {
-    _text_key.clear();
+    _text_content = UiTextContent{};
     _icon = nullptr;
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-void UiSlider::set_text_key(std::string text_key)
+void UiSlider::set_text_content(UiTextContent text_content)
 {
     clear_label_content();
-    _text_key = std::move(text_key);
+    _text_content = std::move(text_content);
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-const std::string& UiSlider::text_key() const noexcept
+const UiTextContent& UiSlider::text_content() const noexcept
 {
-    return _text_key;
+    return _text_content;
 }
 
 void UiSlider::set_icon_texture(SDL_Texture* texture) noexcept
@@ -679,6 +677,7 @@ void UiSlider::initialize_child_widgets()
     _label.set_style(label_style);
     _label.set_horizontal_align(TextHorizontalAlign::Center);
     _label.set_vertical_align(TextVerticalAlign::Center);
+    _label.set_typography_role(UiTypographyRole::Label);
     _label.set_padding(0);
     _value_number.set_use_theme(false);
     UiNumberStyle number_style = _value_number.style();
@@ -686,7 +685,7 @@ void UiSlider::initialize_child_widgets()
     _value_number.set_style(number_style);
     _value_number.set_horizontal_align(TextHorizontalAlign::Center);
     _value_number.set_vertical_align(TextVerticalAlign::Center);
-    _value_number.set_text_point_size(22);
+    _value_number.set_typography_role(UiTypographyRole::SliderValue);
     _value_number.set_target_height(24.0f);
     _value_number.set_padding(0);
     _value_number.set_decimal_places(0);
@@ -704,8 +703,8 @@ void UiSlider::apply_label_content(const UiSliderLabelContent& content)
         using T = std::decay_t<decltype(value)>;
         if constexpr (std::is_same_v<T,std::monostate>)
             clear_label_content();
-        else if constexpr (std::is_same_v<T,UiSliderTextContent>)
-            set_text_key(value.text_key);
+        else if constexpr (std::is_same_v<T,UiTextContent>)
+            set_text_content(value);
         else if constexpr (std::is_same_v<T,UiSliderIconContent>)
             set_icon_texture(value.texture);
     },content);
@@ -754,9 +753,10 @@ void UiSlider::sync_child_visuals() const
     _handle.set_opacity(opacity());
     _handle.set_focused(is_focused());
 
-    _label.set_visible(!_text_key.empty() && !_icon && !_label.screen_rect().is_empty());
+    _label.set_visible(!_text_content.empty() && !_icon && !_label.screen_rect().is_empty());
     _label.set_opacity(opacity());
-    _label.set_text_key(_text_key);
+    _label.set_text_content(_text_content);
+    _label.set_typography_role(UiTypographyRole::Label);
     _label.set_style(label_style);
     _label.set_horizontal_align(TextHorizontalAlign::Center);
     _label.set_vertical_align(TextVerticalAlign::Center);
@@ -783,7 +783,7 @@ UiSlider::SliderLayout UiSlider::compute_layout() const noexcept
     if (remaining.is_empty())
         return layout;
 
-    const bool has_label = !_text_key.empty() || _icon;
+    const bool has_label = !_text_content.empty() || _icon;
     const elysia::core::Vector2 handle_size(
         clamp_non_negative(style().handle.size.x),
         clamp_non_negative(style().handle.size.y)

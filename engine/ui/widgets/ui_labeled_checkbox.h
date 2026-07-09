@@ -2,9 +2,10 @@
 
 #include "ui_checkbox.h"
 #include "label/ui_label.h"
+#include "../text/ui_text_content.h"
+#include "../text/ui_typography.h"
 
 #include <optional>
-#include <string>
 
 namespace elysia::ui
 {
@@ -24,7 +25,7 @@ enum class UiLabeledCheckboxTextPlacement
 struct UiLabeledCheckboxConfig
 {
     UiCheckboxConfig checkbox{};
-    std::string text_key{};
+    UiTextContent text_content{};
     UiLabeledCheckboxLabelPlacement label_placement = UiLabeledCheckboxLabelPlacement::Right;
     float label_spacing = 8.0f;
     UiLabeledCheckboxTextPlacement text_placement = UiLabeledCheckboxTextPlacement::NearBox;
@@ -52,8 +53,8 @@ public:
     // Applies checkbox behavior together with label content and label placement rules.
     void set_labeled_checkbox_config(const UiLabeledCheckboxConfig& config);
 
-    void set_text_key(std::string text_key);
-    [[nodiscard]] const std::string& text_key() const noexcept;
+    void set_text_content(UiTextContent text_content);
+    [[nodiscard]] const UiTextContent& text_content() const noexcept;
 
     void set_label_placement(UiLabeledCheckboxLabelPlacement placement) noexcept;
     [[nodiscard]] UiLabeledCheckboxLabelPlacement label_placement() const noexcept;
@@ -64,8 +65,8 @@ public:
     void set_text_placement(UiLabeledCheckboxTextPlacement placement) noexcept;
     [[nodiscard]] UiLabeledCheckboxTextPlacement text_placement() const noexcept;
 
-    void set_text_point_size(int point_size) noexcept;
-    [[nodiscard]] int text_point_size() const noexcept;
+    void set_typography_role(UiTypographyRole role) noexcept;
+    [[nodiscard]] UiTypographyRole typography_role() const noexcept;
 
     void set_label_padding(int padding) noexcept;
     [[nodiscard]] int label_padding() const noexcept;
@@ -85,7 +86,8 @@ private:
 
 private:
     mutable UiLabel _label;
-    std::string _text_key;
+    UiTextContent _text_content;
+    UiTypographyRole _typography_role = UiTypographyRole::CheckboxLabel;
     UiLabeledCheckboxLabelPlacement _label_placement = UiLabeledCheckboxLabelPlacement::Right;
     float _label_spacing = 8.0f;
     UiLabeledCheckboxTextPlacement _text_placement = UiLabeledCheckboxTextPlacement::NearBox;

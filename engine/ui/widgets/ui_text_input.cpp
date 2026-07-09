@@ -121,7 +121,7 @@ void UiTextInput::reset() noexcept
     _on_text_changed = nullptr;
     _on_submit = nullptr;
     _text.clear();
-    _placeholder_text.clear();
+    _placeholder_content = UiTextContent{};
     _composition_text.clear();
     _caret_codepoint_index = 0;
     _composition_insert_codepoint_index = 0;
@@ -129,8 +129,8 @@ void UiTextInput::reset() noexcept
     _composition_length = 0;
     _max_length.reset();
     _style_state.reset(UiStyleDefaults::text_input());
-    _text_point_size = 24;
-    _placeholder_point_size = 18;
+    _typography_role = UiTypographyRole::Input;
+    _placeholder_typography_role = UiTypographyRole::InputPlaceholder;
     _padding = 10;
     _is_pushed = false;
 }
@@ -269,15 +269,25 @@ void UiTextInput::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
         return;
 
     const bool show_placeholder = _text.empty() && _composition_text.empty();
-    const std::string& render_text = show_placeholder ? _placeholder_text : layout.display_text;
-    if (!render_text.empty())
+    if (show_placeholder ? !_placeholder_content.empty() : !layout.display_text.empty())
     {
+        const UiResolvedTextStyle typography = resolve_ui_typography(
+            show_placeholder ? _placeholder_typography_role : _typography_role);
         elysia::localization::LocalizedTextStyle style;
-        style.point_size = show_placeholder ? _placeholder_point_size : _text_point_size;
+        style.point_size = typography.point_size;
         style.color = show_placeholder ? current_placeholder_color() : current_text_color();
         style.wrap_width = 0;
 
-        SDL_Texture* text_texture = localization_manager->get_raw_text_texture(render_text,style);
+        SDL_Texture* text_texture = nullptr;
+        if (show_placeholder)
+        {
+            if (_placeholder_content.kind == UiTextContentKind::TextKey)
+                text_texture = localization_manager->get_text_texture(_placeholder_content.value,style);
+            else if (_placeholder_content.kind == UiTextContentKind::RawText)
+                text_texture = localization_manager->get_raw_text_texture(_placeholder_content.value,style);
+        }
+        else
+            text_texture = localization_manager->get_raw_text_texture(layout.display_text,style);
         if (text_texture)
         {
             int texture_width = 0;
@@ -351,15 +361,15 @@ void UiTextInput::clear_text()
     set_text({});
 }
 
-void UiTextInput::set_placeholder_text(std::string placeholder_text)
+void UiTextInput::set_placeholder_content(UiTextContent placeholder_content)
 {
-    _placeholder_text = std::move(placeholder_text);
+    _placeholder_content = std::move(placeholder_content);
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-const std::string& UiTextInput::placeholder_text() const noexcept
+const UiTextContent& UiTextInput::placeholder_content() const noexcept
 {
-    return _placeholder_text;
+    return _placeholder_content;
 }
 
 void UiTextInput::set_on_text_changed(UiTextInputChangedCallback on_text_changed)
@@ -405,26 +415,26 @@ void UiTextInput::clear_style_override() noexcept
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-void UiTextInput::set_text_point_size(int point_size) noexcept
+void UiTextInput::set_typography_role(UiTypographyRole role) noexcept
 {
-    _text_point_size = std::max(0,point_size);
+    _typography_role = role;
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-int UiTextInput::text_point_size() const noexcept
+UiTypographyRole UiTextInput::typography_role() const noexcept
 {
-    return _text_point_size;
+    return _typography_role;
 }
 
-void UiTextInput::set_placeholder_point_size(int point_size) noexcept
+void UiTextInput::set_placeholder_typography_role(UiTypographyRole role) noexcept
 {
-    _placeholder_point_size = std::max(0,point_size);
+    _placeholder_typography_role = role;
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-int UiTextInput::placeholder_point_size() const noexcept
+UiTypographyRole UiTextInput::placeholder_typography_role() const noexcept
 {
-    return _placeholder_point_size;
+    return _placeholder_typography_role;
 }
 
 void UiTextInput::set_padding(int padding) noexcept
@@ -574,8 +584,9 @@ std::size_t UiTextInput::codepoint_index_at_x(int mouse_x) const
     if (layout.content_rect.is_empty())
         return codepoint_count;
 
+    const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
     elysia::localization::LocalizedTextStyle style;
-    style.point_size = _text_point_size;
+    style.point_size = typography.point_size;
     style.color = current_text_color();
     style.wrap_width = 0;
 
@@ -671,8 +682,9 @@ UiTextInput::TextLayout UiTextInput::compute_text_layout() const
     if (!localization_manager)
         return layout;
 
+    const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
     elysia::localization::LocalizedTextStyle style;
-    style.point_size = _text_point_size;
+    style.point_size = typography.point_size;
     style.color = current_text_color();
     style.wrap_width = 0;
 
@@ -703,7 +715,7 @@ UiTextInput::TextLayout UiTextInput::compute_text_layout() const
             layout.composition_display_start_codepoint_index + layout.composition_display_length));
     (void)localization_manager->measure_raw_text(highlight_full_prefix,style,highlight_full_width,highlight_full_height);
 
-    layout.text_height = static_cast<float>(std::max({ total_text_height, caret_prefix_height, highlight_prefix_height, highlight_full_height, _text_point_size }));
+    layout.text_height = static_cast<float>(std::max({ total_text_height, caret_prefix_height, highlight_prefix_height, highlight_full_height, typography.point_size }));
     const float available_width = std::max(0.0f,layout.content_rect.width());
     layout.scroll_x = std::max(0.0f,static_cast<float>(caret_prefix_width) - available_width + 8.0f);
     layout.text_x = layout.content_rect.x() - layout.scroll_x;
