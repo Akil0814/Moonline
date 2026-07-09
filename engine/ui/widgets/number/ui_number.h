@@ -39,6 +39,7 @@ public:
     void reset() noexcept override;
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
 
+    // Replaces the numeric value used to generate the rendered digit string.
     void set_value(double value);
     [[nodiscard]] double value() const noexcept;
 
@@ -90,12 +91,16 @@ public:
     [[nodiscard]] UiNumberSuffix suffix() const noexcept;
 
 private:
+    // Returns the padded interior used to position rendered digits.
     [[nodiscard]] elysia::core::Rect content_rect() const noexcept;
+    // Formats the current numeric value using suffix and decimal display settings.
     [[nodiscard]] std::string formatted_text() const;
+    // Normalizes trailing fractional zeros while preserving optional decimal point output.
     [[nodiscard]] static std::string trim_fractional_zeros(
         std::string text,
         bool keep_decimal_point
     );
+    // Converts text alignment into the digit-renderer alignment enum.
     [[nodiscard]] elysia::number::DigitAlignment digit_alignment() const noexcept;
 
 private:

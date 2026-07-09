@@ -4,6 +4,7 @@
 
 namespace elysia::ui
 {
+// Shared default color tokens used by built-in UI styles.
 struct UiPalette
 {
     static inline constexpr elysia::core::Color text_primary = elysia::core::colors::frosted_white;

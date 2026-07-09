@@ -24,6 +24,7 @@ public:
     ~UiLabel() override = default;
 
     void reset() noexcept override;
+    // Emits background and text commands for the current label content and alignment.
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
 
     void set_text_key(std::string text_key);
@@ -54,7 +55,9 @@ public:
     [[nodiscard]] int padding() const noexcept;
 
 private:
+    // Returns the padded interior used to position rendered text.
     [[nodiscard]] elysia::core::Rect content_rect() const noexcept;
+    // Fits rendered text into the content rect using the active alignment and padding.
     [[nodiscard]] elysia::core::Rect text_render_rect(SDL_Texture* text_texture) const noexcept;
 
 private:

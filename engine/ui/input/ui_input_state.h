@@ -10,6 +10,7 @@ namespace elysia::ui
 class UiInputState
 {
 public:
+    // Records current, just-pressed, and just-released state for one UI action.
     void set(UiAction action, bool pressed, bool just_pressed, bool just_released)
     {
         if (!is_trackable_action(action))

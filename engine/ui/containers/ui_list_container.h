@@ -21,7 +21,9 @@ public:
 
     void reset() noexcept override;
 
+    // Prepends a child to the list while preserving container ownership.
     void add_front(std::unique_ptr<UiElement> child);
+    // Appends a child to the list while preserving container ownership.
     void add_back(std::unique_ptr<UiElement> child);
     UiElement* add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options) override;
     [[nodiscard]] elysia::core::Vector2 content_extent() const noexcept override;
@@ -32,7 +34,9 @@ public:
     [[nodiscard]] float item_spacing() const noexcept;
 
 protected:
+    // Lays out children along the configured list direction and spacing.
     void rebuild_layout() override;
+    // Refreshes focus neighbors after list ordering or geometry changes.
     void rebuild_focus_registry() override;
 
 private:

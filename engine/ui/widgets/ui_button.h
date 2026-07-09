@@ -15,6 +15,7 @@ struct SDL_Texture;
 
 namespace elysia::ui
 {
+// Optional textures used to skin button states instead of chrome rendering.
 struct UiButtonTextures
 {
     SDL_Texture* idle = nullptr;
@@ -23,16 +24,19 @@ struct UiButtonTextures
     SDL_Texture* disabled = nullptr;
 };
 
+// Text-only button content resolved through the localized text system.
 struct UiButtonTextContent
 {
     std::string text_key{};
 };
 
+// Icon-only button content rendered from a caller-owned texture.
 struct UiButtonIconContent
 {
     SDL_Texture* texture = nullptr;
 };
 
+// Explicit texture set used when the button renders entirely from textures.
 struct UiButtonTextureSetContent
 {
     UiButtonTextures textures{};
@@ -45,6 +49,7 @@ using UiButtonContent = std::variant<
     UiButtonTextureSetContent
 >;
 
+// Sound keys played as button focus, press, and click state change.
 struct UiButtonSounds
 {
     std::string focus;
@@ -52,12 +57,14 @@ struct UiButtonSounds
     std::string click;
 };
 
+// Visual styling for button chrome and text.
 struct UiButtonStyle
 {
     UiChromeStyle chrome{};
     UiEnabledDisabledColors text{};
 };
 
+// Bundles content, sound, and style overrides for button construction or updates.
 struct UiButtonConfig
 {
     UiButtonContent content{};
@@ -97,6 +104,7 @@ public:
     bool on_ui_input_event(const UiInputEvent& event) override;
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
 
+    // Applies content, sounds, and style as one atomic button configuration update.
     void set_button_config(const UiButtonConfig& config);
 
     void set_text_key(std::string text_key);
@@ -123,22 +131,31 @@ public:
     [[nodiscard]] int padding() const noexcept;
 
 private:
+    // Applies the config payload without exposing intermediate visual states.
     void apply_button_config(const UiButtonConfig& config);
+    // Switches between text, icon, textured, or empty content modes.
     void apply_button_content(const UiButtonContent& content);
     void set_icon_texture(SDL_Texture* texture) noexcept;
+    // Clears the active content payload and resets the visual mode.
     void clear_content() noexcept;
 
+    // Returns true only when the button should react to confirm or pointer input.
     [[nodiscard]] bool can_interact() const noexcept;
     [[nodiscard]] bool can_receive_pointer() const noexcept;
     [[nodiscard]] elysia::core::Color current_background_color() const noexcept;
     [[nodiscard]] elysia::core::Color current_border_color() const noexcept;
     [[nodiscard]] elysia::core::Color current_text_color() const noexcept;
+    // Chooses the texture that matches the current button interaction state.
     [[nodiscard]] SDL_Texture* current_state_texture() const noexcept;
+    // Returns the padded interior used to place text or icons.
     [[nodiscard]] elysia::core::Rect content_rect() const noexcept;
+    // Fits rendered text into the padded button interior using the active alignment.
     [[nodiscard]] elysia::core::Rect text_render_rect(SDL_Texture* text_texture) const noexcept;
     [[nodiscard]] bool contains_pointer(int mouse_x,int mouse_y) const noexcept;
     [[nodiscard]] bool is_primary_pointer_event(const UiInputEvent& event) const noexcept;
+    // Clears any pressed state left behind by focus loss or input cancellation.
     void clear_pushed_state() noexcept;
+    // Plays a configured sound only when the corresponding key is present.
     void play_sound_if_set(std::string_view sound_key) const;
 
 private:

@@ -21,6 +21,7 @@ public:
         UiFromCenterTag,int order = 0, std::string text_key = {}) noexcept;
 
     void reset() noexcept override;
+    // Configures the blinking sequence that modulates label opacity over time.
     void configure_playback(effects::UiOpacityBlinkMode mode,
         double hold_time,double visible_duration,double hidden_duration,
         std::optional<int> blink_cycles = std::nullopt);
@@ -29,6 +30,7 @@ public:
     void set_on_end(BlinkLabelOnEnd on_end);
 
 private:
+    // Emits the completion callback once per finished playback sequence.
     void notify_finished();
 
 private:

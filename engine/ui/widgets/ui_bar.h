@@ -23,8 +23,10 @@ public:
 
     void reset() noexcept override;
 
+    // Defines the numeric range used to convert values into a fill ratio.
     void set_range(float min_value,float max_value);
     void set_value(float value);
+    // Sets the fill amount directly as a normalized ratio, bypassing range conversion.
     void set_ratio(float ratio);
 
     [[nodiscard]] float min_value() const;
@@ -53,10 +55,13 @@ public:
     void set_padding(int padding);
     [[nodiscard]] int padding() const;
 
+    // Emits background, fill, and optional border commands for the current bar state.
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
 
 private:
+    // Returns the drawable interior after subtracting visual padding.
     [[nodiscard]] elysia::core::Rect content_rect(const elysia::core::Rect& rect) const;
+    // Computes the filled portion of the bar using the current direction and ratio.
     [[nodiscard]] elysia::core::Rect fill_rect(const elysia::core::Rect& rect) const;
 
 private:

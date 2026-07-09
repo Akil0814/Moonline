@@ -26,6 +26,7 @@ enum class UiCheckboxMarkStyle
     RadioDot
 };
 
+// Optional textures for one checkbox visual state across interaction states.
 struct UiCheckboxVisualStateTextures
 {
     SDL_Texture* idle = nullptr;
@@ -34,6 +35,7 @@ struct UiCheckboxVisualStateTextures
     SDL_Texture* disabled = nullptr;
 };
 
+// Complete texture set covering unchecked, checked, and indeterminate states.
 struct UiCheckboxTextures
 {
     UiCheckboxVisualStateTextures unchecked{};
@@ -41,6 +43,7 @@ struct UiCheckboxTextures
     UiCheckboxVisualStateTextures indeterminate{};
 };
 
+// Sound keys played as checkbox focus and toggle state change.
 struct UiCheckboxSounds
 {
     std::string focus;
@@ -48,6 +51,7 @@ struct UiCheckboxSounds
     std::string toggle;
 };
 
+// Visual styling for checkbox chrome and mark rendering.
 struct UiCheckboxStyle
 {
     UiChromeStyle chrome{};
@@ -55,6 +59,7 @@ struct UiCheckboxStyle
     UiCheckboxMarkStyle mark_style = UiCheckboxMarkStyle::Checkmark;
 };
 
+// Bundles optional textures, sounds, and style overrides for a checkbox.
 struct UiCheckboxConfig
 {
     std::optional<UiCheckboxTextures> textures = std::nullopt;
@@ -85,13 +90,16 @@ public:
     bool on_ui_input_event(const UiInputEvent& event) override;
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
 
+    // Applies textures, sounds, and style as one checkbox configuration update.
     void set_checkbox_config(const UiCheckboxConfig& config);
 
+    // Sets the tri-state value without requiring a pointer-style toggle.
     void set_state(UiCheckboxState state) noexcept;
     [[nodiscard]] UiCheckboxState state() const noexcept;
     void set_checked(bool checked) noexcept;
     [[nodiscard]] bool is_checked() const noexcept;
     [[nodiscard]] bool is_indeterminate() const noexcept;
+    // Advances the checkbox through its supported toggle sequence.
     void toggle();
 
     void set_state_textures(const UiCheckboxTextures& textures);
@@ -112,27 +120,39 @@ public:
     [[nodiscard]] int padding() const noexcept;
 
 private:
+    // Applies the config payload without exposing intermediate visual states.
     void apply_checkbox_config(const UiCheckboxConfig& config);
+    // Updates state and emits callbacks only when the value actually changes.
     [[nodiscard]] bool set_state_internal(UiCheckboxState state,bool notify) noexcept;
+    // Handles toggle transitions while optionally suppressing notifications or sounds.
     [[nodiscard]] bool toggle_internal(bool notify,bool play_toggle_sound) noexcept;
+    // Returns true only when the checkbox should react to confirm or pointer input.
     [[nodiscard]] bool can_interact() const noexcept;
     [[nodiscard]] bool can_receive_pointer() const noexcept;
     [[nodiscard]] bool contains_pointer(int mouse_x,int mouse_y) const noexcept;
     [[nodiscard]] bool is_primary_pointer_event(const UiInputEvent& event) const noexcept;
+    // Clears any pressed state left behind by focus loss or input cancellation.
     void clear_pushed_state() noexcept;
+    // Plays a configured sound only when the corresponding key is present.
     void play_sound_if_set(const std::string& sound_key) const;
 
 protected:
+    // Returns the padded interior that contains the clickable checkbox indicator.
     [[nodiscard]] elysia::core::Rect content_rect() const noexcept;
+    // Returns the rect used to render and hit-test the checkbox indicator.
     [[nodiscard]] virtual elysia::core::Rect checkbox_rect() const noexcept;
     [[nodiscard]] elysia::core::Color current_background_color() const noexcept;
     [[nodiscard]] elysia::core::Color current_border_color() const noexcept;
 
 private:
+    // Chooses the texture bank for the current checkbox logical state.
     [[nodiscard]] const UiCheckboxVisualStateTextures* current_state_textures() const noexcept;
+    // Chooses the texture that matches the current logical and interaction state.
     [[nodiscard]] SDL_Texture* current_state_texture() const noexcept;
+    // Reports whether texture rendering should replace procedural checkbox drawing.
     [[nodiscard]] bool uses_texture_rendering() const noexcept;
     [[nodiscard]] elysia::core::Color current_checkmark_color() const noexcept;
+    // Defines the next logical state reached by keyboard or pointer toggles.
     static UiCheckboxState toggled_state(UiCheckboxState state) noexcept;
 
 private:

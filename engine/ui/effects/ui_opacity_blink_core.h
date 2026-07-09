@@ -16,6 +16,7 @@ class UiOpacityBlinkCore
 public:
     UiOpacityBlinkCore() noexcept = default;
 
+    // Restores default playback settings and clears any in-flight blink state.
     void reset() noexcept
     {
         _mode = UiOpacityBlinkMode::VisibleFirst;
@@ -43,6 +44,7 @@ public:
         _blink_cycles = blink_cycles;
     }
 
+    // Starts a new blink sequence from the configured initial visible state.
     void play() noexcept
     {
         _is_playing = true;
@@ -69,6 +71,7 @@ public:
         consume_instant_phase();
     }
 
+    // Advances blink timing and reports whether playback completed during this tick.
     bool update(double delta_seconds) noexcept
     {
         if (!_is_playing)

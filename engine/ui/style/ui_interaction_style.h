@@ -4,12 +4,14 @@
 
 namespace elysia::ui
 {
+// Paired colors used when a widget switches between enabled and disabled state.
 struct UiEnabledDisabledColors
 {
     elysia::core::Color enabled = UiPalette::text_primary;
     elysia::core::Color disabled = UiPalette::text_disabled;
 };
 
+// Interactive chrome colors keyed by idle, focus, pressed, and disabled state.
 struct UiInteractiveColors
 {
     elysia::core::Color idle = UiPalette::surface_interactive_idle;
@@ -18,6 +20,7 @@ struct UiInteractiveColors
     elysia::core::Color disabled = UiPalette::surface_disabled;
 };
 
+// Shared border/background styling used by interactive widgets.
 struct UiChromeStyle
 {
     UiInteractiveColors background{};
@@ -29,6 +32,7 @@ struct UiChromeStyle
     bool draw_border = true;
 };
 
+// Resolves the color that matches the widget's current interaction state.
 [[nodiscard]] inline elysia::core::Color resolve_interactive_color(
     const UiInteractiveColors& colors,
     bool enabled,
@@ -45,6 +49,7 @@ struct UiChromeStyle
     return colors.idle;
 }
 
+// Resolves the color that matches the widget's enabled state.
 [[nodiscard]] inline elysia::core::Color resolve_enabled_disabled_color(
     const UiEnabledDisabledColors& colors,
     bool enabled

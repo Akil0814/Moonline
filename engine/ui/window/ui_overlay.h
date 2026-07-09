@@ -19,6 +19,7 @@ enum class UiOverlayTransition
     Slide
 };
 
+// Window-managed overlay behavior, placement, and dismissal policy.
 struct UiOverlayOptions
 {
     bool open = true;

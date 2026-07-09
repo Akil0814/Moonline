@@ -12,6 +12,7 @@ namespace elysia::ui
 {
 struct UiTheme;
 class UiChildHost;
+// Tag type for constructors that interpret the supplied position as a center point.
 struct UiFromCenterTag
 {
     explicit constexpr UiFromCenterTag() noexcept = default;
@@ -40,11 +41,13 @@ public:
     UiElement(UiElement&&) = delete;
     UiElement& operator=(UiElement&&) = delete;
 
+    // Appends this element's draw commands in local visual order.
     virtual void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const
     {
         (void)out_commands;
     }
 
+    // Reports the size this element contributes to parent layout calculations.
     [[nodiscard]] virtual elysia::core::Vector2 content_extent() const noexcept
     {
         return size();
@@ -58,6 +61,7 @@ public:
         _opacity = 255;
     }
 
+    // Updates the screen-space bounds and invalidates intrinsic layout when the size changes.
     void set_screen_rect(const elysia::core::Rect& rect) noexcept
     {
         if (_screen_rect.nearly_equals(rect))
@@ -111,7 +115,9 @@ public:
     [[nodiscard]] bool receive_input_when_paused() const override{ return true;}
 
 protected:
+    // Applies theme-driven visuals when the element opts into theme ownership.
     virtual void apply_theme(const UiTheme& theme) { (void)theme; }
+    // Tells the owning layout host that this element's intrinsic size may have changed.
     void notify_layout_parent_of_intrinsic_layout_invalidation() noexcept;
 
     void apply_opacity(elysia::core::UiRenderCommand& command) const noexcept

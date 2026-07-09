@@ -4,6 +4,7 @@
 
 namespace elysia::ui
 {
+// Per-frame UI input snapshot used for held-state queries and device tracking.
 struct UiInputFrame
 {
     UiInputState state;

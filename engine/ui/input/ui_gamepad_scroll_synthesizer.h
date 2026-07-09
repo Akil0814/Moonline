@@ -11,7 +11,9 @@ namespace elysia::ui
 class UiGamepadScrollSynthesizer
 {
 public:
+    // Converts held gamepad axis input into repeated mouse-wheel-style UI events.
     std::optional<UiInputEvent> synthesize(const elysia::input::RawInputFrame& input);
+    // Clears accumulated axis state so scrolling does not leak across screens.
     void reset();
 
 private:

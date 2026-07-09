@@ -16,9 +16,11 @@ private:
     {
     public:
         explicit SlotHost(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0) noexcept;
+        // Chooses whether this slot stretches its child to fill the slot bounds.
         void set_fill_children(bool fill_children) noexcept;
 
     protected:
+        // Rebuilds the slot around either stretched or intrinsic child layout.
         void rebuild_layout() override;
 
     private:
@@ -53,6 +55,7 @@ public:
     [[nodiscard]] UiChildHost& body() noexcept;
     [[nodiscard]] const UiChildHost& body() const noexcept;
 
+    // Replaces the body payload while keeping header slots intact.
     UiElement* set_body(std::unique_ptr<UiElement> body);
     [[nodiscard]] UiElement* body_content() noexcept;
     [[nodiscard]] const UiElement* body_content() const noexcept;
@@ -83,23 +86,37 @@ public:
     [[nodiscard]] elysia::core::Color header_background_color() const noexcept;
 
 protected:
+    // Rebuilds header and body slot geometry from the current chrome settings.
     void rebuild_layout() override;
+    // Rebuilds focus navigation across header controls and delegated body scope.
     void rebuild_focus_registry() override;
 
 private:
+    // Creates the owned header/body slot hosts used by the chrome container.
     void create_internal_hosts();
+    // Clears raw pointers after the internal hosts are removed during reset.
     void clear_internal_host_pointers() noexcept;
+    // Collects controls from a subtree, optionally crossing nested scope boundaries.
     void collect_controls_from(const UiElement& element,std::vector<UiControl*>& out_controls,bool recurse_into_nested_scopes = true) const;
+    // Returns the body payload as a delegated focus scope when supported.
     [[nodiscard]] UiFocusScope* delegated_body_scope() noexcept;
     [[nodiscard]] const UiFocusScope* delegated_body_scope() const noexcept;
+    // Finds the first focusable control in the header chrome.
     [[nodiscard]] UiControl* first_header_focusable() const noexcept;
     [[nodiscard]] bool header_has_focusable_target() const noexcept;
+    // Transfers focus from the header into the delegated body scope.
     [[nodiscard]] bool enter_body_scope(bool focus_first_available);
+    // Returns focus from the body scope back to the header chrome.
     [[nodiscard]] bool leave_body_scope();
+    // Mirrors the container focus state into the delegated body scope.
     void sync_body_scope_focus() noexcept;
+    // Detects pointer and action events that should stay in the header region.
     [[nodiscard]] bool event_targets_header(const UiInputEvent& event) const noexcept;
+    // Detects events that should be delegated into the body focus scope.
     [[nodiscard]] bool event_targets_body_scope(const UiInputEvent& event) const noexcept;
+    // Returns the current header draw and hit-test rect.
     [[nodiscard]] elysia::core::Rect header_rect() const noexcept;
+    // Returns the current body draw and hit-test rect.
     [[nodiscard]] elysia::core::Rect body_rect() const noexcept;
 
 private:

@@ -23,6 +23,7 @@ enum class UiRadioButtonTextPlacement
     FarEdge
 };
 
+// Sound keys played as radio-button focus and selection state change.
 struct UiRadioButtonSounds
 {
     std::string focus;
@@ -30,6 +31,7 @@ struct UiRadioButtonSounds
     std::string select;
 };
 
+// Visual styling for radio-button chrome, mark, and label text.
 struct UiRadioButtonStyle
 {
     UiChromeStyle chrome{};
@@ -37,6 +39,7 @@ struct UiRadioButtonStyle
     UiEnabledDisabledColors text{};
 };
 
+// Bundles sounds, visuals, and label placement for a radio button.
 struct UiRadioButtonConfig
 {
     std::optional<UiRadioButtonSounds> sounds = std::nullopt;
@@ -77,10 +80,13 @@ public:
     bool on_ui_input_event(const UiInputEvent& event) override;
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
 
+    // Applies sounds, visuals, and label behavior as one configuration update.
     void set_radio_button_config(const UiRadioButtonConfig& config);
 
+    // Sets the selection state without implying group-level coordination.
     void set_selected(bool selected) noexcept;
     [[nodiscard]] bool is_selected() const noexcept;
+    // Selects this button and emits the selected callback when the state changes.
     void select();
     void set_on_selected(UiRadioButtonSelectedCallback on_selected);
 
@@ -124,17 +130,26 @@ public:
     [[nodiscard]] bool draws_border() const noexcept;
 
 private:
+    // Applies the config payload without exposing intermediate label visuals.
     void apply_radio_button_config(const UiRadioButtonConfig& config);
+    // Updates selection and emits callbacks only when the value actually changes.
     [[nodiscard]] bool set_selected_internal(bool selected,bool notify) noexcept;
+    // Returns true only when the radio button should react to confirm or pointer input.
     [[nodiscard]] bool can_interact() const noexcept;
     [[nodiscard]] bool can_receive_pointer() const noexcept;
     [[nodiscard]] bool contains_pointer(int mouse_x,int mouse_y) const noexcept;
     [[nodiscard]] bool is_primary_pointer_event(const UiInputEvent& event) const noexcept;
+    // Clears any pressed state left behind by focus loss or input cancellation.
     void clear_pushed_state() noexcept;
+    // Plays a configured sound only when the corresponding key is present.
     void play_sound_if_set(const std::string& sound_key) const;
+    // Mirrors radio-button enabled/focus visuals into the owned label widget.
     void sync_label_visuals() const;
+    // Returns the padded interior used to place the indicator and label.
     [[nodiscard]] elysia::core::Rect content_rect() const noexcept;
+    // Returns the rect used to render and hit-test the selection indicator.
     [[nodiscard]] elysia::core::Rect indicator_rect() const noexcept;
+    // Returns the rect used to render the label beside the indicator.
     [[nodiscard]] elysia::core::Rect label_rect() const noexcept;
     [[nodiscard]] elysia::core::Color current_background_color() const noexcept;
     [[nodiscard]] elysia::core::Color current_border_color() const noexcept;

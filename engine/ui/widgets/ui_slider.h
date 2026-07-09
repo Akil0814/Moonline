@@ -20,6 +20,7 @@ namespace elysia::ui
     enum class UiSliderOrientation { Horizontal, Vertical };
     enum class UiSliderValueLabelMode { None, Value, Percent };
 
+    // Sound keys played as slider focus, movement, and settle state change.
     struct UiSliderSounds
     {
         std::string on_focus{};
@@ -28,11 +29,14 @@ namespace elysia::ui
         double min_slide_sound_interval = 0.05;
     };
 
+    // Text label content resolved through the localized text system.
     struct UiSliderTextContent { std::string text_key{}; };
+    // Icon label content rendered from a caller-owned texture.
     struct UiSliderIconContent { SDL_Texture* texture = nullptr; };
 
     using UiSliderLabelContent = std::variant<std::monostate,UiSliderTextContent,UiSliderIconContent>;
 
+    // Visual styling for slider chrome, fill, label text, and drag handle.
     struct UiSliderStyle
     {
         UiChromeStyle chrome{};
@@ -41,6 +45,7 @@ namespace elysia::ui
         UiDragHandleStyle handle{};
     };
 
+    // Bundles slider range, presentation, sounds, and numeric formatting rules.
     struct UiSliderConfig
     {
         UiSliderLabelContent label_content{};
@@ -82,9 +87,12 @@ namespace elysia::ui
         bool on_ui_input_event(const UiInputEvent& event) override;
         void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
 
+        // Applies range, presentation, sounds, and formatting as one slider update.
         void set_slider_config(const UiSliderConfig& config);
+        // Defines the numeric range used to convert between value and slider ratio.
         void set_range(float min_value,float max_value);
         void set_value(float value);
+        // Sets the slider by normalized ratio instead of by numeric value.
         void set_ratio(float ratio);
         [[nodiscard]] float min_value() const noexcept;
         [[nodiscard]] float max_value() const noexcept;
@@ -134,33 +142,52 @@ namespace elysia::ui
 
     private:
         struct SliderLayout;
+        // Creates the owned child widgets used to render the bar, thumb, label, and value.
         void initialize_child_widgets();
+        // Applies the config payload without exposing intermediate slider state.
         void apply_slider_config(const UiSliderConfig& config);
+        // Switches the label between text, icon, or empty presentation.
         void apply_label_content(const UiSliderLabelContent& content);
+        // Pushes the computed layout into the owned child widgets.
         void sync_child_rects(const SliderLayout& layout) const;
+        // Mirrors enabled, focus, and style state into the owned child widgets.
         void sync_child_visuals() const;
+        // Recomputes the formatted numeric label from the current slider value.
         void sync_value_number_content() const;
+        // Measures track, thumb, label, and value regions for the current slider state.
         [[nodiscard]] SliderLayout compute_layout() const noexcept;
         [[nodiscard]] float clamped_ratio() const noexcept;
+        // Snaps a raw value to the configured step before it becomes visible state.
         [[nodiscard]] float snapped_value(float value) const noexcept;
+        // Returns the increment used for keyboard-style slider adjustments.
         [[nodiscard]] float action_step() const noexcept;
+        // Converts a pointer position into a normalized ratio along the active axis.
         [[nodiscard]] float ratio_from_point(const SliderLayout& layout,const elysia::core::Vector2& point) const noexcept;
+        // Computes thumb drag bounds that keep the handle constrained to the track.
         [[nodiscard]] elysia::core::Rect handle_drag_bounds(const SliderLayout& layout) const noexcept;
+        // Returns true only when the slider should react to action or pointer input.
         [[nodiscard]] bool can_interact() const noexcept;
         [[nodiscard]] bool can_receive_pointer() const noexcept;
         [[nodiscard]] bool contains_pointer(int mouse_x,int mouse_y) const noexcept;
         [[nodiscard]] bool contains_track_or_handle(const SliderLayout& layout,int mouse_x,int mouse_y) const noexcept;
         [[nodiscard]] bool is_primary_pointer_event(const UiInputEvent& event) const noexcept;
+        // Updates the value and optionally notifies listeners only when it changed.
         [[nodiscard]] bool set_value_internal(float value,bool notify) noexcept;
+        // Recomputes value from a pointer position and optionally notifies listeners.
         [[nodiscard]] bool update_value_from_point(const SliderLayout& layout,const elysia::core::Vector2& point,bool notify) noexcept;
+        // Fits an icon label into the requested bounds while preserving aspect ratio.
         [[nodiscard]] elysia::core::Rect fitted_texture_rect(const elysia::core::Rect& bounds,SDL_Texture* texture) const noexcept;
         [[nodiscard]] elysia::core::Color current_background_color() const noexcept;
         [[nodiscard]] elysia::core::Color current_border_color() const noexcept;
         [[nodiscard]] elysia::core::Color current_fill_color() const noexcept;
         [[nodiscard]] elysia::core::Color current_text_color() const noexcept;
+        // Wires thumb dragging callbacks back into slider value updates.
         void bind_handle_callbacks();
+        // Clears drag-only state after pointer release, cancellation, or focus loss.
         void clear_drag_state() noexcept;
+        // Plays a configured sound only when the corresponding key is present.
         void play_sound_if_set(std::string_view sound_key) const;
+        // Throttles repeated slide sounds while the thumb is actively moving.
         void play_slide_sound_if_allowed();
 
     private:

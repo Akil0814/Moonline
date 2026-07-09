@@ -37,6 +37,7 @@ enum class UiInputEventType
     AxisChanged
 };
 
+// Normalized UI event payload routed to controls after raw input mapping.
 struct UiInputEvent
 {
     UiAction action = UiAction::None;

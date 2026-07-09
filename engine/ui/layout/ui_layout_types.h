@@ -30,6 +30,7 @@ enum class UiLayoutAlign
     End
 };
 
+// Insets carved out from a host rect before child layout runs.
 struct UiLayoutPadding
 {
     float left = 0.0f;
@@ -38,6 +39,7 @@ struct UiLayoutPadding
     float bottom = 0.0f;
 };
 
+// Extra offset applied around one child when anchoring or stacking it.
 struct UiLayoutMargin
 {
     float left = 0.0f;
@@ -46,6 +48,7 @@ struct UiLayoutMargin
     float bottom = 0.0f;
 };
 
+// Optional per-child layout overrides consumed by layout hosts.
 struct UiLayoutChildOptions
 {
     UiLayoutAnchor _anchor = UiLayoutAnchor::TopLeft;
@@ -58,6 +61,7 @@ struct UiLayoutChildOptions
     bool _use_size_override = false;
 };
 
+// Lightweight transform metadata for layouts that offset or scale child content.
 struct UiLayoutTransform
 {
     elysia::core::Vector2 translation{ 0.0f,0.0f };

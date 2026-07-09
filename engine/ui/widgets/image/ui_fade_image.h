@@ -22,12 +22,14 @@ public:
         UiFromCenterTag, int order = 0);
 
     void reset() noexcept override;
+    // Configures the fade sequence that modulates image opacity over time.
     void configure_playback(effects::UiOpacityFadeMode mode,double hold_time,double fade_in_duration,double fade_out_duration);
     void play();
     void update(double delta) override;
     void set_on_end(FadeImageOnEnd on_end);
 
 private:
+    // Emits the completion callback once per finished playback sequence.
     void notify_finished();
 
 private:

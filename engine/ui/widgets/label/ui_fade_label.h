@@ -20,12 +20,14 @@ public:
         UiFromCenterTag, int order = 0, std::string text_key = {}) noexcept;
 
     void reset() noexcept override;
+    // Configures the fade sequence that modulates label opacity over time.
     void configure_playback(effects::UiOpacityFadeMode mode,double hold_time,double fade_in_duration,double fade_out_duration);
     void play() noexcept;
     void update(double delta) override;
     void set_on_end(FadeLabelOnEnd on_end);
 
 private:
+    // Emits the completion callback once per finished playback sequence.
     void notify_finished();
 
 private:

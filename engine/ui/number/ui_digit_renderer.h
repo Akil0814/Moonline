@@ -12,6 +12,7 @@
 
 namespace elysia::ui
 {
+// Describes how a numeric glyph string should be positioned and scaled when rendered.
 struct UiDigitRenderRequest
 {
     std::string_view text;
@@ -34,6 +35,7 @@ public:
     void set_digit_cache(elysia::number::DigitCache* digit_cache) noexcept;
     [[nodiscard]] elysia::number::DigitCache* digit_cache() const noexcept;
 
+    // Appends digit draw commands without taking ownership of the destination buffer.
     void append_render_commands(
         const UiDigitRenderRequest& request,
         std::vector<elysia::core::UiRenderCommand>& out_commands

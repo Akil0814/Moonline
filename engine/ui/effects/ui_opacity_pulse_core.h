@@ -16,6 +16,7 @@ class UiOpacityPulseCore
 public:
     UiOpacityPulseCore() noexcept = default;
 
+    // Restores default playback settings and clears any in-flight pulse state.
     void reset() noexcept
     {
         _mode = UiOpacityPulseMode::MinToMax;
@@ -55,6 +56,7 @@ public:
         _opacity = _max_opacity;
     }
 
+    // Starts a new pulse sequence from the configured edge of the opacity range.
     void play() noexcept
     {
         _finished = false;
@@ -75,6 +77,7 @@ public:
             finish();
     }
 
+    // Advances pulse timing and reports whether playback completed during this tick.
     bool update(double delta_seconds) noexcept
     {
         if (_state == State::Idle || _state == State::Finished)

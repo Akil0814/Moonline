@@ -13,6 +13,7 @@ namespace elysia::ui
 class UiControlFocusScopeHost : public UiChildHost, public UiFocusScope
 {
 public:
+    // Binds a focusable child to its directional neighbors within this scope.
     struct FocusEntry
     {
         UiControl* control = nullptr;
@@ -27,6 +28,7 @@ public:
 
     void reset() noexcept override;
 
+    // Moves focus to a registered child control when the target is still valid.
     void set_focused_target(UiControl* control);
     [[nodiscard]] UiControl* focused_target() const noexcept override;
     bool focus_first_available() override;
@@ -47,17 +49,26 @@ public:
 protected:
     virtual void rebuild_focus_registry() = 0;
 
+    // Rebuilds directional focus links after children or layout relationships change.
     void refresh_focus_registry();
+    // Replaces the current focus graph with caller-provided directional entries.
     void set_focus_entries(std::vector<FocusEntry> entries);
     [[nodiscard]] const std::vector<FocusEntry>& focus_entries() const noexcept;
     [[nodiscard]] std::vector<FocusEntry>& focus_entries() noexcept;
+    // Returns direct child controls that participate in this scope's focus graph.
     [[nodiscard]] std::vector<UiControl*> direct_focusable_children() const;
+    // Repairs stale focus after children are removed, disabled, or hidden.
     void ensure_valid_focus();
+    // Pushes the scope's current focus state down into registered child controls.
     void apply_focus_state() const;
+    // Finds the registered focus target under a pointer position for hover focus.
     [[nodiscard]] UiControl* find_registered_target_at(int mouse_x,int mouse_y) const;
     [[nodiscard]] bool is_registered_focus_target(const UiControl* control) const noexcept;
+    // Performs focus assignment without re-entering public validation paths.
     [[nodiscard]] bool set_focused_target_internal(UiControl* control) noexcept;
+    // Tracks the device that most recently drove focus decisions.
     void update_focus_input_device(elysia::input::InputDevice device) noexcept;
+    // Restores the previously focused child when it is still usable.
     bool restore_preferred_focus_target();
     [[nodiscard]] static bool uses_pointer_focus_policy(elysia::input::InputDevice device) noexcept;
 

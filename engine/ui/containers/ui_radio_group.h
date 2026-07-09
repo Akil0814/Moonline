@@ -26,10 +26,12 @@ public:
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
 
     [[nodiscard]] std::optional<std::size_t> selected_index() const noexcept;
+    // Selects one radio button and clears selection from the rest of the group.
     [[nodiscard]] bool set_selected_index(std::size_t index);
     void set_on_selection_changed(UiRadioGroupSelectionChangedCallback on_selection_changed);
 
 private:
+    // Mirrors button-level selection back into the group and emits one callback when needed.
     void sync_selection(bool notify);
     [[nodiscard]] UiRadioButton* radio_button_at(std::size_t index) const noexcept;
 

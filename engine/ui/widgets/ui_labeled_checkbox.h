@@ -19,6 +19,7 @@ enum class UiLabeledCheckboxTextPlacement
     FarEdge
 };
 
+// Bundles checkbox config with label text and label placement behavior.
 struct UiLabeledCheckboxConfig
 {
     UiCheckboxConfig checkbox{};
@@ -46,6 +47,7 @@ public:
     void reset() noexcept override;
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
 
+    // Applies checkbox behavior together with label content and label placement rules.
     void set_labeled_checkbox_config(const UiLabeledCheckboxConfig& config);
 
     void set_text_key(std::string text_key);
@@ -78,11 +80,15 @@ public:
     [[nodiscard]] bool draws_border() const noexcept;
 
 protected:
+    // Shrinks the inherited checkbox indicator rect to make room for the label.
     [[nodiscard]] elysia::core::Rect checkbox_rect() const noexcept override;
 
 private:
+    // Applies the config payload without exposing intermediate label visuals.
     void apply_labeled_checkbox_config(const UiLabeledCheckboxConfig& config);
+    // Mirrors checkbox enabled/focus visuals into the owned label widget.
     void sync_label_visuals() const;
+    // Returns the rect used to render the label beside the checkbox indicator.
     [[nodiscard]] elysia::core::Rect label_rect() const noexcept;
 
 private:

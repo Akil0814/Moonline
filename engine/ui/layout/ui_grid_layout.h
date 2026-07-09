@@ -5,6 +5,7 @@
 
 namespace elysia::ui::layout
 {
+// Shared grid layout settings for containers that place children in uniform cells.
 struct UiGridLayoutConfig
 {
     int column_count = 4;
@@ -13,12 +14,14 @@ struct UiGridLayoutConfig
     bool fill_by_row = true;
 };
 
+// Places children into grid cells within the supplied bounds.
 void layout_grid_children(
     std::vector<UiChildHost::ChildEntry>& children,
     const elysia::core::Rect& bounds,
     const UiGridLayoutConfig& config
 ) noexcept;
 
+// Measures the padded extent required to lay out the current grid children.
 [[nodiscard]] elysia::core::Vector2 intrinsic_grid_extent(
     const std::vector<UiChildHost::ChildEntry>& children,
     const UiLayoutPadding& padding,

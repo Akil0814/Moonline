@@ -27,6 +27,7 @@ public:
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
     [[nodiscard]] elysia::core::Vector2 content_extent() const noexcept override;
 
+    // Inserts a child relative to the last panel insertion point and updates focus links.
     void add_child(std::unique_ptr<UiElement> child,UiPanelInsertDirection direction = UiPanelInsertDirection::Down);
     UiElement* add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options) override;
 
@@ -43,10 +44,13 @@ public:
     [[nodiscard]] elysia::core::Color border_color() const noexcept;
 
 protected:
+    // Repositions children using the panel's incremental insertion layout.
     void rebuild_layout() override;
+    // Rebuilds directional focus neighbors based on insertion relationships.
     void rebuild_focus_registry() override;
 
 private:
+    // Stores directional navigation links for one focusable child in the panel flow.
     struct FocusLink
     {
         UiControl* control = nullptr;
@@ -54,8 +58,11 @@ private:
     };
 
 private:
+    // Performs directional child insertion and returns the adopted child pointer.
     UiElement* insert_panel_child(std::unique_ptr<UiElement> child,UiPanelInsertDirection direction);
+    // Removes focus links that no longer reference live child controls.
     void prune_panel_links();
+    // Returns or creates the focus-link record for a child control.
     FocusLink& ensure_link(UiControl& control);
     FocusLink* find_link(UiControl& control) noexcept;
     const FocusLink* find_link(const UiControl& control) const noexcept;

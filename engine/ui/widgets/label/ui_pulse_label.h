@@ -23,6 +23,7 @@ public:
 
     void reset() noexcept override;
 
+    // Configures the pulse sequence that modulates label opacity between min and max.
     void configure_playback(effects::UiOpacityPulseMode mode,
         double hold_time,double pulse_in_duration,double pulse_out_duration,
         std::optional<int> pulse_cycles = std::nullopt,std::uint8_t min_alpha = 96,std::uint8_t max_alpha = 255);
@@ -32,6 +33,7 @@ public:
     void set_on_end(PulseLabelOnEnd on_end);
 
 private:
+    // Emits the completion callback once per finished playback sequence.
     void notify_finished();
 
 private:

@@ -4,6 +4,7 @@
 
 namespace elysia::ui
 {
+// Visual settings for text-only label widgets.
 struct UiLabelStyle
 {
     elysia::core::Color text{};
@@ -11,6 +12,7 @@ struct UiLabelStyle
     bool draw_background = false;
 };
 
+// Visual settings for numeric glyph widgets.
 struct UiNumberStyle
 {
     elysia::core::Color text{};
@@ -18,6 +20,7 @@ struct UiNumberStyle
     bool draw_background = false;
 };
 
+// Visual settings for value bars and progress-like fills.
 struct UiBarStyle
 {
     elysia::core::Color background{};
@@ -26,6 +29,7 @@ struct UiBarStyle
     bool draw_border = false;
 };
 
+// Visual settings for simple panel containers.
 struct UiPanelStyle
 {
     bool draw_background = false;
@@ -34,6 +38,7 @@ struct UiPanelStyle
     elysia::core::Color border{};
 };
 
+// Visual settings for containers with a framed body and optional header chrome.
 struct UiChromeContainerStyle
 {
     bool draw_background = true;
@@ -44,6 +49,7 @@ struct UiChromeContainerStyle
     elysia::core::Color header_background{};
 };
 
+// Visual settings for top-level UI windows.
 struct UiWindowStyle
 {
     bool draw_background = false;

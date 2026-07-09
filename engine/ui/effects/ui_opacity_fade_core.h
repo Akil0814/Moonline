@@ -16,6 +16,7 @@ class UiOpacityFadeCore
 public:
     UiOpacityFadeCore() noexcept = default;
 
+    // Restores default playback settings and clears any in-flight fade state.
     void reset() noexcept
     {
         _mode = UiOpacityFadeMode::FadeIn;
@@ -37,6 +38,7 @@ public:
         _fade_out_duration = fade_out_duration > 0.0 ? fade_out_duration : 0.0;
     }
 
+    // Starts a new fade sequence from the configured initial opacity.
     void play() noexcept
     {
         _finished = false;
@@ -56,6 +58,7 @@ public:
         }
     }
 
+    // Advances fade timing and reports whether playback completed during this tick.
     bool update(double delta_seconds) noexcept
     {
         if (_state == State::Idle || _state == State::Finished)

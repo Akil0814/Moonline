@@ -14,9 +14,11 @@ public:
 
     void reset() noexcept override;
 
+    // Enables or suppresses interaction without removing the control from layout.
     virtual void set_enabled(bool enabled);
     [[nodiscard]] bool is_enabled() const;
 
+    // Updates the control's focus state so widgets can refresh visuals or input mode.
     void set_focused(bool focused) override;
     [[nodiscard]] bool is_focused() const override;
 
