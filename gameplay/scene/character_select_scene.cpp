@@ -6,6 +6,7 @@
 #include "../../application/scene/scene_payloads.h"
 
 #include "../../engine/audio/audio_service.h"
+#include "../../engine/resources/resource_manager.h"
 
 #include "../../engine/ui/widgets/image/ui_image.h"
 #include "../../engine/ui/widgets/image/ui_animation.h"
@@ -28,6 +29,10 @@ namespace arcneco::scene
     void  CharacterSelectScene::on_enter(const elysia::scene::ScenePayload& payload)
     {
         (void)payload;
+
+        if (!elysia::audio::AudioService::instance()->play_music("scene.character_select_scene_main"))
+            std::cout << "play character_select music error" << std::endl;
+
         const bool should_build_ui = !_main_window || _main_window->is_destroyed();
         if (should_build_ui)
             build_buttons();
@@ -100,7 +105,7 @@ namespace arcneco::scene
 
     void CharacterSelectScene::build_character_list()
     {
-        auto* horizontal_scroll = _main_window->create_child<elysia::ui::UiScrollContainer>(elysia::core::Rect{ 0,0,800,100 });
+        auto* horizontal_scroll = _main_window->create_child<elysia::ui::UiScrollContainer>(elysia::core::Rect{ 0,0,800,200 });
         if (!horizontal_scroll)
             return;
 
@@ -108,20 +113,27 @@ namespace arcneco::scene
         horizontal_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
         horizontal_scroll->set_scroll_step(elysia::core::Vector2(36.0f, 36.0f));
 
-        auto ui_list = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,1000,100 });
+        auto ui_list = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,0,200 });
         ui_list->set_direction(elysia::ui::UiListDirection::Horizontal);
 
-        constexpr int character_ui_wide = 64;
-        constexpr int character_ui_hight = 128;
+        constexpr int character_ui_width = 96;
+        constexpr int character_ui_height = 192;
 
         for (const std::string& character_key : _character_keys)
         {
-            (void)character_key;
-            auto avatar = std::make_unique<elysia::ui::UiImage>(
-                nullptr,
-                elysia::core::Rect{ 0,0,character_ui_wide,character_ui_hight }
-            );
-            ui_list->add_back(std::move(avatar));
+            for (int i = 0;i < 10;i++)
+            {
+                SDL_Texture* avatar_tex =
+                    elysia::resources::ResourceManager::instance()->find_texture(character_key + ".selecting_icon");
+                auto avatar = std::make_unique<elysia::ui::UiImage>(
+                    avatar_tex,
+                    elysia::core::Rect{ 0,0,character_ui_width,character_ui_height }
+                );
+                ui_list->add_back(std::move(avatar));
+
+                std::cout << "2" << std::endl;
+            }
+
         }
 
         horizontal_scroll->set_content(std::move(ui_list));

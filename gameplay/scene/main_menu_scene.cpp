@@ -23,7 +23,7 @@ void MainMenuScene::on_enter(const elysia::scene::ScenePayload& payload)
     if (_has_entered)
         return;
 
-    if (elysia::audio::AudioService::instance()->play_music("scene.main_meun_scene_main"))
+    if (!elysia::audio::AudioService::instance()->play_music("scene.main_meun_scene_main"))
         std::cout << "play main meun music error" << std::endl;
 
     if (!_main_menu_window || _main_menu_window->is_destroyed())
