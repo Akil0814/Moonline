@@ -116,9 +116,20 @@ void UiPanel::set_scope_focused(bool focused) noexcept
 bool UiPanel::focus_first_available()
 {
     const bool focused = UiControlFocusScopeHost::focus_first_available();
+    if (!focused)
+    {
+        // focused_target() validates by calling this method. Avoid querying it again
+        // when an informational panel has no focusable children.
+        sync_delegated_scope_focus(
+            static_cast<UiElement*>(nullptr),
+            is_scope_focused(),
+            delegated_focus_regions(*this));
+        return false;
+    }
+
     sync_delegated_owner_scope_target(UiControlFocusScopeHost::focused_target());
     sync_child_scope_focus();
-    return focused;
+    return true;
 }
 
 bool UiPanel::can_navigate(UiAction action) const noexcept

@@ -84,6 +84,21 @@ void UiConfirmationDialog::on_ui_input_frame(const UiInputFrame& input)
 
 bool UiConfirmationDialog::on_ui_input_event(const UiInputEvent& event)
 {
+    // The outer dialog flattens Chrome controls for focus ownership, but Chrome owns
+    // the directional links between its body action buttons. Route action input there
+    // so keyboard and gamepad navigation stay inside the modal action row.
+    const bool is_action_navigation = event.type == UiInputEventType::ActionPressed
+        && is_navigation_action(event.action);
+    const bool is_confirm_action = event.action == UiAction::Confirm
+        && (event.type == UiInputEventType::ActionPressed || event.type == UiInputEventType::ActionReleased);
+    if (_chrome && (is_action_navigation || is_confirm_action))
+    {
+        const bool handled = _chrome->on_ui_input_event(event);
+        sync_host_delegated_focus_target(*this);
+        sync_delegated_focus();
+        return handled;
+    }
+
     const bool handled = UiControlFocusScopeHost::on_ui_input_event(event);
     sync_host_delegated_focus_target(*this);
     sync_delegated_focus();

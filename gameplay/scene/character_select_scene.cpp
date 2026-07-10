@@ -11,8 +11,10 @@
 #include "../../engine/ui/widgets/image/ui_animation.h"
 #include "../../engine/ui/widgets/image/ui_image.h"
 #include "../../engine/ui/widgets/ui_button.h"
+#include "../../engine/ui/widgets/label/ui_label.h"
 #include "../../engine/ui/containers/ui_list_container.h"
 #include "../../engine/ui/containers/ui_button_group.h"
+#include "../../engine/ui/containers/ui_panel.h"
 #include "../../engine/ui/containers/ui_scroll_container.h"
 #include "../../engine/ui/composites/ui_confirmation_dialog.h"
 
@@ -71,11 +73,12 @@ namespace arcneco::scene
             return;
 
         clear_character_visual_refs();
+        clear_character_detail_refs();
         _main_window = Scene::create_and_add_object<elysia::ui::UiWindow>(elysia::core::Rect{ 0,0,1280,720 });
 
         SDL_Texture* tex =
             elysia::resources::ResourceManager::instance()->find_texture("ui.moon");
-        auto ui_background = std::make_unique<elysia::ui::UiImage>(tex, elysia::core::Rect{ 0,0,1780,844 }, -10);
+        auto ui_background = std::make_unique<elysia::ui::UiImage>(tex, elysia::core::Rect{ 0,0,1280,720 }, -10);
         _main_window->add_child(std::move(ui_background), { elysia::ui::UiLayoutAnchor::Center });
 
         //popup
@@ -83,7 +86,10 @@ namespace arcneco::scene
         build_popup();
         build_left_panel();
         build_right_panel();
+        build_character_detailed();
+        build_action_buttons();
         set_character_visuals_visible(false);
+        set_character_details_visible(false);
         _main_window->set_on_cancel([this]{
             if (_exit_confirmation)
                 _exit_confirmation->open();});
@@ -115,10 +121,20 @@ namespace arcneco::scene
 
     void CharacterSelectScene::build_character_list()
     {
-        auto* horizontal_scroll = _main_window->create_child<elysia::ui::UiScrollContainer>(elysia::core::Rect{ 0,0,800,200 });
+        const elysia::ui::UiLayoutChildOptions scroll_layout{
+            ._anchor = elysia::ui::UiLayoutAnchor::TopCenter,
+            ._margin = elysia::ui::UiLayoutMargin{ .top = 20.0f }
+        };
+        auto* horizontal_scroll = _main_window->create_child<elysia::ui::UiScrollContainer>(
+            scroll_layout,
+            elysia::core::Rect{ 0,0,800,200 });
         if (!horizontal_scroll)
             return;
 
+        auto scroll_style = horizontal_scroll->style();
+        scroll_style.draw_background = false;
+        scroll_style.draw_border = false;
+        horizontal_scroll->set_style(scroll_style);
         horizontal_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Horizontal);
         horizontal_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
         horizontal_scroll->set_scroll_step(elysia::core::Vector2(36.0f, 36.0f));
@@ -166,7 +182,10 @@ namespace arcneco::scene
     {
         auto ui_character_selected_background = std::make_unique<elysia::ui::UiAnimation>("ryougi_shiki.idle", elysia::core::Rect{ 0,0,512,512 }, 0);
         _character_visuals.idle_preview = ui_character_selected_background.get();
-        _main_window->add_child(std::move(ui_character_selected_background), { elysia::ui::UiLayoutAnchor::BottomLeft });
+        _main_window->add_child(std::move(ui_character_selected_background), {
+            ._anchor = elysia::ui::UiLayoutAnchor::BottomLeft,
+            ._margin = elysia::ui::UiLayoutMargin{ .left = -64.0f, .bottom = -24.0f }
+        });
     }
 
     void CharacterSelectScene::build_left_panel()
@@ -183,18 +202,89 @@ namespace arcneco::scene
         _character_visuals.name_image = ui_character_name.get();
         _character_visuals.selected_background = ui_character_selected_background.get();
         _main_window->add_child(std::move(ui_character_stand), { elysia::ui::UiLayoutAnchor::BottomRight });
-        _main_window->add_child(std::move(ui_character_name), { elysia::ui::UiLayoutAnchor::CenterRight });
+        _main_window->add_child(std::move(ui_character_name), {
+            ._anchor = elysia::ui::UiLayoutAnchor::BottomLeft,
+        });
         _main_window->add_child(std::move(ui_character_selected_background), { elysia::ui::UiLayoutAnchor::BottomRight });
     }
 
     void CharacterSelectScene::build_character_detailed()
     {
+        auto info_panel = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,420,250 });
+        info_panel->set_theme_role(elysia::ui::UiPanelThemeRole::Dialog);
 
+        auto title = std::make_unique<elysia::ui::UiLabel>(
+            elysia::core::Rect{ 0,0,372,36 },0,elysia::ui::ui_raw_text("CHARACTER INFO"));
+        title->set_theme_role(elysia::ui::UiLabelThemeRole::Title);
+        title->set_typography_role(elysia::ui::UiTypographyRole::DialogTitle);
+        _character_details.title_label = title.get();
+        info_panel->add_child(std::move(title),{
+            ._anchor = elysia::ui::UiLayoutAnchor::TopLeft,
+            ._margin = elysia::ui::UiLayoutMargin{ .left = 24.0f,.top = 20.0f }
+        });
+
+        const auto add_section = [&info_panel](const char* text,float top)
+        {
+            auto label = std::make_unique<elysia::ui::UiLabel>(
+                elysia::core::Rect{ 0,0,372,28 },0,elysia::ui::ui_raw_text(text));
+            label->set_theme_role(elysia::ui::UiLabelThemeRole::Subtitle);
+            info_panel->add_child(std::move(label),{
+                ._anchor = elysia::ui::UiLayoutAnchor::TopLeft,
+                ._margin = elysia::ui::UiLayoutMargin{ .left = 24.0f,.top = top }
+            });
+        };
+        add_section("Character details will appear here.",72.0f);
+        add_section("ATTRIBUTES  —  Coming soon",126.0f);
+        add_section("SKILLS      —  Coming soon",176.0f);
+
+        _character_details.info_panel = info_panel.get();
+        _main_window->add_child(std::move(info_panel),{
+            ._anchor = elysia::ui::UiLayoutAnchor::Center,
+            ._margin = elysia::ui::UiLayoutMargin{ .top = 20.0f }
+        });
+    }
+
+    void CharacterSelectScene::build_action_buttons()
+    {
+        auto action_row = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,336,52 });
+        action_row->set_direction(elysia::ui::UiListDirection::Horizontal);
+        action_row->set_item_spacing(16.0f);
+
+        auto confirm = std::make_unique<elysia::ui::UiButton>(
+            elysia::core::Rect{ 0,0,160,52 },
+            elysia::ui::UiButtonConfig{ .content = elysia::ui::ui_raw_text("CONFIRM") });
+        confirm->set_theme_role(elysia::ui::UiButtonThemeRole::Primary);
+        confirm->set_on_click([this]()
+        {
+            std::cout << "Character selection confirmed: " << _current_character_key << std::endl;
+        });
+        _character_details.confirm_button = confirm.get();
+        action_row->add_back(std::move(confirm));
+
+        auto back = std::make_unique<elysia::ui::UiButton>(
+            elysia::core::Rect{ 0,0,160,52 },
+            elysia::ui::UiButtonConfig{ .content = elysia::ui::ui_raw_text("BACK") });
+        back->set_on_click([this]()
+        {
+            if (_exit_confirmation)
+                _exit_confirmation->open();
+        });
+        _character_details.back_button = back.get();
+        action_row->add_back(std::move(back));
+
+        _character_details.action_row = action_row.get();
+        elysia::ui::UiElement* added = _main_window->add_child(std::move(action_row),{
+            ._anchor = elysia::ui::UiLayoutAnchor::BottomCenter,
+            ._margin = elysia::ui::UiLayoutMargin{ .bottom = 24.0f }
+        });
+        if (auto* scope = dynamic_cast<elysia::ui::UiListContainer*>(added))
+            _main_window->register_focus_scope(*scope);
     }
 
     void CharacterSelectScene::on_character_change()
     {
         refresh_character_visuals();
+        refresh_character_details();
     }
 
     void CharacterSelectScene::refresh_character_visuals()
@@ -248,9 +338,36 @@ namespace arcneco::scene
             _character_visuals.idle_preview->set_visible(visible);
     }
 
+    void CharacterSelectScene::refresh_character_details()
+    {
+        if (_current_character_key.empty())
+            return;
+
+        if (_character_details.title_label)
+            _character_details.title_label->set_text_content(
+                elysia::ui::ui_raw_text("CHARACTER INFO — " + _current_character_key));
+        set_character_details_visible(true);
+    }
+
+    void CharacterSelectScene::set_character_details_visible(bool visible) noexcept
+    {
+        if (_character_details.info_panel)
+            _character_details.info_panel->set_visible(visible);
+        if (_character_details.confirm_button)
+        {
+            _character_details.confirm_button->set_visible(visible);
+            _character_details.confirm_button->set_enabled(visible);
+        }
+    }
+
     void CharacterSelectScene::clear_character_visual_refs() noexcept
     {
         _character_visuals = CharacterVisualRefs{};
+    }
+
+    void CharacterSelectScene::clear_character_detail_refs() noexcept
+    {
+        _character_details = CharacterDetailRefs{};
     }
 
 }

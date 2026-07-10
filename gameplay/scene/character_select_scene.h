@@ -12,6 +12,10 @@ namespace elysia::ui
 class UiConfirmationDialog;
 class UiAnimation;
 class UiImage;
+class UiButton;
+class UiLabel;
+class UiListContainer;
+class UiPanel;
 }
 
 namespace arcneco::scene
@@ -34,14 +38,18 @@ namespace arcneco::scene
         void build_ui();
         void build_character_list();
         void build_character_detailed();
+        void build_action_buttons();
         void build_right_panel();
         void build_left_panel();
         void build_popup();
 
         void on_character_change();
         void refresh_character_visuals();
+        void refresh_character_details();
         void set_character_visuals_visible(bool visible) noexcept;
+        void set_character_details_visible(bool visible) noexcept;
         void clear_character_visual_refs() noexcept;
+        void clear_character_detail_refs() noexcept;
 
     private:
 
@@ -57,6 +65,17 @@ namespace arcneco::scene
             elysia::ui::UiAnimation* idle_preview = nullptr;
         };
         CharacterVisualRefs _character_visuals{};
+
+        // Borrowed pointers to window-owned character detail and action UI.
+        struct CharacterDetailRefs
+        {
+            elysia::ui::UiPanel* info_panel = nullptr;
+            elysia::ui::UiLabel* title_label = nullptr;
+            elysia::ui::UiListContainer* action_row = nullptr;
+            elysia::ui::UiButton* confirm_button = nullptr;
+            elysia::ui::UiButton* back_button = nullptr;
+        };
+        CharacterDetailRefs _character_details{};
 
     private:
 
