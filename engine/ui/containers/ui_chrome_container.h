@@ -51,6 +51,8 @@ public:
     [[nodiscard]] bool is_scope_focused() const noexcept override;
     [[nodiscard]] bool has_focusable_target() const noexcept override;
     bool focus_first_available() override;
+    // Enters the delegated body scope and focuses its first available control.
+    bool focus_body_first_available();
     [[nodiscard]] UiControl* focused_target() const noexcept override;
     [[nodiscard]] bool can_navigate(UiAction action) const noexcept override;
 

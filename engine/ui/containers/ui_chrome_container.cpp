@@ -355,6 +355,15 @@ bool UiChromeContainer::focus_first_available()
     return UiControlFocusScopeHost::focus_first_available();
 }
 
+bool UiChromeContainer::focus_body_first_available()
+{
+    cleanup_destroyed_children();
+    update_layout_if_dirty();
+    refresh_focus_registry();
+    ensure_valid_focus();
+    return enter_body_scope(true);
+}
+
 UiControl* UiChromeContainer::focused_target() const noexcept
 {
     if (_body_scope_active)

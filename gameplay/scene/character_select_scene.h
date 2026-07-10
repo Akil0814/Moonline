@@ -8,7 +8,7 @@
 
 namespace elysia::ui
 {
-class UiChromeContainer;
+class UiConfirmationDialog;
 }
 
 namespace arcneco::scene
@@ -31,12 +31,12 @@ namespace arcneco::scene
         void build_buttons();
         void build_character_list();
         void build_character_detailed();
-        void build_popup();]
+        void build_popup();
 
     private:
 
         elysia::ui::UiWindow* _main_window = nullptr;
-        elysia::ui::UiChromeContainer* _exit_confirmation = nullptr;
+        elysia::ui::UiConfirmationDialog* _exit_confirmation = nullptr;
 
         std::string _current_character_key = {};
         std::vector<std::string> _character_keys = {};

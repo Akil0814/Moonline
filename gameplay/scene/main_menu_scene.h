@@ -12,7 +12,7 @@
 namespace elysia::ui
 {
 class UiButton;
-class UiChromeContainer;
+class UiConfirmationDialog;
 }
 
 namespace arcneco::scene
@@ -40,7 +40,7 @@ private:
 private:
     bool _has_entered = false;
     elysia::ui::UiWindow* _main_menu_window = nullptr;
-    elysia::ui::UiChromeContainer* _exit_confirmation = nullptr;
+    elysia::ui::UiConfirmationDialog* _exit_confirmation = nullptr;
 
 };
 }
