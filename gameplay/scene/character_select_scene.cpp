@@ -70,6 +70,7 @@ namespace arcneco::scene
         if (_main_window && !_main_window->is_destroyed())
             return;
 
+        clear_character_visual_refs();
         _main_window = Scene::create_and_add_object<elysia::ui::UiWindow>(elysia::core::Rect{ 0,0,1280,720 });
 
         //popup
@@ -125,6 +126,7 @@ namespace arcneco::scene
                 {
                     _current_character_key = _character_button_keys[*selected_index];
                     elysia::audio::AudioService::instance()->play_sound(_current_character_key + ".selected");
+                    on_character_change();
                 }
         });
 
@@ -156,6 +158,7 @@ namespace arcneco::scene
     void CharacterSelectScene::build_right_panel()
     {
         auto ui_character_selected_background = std::make_unique<elysia::ui::UiAnimation>("ryougi_shiki.idle", elysia::core::Rect{ 0,0,256,256 }, 0);
+        _character_visuals.idle_preview = ui_character_selected_background.get();
         _main_window->add_child(std::move(ui_character_selected_background), { elysia::ui::UiLayoutAnchor::BottomRight });
     }
 
@@ -166,6 +169,8 @@ namespace arcneco::scene
 
         auto ui_character_stand = std::make_unique<elysia::ui::UiImage>(tex, elysia::core::Rect{0,0,384,384}, 10);
         auto ui_character_selected_background = std::make_unique<elysia::ui::UiAnimation>("ryougi_shiki.selected_background", elysia::core::Rect{ 0,0,512,512 },0);
+        _character_visuals.full_portrait = ui_character_stand.get();
+        _character_visuals.selected_background = ui_character_selected_background.get();
         _main_window->add_child(std::move(ui_character_stand), { elysia::ui::UiLayoutAnchor::BottomLeft });
         _main_window->add_child(std::move(ui_character_selected_background), { elysia::ui::UiLayoutAnchor::BottomLeft });
     }
@@ -177,7 +182,43 @@ namespace arcneco::scene
 
     void CharacterSelectScene::on_character_change()
     {
+        refresh_character_visuals();
+    }
 
+    void CharacterSelectScene::refresh_character_visuals()
+    {
+        if (_current_character_key.empty())
+            return;
+
+        if (_character_visuals.full_portrait)
+        {
+            SDL_Texture* texture = elysia::resources::ResourceManager::instance()->find_texture(
+                _current_character_key + ".full");
+            _character_visuals.full_portrait->set_texture(texture);
+            _character_visuals.full_portrait->set_visible(texture != nullptr);
+        }
+
+        if (_character_visuals.selected_background)
+        {
+            const bool loaded = _character_visuals.selected_background->set_animation_key(
+                _current_character_key + ".selected_background");
+            _character_visuals.selected_background->set_visible(loaded);
+            if (loaded)
+                _character_visuals.selected_background->play();
+        }
+
+        if (_character_visuals.idle_preview)
+        {
+            const bool loaded = _character_visuals.idle_preview->set_animation_key(_current_character_key + ".idle");
+            _character_visuals.idle_preview->set_visible(loaded);
+            if (loaded)
+                _character_visuals.idle_preview->play();
+        }
+    }
+
+    void CharacterSelectScene::clear_character_visual_refs() noexcept
+    {
+        _character_visuals = CharacterVisualRefs{};
     }
 
 }

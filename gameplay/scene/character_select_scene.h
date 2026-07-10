@@ -10,6 +10,8 @@
 namespace elysia::ui
 {
 class UiConfirmationDialog;
+class UiAnimation;
+class UiImage;
 }
 
 namespace arcneco::scene
@@ -37,11 +39,22 @@ namespace arcneco::scene
         void build_popup();
 
         void on_character_change();
+        void refresh_character_visuals();
+        void clear_character_visual_refs() noexcept;
 
     private:
 
         elysia::ui::UiWindow* _main_window = nullptr;
         elysia::ui::UiConfirmationDialog* _exit_confirmation = nullptr;
+
+        // Borrowed pointers to window-owned character visuals. They are cleared before rebuilding the window.
+        struct CharacterVisualRefs
+        {
+            elysia::ui::UiImage* full_portrait = nullptr;
+            elysia::ui::UiAnimation* selected_background = nullptr;
+            elysia::ui::UiAnimation* idle_preview = nullptr;
+        };
+        CharacterVisualRefs _character_visuals{};
 
     private:
 
