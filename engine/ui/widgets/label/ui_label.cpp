@@ -41,6 +41,7 @@ void UiLabel::reset() noexcept
     _style_state.reset(UiStyleDefaults::label());
     _theme_role = UiLabelThemeRole::Default;
     _typography_role = UiTypographyRole::Label;
+    _target_height.reset();
     _horizontal_align = resolve_ui_typography(_typography_role).horizontal_align_default;
     _vertical_align = TextVerticalAlign::Top;
     _padding = 0;
@@ -110,6 +111,21 @@ void UiLabel::set_typography_role(UiTypographyRole role) noexcept
 UiTypographyRole UiLabel::typography_role() const noexcept
 {
     return _typography_role;
+}
+
+void UiLabel::set_target_height(float height)
+{
+    _target_height = std::max(0.0f,height);
+}
+
+std::optional<float> UiLabel::target_height() const noexcept
+{
+    return _target_height;
+}
+
+void UiLabel::clear_target_height()
+{
+    _target_height.reset();
 }
 
 void UiLabel::set_style(const UiLabelStyle& style) noexcept
@@ -213,7 +229,10 @@ elysia::core::Rect UiLabel::text_render_rect(SDL_Texture* text_texture) const no
     const float available_height = available_rect.height();
     const float width_scale = available_width / static_cast<float>(texture_width);
     const float height_scale = available_height / static_cast<float>(texture_height);
-    const float scale = std::min(1.0f,std::min(width_scale,height_scale));
+    const float target_scale = _target_height.has_value() && *_target_height > 0.0f
+        ? *_target_height / static_cast<float>(texture_height)
+        : 1.0f;
+    const float scale = std::min(target_scale,std::min(width_scale,height_scale));
     const elysia::core::Vector2 render_size(
         static_cast<float>(texture_width) * scale,
         static_cast<float>(texture_height) * scale

@@ -29,7 +29,9 @@ namespace arcneco::scene
 
     private:    
         void build_buttons();
-        void build_popup();
+        void build_character_list();
+        void build_character_detailed();
+        void build_popup();]
 
     private:
 

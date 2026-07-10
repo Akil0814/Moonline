@@ -8,6 +8,7 @@
 #include "../../text/ui_text_content.h"
 #include "../../text/ui_typography.h"
 
+#include <optional>
 #include <string>
 
 struct SDL_Texture;
@@ -51,6 +52,10 @@ public:
     void set_typography_role(UiTypographyRole role) noexcept;
     [[nodiscard]] UiTypographyRole typography_role() const noexcept;
 
+    void set_target_height(float height);
+    [[nodiscard]] std::optional<float> target_height() const noexcept;
+    void clear_target_height();
+
     void set_padding(int padding);
     [[nodiscard]] int padding() const noexcept;
 
@@ -66,6 +71,7 @@ private:
     UiStyleState<UiLabelStyle> _style_state;
     UiLabelThemeRole _theme_role = UiLabelThemeRole::Default;
     UiTypographyRole _typography_role = UiTypographyRole::Label;
+    std::optional<float> _target_height;
     TextHorizontalAlign _horizontal_align = TextHorizontalAlign::Left;
     TextVerticalAlign _vertical_align = TextVerticalAlign::Top;
     int _padding = 0;

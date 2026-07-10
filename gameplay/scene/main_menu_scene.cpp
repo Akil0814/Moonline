@@ -188,9 +188,13 @@ void MainMenuScene::build_menu_buttons()
     }
     //Title
     std::unique_ptr<elysia::ui::UiLabel> ui_label =
-        std::make_unique<elysia::ui::UiLabel>(elysia::core::Rect{ 0,0,200,175 }, 0, elysia::ui::ui_text_key("menu_scene.project_name"));
+        std::make_unique<elysia::ui::UiLabel>(elysia::core::Rect{ 0,0,600,120 },0,elysia::ui::ui_text_key("menu_scene.project_name"));
     ui_label->set_theme_role(elysia::ui::UiLabelThemeRole::Title);
-    _main_menu_window->add_child(std::move(ui_label), { elysia::ui::UiLayoutAnchor::TopCenter});
+    ui_label->set_typography_role(elysia::ui::UiTypographyRole::Title);
+    ui_label->set_target_height(96.0f);
+    ui_label->set_horizontal_align(elysia::ui::TextHorizontalAlign::Center);
+    ui_label->set_vertical_align(elysia::ui::TextVerticalAlign::Center);
+    _main_menu_window->add_child(std::move(ui_label),{ elysia::ui::UiLayoutAnchor::TopCenter });
 
     _main_menu_window->set_on_cancel([this] {
         if (_main_menu_window && _exit_confirmation)
