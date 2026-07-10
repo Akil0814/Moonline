@@ -11,6 +11,7 @@
 #include "../../engine/ui/containers/ui_radio_group.h"
 #include "../../engine/ui/containers/ui_scroll_container.h"
 #include "../../engine/ui/containers/ui_dialog.h"
+#include "../../engine/ui/containers/ui_tab_container.h"
 #include "../../engine/ui/widgets/ui_button.h"
 #include "../../engine/ui/widgets/ui_dropdown_button_set.h"
 #include "../../engine/ui/widgets/ui_checkbox.h"
@@ -448,7 +449,7 @@ void UiContainerTestScene::rebuild_ui()
     widget_scroll->set_scroll_step(elysia::core::Vector2(24.0f,24.0f));
     register_themed(widget_scroll);
 
-    auto widget_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,340,1160 });
+    auto widget_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,340,1620 });
     widget_content->set_theme_role(elysia::ui::UiPanelThemeRole::Dialog);
     register_themed(widget_content.get());
 
@@ -736,6 +737,64 @@ void UiContainerTestScene::rebuild_ui()
     panel_tooltip->bind_trigger(*panel_tooltip_trigger);
     panel_tooltip->set_content(std::move(panel_tooltip_content));
     panel_tooltip->register_with_window(*_root_window);
+
+    auto tabs = std::make_unique<elysia::ui::UiTabContainer>(elysia::core::Rect{ 18,1040,304,300 });
+    elysia::ui::UiTabContainer* tabs_ptr = tabs.get();
+    const auto add_test_tabs = [this,tabs_ptr]()
+    {
+        auto buttons_page = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,304,250 });
+        auto page_button = std::make_unique<elysia::ui::UiButton>(
+            elysia::core::Rect{ 12,12,180,40 },make_button_config("menu_scene.start"),0);
+        register_theme_element(*page_button);
+        buttons_page->add_child(std::move(page_button),elysia::ui::UiPanelInsertDirection::Down);
+        register_theme_element(*buttons_page);
+        (void)tabs_ptr->add_tab(elysia::ui::ui_raw_text("Buttons"),std::move(buttons_page));
+
+        auto form_page = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,304,250 });
+        auto page_input = make_text_input(elysia::core::Rect{ 12,12,220,42 },"Tab input",std::nullopt,"tab-form");
+        register_theme_element(*page_input);
+        form_page->add_child(std::move(page_input),elysia::ui::UiPanelInsertDirection::Down);
+        register_theme_element(*form_page);
+        (void)tabs_ptr->add_tab(elysia::ui::ui_raw_text("Form"),std::move(form_page));
+
+        auto composite_page = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,304,250 });
+        auto page_label = std::make_unique<elysia::ui::UiLabel>(
+            elysia::core::Rect{ 12,12,220,40 },0,elysia::ui::ui_raw_text("Composite tab page"));
+        register_theme_element(*page_label);
+        composite_page->add_child(std::move(page_label),elysia::ui::UiPanelInsertDirection::Down);
+        register_theme_element(*composite_page);
+        (void)tabs_ptr->add_tab(elysia::ui::ui_raw_text("Panel"),std::move(composite_page));
+    };
+    add_test_tabs();
+    tabs_ptr->set_on_focused_changed([](std::optional<std::size_t> index)
+    {
+        std::cout << "tab focused " << (index ? std::to_string(*index) : "none") << std::endl;
+    });
+    tabs_ptr->set_on_selected_changed([](std::optional<std::size_t> index)
+    {
+        std::cout << "tab selected " << (index ? std::to_string(*index) : "none") << std::endl;
+    });
+    widget_content->add_child(std::move(tabs),elysia::ui::UiPanelInsertDirection::Down);
+
+    auto remove_tab_button = std::make_unique<elysia::ui::UiButton>(
+        elysia::core::Rect{ 18,1350,220,40 },make_button_config("menu_scene.exit"),0);
+    remove_tab_button->set_on_click([tabs_ptr]()
+    {
+        if (auto selected = tabs_ptr->selected_index())
+            (void)tabs_ptr->remove_tab(*selected);
+    });
+    register_themed(remove_tab_button.get());
+    widget_content->add_child(std::move(remove_tab_button),elysia::ui::UiPanelInsertDirection::Down);
+
+    auto rebuild_tabs_button = std::make_unique<elysia::ui::UiButton>(
+        elysia::core::Rect{ 18,1400,220,40 },make_button_config("menu_scene.settings"),0);
+    rebuild_tabs_button->set_on_click([tabs_ptr,add_test_tabs]()
+    {
+        tabs_ptr->clear_tabs();
+        add_test_tabs();
+    });
+    register_themed(rebuild_tabs_button.get());
+    widget_content->add_child(std::move(rebuild_tabs_button),elysia::ui::UiPanelInsertDirection::Down);
 
     auto anchored_options_button = std::make_unique<elysia::ui::UiButton>(
         elysia::core::Rect{ 0,0,132,36 },

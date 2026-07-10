@@ -64,6 +64,8 @@ public:
 
     // Releases all child ownership and detaches their layout-parent links.
     void clear_children();
+    // Detaches and returns one child while preserving ownership for transactional composites.
+    [[nodiscard]] std::unique_ptr<UiElement> extract_child(std::size_t index);
     [[nodiscard]] std::size_t child_count() const noexcept;
     [[nodiscard]] UiElement* child_at(std::size_t index) noexcept;
     [[nodiscard]] const UiElement* child_at(std::size_t index) const noexcept;

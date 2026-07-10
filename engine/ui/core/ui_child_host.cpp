@@ -63,6 +63,19 @@ void UiChildHost::clear_children()
     invalidate_intrinsic_layout();
 }
 
+std::unique_ptr<UiElement> UiChildHost::extract_child(std::size_t index)
+{
+    if (index >= _children.size())
+        return nullptr;
+    ChildEntry& entry = _children[index];
+    detach_child_from_layout_tree(entry.element.get());
+    std::unique_ptr<UiElement> result = std::move(entry.element);
+    _children.erase(_children.begin() + static_cast<std::ptrdiff_t>(index));
+    mark_layout_dirty();
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+    return result;
+}
+
 std::size_t UiChildHost::child_count() const noexcept
 {
     return _children.size();
