@@ -163,7 +163,7 @@ void SettingScene::build_ui()
 
     auto back = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,160,48 });
     back->set_text_content(elysia::ui::ui_raw_text("Back"));
-    back->set_on_click([]() { Scene::request_scene_switch(AppSceneKeys::MainMenu); });
+    back->set_on_click([this]() { Scene::request_scene_switch(AppSceneKeys::MainMenu); });
     actions->add_back(std::move(back));
     page->add_back(std::move(actions));
 
@@ -172,7 +172,7 @@ void SettingScene::build_ui()
     if (auto* scope = dynamic_cast<elysia::ui::UiListContainer*>(added))
         _main_setting_window->register_focus_scope(*scope);
 
-    _main_setting_window->set_on_cancel([]()
+    _main_setting_window->set_on_cancel([this]()
     {
         Scene::request_scene_switch(AppSceneKeys::MainMenu);
     });
