@@ -20,6 +20,7 @@ void UiButtonGroup::reset() noexcept
     UiListContainer::reset();
     _selected_button = nullptr;
     _on_selection_changed = nullptr;
+    _auto_select_first = true;
     _is_syncing_selection = false;
 }
 
@@ -88,6 +89,16 @@ bool UiButtonGroup::set_selected_index(std::size_t index)
     return select_button(button_at(index));
 }
 
+void UiButtonGroup::set_auto_select_first(bool enabled) noexcept
+{
+    _auto_select_first = enabled;
+}
+
+bool UiButtonGroup::auto_select_first() const noexcept
+{
+    return _auto_select_first;
+}
+
 void UiButtonGroup::set_on_selection_changed(UiButtonGroupSelectionChangedCallback on_selection_changed)
 {
     _on_selection_changed = std::move(on_selection_changed);
@@ -140,12 +151,15 @@ void UiButtonGroup::sync_selection(bool notify)
     if (!find_button_index(_selected_button))
     {
         _selected_button = nullptr;
-        for (std::size_t index = 0; index < child_count(); ++index)
+        if (_auto_select_first)
         {
-            if (UiButton* button = button_at(index))
+            for (std::size_t index = 0; index < child_count(); ++index)
             {
-                _selected_button = button;
-                break;
+                if (UiButton* button = button_at(index))
+                {
+                    _selected_button = button;
+                    break;
+                }
             }
         }
     }

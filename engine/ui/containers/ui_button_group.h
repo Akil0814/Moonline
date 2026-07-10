@@ -12,7 +12,7 @@ namespace elysia::ui
 {
 using UiButtonGroupSelectionChangedCallback = std::function<void(std::optional<std::size_t> selected_index)>;
 
-// A list of buttons that maintains exactly one selected button while it has members.
+// A list of buttons that maintains a mutually exclusive selection.
 class UiButtonGroup : public UiListContainer
 {
 public:
@@ -32,6 +32,9 @@ public:
     // Returns the selected button's current child position without repairing group state.
     [[nodiscard]] std::optional<std::size_t> selected_index() const noexcept;
     [[nodiscard]] bool set_selected_index(std::size_t index);
+    // Controls whether the first valid button becomes selected when the group has no selection.
+    void set_auto_select_first(bool enabled) noexcept;
+    [[nodiscard]] bool auto_select_first() const noexcept;
     void set_on_selection_changed(UiButtonGroupSelectionChangedCallback on_selection_changed);
 
 private:
@@ -47,6 +50,7 @@ private:
 private:
     UiButton* _selected_button = nullptr;
     UiButtonGroupSelectionChangedCallback _on_selection_changed;
+    bool _auto_select_first = true;
     bool _is_syncing_selection = false;
 };
 }

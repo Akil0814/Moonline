@@ -119,6 +119,7 @@ namespace arcneco::scene
 
         auto button_group = std::make_unique<elysia::ui::UiButtonGroup>(elysia::core::Rect{ 0,0,0,200 });
         button_group->set_direction(elysia::ui::UiListDirection::Horizontal);
+        button_group->set_auto_select_first(false);
         _character_button_keys.clear();
         button_group->set_on_selection_changed([this](std::optional<std::size_t> selected_index)
         {
@@ -159,7 +160,7 @@ namespace arcneco::scene
     {
         auto ui_character_selected_background = std::make_unique<elysia::ui::UiAnimation>("ryougi_shiki.idle", elysia::core::Rect{ 0,0,256,256 }, 0);
         _character_visuals.idle_preview = ui_character_selected_background.get();
-        _main_window->add_child(std::move(ui_character_selected_background), { elysia::ui::UiLayoutAnchor::BottomRight });
+        _main_window->add_child(std::move(ui_character_selected_background), { elysia::ui::UiLayoutAnchor::BottomLeft });
     }
 
     void CharacterSelectScene::build_left_panel()
@@ -175,9 +176,9 @@ namespace arcneco::scene
         _character_visuals.full_portrait = ui_character_stand.get();
         _character_visuals.name_image = ui_character_name.get();
         _character_visuals.selected_background = ui_character_selected_background.get();
-        _main_window->add_child(std::move(ui_character_stand), { elysia::ui::UiLayoutAnchor::BottomLeft });
-        _main_window->add_child(std::move(ui_character_name), { elysia::ui::UiLayoutAnchor::CenterLeft });
-        _main_window->add_child(std::move(ui_character_selected_background), { elysia::ui::UiLayoutAnchor::BottomLeft });
+        _main_window->add_child(std::move(ui_character_stand), { elysia::ui::UiLayoutAnchor::BottomRight });
+        _main_window->add_child(std::move(ui_character_name), { elysia::ui::UiLayoutAnchor::CenterRight });
+        _main_window->add_child(std::move(ui_character_selected_background), { elysia::ui::UiLayoutAnchor::BottomRight });
     }
 
     void CharacterSelectScene::build_character_detailed()
