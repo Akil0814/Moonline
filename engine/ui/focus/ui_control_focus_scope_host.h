@@ -38,6 +38,8 @@ public:
     bool focus_first_available() override;
     [[nodiscard]] bool has_focusable_target() const noexcept override;
     [[nodiscard]] bool can_navigate(UiAction action) const noexcept override;
+    bool clear_focus_for_gamepad_scroll() override;
+    bool restore_focus_after_gamepad_scroll() override;
     [[nodiscard]] elysia::input::InputDevice focus_input_device() const noexcept { return _focus_input_device; }
 
     [[nodiscard]] UiElement& focus_scope_element() noexcept override;

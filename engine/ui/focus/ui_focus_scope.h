@@ -46,6 +46,11 @@ public:
     [[nodiscard]] virtual UiControl* focused_target() const noexcept = 0;
     // Reports whether the scope can consume directional navigation for the action.
     [[nodiscard]] virtual bool can_navigate(UiAction action) const noexcept = 0;
+    // Clears a focused target after a scroll container actually moves from gamepad input.
+    // Scopes without a focused child can leave the default no-op implementation in place.
+    virtual bool clear_focus_for_gamepad_scroll() { return false; }
+    // Restores the focus cleared by clear_focus_for_gamepad_scroll().
+    virtual bool restore_focus_after_gamepad_scroll() { return false; }
     // Checks whether a pointer position should move focus into this scope.
     [[nodiscard]] virtual bool contains_focus_point(int mouse_x,int mouse_y) const noexcept = 0;
 };

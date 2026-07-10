@@ -66,6 +66,7 @@ void UiScrollContainer::reset() noexcept
     _scope_focused = false;
     _content_pointer_active = false;
     _content_focus_suppressed = false;
+    _gamepad_scroll_focus_restore_pending = false;
     initialize_scrollbar_handles();
 }
 
@@ -90,8 +91,27 @@ bool UiScrollContainer::on_ui_input_event(const UiInputEvent& event)
     if (dragging_scrollbar)
         update_layout_if_dirty();
 
+    if (_gamepad_scroll_focus_restore_pending
+        && event.type == UiInputEventType::ActionPressed
+        && is_navigation_action(event.action))
+    {
+        _gamepad_scroll_focus_restore_pending = false;
+        if (restore_focus_after_gamepad_scroll())
+            return true;
+    }
+
     if (event.type == UiInputEventType::MouseWheel)
     {
+        if (event.device == elysia::input::InputDevice::Gamepad)
+        {
+            if (!handle_mouse_wheel(event))
+                return false;
+
+            if (!_gamepad_scroll_focus_restore_pending)
+                _gamepad_scroll_focus_restore_pending = clear_focus_for_gamepad_scroll();
+            return true;
+        }
+
         const bool handled_by_content = should_dispatch_content_mouse_wheel(event)
             && dispatch_content_input_event(event);
         if (handled_by_content)
@@ -405,6 +425,7 @@ void UiScrollContainer::reset_content_state() noexcept
     _content_layout = UiLayoutChildOptions{};
     clear_content_pointer_state();
     set_content_focus_suppressed(false);
+    _gamepad_scroll_focus_restore_pending = false;
     reset_scroll_offset();
 }
 
@@ -467,6 +488,20 @@ bool UiScrollContainer::can_navigate(UiAction action) const noexcept
         return scope->can_navigate(action);
     }
 
+    return false;
+}
+
+bool UiScrollContainer::clear_focus_for_gamepad_scroll()
+{
+    if (UiFocusScope* scope = content_scope())
+        return scope->clear_focus_for_gamepad_scroll();
+    return false;
+}
+
+bool UiScrollContainer::restore_focus_after_gamepad_scroll()
+{
+    if (UiFocusScope* scope = content_scope())
+        return scope->restore_focus_after_gamepad_scroll();
     return false;
 }
 
@@ -563,7 +598,7 @@ bool UiScrollContainer::should_dispatch_content_mouse_wheel(const UiInputEvent& 
         return false;
 
     if (event.device == elysia::input::InputDevice::Gamepad)
-        return _scope_focused;
+        return false;
 
     return is_pointer_in_viewport(event.mouse_x,event.mouse_y);
 }

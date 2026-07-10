@@ -107,6 +107,8 @@ public:
     bool focus_first_available() override;
     [[nodiscard]] UiControl* focused_target() const noexcept override;
     [[nodiscard]] bool can_navigate(UiAction action) const noexcept override;
+    bool clear_focus_for_gamepad_scroll() override;
+    bool restore_focus_after_gamepad_scroll() override;
     [[nodiscard]] bool contains_focus_point(int mouse_x,int mouse_y) const noexcept override;
 
 protected:
@@ -206,6 +208,7 @@ private:
     bool _scope_focused = false;
     bool _content_pointer_active = false;
     bool _content_focus_suppressed = false;
+    bool _gamepad_scroll_focus_restore_pending = false;
 };
 }
 

@@ -99,6 +99,39 @@ bool UiControlFocusScopeHost::can_navigate(UiAction action) const noexcept
     return find_neighbor(*_focused_target,action) != nullptr;
 }
 
+bool UiControlFocusScopeHost::clear_focus_for_gamepad_scroll()
+{
+    cleanup_destroyed_children();
+    update_layout_if_dirty();
+    refresh_focus_registry();
+    ensure_valid_focus();
+
+    if (!is_control_usable(_focused_target))
+    {
+        apply_focus_state();
+        return false;
+    }
+
+    _gamepad_scroll_focus_suppressed = true;
+    _focused_target = nullptr;
+    apply_focus_state();
+    return true;
+}
+
+bool UiControlFocusScopeHost::restore_focus_after_gamepad_scroll()
+{
+    if (!_gamepad_scroll_focus_suppressed)
+        return false;
+
+    _gamepad_scroll_focus_suppressed = false;
+    cleanup_destroyed_children();
+    update_layout_if_dirty();
+    refresh_focus_registry();
+    ensure_valid_focus();
+    apply_focus_state();
+    return _focused_target != nullptr;
+}
+
 UiElement& UiControlFocusScopeHost::focus_scope_element() noexcept
 {
     return *this;
@@ -157,30 +190,12 @@ void UiControlFocusScopeHost::on_ui_input_frame(const UiInputFrame& input)
 
 bool UiControlFocusScopeHost::on_ui_input_event(const UiInputEvent& event)
 {
-    const bool gamepad_scroll = event.type == UiInputEventType::MouseWheel
-        && event.device == elysia::input::InputDevice::Gamepad;
-    const bool restore_from_gamepad_scroll = _gamepad_scroll_focus_suppressed
-        && event.type == UiInputEventType::ActionPressed;
-
-    if (gamepad_scroll)
-    {
-        _gamepad_scroll_focus_suppressed = true;
-        _focused_target = nullptr;
-    }
-    else if (restore_from_gamepad_scroll)
-    {
-        _gamepad_scroll_focus_suppressed = false;
-    }
-
     update_focus_input_device(event.device);
     cleanup_destroyed_children();
     update_layout_if_dirty();
     refresh_focus_registry();
     ensure_valid_focus();
     apply_focus_state();
-
-    if (restore_from_gamepad_scroll)
-        return true;
 
     bool handled = false;
 
