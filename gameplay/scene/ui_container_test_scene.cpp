@@ -18,6 +18,9 @@
 #include "../../engine/ui/widgets/ui_radio_button.h"
 #include "../../engine/ui/widgets/ui_slider.h"
 #include "../../engine/ui/widgets/ui_text_input.h"
+#include "../../engine/ui/widgets/ui_tooltip.h"
+#include "../../engine/ui/widgets/text/ui_text_block.h"
+#include "../../engine/ui/widgets/label/ui_label.h"
 #include "../../engine/ui/layout/ui_layout_types.h"
 
 #include <array>
@@ -445,7 +448,7 @@ void UiContainerTestScene::rebuild_ui()
     widget_scroll->set_scroll_step(elysia::core::Vector2(24.0f,24.0f));
     register_themed(widget_scroll);
 
-    auto widget_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,340,1040 });
+    auto widget_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,340,1160 });
     widget_content->set_theme_role(elysia::ui::UiPanelThemeRole::Dialog);
     register_themed(widget_content.get());
 
@@ -694,6 +697,45 @@ void UiContainerTestScene::rebuild_ui()
     dropdown->register_as_transient_popup(*_root_window);
     register_themed(dropdown.get());
     widget_content->add_child(std::move(dropdown),elysia::ui::UiPanelInsertDirection::Down);
+
+    auto text_tooltip_button = std::make_unique<elysia::ui::UiButton>(
+        elysia::core::Rect{ 18,934,220,40 },
+        make_button_config("menu_scene.about"),
+        0);
+    elysia::ui::UiButton* text_tooltip_trigger = text_tooltip_button.get();
+    register_themed(text_tooltip_button.get());
+    widget_content->add_child(std::move(text_tooltip_button),elysia::ui::UiPanelInsertDirection::Down);
+
+    auto panel_tooltip_button = std::make_unique<elysia::ui::UiButton>(
+        elysia::core::Rect{ 18,982,220,40 },
+        make_button_config("menu_scene.settings"),
+        0);
+    elysia::ui::UiButton* panel_tooltip_trigger = panel_tooltip_button.get();
+    register_themed(panel_tooltip_button.get());
+    widget_content->add_child(std::move(panel_tooltip_button),elysia::ui::UiPanelInsertDirection::Down);
+
+    auto* text_tooltip = _root_window->create_child<elysia::ui::UiTooltip>(0);
+    auto text_tooltip_content = std::make_unique<elysia::ui::UiTextBlock>(elysia::core::Rect{ 0,0,260,82 });
+    text_tooltip_content->set_text_content(elysia::ui::ui_raw_text(
+        "Tooltip: hover this button or focus it with keyboard/gamepad."));
+    text_tooltip_content->set_padding(10);
+    register_themed(text_tooltip_content.get());
+    text_tooltip->bind_trigger(*text_tooltip_trigger);
+    text_tooltip->set_content(std::move(text_tooltip_content));
+    text_tooltip->register_with_window(*_root_window);
+
+    auto* panel_tooltip = _root_window->create_child<elysia::ui::UiTooltip>(0);
+    auto panel_tooltip_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,250,104 });
+    panel_tooltip_content->set_padding(elysia::ui::UiLayoutPadding{ 10.0f,10.0f,10.0f,10.0f });
+    panel_tooltip_content->set_theme_role(elysia::ui::UiPanelThemeRole::Dialog);
+    auto panel_tooltip_label = std::make_unique<elysia::ui::UiLabel>(
+        elysia::core::Rect{ 0,0,220,36 },0,elysia::ui::ui_raw_text("Moved composite UiPanel"));
+    register_themed(panel_tooltip_label.get());
+    panel_tooltip_content->add_child(std::move(panel_tooltip_label),elysia::ui::UiPanelInsertDirection::Down);
+    register_themed(panel_tooltip_content.get());
+    panel_tooltip->bind_trigger(*panel_tooltip_trigger);
+    panel_tooltip->set_content(std::move(panel_tooltip_content));
+    panel_tooltip->register_with_window(*_root_window);
 
     auto anchored_options_button = std::make_unique<elysia::ui::UiButton>(
         elysia::core::Rect{ 0,0,132,36 },

@@ -1,4 +1,5 @@
 #include "ui_window.h"
+#include "../widgets/ui_tooltip.h"
 
 #include "../style/ui_style_defaults.h"
 #include "../style/ui_theme.h"
@@ -74,12 +75,20 @@ UiWindow::UiWindow(const elysia::core::Vector2& center,const elysia::core::Vecto
 
 UiWindow::~UiWindow()
 {
+    for (UiTooltip* tooltip : _tooltips)
+        if (tooltip)
+            tooltip->_window = nullptr;
+    _tooltips.clear();
     _active_transient_popup = nullptr;
     _transient_popups.clear();
 }
 
 void UiWindow::reset() noexcept
 {
+    for (UiTooltip* tooltip : _tooltips)
+        if (tooltip)
+            tooltip->_window = nullptr;
+    _tooltips.clear();
     UiChildHost::reset();
     _scope_entries.clear();
     _overlay_entries.clear();
@@ -323,6 +332,33 @@ void UiWindow::activate_transient_popup(UiTransientPopup& popup)
     _transient_popup_pointer_active = false;
 }
 
+void UiWindow::register_tooltip(UiTooltip& tooltip)
+{
+    if (std::find(_tooltips.begin(),_tooltips.end(),&tooltip) == _tooltips.end())
+        _tooltips.push_back(&tooltip);
+}
+
+void UiWindow::unregister_tooltip(UiTooltip& tooltip) noexcept
+{
+    _tooltips.erase(std::remove(_tooltips.begin(),_tooltips.end(),&tooltip),_tooltips.end());
+    if (tooltip._window == this)
+        tooltip._window = nullptr;
+}
+
+bool UiWindow::is_tooltip_pointer_blocked(int mouse_x,int mouse_y) const noexcept
+{
+    const UiTransientPopup* popup = active_transient_popup();
+    return popup
+        && popup->is_transient_popup_open()
+        && popup->contains_transient_popup_point(mouse_x,mouse_y);
+}
+
+bool UiWindow::blocks_background_tooltips() const noexcept
+{
+    const UiTransientPopup* popup = active_transient_popup();
+    return popup && popup->is_transient_popup_open();
+}
+
 elysia::core::Rect UiWindow::content_bounds() const noexcept
 {
     return content_rect();
@@ -333,6 +369,7 @@ void UiWindow::update(double delta)
     cleanup_destroyed_children();
     prune_overlays();
     prune_transient_popups();
+    prune_tooltips();
     sync_overlay_visibility_all();
     update_layout_if_dirty();
     prune_focus_scopes();
@@ -342,6 +379,7 @@ void UiWindow::update(double delta)
     cleanup_destroyed_children();
     prune_overlays();
     prune_transient_popups();
+    prune_tooltips();
     sync_overlay_visibility_all();
     prune_focus_scopes();
     ensure_valid_scope_focus();
@@ -353,6 +391,7 @@ void UiWindow::on_ui_input_frame(const UiInputFrame& input)
     cleanup_destroyed_children();
     prune_overlays();
     prune_transient_popups();
+    prune_tooltips();
     sync_overlay_visibility_all();
     update_layout_if_dirty();
     prune_focus_scopes();
@@ -383,6 +422,15 @@ void UiWindow::on_ui_input_frame(const UiInputFrame& input)
 
 bool UiWindow::on_ui_input_event(const UiInputEvent& event)
 {
+    if (event.type == UiInputEventType::MouseMoved
+        || event.type == UiInputEventType::PointerPressed
+        || event.type == UiInputEventType::PointerReleased
+        || event.type == UiInputEventType::MouseWheel)
+    {
+        for (UiTooltip* tooltip : _tooltips)
+            if (tooltip)
+                tooltip->observe_pointer(event.mouse_x,event.mouse_y);
+    }
     update_focus_input_device(event.device);
     cleanup_destroyed_children();
     prune_overlays();
@@ -546,6 +594,7 @@ void UiWindow::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
     self->cleanup_destroyed_children();
     self->prune_overlays();
     self->prune_transient_popups();
+    self->prune_tooltips();
     self->sync_overlay_visibility_all();
     self->update_layout_if_dirty();
     self->prune_focus_scopes();
@@ -558,6 +607,7 @@ void UiWindow::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
     submit_child_render_commands(out_commands);
     if (!active_modal_overlay())
         submit_active_transient_popup_render_commands(out_commands);
+    submit_tooltip_render_commands(out_commands);
     if (style.draw_border)
         out_commands.push_back(elysia::core::make_ui_draw_rect_command(screen_rect(),apply_opacity(style.border)));
 }
@@ -607,6 +657,19 @@ void UiWindow::prune_transient_popups()
         _active_transient_popup = nullptr;
         _transient_popup_pointer_active = false;
     }
+}
+
+void UiWindow::prune_tooltips()
+{
+    for (UiTooltip* tooltip : _tooltips)
+    {
+        if (tooltip && tooltip->trigger() && !is_live_child_element(tooltip->trigger()))
+            tooltip->clear_trigger();
+    }
+    _tooltips.erase(std::remove_if(_tooltips.begin(),_tooltips.end(),[this](UiTooltip* tooltip)
+    {
+        return !tooltip || tooltip->is_destroyed() || !is_live_child_element(tooltip);
+    }),_tooltips.end());
 }
 
 void UiWindow::ensure_valid_scope_focus()
@@ -1003,6 +1066,18 @@ void UiWindow::submit_active_transient_popup_render_commands(
     const std::size_t begin = out_commands.size();
     popup->submit_transient_popup_render_commands(out_commands);
     apply_clip_to_range(out_commands,begin,content_rect());
+}
+
+void UiWindow::submit_tooltip_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const
+{
+    for (const UiTooltip* tooltip : _tooltips)
+    {
+        if (!tooltip)
+            continue;
+        const std::size_t begin = out_commands.size();
+        tooltip->submit_tooltip_render_commands(out_commands);
+        apply_clip_to_range(out_commands,begin,content_rect());
+    }
 }
 
 bool UiWindow::is_live_child_element(const UiElement* element) const noexcept

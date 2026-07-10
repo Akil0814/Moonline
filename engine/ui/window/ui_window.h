@@ -59,6 +59,13 @@ public:
     void unregister_transient_popup(UiTransientPopup& popup);
     // Makes one registered popup active and closes the previously active popup.
     void activate_transient_popup(UiTransientPopup& popup);
+    // Registers a passive tooltip rendered above ordinary and transient popup content.
+    void register_tooltip(class UiTooltip& tooltip);
+    void unregister_tooltip(class UiTooltip& tooltip) noexcept;
+    // Reports whether the active transient popup visually covers this pointer position.
+    [[nodiscard]] bool is_tooltip_pointer_blocked(int mouse_x,int mouse_y) const noexcept;
+    // Prevents background focus hints while an interactive transient popup owns navigation.
+    [[nodiscard]] bool blocks_background_tooltips() const noexcept;
     [[nodiscard]] elysia::core::Rect content_bounds() const noexcept;
 
     void update(double delta) override;
@@ -99,6 +106,7 @@ private:
     // Removes overlay entries whose elements are no longer live window children.
     void prune_overlays();
     void prune_transient_popups();
+    void prune_tooltips();
     // Repairs scope focus after scope removal, disablement, or overlay changes.
     void ensure_valid_scope_focus();
     // Pushes window-level focus state into registered scopes.
@@ -141,6 +149,7 @@ private:
     [[nodiscard]] const UiTransientPopup* active_transient_popup() const noexcept;
     [[nodiscard]] bool dispatch_to_transient_popup(UiTransientPopup& popup,const UiInputEvent& event);
     void submit_active_transient_popup_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const;
+    void submit_tooltip_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const;
     // Routes gamepad wheel events through logically focused nested scroll containers, deepest first.
     [[nodiscard]] bool dispatch_gamepad_scroll_to_focused_containers(UiElement& root,const UiInputEvent& event);
     // Verifies that an element is still an owned child before window bookkeeping uses it.
@@ -161,6 +170,7 @@ private:
     std::vector<ScopeEntry> _scope_entries;
     std::vector<OverlayEntry> _overlay_entries;
     std::vector<TransientPopupEntry> _transient_popups;
+    std::vector<class UiTooltip*> _tooltips;
     UiTransientPopup* _active_transient_popup = nullptr;
     UiFocusScope* _focused_scope = nullptr;
     UiFocusScope* _last_focused_scope = nullptr;
