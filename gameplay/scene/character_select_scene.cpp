@@ -8,8 +8,8 @@
 #include "../../engine/audio/audio_service.h"
 #include "../../engine/resources/resource_manager.h"
 
-#include "../../engine/ui/widgets/image/ui_image.h"
 #include "../../engine/ui/widgets/image/ui_animation.h"
+#include "../../engine/ui/widgets/ui_button.h"
 #include "../../engine/ui/containers/ui_list_container.h"
 #include "../../engine/ui/containers/ui_scroll_container.h"
 #include "../../engine/ui/composites/ui_confirmation_dialog.h"
@@ -125,18 +125,23 @@ namespace arcneco::scene
             {
                 SDL_Texture* avatar_tex =
                     elysia::resources::ResourceManager::instance()->find_texture(character_key + ".selecting_icon");
-                auto avatar = std::make_unique<elysia::ui::UiImage>(
-                    avatar_tex,
-                    elysia::core::Rect{ 0,0,character_ui_width,character_ui_height }
+                auto character_button = std::make_unique<elysia::ui::UiButton>(
+                    elysia::core::Rect{ 0,0,character_ui_width,character_ui_height },
+                    elysia::ui::UiButtonConfig{
+                        .content = elysia::ui::UiButtonIconContent{ avatar_tex }
+                    }
                 );
-                ui_list->add_back(std::move(avatar));
-
-                std::cout << "2" << std::endl;
+                character_button->set_on_click([this,character_key]()
+                {
+                    _current_character_key = character_key;
+                });
+                ui_list->add_back(std::move(character_button));
             }
 
         }
 
         horizontal_scroll->set_content(std::move(ui_list));
+        _main_window->register_focus_scope(*horizontal_scroll);
     }
 
     void CharacterSelectScene::build_character_detailed()
