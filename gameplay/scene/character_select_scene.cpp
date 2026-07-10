@@ -10,6 +10,9 @@
 
 #include "../../engine/ui/widgets/image/ui_animation.h"
 #include "../../engine/ui/widgets/ui_button.h"
+#include "../../engine/ui/widgets/label/ui_label.h"
+#include "../../engine/ui/widgets/image/ui_image.h"
+
 #include "../../engine/ui/containers/ui_list_container.h"
 #include "../../engine/ui/containers/ui_scroll_container.h"
 #include "../../engine/ui/composites/ui_confirmation_dialog.h"
@@ -73,10 +76,10 @@ namespace arcneco::scene
         //popup
         _exit_confirmation = nullptr;
         build_popup();
-        _main_window->set_on_cancel([this] {
+        build_left_panel();
+        _main_window->set_on_cancel([this]{
             if (_exit_confirmation)
-                _exit_confirmation->open();
-            });
+                _exit_confirmation->open();});
 
     }
 
@@ -142,6 +145,22 @@ namespace arcneco::scene
 
         horizontal_scroll->set_content(std::move(ui_list));
         _main_window->register_focus_scope(*horizontal_scroll);
+    }
+
+    void CharacterSelectScene::build_right_panel()
+    {
+        
+    }
+
+    void CharacterSelectScene::build_left_panel()
+    {
+        SDL_Texture* tex =
+            elysia::resources::ResourceManager::instance()->find_texture("ryougi_shiki.full");
+
+        auto ui_character_stand = std::make_unique<elysia::ui::UiImage>(tex, elysia::core::Rect{0,0,384,384}, 10);
+        auto ui_character_selected_background = std::make_unique<elysia::ui::UiAnimation>("ryougi_shiki.selected_background", elysia::core::Rect{ 0,0,512,512 },0);
+        _main_window->add_child(std::move(ui_character_stand), { elysia::ui::UiLayoutAnchor::BottomLeft });
+        _main_window->add_child(std::move(ui_character_selected_background), { elysia::ui::UiLayoutAnchor::BottomLeft });
     }
 
     void CharacterSelectScene::build_character_detailed()
