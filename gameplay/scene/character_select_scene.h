@@ -40,6 +40,7 @@ namespace arcneco::scene
 
         void on_character_change();
         void refresh_character_visuals();
+        void set_character_visuals_visible(bool visible) noexcept;
         void clear_character_visual_refs() noexcept;
 
     private:
