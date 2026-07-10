@@ -51,6 +51,7 @@ namespace arcneco::scene
         struct CharacterVisualRefs
         {
             elysia::ui::UiImage* full_portrait = nullptr;
+            elysia::ui::UiImage* name_image = nullptr;
             elysia::ui::UiAnimation* selected_background = nullptr;
             elysia::ui::UiAnimation* idle_preview = nullptr;
         };

@@ -166,12 +166,17 @@ namespace arcneco::scene
     {
         SDL_Texture* tex =
             elysia::resources::ResourceManager::instance()->find_texture("ryougi_shiki.full");
+        SDL_Texture* name_texture =
+            elysia::resources::ResourceManager::instance()->find_texture("ryougi_shiki.name");
 
         auto ui_character_stand = std::make_unique<elysia::ui::UiImage>(tex, elysia::core::Rect{0,0,384,384}, 10);
+        auto ui_character_name = std::make_unique<elysia::ui::UiImage>(name_texture, elysia::core::Rect{0,0,256,32}, 20);
         auto ui_character_selected_background = std::make_unique<elysia::ui::UiAnimation>("ryougi_shiki.selected_background", elysia::core::Rect{ 0,0,512,512 },0);
         _character_visuals.full_portrait = ui_character_stand.get();
+        _character_visuals.name_image = ui_character_name.get();
         _character_visuals.selected_background = ui_character_selected_background.get();
         _main_window->add_child(std::move(ui_character_stand), { elysia::ui::UiLayoutAnchor::BottomLeft });
+        _main_window->add_child(std::move(ui_character_name), { elysia::ui::UiLayoutAnchor::CenterLeft });
         _main_window->add_child(std::move(ui_character_selected_background), { elysia::ui::UiLayoutAnchor::BottomLeft });
     }
 
@@ -196,6 +201,14 @@ namespace arcneco::scene
                 _current_character_key + ".full");
             _character_visuals.full_portrait->set_texture(texture);
             _character_visuals.full_portrait->set_visible(texture != nullptr);
+        }
+
+        if (_character_visuals.name_image)
+        {
+            SDL_Texture* texture = elysia::resources::ResourceManager::instance()->find_texture(
+                _current_character_key + ".name");
+            _character_visuals.name_image->set_texture(texture);
+            _character_visuals.name_image->set_visible(texture != nullptr);
         }
 
         if (_character_visuals.selected_background)
