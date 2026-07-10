@@ -27,7 +27,10 @@ public:
     void reset() override;
 
 private:
+    void build_ui();
+    void restore_ui_state();
+
+private:
     elysia::ui::UiWindow* _main_setting_window = nullptr;
-    elysia::ui::UiConfirmationDialog* _exit_confirmation = nullptr;
 };
 }
