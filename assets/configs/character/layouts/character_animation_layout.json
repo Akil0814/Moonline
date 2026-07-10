@@ -95,6 +95,9 @@
     },
     "start": {
       "path": "animation/reaction/start"
+    },
+    "selected_background": {
+      "path": "animation/selected_background"
     }
   }
 }

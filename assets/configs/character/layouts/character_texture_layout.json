@@ -10,6 +10,5 @@
   "skill_cut": "textures/skill_cut.png",
   "skill_cut_ex": "textures/skill_cut_ex.png",
   "ending": "textures/ending.png",
-  "ending_back": "textures/ending_back.png",
-  "selected_background": "animation/selected_background"
+  "ending_back": "textures/ending_back.png"
 }
