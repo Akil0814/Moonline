@@ -36,10 +36,14 @@ namespace arcneco::scene
         void build_left_panel();
         void build_popup();
 
+        void on_character_change();
+
     private:
 
         elysia::ui::UiWindow* _main_window = nullptr;
         elysia::ui::UiConfirmationDialog* _exit_confirmation = nullptr;
+
+    private:
 
         std::string _current_character_key = {};
         std::vector<std::string> _character_keys = {};

@@ -76,6 +76,7 @@ namespace arcneco::scene
         _exit_confirmation = nullptr;
         build_popup();
         build_left_panel();
+        build_right_panel();
         _main_window->set_on_cancel([this]{
             if (_exit_confirmation)
                 _exit_confirmation->open();});
@@ -154,7 +155,8 @@ namespace arcneco::scene
 
     void CharacterSelectScene::build_right_panel()
     {
-        
+        auto ui_character_selected_background = std::make_unique<elysia::ui::UiAnimation>("ryougi_shiki.idle", elysia::core::Rect{ 0,0,256,256 }, 0);
+        _main_window->add_child(std::move(ui_character_selected_background), { elysia::ui::UiLayoutAnchor::BottomRight });
     }
 
     void CharacterSelectScene::build_left_panel()
@@ -172,4 +174,10 @@ namespace arcneco::scene
     {
 
     }
+
+    void CharacterSelectScene::on_character_change()
+    {
+
+    }
+
 }
