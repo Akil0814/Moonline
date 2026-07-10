@@ -70,8 +70,10 @@ bool UiListContainer::focus_first_available()
         }
     }
 
-    UiControlFocusScopeHost::set_focused_target(nullptr);
-    sync_child_scope_focus();
+    // Use the internal setter: the public setter validates focus by calling this method,
+    // which would recurse indefinitely when the list has no focusable children.
+    (void)set_focused_target_internal(nullptr);
+    sync_delegated_scope_focus(static_cast<UiElement*>(nullptr),is_scope_focused(),regions);
     apply_focus_state();
     return false;
 }
