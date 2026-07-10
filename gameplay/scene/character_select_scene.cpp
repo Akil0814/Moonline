@@ -10,9 +10,6 @@
 
 #include "../../engine/ui/widgets/image/ui_animation.h"
 #include "../../engine/ui/widgets/ui_button.h"
-#include "../../engine/ui/widgets/label/ui_label.h"
-#include "../../engine/ui/widgets/image/ui_image.h"
-
 #include "../../engine/ui/containers/ui_list_container.h"
 #include "../../engine/ui/containers/ui_scroll_container.h"
 #include "../../engine/ui/composites/ui_confirmation_dialog.h"
@@ -116,8 +113,14 @@ namespace arcneco::scene
         horizontal_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
         horizontal_scroll->set_scroll_step(elysia::core::Vector2(36.0f, 36.0f));
 
-        auto ui_list = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,0,200 });
-        ui_list->set_direction(elysia::ui::UiListDirection::Horizontal);
+        auto button_group = std::make_unique<elysia::ui::UiButtonGroup>(elysia::core::Rect{ 0,0,0,200 });
+        button_group->set_direction(elysia::ui::UiListDirection::Horizontal);
+        _character_button_keys.clear();
+        button_group->set_on_selection_changed([this](std::optional<std::size_t> selected_index)
+        {
+            if (selected_index && *selected_index < _character_button_keys.size())
+                _current_character_key = _character_button_keys[*selected_index];
+        });
 
         constexpr int character_ui_width = 96;
         constexpr int character_ui_height = 192;
@@ -134,16 +137,13 @@ namespace arcneco::scene
                         .content = elysia::ui::UiButtonIconContent{ avatar_tex }
                     }
                 );
-                character_button->set_on_click([this,character_key]()
-                {
-                    _current_character_key = character_key;
-                });
-                ui_list->add_back(std::move(character_button));
+                _character_button_keys.push_back(character_key);
+                button_group->add_button(std::move(character_button));
             }
 
         }
 
-        horizontal_scroll->set_content(std::move(ui_list));
+        horizontal_scroll->set_content(std::move(button_group));
         _main_window->register_focus_scope(*horizontal_scroll);
     }
 

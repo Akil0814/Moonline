@@ -4,6 +4,7 @@
 
 
 #include <cstddef>
+#include <string>
 #include <vector>
 
 namespace elysia::ui
@@ -42,5 +43,6 @@ namespace arcneco::scene
 
         std::string _current_character_key = {};
         std::vector<std::string> _character_keys = {};
+        std::vector<std::string> _character_button_keys = {};
     };
 }
