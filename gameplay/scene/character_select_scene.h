@@ -31,7 +31,7 @@ namespace arcneco::scene
         void reset() override;
 
     private:    
-        void build_buttons();
+        void build_ui();
         void build_character_list();
         void build_character_detailed();
         void build_right_panel();

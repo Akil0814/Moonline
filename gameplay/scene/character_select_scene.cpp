@@ -37,7 +37,7 @@ namespace arcneco::scene
 
         const bool should_build_ui = !_main_window || _main_window->is_destroyed();
         if (should_build_ui)
-            build_buttons();
+            build_ui();
 
         auto character_manager = arcneco::character::CharacterManager::instance();
         if(character_manager->init())
@@ -65,13 +65,18 @@ namespace arcneco::scene
     {
     }
 
-    void CharacterSelectScene::build_buttons()
+    void CharacterSelectScene::build_ui()
     {
         if (_main_window && !_main_window->is_destroyed())
             return;
 
         clear_character_visual_refs();
         _main_window = Scene::create_and_add_object<elysia::ui::UiWindow>(elysia::core::Rect{ 0,0,1280,720 });
+
+        SDL_Texture* tex =
+            elysia::resources::ResourceManager::instance()->find_texture("ui.moon");
+        auto ui_background = std::make_unique<elysia::ui::UiImage>(tex, elysia::core::Rect{ 0,0,1780,844 }, -10);
+        _main_window->add_child(std::move(ui_background), { elysia::ui::UiLayoutAnchor::Center });
 
         //popup
         _exit_confirmation = nullptr;

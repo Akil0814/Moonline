@@ -133,7 +133,7 @@ void MainMenuScene::build_menu_buttons()
     ui_label->set_vertical_align(elysia::ui::TextVerticalAlign::Center);
 
 
-    std::unique_ptr<elysia::ui::UiListContainer> ui_outer_list = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,300,400 });
+    std::unique_ptr<elysia::ui::UiListContainer> ui_outer_list = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,600,536 });
     ui_outer_list->add_front(std::move(ui_label));
     ui_outer_list->add_back(std::move(ui_list));
 
@@ -145,8 +145,8 @@ void MainMenuScene::build_menu_buttons()
         _main_menu_window->register_focus_scope(*list);
 
     SDL_Texture* tex =
-        elysia::resources::ResourceManager::instance()->find_texture("ui.moon");
-    auto ui_background = std::make_unique<elysia::ui::UiImage>(tex, elysia::core::Rect{ 0,0,1780,844 }, -10);
+        elysia::resources::ResourceManager::instance()->find_texture("ui.moon2");
+    auto ui_background = std::make_unique<elysia::ui::UiImage>(tex, elysia::core::Rect{ 0,0,1404,844 }, -10);
     _main_menu_window->add_child(std::move(ui_background), { elysia::ui::UiLayoutAnchor::Center });
 
     elysia::ui::UiWindowStyle window_style = _main_menu_window->style();
