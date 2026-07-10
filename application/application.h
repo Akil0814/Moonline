@@ -4,14 +4,18 @@
 #include "../engine/tools/singleton.h"
 #include "../engine/input/input_system.h"
 #include "../engine/bootstrap/runtime_settings.h"
+#include "../engine/config/i_settings_change_handler.h"
 
 #include <SDL.h>
 
+#include <expected>
 #include <string>
+#include <string_view>
 
 class Application
     : public elysia::tools::Singleton<Application>
     , public elysia::scene::SceneManagerObserver
+    , public elysia::config::ISettingsChangeHandler
 {
     friend elysia::tools::Singleton<Application>;
 public:
@@ -21,6 +25,14 @@ public:
     bool init(int argc, char** argv);
     int run(int argc, char** argv);
     SDL_Renderer* renderer() const { return _renderer; }
+
+    std::expected<void,elysia::config::UserSettingsFailure> apply_master_volume(int value) override;
+    std::expected<void,elysia::config::UserSettingsFailure> apply_music_volume(int value) override;
+    std::expected<void,elysia::config::UserSettingsFailure> apply_sound_volume(int value) override;
+    std::expected<void,elysia::config::UserSettingsFailure> apply_language(std::string_view language) override;
+    std::expected<void,elysia::config::UserSettingsFailure> apply_target_fps(double value) override;
+    std::expected<void,elysia::config::UserSettingsFailure> apply_window_size(int width,int height) override;
+    std::expected<void,elysia::config::UserSettingsFailure> apply_fullscreen(bool value) override;
 
 private:
     bool init_runtime(const elysia::bootstrap::RuntimeSettings& settings);
@@ -66,5 +78,6 @@ private:
 
     bool _active = { true };
     bool _has_shutdown = false;
+    bool _settings_handler_registered = false;
 
 };

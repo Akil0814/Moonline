@@ -1,7 +1,7 @@
 #include "bootstrapper.h"
 
 #include "bootstrap_error_utils.h"
-#include "../config/config_manager.h"
+#include "../config/config_service.h"
 #include "../io/loaders/assets_structure_loader.h"
 #include "../io/path/path_manager.h"
 
@@ -16,7 +16,7 @@ constexpr const char* USER_CONFIG_FILE_NAME = "user_config.json";
 StartupParseResult Bootstrapper::parse_runtime_settings()
 {
     _startup_preload_loader.reset();
-    elysia::config::ConfigManager::instance()->shutdown();
+    elysia::config::ConfigService::instance()->shutdown();
 
     StartupParseResult result;
 
@@ -57,25 +57,26 @@ StartupParseResult Bootstrapper::parse_runtime_settings()
     const std::filesystem::path user_config_path =
         path_manager->player_data() / USER_CONFIG_FILE_NAME;
 
-    const elysia::config::ConfigInitResult config_result =
-        elysia::config::ConfigManager::instance()->init(
+    const auto config_result =
+        elysia::config::ConfigService::instance()->initialize(
             app_config_result.runtime_settings,
-            user_config_path
+            user_config_path,
+            manifest_paths.config_documents
         );
-    if (!config_result.success)
+    if (!config_result)
     {
-        result.error = config_result.error;
+        result.error = config_result.error().message;
         return result;
     }
 
-    if (!config_result.warning.empty())
+    if (!config_result->warning.empty())
     {
-        result.warning = config_result.warning;
+        result.warning = config_result->warning;
     }
 
-    result.runtime_settings = config_result.runtime_settings;
+    result.runtime_settings = config_result->settings;
     result.i18n_manifest_path = manifest_paths.i18n;
-    result.rebuilt_user_config = config_result.rebuilt_user_config;
+    result.rebuilt_user_config = config_result->rebuilt_user_config;
     _startup_preload_loader.set_manifest_path(app_config_result.preload_manifest_path);
     result.success = true;
     return result;

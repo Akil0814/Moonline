@@ -17,6 +17,8 @@ struct RuntimeSettings
     bool vsync = true;
     std::string language;
     elysia::audio::AudioSettings audio;
+
+    friend bool operator==(const RuntimeSettings&,const RuntimeSettings&) = default;
 };
 
 struct StartupParseResult

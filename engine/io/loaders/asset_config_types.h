@@ -18,6 +18,7 @@ struct AssetManifestPaths
 
 	std::filesystem::path map_textures;
 	std::filesystem::path ui_textures;
+	std::filesystem::path config_documents;
 
 	std::filesystem::path characters;
 	std::filesystem::path character_animations;

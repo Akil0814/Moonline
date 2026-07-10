@@ -8,6 +8,7 @@
 
     "map_textures": "configs/manifests/map_textures_manifest.json",
     "ui_textures": "configs/manifests/ui_textures_manifest.json",
+    "config_documents": "configs/manifests/config_documents.json",
 
     "characters": "configs/character/characters_manifest.json",
     "character_animations": "configs/character/layouts/character_animation_layout.json",

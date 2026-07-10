@@ -4,7 +4,7 @@
 
 #include "../engine/audio/audio_service.h"
 #include "../engine/bootstrap/bootstrapper.h"
-#include "../engine/config/config_manager.h"
+#include "../engine/config/config_service.h"
 #include "../engine/core/time.h"
 #include "../engine/localization/localization_manager.h"
 #include "../engine/resources/resource_manager.h"
@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
+#include <expected>
 
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
@@ -66,21 +67,23 @@ bool Application::init(int argc, char** argv)
 		return false;
 	}
 
-	elysia::config::ConfigManager* config_manager = elysia::config::ConfigManager::instance();
-	if (config_manager->language() != elysia::localization::LocalizationManager::instance()->current_language())
+	elysia::config::ConfigService::instance()->register_settings_change_handler(*this);
+	_settings_handler_registered = true;
+
+	elysia::config::UserSettings& user_settings = elysia::config::ConfigService::instance()->user_settings();
+	if (user_settings.language() != elysia::localization::LocalizationManager::instance()->current_language())
 	{
-		std::string save_error;
-		if (!config_manager->set_language(
-			elysia::localization::LocalizationManager::instance()->current_language(),
-			save_error))
+		const auto language_result = user_settings.set_language(
+			elysia::localization::LocalizationManager::instance()->current_language());
+		if (!language_result)
 		{
 			std::cout << "Localization warning: normalize language in config failed: "
-				<< save_error << std::endl;
+				<< language_result.error().message << std::endl;
 		}
-		else if (!config_manager->save(save_error))
+		else if (const auto save_result = elysia::config::ConfigService::instance()->save_user_settings(); !save_result)
 		{
 			std::cout << "Localization warning: save normalized language failed: "
-				<< save_error << std::endl;
+				<< save_result.error().message << std::endl;
 		}
 	}
 
@@ -223,7 +226,12 @@ void Application::shutdown()
 	_scene_manager.detach(this);
 	_scene_manager.shutdown();
 	elysia::localization::LocalizationManager::instance()->shutdown();
-	elysia::config::ConfigManager::instance()->shutdown();
+	if (_settings_handler_registered)
+	{
+		elysia::config::ConfigService::instance()->unregister_settings_change_handler(*this);
+		_settings_handler_registered = false;
+	}
+	elysia::config::ConfigService::instance()->shutdown();
 	elysia::audio::AudioService::instance()->shutdown();
 	elysia::resources::ResourceManager::instance()->clear();
 }
@@ -231,4 +239,63 @@ void Application::shutdown()
 void Application::on_scene_manager_quit_requested()
 {
 	_active = false;
+}
+
+namespace
+{
+std::unexpected<elysia::config::UserSettingsFailure> runtime_apply_failure(
+	const char* setting,const std::string& message)
+{
+	return std::unexpected(elysia::config::UserSettingsFailure{
+		elysia::config::UserSettingsError::RuntimeApplyFailed,setting,message});
+}
+}
+
+std::expected<void,elysia::config::UserSettingsFailure> Application::apply_master_volume(int value)
+{
+	elysia::audio::AudioService::instance()->set_master_volume(value);
+	return {};
+}
+
+std::expected<void,elysia::config::UserSettingsFailure> Application::apply_music_volume(int value)
+{
+	elysia::audio::AudioService::instance()->set_music_volume(value);
+	return {};
+}
+
+std::expected<void,elysia::config::UserSettingsFailure> Application::apply_sound_volume(int value)
+{
+	elysia::audio::AudioService::instance()->set_sound_volume(value);
+	return {};
+}
+
+std::expected<void,elysia::config::UserSettingsFailure> Application::apply_language(std::string_view language)
+{
+	if (!elysia::localization::LocalizationManager::instance()->set_language(std::string(language)))
+		return runtime_apply_failure("language","Runtime language change failed.");
+	elysia::localization::LocalizationManager::instance()->clear_texture_cache();
+	return {};
+}
+
+std::expected<void,elysia::config::UserSettingsFailure> Application::apply_target_fps(double value)
+{
+	if (value <= 0.0) return runtime_apply_failure("target_fps","Target FPS must be positive.");
+	FPS = value;
+	return {};
+}
+
+std::expected<void,elysia::config::UserSettingsFailure> Application::apply_window_size(int width,int height)
+{
+	if (!_window) return runtime_apply_failure("window_size","Application window is unavailable.");
+	SDL_SetWindowSize(_window,width,height);
+	return {};
+}
+
+std::expected<void,elysia::config::UserSettingsFailure> Application::apply_fullscreen(bool value)
+{
+	if (!_window) return runtime_apply_failure("fullscreen","Application window is unavailable.");
+	const Uint32 flags = value ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
+	if (SDL_SetWindowFullscreen(_window,flags) != 0)
+		return runtime_apply_failure("fullscreen",SDL_GetError());
+	return {};
 }
