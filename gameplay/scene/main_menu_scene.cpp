@@ -4,9 +4,12 @@
 #include "../../application/scene/scene_payloads.h"
 
 #include "../../engine/audio/audio_service.h"
+#include "../../engine/resources/resource_manager.h"
+
 
 #include "../../engine/ui/composites/ui_confirmation_dialog.h"
 #include "../../engine/ui/widgets/ui_button.h"
+#include "../../engine/ui/widgets/image/ui_image.h"
 #include "../../engine/ui/widgets/label/ui_label.h"
 #include "../../engine/ui/containers/ui_list_container.h"
 #include "../../engine/ui/layout/ui_layout_types.h"
@@ -65,14 +68,14 @@ void MainMenuScene::build_menu_buttons()
     if (_main_menu_window && !_main_menu_window->is_destroyed())
         return;
 
-    _main_menu_window = Scene::create_and_add_object<elysia::ui::UiWindow>(elysia::core::Rect{0,0,1280,720});
+    _main_menu_window = Scene::create_and_add_object<elysia::ui::UiWindow>(elysia::core::Rect{ 0,0,1280,720 },10);
     _exit_confirmation = nullptr;
 
     if (!_main_menu_window)
         return;
 
     _exit_confirmation = _main_menu_window->create_child<elysia::ui::UiConfirmationDialog>(
-        elysia::core::Rect{ 0,0,420,240 });
+        elysia::core::Rect{ 0,0,420,240 },10);
     if (_exit_confirmation)
     {
         _exit_confirmation->set_config(elysia::ui::UiConfirmationDialogConfig{
@@ -82,7 +85,7 @@ void MainMenuScene::build_menu_buttons()
             .cancel = elysia::ui::ui_text_key("menu_scene.exit_confirm.cancel"),
             .close = elysia::ui::ui_text_key("menu_scene.exit_confirm.close"),
             .confirm_theme_role = elysia::ui::UiButtonThemeRole::Danger
-        });
+            });
         _exit_confirmation->set_on_confirm([this]() { Scene::request_quit(); });
         _exit_confirmation->register_as_overlay(*_main_menu_window);
     }
@@ -122,7 +125,7 @@ void MainMenuScene::build_menu_buttons()
 
     //Title
     std::unique_ptr<elysia::ui::UiLabel> ui_label =
-        std::make_unique<elysia::ui::UiLabel>(elysia::core::Rect{ 0,0,600,120 },0,elysia::ui::ui_text_key("menu_scene.project_name"));
+        std::make_unique<elysia::ui::UiLabel>(elysia::core::Rect{ 0,0,600,120 }, 0, elysia::ui::ui_text_key("menu_scene.project_name"));
     ui_label->set_theme_role(elysia::ui::UiLabelThemeRole::Title);
     ui_label->set_typography_role(elysia::ui::UiTypographyRole::Title);
     ui_label->set_target_height(96.0f);
@@ -140,6 +143,11 @@ void MainMenuScene::build_menu_buttons()
 
     if (auto* list = dynamic_cast<elysia::ui::UiListContainer*>(list_added))
         _main_menu_window->register_focus_scope(*list);
+
+    SDL_Texture* tex =
+        elysia::resources::ResourceManager::instance()->find_texture("ui.moon");
+    auto ui_background = std::make_unique<elysia::ui::UiImage>(tex, elysia::core::Rect{ 0,0,1780,844 }, 0);
+    _main_menu_window->add_child(std::move(ui_background), { elysia::ui::UiLayoutAnchor::Center });
 
     elysia::ui::UiWindowStyle window_style = _main_menu_window->style();
     window_style.draw_background = true;
