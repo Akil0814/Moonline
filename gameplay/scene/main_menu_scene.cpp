@@ -146,7 +146,7 @@ void MainMenuScene::build_menu_buttons()
 
     SDL_Texture* tex =
         elysia::resources::ResourceManager::instance()->find_texture("ui.moon");
-    auto ui_background = std::make_unique<elysia::ui::UiImage>(tex, elysia::core::Rect{ 0,0,1780,844 }, 0);
+    auto ui_background = std::make_unique<elysia::ui::UiImage>(tex, elysia::core::Rect{ 0,0,1780,844 }, -10);
     _main_menu_window->add_child(std::move(ui_background), { elysia::ui::UiLayoutAnchor::Center });
 
     elysia::ui::UiWindowStyle window_style = _main_menu_window->style();

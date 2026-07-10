@@ -159,7 +159,7 @@ namespace arcneco::scene
 
     void CharacterSelectScene::build_right_panel()
     {
-        auto ui_character_selected_background = std::make_unique<elysia::ui::UiAnimation>("ryougi_shiki.idle", elysia::core::Rect{ 0,0,256,256 }, 0);
+        auto ui_character_selected_background = std::make_unique<elysia::ui::UiAnimation>("ryougi_shiki.idle", elysia::core::Rect{ 0,0,512,512 }, 0);
         _character_visuals.idle_preview = ui_character_selected_background.get();
         _main_window->add_child(std::move(ui_character_selected_background), { elysia::ui::UiLayoutAnchor::BottomLeft });
     }
