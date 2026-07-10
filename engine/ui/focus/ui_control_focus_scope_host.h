@@ -85,6 +85,7 @@ private:
     UiControl* _focused_target = nullptr;
     UiControl* _last_focused_target = nullptr;
     bool _scope_focused = false;
+    bool _gamepad_scroll_focus_suppressed = false;
     elysia::input::InputDevice _focus_input_device = elysia::input::InputDevice::Unknown;
 };
 }

@@ -20,6 +20,7 @@ void UiControlFocusScopeHost::reset() noexcept
     _focused_target = nullptr;
     _last_focused_target = nullptr;
     _scope_focused = false;
+    _gamepad_scroll_focus_suppressed = false;
     _focus_input_device = elysia::input::InputDevice::Unknown;
 }
 
@@ -49,6 +50,9 @@ bool UiControlFocusScopeHost::focus_first_available()
     cleanup_destroyed_children();
     update_layout_if_dirty();
     refresh_focus_registry();
+
+    if (_gamepad_scroll_focus_suppressed)
+        return false;
 
     for (const FocusEntry& entry : _focus_entries)
     {
@@ -153,12 +157,30 @@ void UiControlFocusScopeHost::on_ui_input_frame(const UiInputFrame& input)
 
 bool UiControlFocusScopeHost::on_ui_input_event(const UiInputEvent& event)
 {
+    const bool gamepad_scroll = event.type == UiInputEventType::MouseWheel
+        && event.device == elysia::input::InputDevice::Gamepad;
+    const bool restore_from_gamepad_scroll = _gamepad_scroll_focus_suppressed
+        && event.type == UiInputEventType::ActionPressed;
+
+    if (gamepad_scroll)
+    {
+        _gamepad_scroll_focus_suppressed = true;
+        _focused_target = nullptr;
+    }
+    else if (restore_from_gamepad_scroll)
+    {
+        _gamepad_scroll_focus_suppressed = false;
+    }
+
     update_focus_input_device(event.device);
     cleanup_destroyed_children();
     update_layout_if_dirty();
     refresh_focus_registry();
     ensure_valid_focus();
     apply_focus_state();
+
+    if (restore_from_gamepad_scroll)
+        return true;
 
     bool handled = false;
 
@@ -267,6 +289,12 @@ std::vector<UiControl*> UiControlFocusScopeHost::direct_focusable_children() con
 
 void UiControlFocusScopeHost::ensure_valid_focus()
 {
+    if (_gamepad_scroll_focus_suppressed)
+    {
+        _focused_target = nullptr;
+        return;
+    }
+
     if (_focused_target && is_registered_focus_target(_focused_target) && is_control_usable(_focused_target))
         return;
 
