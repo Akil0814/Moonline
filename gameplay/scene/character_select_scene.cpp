@@ -78,6 +78,7 @@ namespace arcneco::scene
         build_popup();
         build_left_panel();
         build_right_panel();
+        set_character_visuals_visible(false);
         _main_window->set_on_cancel([this]{
             if (_exit_confirmation)
                 _exit_confirmation->open();});
@@ -228,6 +229,18 @@ namespace arcneco::scene
             if (loaded)
                 _character_visuals.idle_preview->play();
         }
+    }
+
+    void CharacterSelectScene::set_character_visuals_visible(bool visible) noexcept
+    {
+        if (_character_visuals.full_portrait)
+            _character_visuals.full_portrait->set_visible(visible);
+        if (_character_visuals.name_image)
+            _character_visuals.name_image->set_visible(visible);
+        if (_character_visuals.selected_background)
+            _character_visuals.selected_background->set_visible(visible);
+        if (_character_visuals.idle_preview)
+            _character_visuals.idle_preview->set_visible(visible);
     }
 
     void CharacterSelectScene::clear_character_visual_refs() noexcept
