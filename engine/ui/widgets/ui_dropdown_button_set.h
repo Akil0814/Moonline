@@ -20,6 +20,7 @@ namespace elysia::ui
 class UiListContainer;
 class UiWindow;
 
+// One popup row; disabled entries remain visible but are skipped by focus navigation.
 struct UiDropdownOption
 {
     UiTextContent content{};
@@ -28,6 +29,7 @@ struct UiDropdownOption
 
 using UiDropdownButtonSetSelectionChangedCallback = std::function<void(std::size_t selected_index)>;
 
+// Trigger control plus a window-rendered transient popup kept outside ordinary child z-order.
 class UiDropdownButtonSet final : public UiControl, public UiTransientPopup
 {
 public:
@@ -56,6 +58,7 @@ public:
     void toggle();
     [[nodiscard]] bool is_expanded() const noexcept;
 
+    // Registration lets the window prioritize popup rendering and input without taking ownership.
     void register_as_transient_popup(UiWindow& window);
     void unregister_as_transient_popup() noexcept;
 
@@ -75,6 +78,7 @@ public:
     void submit_transient_popup_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
 
 private:
+    // Structural option changes rebuild rows; selection changes reuse the existing buttons.
     void create_popup_content();
     void rebuild_option_buttons();
     void sync_visual_state();

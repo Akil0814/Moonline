@@ -15,6 +15,7 @@ struct SDL_Texture;
 
 namespace elysia::ui
 {
+// Single-line text widget. Typography chooses the source font while target height only scales output.
 class UiLabel : public UiElement
 {
 public:
@@ -52,6 +53,7 @@ public:
     void set_typography_role(UiTypographyRole role) noexcept;
     [[nodiscard]] UiTypographyRole typography_role() const noexcept;
 
+    // Optional display height preserves aspect ratio and remains bounded by the label's content rect.
     void set_target_height(float height);
     [[nodiscard]] std::optional<float> target_height() const noexcept;
     void clear_target_height();

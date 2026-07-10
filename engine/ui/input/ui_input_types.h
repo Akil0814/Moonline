@@ -6,6 +6,7 @@
 
 namespace elysia::ui
 {
+// Device-independent actions consumed by focusable UI controls.
 enum class UiAction
 {
     None = 0,
@@ -23,6 +24,7 @@ enum class UiAction
     Count
 };
 
+// Event phase or payload family after raw keyboard, mouse, and gamepad input is normalized.
 enum class UiInputEventType
 {
     None = 0,
@@ -40,6 +42,7 @@ enum class UiInputEventType
 // Normalized UI event payload routed to controls after raw input mapping.
 struct UiInputEvent
 {
+    // Only fields relevant to type are meaningful; unused payload members retain neutral defaults.
     UiAction action = UiAction::None;
     UiInputEventType type = UiInputEventType::None;
     elysia::input::InputDevice device = elysia::input::InputDevice::Unknown;

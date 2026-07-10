@@ -18,6 +18,7 @@ enum class UiNumberSuffix
     Percent
 };
 
+// Numeric text widget backed by the shared digit cache rather than localized full-string textures.
 class UiNumber : public UiElement
 {
 public:
@@ -65,10 +66,12 @@ public:
     void set_digit_spacing(float spacing);
     [[nodiscard]] float digit_spacing() const noexcept;
 
+    // Optional fixed advance keeps columns stable while values change.
     void set_fixed_glyph_advance(float advance);
     [[nodiscard]] std::optional<float> fixed_glyph_advance() const noexcept;
     void clear_fixed_glyph_advance();
 
+    // Scales glyphs uniformly without requesting a differently loaded font.
     void set_target_height(float height);
     [[nodiscard]] std::optional<float> target_height() const noexcept;
     void clear_target_height();

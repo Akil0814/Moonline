@@ -14,6 +14,7 @@ namespace elysia::ui
 class UiElement;
 
 // A non-modal, window-rendered popup surface anchored by an ordinary UI control.
+// Implementations retain popup ownership; UiWindow coordinates only z-order and input priority.
 class UiTransientPopup
 {
 public:

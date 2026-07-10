@@ -7,6 +7,7 @@
 
 namespace elysia::ui
 {
+// Per-frame action snapshot. Edge flags describe only the frame in which this state was produced.
 class UiInputState
 {
 public:

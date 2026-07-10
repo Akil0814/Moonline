@@ -17,6 +17,8 @@ class UiButton;
 class UiLabel;
 class UiTextBlock;
 
+// Reading-oriented overlay composite with a scrollable body and one dismiss action.
+// Internal controls opt out of direct theme registration; apply_theme() forwards one theme snapshot.
 class UiDialog : public UiControlFocusScopeHost, private UiDelegatedFocusMixin
 {
 public:
@@ -54,6 +56,7 @@ public:
     void set_theme_role(UiDialogThemeRole role) noexcept;
     [[nodiscard]] UiDialogThemeRole theme_role() const noexcept;
 
+    // The parent UiWindow must already own this dialog before overlay registration.
     void register_as_overlay(UiWindow& window,UiOverlayOptions options = {});
     void open(UiWindow& window);
     void close(UiWindow& window);
@@ -66,6 +69,7 @@ protected:
 private:
     // Keeps the reading viewport logically focused for gamepad scrolling without moving Close focus.
     void sync_body_scroll_gamepad_focus() noexcept;
+    // Builds the stable child tree once; content changes update existing controls in place.
     void create_internal_children();
     void sync_sources_to_children();
     void sync_style_to_children();

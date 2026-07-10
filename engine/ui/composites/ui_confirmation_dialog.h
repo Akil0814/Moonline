@@ -17,6 +17,7 @@ class UiListContainer;
 class UiPanel;
 class UiWindow;
 
+// Declarative content and button roles for the fixed Cancel/Confirm structure.
 struct UiConfirmationDialogConfig
 {
     UiTextContent title{};
@@ -30,6 +31,8 @@ struct UiConfirmationDialogConfig
 
 using UiConfirmationDialogCallback = std::function<void()>;
 
+// Convenience overlay composed from existing containers and controls.
+// UiChromeContainer is owned as a child rather than exposed through inheritance.
 class UiConfirmationDialog final : public UiControlFocusScopeHost, private UiDelegatedFocusMixin
 {
 public:
@@ -46,10 +49,12 @@ public:
     [[nodiscard]] elysia::core::Vector2 content_extent() const noexcept override;
     bool focus_first_available() override;
 
+    // Updates the stable internal controls without rebuilding the child tree.
     void set_config(const UiConfirmationDialogConfig& config);
     [[nodiscard]] const UiConfirmationDialogConfig& config() const noexcept;
     void set_on_confirm(UiConfirmationDialogCallback on_confirm);
 
+    // The owning window must adopt this element before overlay registration.
     void register_as_overlay(UiWindow& window,UiOverlayOptions options = {});
     void open();
     void close();
@@ -60,10 +65,12 @@ protected:
     void apply_theme(const UiTheme& theme) override;
 
 private:
+    // Internal children disable direct theme use; this composite forwards one resolved theme.
     void create_internal_children();
     void sync_config_to_children();
     void sync_theme_to_children(const UiTheme* theme = nullptr);
     void sync_delegated_focus() noexcept;
+    // Closes first so callbacks may safely switch scenes or destroy the current UI tree.
     void confirm();
     [[nodiscard]] static bool is_default_overlay_options(const UiOverlayOptions& options) noexcept;
 

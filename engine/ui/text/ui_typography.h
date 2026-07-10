@@ -8,6 +8,7 @@
 
 namespace elysia::ui
 {
+// Semantic text roles map widget intent onto the finite set of preloaded font sizes.
 enum class UiTypographyRole
 {
     Label,
@@ -27,6 +28,7 @@ enum class UiTypographyRole
     RadioLabel
 };
 
+// Rendering inputs resolved from a role; colors remain part of the widget's visual style.
 struct UiResolvedTextStyle
 {
     int point_size = 24;
@@ -34,6 +36,7 @@ struct UiResolvedTextStyle
     TextHorizontalAlign horizontal_align_default = TextHorizontalAlign::Left;
 };
 
+// Keep this list synchronized with the font manifest; arbitrary point sizes cannot be resolved at runtime.
 inline constexpr std::array<int,6> kLoadedUiFontPointSizes{ 12,16,18,22,24,26 };
 
 [[nodiscard]] inline int resolve_loaded_ui_font_point_size(int requested_point_size) noexcept

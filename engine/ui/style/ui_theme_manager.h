@@ -45,6 +45,7 @@ private:
     friend class UiThemeManager;
 };
 
+// Explicit registration manager; it never walks the scene tree or assumes ownership of elements.
 class UiThemeManager
 {
 public:

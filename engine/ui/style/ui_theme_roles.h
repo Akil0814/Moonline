@@ -2,6 +2,7 @@
 
 namespace elysia::ui
 {
+// Theme roles are semantic lookup keys. They do not own colors and remain stable across built-in themes.
 enum class UiPanelThemeRole
 {
     Default,

@@ -5,6 +5,11 @@
 #include <cstddef>
 #include <vector>
 
+namespace elysia::ui
+{
+    class UiConfirmationDialog;
+}
+
 namespace arcneco::scene
 {
 class SettingScene final : public ApplicationScene
@@ -23,5 +28,6 @@ public:
 
 private:
     elysia::ui::UiWindow* _main_setting_window = nullptr;
+    elysia::ui::UiConfirmationDialog* _exit_confirmation = nullptr;
 };
 }

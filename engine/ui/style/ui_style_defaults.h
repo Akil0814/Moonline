@@ -5,8 +5,10 @@
 
 namespace elysia::ui
 {
+// Supplies deterministic construction-time styles before an element is attached to a UiThemeManager.
 struct UiStyleDefaults
 {
+    // BlueGlassMoon is the fallback only; registered elements receive the manager's active theme later.
     [[nodiscard]] static const UiTheme& theme() noexcept
     {
         return builtin_theme(UiBuiltinTheme::BlueGlassMoon);

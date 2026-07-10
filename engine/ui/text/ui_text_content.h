@@ -5,6 +5,7 @@
 
 namespace elysia::ui
 {
+// Distinguishes localization lookup keys from text that should be rendered verbatim.
 enum class UiTextContentKind
 {
     None,
@@ -12,6 +13,7 @@ enum class UiTextContentKind
     RawText
 };
 
+// Lightweight text source shared by widgets; resolving and caching remain LocalizationManager concerns.
 struct UiTextContent
 {
     UiTextContentKind kind = UiTextContentKind::None;

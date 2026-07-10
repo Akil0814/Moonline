@@ -7,6 +7,9 @@
 
 #include "../../engine/audio/audio_service.h"
 
+#include "../../engine/ui/widgets/image/ui_image.h"
+#include "../../engine/ui/widgets/image/ui_animation.h"
+#include "../../engine/ui/containers/ui_scroll_container.h"
 #include "../../engine/ui/composites/ui_confirmation_dialog.h"
 
 #include <iostream>
@@ -89,6 +92,26 @@ namespace arcneco::scene
         _exit_confirmation->register_as_overlay(*_main_window);
     }
 
+    void CharacterSelectScene::build_character_list()
+    {
+        auto* horizontal_scroll = _main_window->create_child<elysia::ui::UiScrollContainer>(elysia::core::Rect{ 0,0,800,100 });
+        horizontal_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Horizontal);
+        horizontal_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
+        horizontal_scroll->set_scroll_step(elysia::core::Vector2(36.0f, 36.0f));
 
+        auto ui_list = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,1000,100 });
+        ui_list->;
+        constexpr int character_ui_wide = 64;
+        constexpr int character_ui_hight = 128;
 
+        std::unique_ptr<elysia::ui::UiImage> avatar = std::make_unique<elysia::ui::UiImage>(nullptr, elysia::core::Rect{ 0,0,character_ui_wide ,character_ui_hight });
+
+        horizontal_scroll->set_content(std::move(ui_list));
+
+    }
+
+    void CharacterSelectScene::build_character_detailed()
+    {
+
+    }
 }

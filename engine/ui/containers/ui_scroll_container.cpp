@@ -515,6 +515,8 @@ bool UiScrollContainer::contains_focus_point(int mouse_x,int mouse_y) const noex
 void UiScrollContainer::rebuild_layout()
 {
     UiChildHost::set_clip_children(true);
+    // Auto scrollbars reduce the viewport, which can change overflow on the other axis.
+    // Resolve content and viewport twice so both axes converge before child placement.
     sync_scroll_state_to_content();
     _scroll_state.set_viewport_size(UiChildHost::content_rect().size());
     sync_scroll_state_to_viewport();
@@ -530,6 +532,7 @@ void UiScrollContainer::rebuild_layout()
         if (!entry.element)
             continue;
 
+        // A scroll container owns exactly one payload; stale extra children are collapsed defensively.
         if (index == 0)
         {
             entry.element->set_screen_rect(elysia::core::Rect(

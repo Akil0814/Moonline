@@ -14,6 +14,7 @@ struct SDL_Texture;
 
 namespace elysia::ui
 {
+// Multi-line text widget whose intrinsic extent is measured from localized, wrapped output.
 class UiTextBlock : public UiElement
 {
 public:
@@ -46,6 +47,7 @@ public:
     [[nodiscard]] TextHorizontalAlign horizontal_align() const noexcept;
 
 private:
+    // TextKey and RawText share rendering but follow different localization paths.
     [[nodiscard]] bool has_text() const noexcept;
     [[nodiscard]] elysia::core::Rect content_rect() const noexcept;
     [[nodiscard]] elysia::core::Rect text_render_rect(SDL_Texture* text_texture) const noexcept;

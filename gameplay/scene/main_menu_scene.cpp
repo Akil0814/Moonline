@@ -130,10 +130,13 @@ void MainMenuScene::build_menu_buttons()
     ui_label->set_vertical_align(elysia::ui::TextVerticalAlign::Center);
 
 
+    std::unique_ptr<elysia::ui::UiListContainer> ui_outer_list = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,300,400 });
+    ui_outer_list->add_front(std::move(ui_label));
+    ui_outer_list->add_back(std::move(ui_list));
 
     //add list to window
     elysia::ui::UiLayoutChildOptions layout{ elysia::ui::UiLayoutAnchor::Center };
-    elysia::ui::UiElement* list_added = _main_menu_window->add_child(std::move(ui_list), layout);
+    elysia::ui::UiElement* list_added = _main_menu_window->add_child(std::move(ui_outer_list), layout);
 
     if (auto* list = dynamic_cast<elysia::ui::UiListContainer*>(list_added))
         _main_menu_window->register_focus_scope(*list);
@@ -143,13 +146,7 @@ void MainMenuScene::build_menu_buttons()
     window_style.draw_border = false;
     _main_menu_window->set_style(window_style);
 
-
-
-    std::unique_ptr<elysia::ui::UiListContainer> ui_outer_list = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,300,400 });
-
-    _main_menu_window->add_child(std::move(ui_label),{ elysia::ui::UiLayoutAnchor::TopCenter });
-
-    _main_menu_window->set_on_cancel([this] {
+    _main_menu_window->set_on_cancel([this]{
         if (_exit_confirmation)
             _exit_confirmation->open();
         });

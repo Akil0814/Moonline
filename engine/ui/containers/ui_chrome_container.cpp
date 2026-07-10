@@ -342,6 +342,7 @@ bool UiChromeContainer::focus_first_available()
 {
     sync_body_scope_focus();
 
+    // Normal chrome entry favors header actions; specialized composites may explicitly enter body.
     if (header_has_focusable_target())
     {
         _body_scope_active = false;
@@ -357,6 +358,7 @@ bool UiChromeContainer::focus_first_available()
 
 bool UiChromeContainer::focus_body_first_available()
 {
+    // Refresh nested geometry and focus entries before crossing into the delegated body scope.
     cleanup_destroyed_children();
     update_layout_if_dirty();
     refresh_focus_registry();

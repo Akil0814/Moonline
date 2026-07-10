@@ -120,6 +120,7 @@ elysia::core::Vector2 UiConfirmationDialog::content_extent() const noexcept
 
 bool UiConfirmationDialog::focus_first_available()
 {
+    // Prime the outer graph, then enter Chrome's body so Cancel wins over header Close.
     cleanup_destroyed_children();
     update_layout_if_dirty();
     refresh_focus_registry();
@@ -156,6 +157,7 @@ void UiConfirmationDialog::set_on_confirm(UiConfirmationDialogCallback on_confir
 
 void UiConfirmationDialog::register_as_overlay(UiWindow& window,UiOverlayOptions options)
 {
+    // UiWindow owns overlay state; this pointer only forwards later open/close requests.
     _registered_window = &window;
     if (is_default_overlay_options(options))
     {
@@ -301,6 +303,7 @@ void UiConfirmationDialog::sync_config_to_children()
 
 void UiConfirmationDialog::sync_theme_to_children(const UiTheme* theme)
 {
+    // One registered composite fans the resolved theme out to children that deliberately opted out.
     const UiTheme& resolved = theme ? *theme : builtin_theme(UiBuiltinTheme::BlueGlassMoon);
     if (_chrome)
         _chrome->set_style(apply_theme_colors(UiChromeContainerStyle{},resolved.chrome_container_style));
