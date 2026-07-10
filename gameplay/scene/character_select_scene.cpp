@@ -9,8 +9,10 @@
 #include "../../engine/resources/resource_manager.h"
 
 #include "../../engine/ui/widgets/image/ui_animation.h"
+#include "../../engine/ui/widgets/image/ui_image.h"
 #include "../../engine/ui/widgets/ui_button.h"
 #include "../../engine/ui/containers/ui_list_container.h"
+#include "../../engine/ui/containers/ui_button_group.h"
 #include "../../engine/ui/containers/ui_scroll_container.h"
 #include "../../engine/ui/composites/ui_confirmation_dialog.h"
 
@@ -118,8 +120,11 @@ namespace arcneco::scene
         _character_button_keys.clear();
         button_group->set_on_selection_changed([this](std::optional<std::size_t> selected_index)
         {
-            if (selected_index && *selected_index < _character_button_keys.size())
-                _current_character_key = _character_button_keys[*selected_index];
+                if (selected_index && *selected_index < _character_button_keys.size())
+                {
+                    _current_character_key = _character_button_keys[*selected_index];
+                    elysia::audio::AudioService::instance()->play_sound(_current_character_key + ".selected");
+                }
         });
 
         constexpr int character_ui_width = 96;
