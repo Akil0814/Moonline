@@ -392,6 +392,8 @@ void UiDialog::sync_theme_to_children(const UiTheme* theme)
         _chrome->set_style(apply_theme_colors(UiChromeContainerStyle{},resolved_theme.chrome_container_style));
     if (_title_label)
         _title_label->set_style(apply_theme_colors(UiLabelStyle{},resolved_theme.label(UiLabelThemeRole::Title)));
+    if (_body_panel)
+        _body_panel->set_style(apply_theme_colors(UiPanelStyle{},resolved_theme.panel(UiPanelThemeRole::Dialog)));
     if (_body_text)
         _body_text->set_style(apply_theme_colors(UiTextBlockStyle{},resolved_theme.label(UiLabelThemeRole::Default)));
     if (_body_scroll)
