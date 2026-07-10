@@ -144,28 +144,30 @@ void MainMenuScene::build_menu_buttons()
         }
 
         //create the main container
-        std::unique_ptr<elysia::ui::UiListContainer> ui_list = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,250,500 });
+        std::unique_ptr<elysia::ui::UiListContainer> ui_list = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,300,400 });
         elysia::ui::UiLayoutChildOptions layout{ elysia::ui::UiLayoutAnchor::Center };
 
+        constexpr int button_wide = 250;
         //start button
-        std::unique_ptr<elysia::ui::UiButton> ui_button = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,200,75 });
+        std::unique_ptr<elysia::ui::UiButton> ui_button = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,button_wide,75 });
         ui_button->set_text_content(elysia::ui::ui_text_key("menu_scene.start"));
+        ui_button->set_on_click([this] {Scene::request_scene_switch(AppSceneKeys::CharacterSelect);});
         ui_list->add_back(std::move(ui_button));
 
         //setting button
-        ui_button = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,200,75 });
+        ui_button = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,button_wide,75 });
         ui_button->set_text_content(elysia::ui::ui_text_key("menu_scene.settings"));
-        ui_button->set_on_click([this] {Scene::request_scene_switch(AppSceneKeys::UiContainerTest);});
+        ui_button->set_on_click([this] {Scene::request_scene_switch(AppSceneKeys::Setting);});
         ui_list->add_back(std::move(ui_button));
 
         //about button
-        ui_button = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,200,75 });
+        ui_button = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,button_wide,75 });
         ui_button->set_text_content(elysia::ui::ui_text_key("menu_scene.about"));
         ui_button->set_on_click([this] {Scene::request_scene_switch(AppSceneKeys::UiContainerTest);});
         ui_list->add_back(std::move(ui_button));
 
         //exit button
-        ui_button = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,200,75 });
+        ui_button = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,button_wide,75 });
         ui_button->set_text_content(elysia::ui::ui_text_key("menu_scene.exit"));
         ui_button->set_on_click([this]
         {
@@ -184,6 +186,11 @@ void MainMenuScene::build_menu_buttons()
         if (auto* list = dynamic_cast<elysia::ui::UiListContainer*>(list_added))
             _main_menu_window->register_focus_scope(*list);
     }
+    //Title
+    std::unique_ptr<elysia::ui::UiLabel> ui_label =
+        std::make_unique<elysia::ui::UiLabel>(elysia::core::Rect{ 0,0,200,175 }, 0, elysia::ui::ui_text_key("menu_scene.project_name"));
+    ui_label->set_theme_role(elysia::ui::UiLabelThemeRole::Title);
+    _main_menu_window->add_child(std::move(ui_label), { elysia::ui::UiLayoutAnchor::TopCenter});
 
     _main_menu_window->set_on_cancel([this] {
         if (_main_menu_window && _exit_confirmation)

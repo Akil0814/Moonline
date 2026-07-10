@@ -2,12 +2,7 @@
 
 #include <string>
 
-struct GameplayEnterPayload
+struct StageSelectEnterPayload
 {
-	int i = 0;
-};
-
-struct MainMenuEnterPayload
-{
-	std::string tmp = {};
+	std::string character_id = {};
 };
