@@ -292,8 +292,7 @@ bool UiDropdownButtonSet::on_transient_popup_input_event(const UiInputEvent& eve
     if (event.type == UiInputEventType::ActionPressed
         && (event.action == UiAction::NavigateUp || event.action == UiAction::NavigateDown))
     {
-        _focused_option = next_enabled_option(event.action == UiAction::NavigateUp ? -1 : 1);
-        set_focused_option(_focused_option);
+        set_focused_option(next_enabled_option(event.action == UiAction::NavigateUp ? -1 : 1));
         ensure_focused_option_visible();
         return _focused_option.has_value();
     }
@@ -317,7 +316,13 @@ bool UiDropdownButtonSet::on_transient_popup_input_event(const UiInputEvent& eve
     if (is_pointer_event(event) && _popup_panel.screen_rect().contains(elysia::core::Vector2(
         static_cast<float>(event.mouse_x),static_cast<float>(event.mouse_y))))
     {
-        return _popup_scroll.on_ui_input_event(event);
+        const bool handled = _popup_scroll.on_ui_input_event(event);
+        // Pointer focus is resolved by UiListContainer. Mirror that result only
+        // after dispatch so keyboard/gamepad confirmation continues from the
+        // option the user actually sees focused.
+        if (_expanded)
+            sync_focused_option_from_popup_list();
+        return handled;
     }
 
     return false;
@@ -413,7 +418,11 @@ void UiDropdownButtonSet::sync_popup_layout()
     _popup_scroll.set_visible(is_visible());
     _popup_scroll.set_active(is_active());
     _popup_scroll.set_opacity(opacity());
-    _popup_scroll.set_scope_focused(_expanded && is_focused());
+    // An expanded transient popup is the active input region even when the
+    // owner control was opened with the pointer and its parent scope has not
+    // assigned keyboard focus to it. Keep the popup scope active while open so
+    // its list can own and render the focused option consistently.
+    _popup_scroll.set_scope_focused(_expanded && is_visible() && is_active());
     _popup_list->set_size(elysia::core::Vector2(width,desired_height));
 
     for (std::size_t index = 0; index < _popup_list->child_count(); ++index)
@@ -473,18 +482,40 @@ std::optional<std::size_t> UiDropdownButtonSet::next_enabled_option(int directio
     return std::nullopt;
 }
 
-void UiDropdownButtonSet::set_focused_option(std::optional<std::size_t> index) noexcept
+void UiDropdownButtonSet::set_focused_option(std::optional<std::size_t> index)
 {
     _focused_option = index;
     _trigger.set_focused(!_expanded && is_focused());
     if (!_popup_list)
         return;
 
-    for (std::size_t option_index = 0; option_index < _popup_list->child_count(); ++option_index)
+    UiButton* focused_button = index ? option_button_at(*index) : nullptr;
+    // Let the list focus host own the selection. Setting UiButton::focused
+    // directly is only temporary: the list repairs/applies its own focus state
+    // on the next input event and would otherwise overwrite the dropdown's
+    // focused option (usually back to the first entry).
+    _popup_list->set_focused_target(focused_button);
+}
+
+void UiDropdownButtonSet::sync_focused_option_from_popup_list()
+{
+    if (!_popup_list)
     {
-        if (UiButton* button = option_button_at(option_index))
-            button->set_focused(_expanded && is_focused() && index && *index == option_index);
+        _focused_option.reset();
+        return;
     }
+
+    const UiControl* focused = _popup_list->focused_target();
+    for (std::size_t index = 0; index < _options.size(); ++index)
+    {
+        if (_options[index].enabled && option_button_at(index) == focused)
+        {
+            _focused_option = index;
+            return;
+        }
+    }
+
+    _focused_option.reset();
 }
 
 void UiDropdownButtonSet::ensure_focused_option_visible() noexcept

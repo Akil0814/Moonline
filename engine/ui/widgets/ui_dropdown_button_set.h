@@ -86,7 +86,8 @@ private:
     void sync_theme_to_children(const UiTheme* theme = nullptr);
     [[nodiscard]] std::optional<std::size_t> first_enabled_option() const noexcept;
     [[nodiscard]] std::optional<std::size_t> next_enabled_option(int direction) const noexcept;
-    void set_focused_option(std::optional<std::size_t> index) noexcept;
+    void set_focused_option(std::optional<std::size_t> index);
+    void sync_focused_option_from_popup_list();
     void ensure_focused_option_visible() noexcept;
     [[nodiscard]] UiButton* option_button_at(std::size_t index) noexcept;
     [[nodiscard]] const UiButton* option_button_at(std::size_t index) const noexcept;
