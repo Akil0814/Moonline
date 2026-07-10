@@ -984,8 +984,8 @@ void UiScrollContainer::update_content_focus_suppression(const UiInputEvent& eve
 
 bool UiScrollContainer::should_auto_position_focus(const UiInputEvent& event) const noexcept
 {
-    return event.device == elysia::input::InputDevice::Keyboard
-        || event.device == elysia::input::InputDevice::Gamepad;
+    return event.type == UiInputEventType::ActionPressed
+        && is_navigation_action(event.action);
 }
 
 void UiScrollContainer::ensure_visible_focused_target_for_input(const UiInputEvent& event) noexcept
