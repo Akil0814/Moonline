@@ -37,7 +37,21 @@ template<class Enum>
     const UiEnabledDisabledColors& border
 ) noexcept
 {
-    return UiChromeThemeColors{ background,border };
+    const elysia::core::Color focused_border = background.focused != border.enabled
+        ? background.focused
+        : (background.active != border.enabled ? background.active : background.idle);
+    const elysia::core::Color active_border = background.active != focused_border
+        ? background.active
+        : (background.idle != focused_border ? background.idle : border.enabled);
+    return UiChromeThemeColors{
+        background,
+        UiInteractiveColors{
+            border.enabled,
+            focused_border,
+            active_border,
+            border.disabled
+        }
+    };
 }
 
 [[nodiscard]] UiTheme finalize_dialog_theme(UiTheme theme) noexcept

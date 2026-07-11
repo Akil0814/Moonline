@@ -26,11 +26,11 @@ enum class UiBuiltinTheme
     QuietSlate
 };
 
-// Color-only theme payload for chrome with interactive background and enabled/disabled border colors.
+// Color-only theme payload for chrome with independent interaction colors for background and border.
 struct UiChromeThemeColors
 {
     UiInteractiveColors background{};
-    UiEnabledDisabledColors border{};
+    UiInteractiveColors border{};
 };
 
 struct UiLabelThemeColors

@@ -348,7 +348,7 @@ elysia::core::Color UiDragHandle::current_background_color() const noexcept
 
 elysia::core::Color UiDragHandle::current_border_color() const noexcept
 {
-    return resolve_enabled_disabled_color(style().chrome.border,is_enabled());
+    return resolve_interactive_color(style().chrome.border,is_enabled(),is_focused(),_is_dragging);
 }
 
 void UiDragHandle::apply_theme(const UiTheme& theme)

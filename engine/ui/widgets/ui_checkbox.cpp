@@ -514,7 +514,7 @@ elysia::core::Color UiCheckbox::current_background_color() const noexcept
 
 elysia::core::Color UiCheckbox::current_border_color() const noexcept
 {
-    return resolve_enabled_disabled_color(style().chrome.border,is_enabled());
+    return resolve_interactive_color(style().chrome.border,is_enabled(),is_focused(),_is_pushed);
 }
 
 elysia::core::Color UiCheckbox::current_checkmark_color() const noexcept

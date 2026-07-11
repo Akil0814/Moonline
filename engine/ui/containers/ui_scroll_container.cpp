@@ -883,7 +883,9 @@ void UiScrollContainer::configure_scrollbar_thumb(
     config.style.chrome.background.focused = style().scrollbar.thumb_focused_color;
     config.style.chrome.background.active = style().scrollbar.thumb_dragging_color;
     config.style.chrome.background.disabled = style().scrollbar.thumb_disabled_color;
-    config.style.chrome.border.enabled = style().scrollbar.thumb_idle_color;
+    config.style.chrome.border.idle = style().scrollbar.thumb_idle_color;
+    config.style.chrome.border.focused = style().scrollbar.thumb_focused_color;
+    config.style.chrome.border.active = style().scrollbar.thumb_dragging_color;
     config.style.chrome.border.disabled = style().scrollbar.thumb_disabled_color;
     thumb.set_drag_handle_config(config);
     thumb.set_drag_axis(config.axis);

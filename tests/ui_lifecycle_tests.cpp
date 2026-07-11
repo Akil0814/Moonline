@@ -10,11 +10,17 @@
 #include "../engine/ui/widgets/ui_button.h"
 #include "../engine/ui/composites/ui_dropdown.h"
 #include "../engine/ui/composites/ui_labeled_radio_button.h"
+#include "../engine/ui/style/ui_theme.h"
+#include "../engine/ui/widgets/ui_checkbox.h"
+#include "../engine/ui/widgets/ui_drag_handle.h"
 #include "../engine/ui/widgets/ui_radio_button.h"
+#include "../engine/ui/widgets/ui_slider.h"
+#include "../engine/ui/widgets/ui_text_input.h"
 #include "../engine/ui/composites/ui_tooltip.h"
 #include "../engine/ui/window/ui_window.h"
 
 #include <cstdlib>
+#include <cstdint>
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -27,6 +33,28 @@ void require(bool condition,const char* message)
         return;
     std::cerr << "FAILED: " << message << '\n';
     std::exit(EXIT_FAILURE);
+}
+
+const elysia::core::UiRenderCommand* find_command(
+    const std::vector<elysia::core::UiRenderCommand>& commands,
+    elysia::core::UiRenderCommandType type)
+{
+    for (const auto& command : commands)
+    {
+        if (command.type == type)
+            return &command;
+    }
+    return nullptr;
+}
+
+elysia::ui::UiInteractiveColors test_border_colors()
+{
+    return {
+        elysia::core::Color{ 10,20,30,255 },
+        elysia::core::Color{ 40,50,60,255 },
+        elysia::core::Color{ 70,80,90,255 },
+        elysia::core::Color{ 100,110,120,255 }
+    };
 }
 
 void test_overlay_lifetime()
@@ -231,6 +259,176 @@ void test_nested_focus_and_dropdown_navigation()
     require(raw_dropdown->selected_index() == 1,"dropdown navigation should select focused option");
     require(!raw_dropdown->is_expanded(),"dropdown should close after confirmation");
 }
+
+void require_command_color(
+    const std::vector<elysia::core::UiRenderCommand>& commands,
+    elysia::core::UiRenderCommandType type,
+    elysia::core::Color expected,
+    const char* message)
+{
+    const auto* command = find_command(commands,type);
+    require(command != nullptr,message);
+    require(command->color == expected,message);
+}
+
+void test_button_interactive_border_colors()
+{
+    elysia::ui::UiButtonStyle style{};
+    style.chrome.draw_background = false;
+    style.chrome.draw_border = true;
+    style.chrome.border = test_border_colors();
+    elysia::ui::UiButton button(elysia::core::Rect{ 0,0,100,40 });
+    button.set_style(style);
+
+    const auto render = [&button]()
+    {
+        std::vector<elysia::core::UiRenderCommand> commands;
+        button.submit_ui_render_commands(commands);
+        return commands;
+    };
+
+    require_command_color(render(),elysia::core::UiRenderCommandType::DrawRect,
+        style.chrome.border.idle,"button idle border color");
+    button.set_focused(true);
+    require_command_color(render(),elysia::core::UiRenderCommandType::DrawRect,
+        style.chrome.border.focused,"button focused border color");
+    button.on_ui_input_event(elysia::ui::UiInputEvent{
+        .action = elysia::ui::UiAction::Confirm,
+        .type = elysia::ui::UiInputEventType::ActionPressed
+    });
+    require_command_color(render(),elysia::core::UiRenderCommandType::DrawRect,
+        style.chrome.border.active,"button active border color");
+    button.set_enabled(false);
+    require_command_color(render(),elysia::core::UiRenderCommandType::DrawRect,
+        style.chrome.border.disabled,"button disabled border color");
+}
+
+void test_textured_button_border()
+{
+    elysia::ui::UiButtonStyle style{};
+    style.chrome.draw_border = true;
+    style.chrome.border = test_border_colors();
+    elysia::ui::UiButton button(elysia::core::Rect{ 0,0,100,40 });
+    button.set_style(style);
+    auto* texture = reinterpret_cast<SDL_Texture*>(static_cast<std::uintptr_t>(1));
+    button.set_state_textures(elysia::ui::UiButtonTextures{ .idle = texture });
+
+    std::vector<elysia::core::UiRenderCommand> commands;
+    button.submit_ui_render_commands(commands);
+    require(commands.size() == 2,"textured button should emit texture and border");
+    require(commands[0].type == elysia::core::UiRenderCommandType::Texture,
+        "textured button texture should render first");
+    require(commands[1].type == elysia::core::UiRenderCommandType::DrawRect,
+        "textured button border should render after texture");
+
+    style.chrome.draw_border = false;
+    button.set_style(style);
+    commands.clear();
+    button.submit_ui_render_commands(commands);
+    require(commands.size() == 1 && commands[0].type == elysia::core::UiRenderCommandType::Texture,
+        "borderless textured button should emit only texture");
+}
+
+void test_other_chrome_active_borders()
+{
+    const auto border = test_border_colors();
+    const elysia::ui::UiInputEvent confirm_pressed{
+        .action = elysia::ui::UiAction::Confirm,
+        .type = elysia::ui::UiInputEventType::ActionPressed
+    };
+    std::vector<elysia::core::UiRenderCommand> commands;
+
+    elysia::ui::UiCheckboxStyle checkbox_style{};
+    checkbox_style.chrome.border = border;
+    elysia::ui::UiCheckbox checkbox(elysia::core::Rect{ 0,0,40,40 });
+    checkbox.set_style(checkbox_style);
+    checkbox.set_focused(true);
+    checkbox.on_ui_input_event(confirm_pressed);
+    checkbox.submit_ui_render_commands(commands);
+    require_command_color(commands,elysia::core::UiRenderCommandType::DrawRect,
+        border.active,"checkbox active border color");
+
+    elysia::ui::UiRadioButtonStyle radio_style{};
+    radio_style.chrome.border = border;
+    elysia::ui::UiRadioButton radio(elysia::core::Rect{ 0,0,40,40 });
+    radio.set_style(radio_style);
+    radio.set_focused(true);
+    radio.on_ui_input_event(confirm_pressed);
+    commands.clear();
+    radio.submit_ui_render_commands(commands);
+    require_command_color(commands,elysia::core::UiRenderCommandType::DrawCircle,
+        border.active,"radio active border color");
+
+    elysia::ui::UiTextInputStyle input_style{};
+    input_style.chrome.border = border;
+    elysia::ui::UiTextInput input(elysia::core::Rect{ 0,0,160,40 });
+    input.set_style(input_style);
+    input.set_focused(true);
+    input.on_ui_input_event(confirm_pressed);
+    commands.clear();
+    input.submit_ui_render_commands(commands);
+    require_command_color(commands,elysia::core::UiRenderCommandType::DrawRect,
+        border.active,"text input active border color");
+
+    const elysia::ui::UiInputEvent pointer_pressed{
+        .type = elysia::ui::UiInputEventType::PointerPressed,
+        .device = elysia::input::InputDevice::Mouse,
+        .control = elysia::input::RawInputControl::MouseLeft,
+        .mouse_x = 9,
+        .mouse_y = 9
+    };
+    elysia::ui::UiDragHandleStyle handle_style{};
+    handle_style.chrome.border = border;
+    elysia::ui::UiDragHandle handle(elysia::core::Rect{ 0,0,40,40 });
+    handle.set_style(handle_style);
+    handle.on_ui_input_event(pointer_pressed);
+    commands.clear();
+    handle.submit_ui_render_commands(commands);
+    require_command_color(commands,elysia::core::UiRenderCommandType::DrawRect,
+        border.active,"drag handle active border color");
+
+    elysia::ui::UiSliderStyle slider_style{};
+    slider_style.chrome.border = border;
+    elysia::ui::UiSlider slider(elysia::core::Rect{ 0,0,180,40 });
+    slider.set_style(slider_style);
+    slider.on_ui_input_event(elysia::ui::UiInputEvent{
+        .type = elysia::ui::UiInputEventType::PointerPressed,
+        .device = elysia::input::InputDevice::Mouse,
+        .control = elysia::input::RawInputControl::MouseLeft,
+        .mouse_x = 9,
+        .mouse_y = 20
+    });
+    commands.clear();
+    slider.submit_ui_render_commands(commands);
+    require(!commands.empty() && commands.back().type == elysia::core::UiRenderCommandType::DrawRect,
+        "slider should emit its outer border last");
+    require(commands.back().color == border.active,"slider active border color");
+}
+
+void test_builtin_theme_border_states()
+{
+    constexpr elysia::ui::UiBuiltinTheme themes[]{
+        elysia::ui::UiBuiltinTheme::BlueGlassMoon,
+        elysia::ui::UiBuiltinTheme::ElysiaLight,
+        elysia::ui::UiBuiltinTheme::ElysiaDark,
+        elysia::ui::UiBuiltinTheme::EvangelionUnit00,
+        elysia::ui::UiBuiltinTheme::EvangelionUnit01,
+        elysia::ui::UiBuiltinTheme::EvangelionUnit02,
+        elysia::ui::UiBuiltinTheme::QuietSlate
+    };
+    for (const auto theme_id : themes)
+    {
+        const auto theme = elysia::ui::make_builtin_theme(theme_id);
+        const auto& default_border = theme.button(elysia::ui::UiButtonThemeRole::Default).chrome.border;
+        const auto& primary_border = theme.button(elysia::ui::UiButtonThemeRole::Primary).chrome.border;
+        require(default_border.idle != default_border.focused,
+            "default theme border should distinguish idle and focused");
+        require(default_border.focused != default_border.active,
+            "default theme border should distinguish focused and active");
+        require(primary_border.idle != primary_border.focused,
+            "primary border should distinguish selected idle and focused");
+    }
+}
 }
 
 int main()
@@ -243,6 +441,10 @@ int main()
     test_group_preserves_button_override();
     test_empty_focus_scopes();
     test_nested_focus_and_dropdown_navigation();
+    test_button_interactive_border_colors();
+    test_textured_button_border();
+    test_other_chrome_active_borders();
+    test_builtin_theme_border_states();
     std::cout << "ui lifecycle tests passed\n";
     return EXIT_SUCCESS;
 }

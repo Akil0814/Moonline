@@ -24,8 +24,10 @@ struct UiInteractiveColors
 struct UiChromeStyle
 {
     UiInteractiveColors background{};
-    UiEnabledDisabledColors border{
+    UiInteractiveColors border{
         UiPalette::border_default,
+        UiPalette::border_focus,
+        UiPalette::accent,
         UiPalette::border_disabled
     };
     bool draw_background = true;

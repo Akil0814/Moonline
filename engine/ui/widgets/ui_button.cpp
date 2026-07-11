@@ -177,6 +177,11 @@ void UiButton::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
         elysia::core::UiRenderCommand command = elysia::core::make_ui_texture_command(state_texture,button_rect);
         apply_opacity(command);
         out_commands.push_back(command);
+        if (style().chrome.draw_border)
+        {
+            out_commands.push_back(elysia::core::make_ui_draw_rect_command(
+                button_rect,apply_opacity(current_border_color())));
+        }
         return;
     }
 
@@ -425,7 +430,7 @@ elysia::core::Color UiButton::current_background_color() const noexcept
 
 elysia::core::Color UiButton::current_border_color() const noexcept
 {
-    return resolve_enabled_disabled_color(style().chrome.border,is_enabled());
+    return resolve_interactive_color(style().chrome.border,is_enabled(),is_focused(),_is_pushed);
 }
 
 elysia::core::Color UiButton::current_text_color() const noexcept

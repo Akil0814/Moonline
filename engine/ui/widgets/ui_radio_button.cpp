@@ -113,7 +113,10 @@ bool UiRadioButton::can_interact() const noexcept { return is_active() && is_vis
 bool UiRadioButton::is_primary_pointer_event(const UiInputEvent& event) const noexcept { return event.device == elysia::input::InputDevice::Mouse && event.control == elysia::input::RawInputControl::MouseLeft; }
 void UiRadioButton::play_sound_if_set(const std::string& key) const { if (!key.empty()) elysia::audio::AudioService::instance()->play_sound(key); }
 elysia::core::Color UiRadioButton::background_color() const noexcept { return resolve_interactive_color(style().chrome.background,is_enabled(),is_focused(),_pushed); }
-elysia::core::Color UiRadioButton::border_color() const noexcept { return resolve_enabled_disabled_color(style().chrome.border,is_enabled()); }
+elysia::core::Color UiRadioButton::border_color() const noexcept
+{
+    return resolve_interactive_color(style().chrome.border,is_enabled(),is_focused(),_pushed);
+}
 elysia::core::Color UiRadioButton::mark_color() const noexcept { return resolve_enabled_disabled_color(style().mark,is_enabled()); }
 void UiRadioButton::apply_theme(const UiTheme& theme) { _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.radio_button_style)); }
 }
