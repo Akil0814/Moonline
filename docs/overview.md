@@ -23,6 +23,12 @@ The current source layout shows a clear separation between:
 
 The current development priority is to complete the core engine and data pipeline first, then build gameplay systems on top of that foundation.
 
+## UI Documentation
+
+The current `engine/ui` system has its own Chinese developer documentation in
+[`docs/ui/`](ui/README.md). It includes a usage guide, a complete public API reference,
+and an implementation-oriented architecture description.
+
 
 ## Planned Game Features
 
