@@ -14,6 +14,14 @@
 
 namespace elysia::ui
 {
+class UiThemeManager;
+
+enum class UiChildStyleRelation
+{
+    Independent,
+    CompositeImplementation
+};
+
 class UiChildHost : public UiElement, public elysia::core::Updatable, public UiInputFrameReceiver, public UiInputEventReceiver
 {
     friend class UiElement;
@@ -24,13 +32,15 @@ public:
     {
         std::unique_ptr<UiElement> element;
         UiLayoutChildOptions layout;
+        UiChildStyleRelation style_relation = UiChildStyleRelation::Independent;
+        UiElement* style_owner = nullptr;
     };
 
 public:
     explicit UiChildHost(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0) noexcept;
     UiChildHost(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order = 0) noexcept;
     UiChildHost(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order = 0) noexcept;
-    ~UiChildHost() override = default;
+    ~UiChildHost() override;
 
     void reset() noexcept override;
 
@@ -71,6 +81,7 @@ public:
     [[nodiscard]] const UiElement* child_at(std::size_t index) const noexcept;
     void set_child_layout_options(std::size_t index,const UiLayoutChildOptions& options);
     [[nodiscard]] const UiLayoutChildOptions* child_layout_options(std::size_t index) const noexcept;
+    bool move_child(std::size_t from,std::size_t to);
 
     void set_padding(const UiLayoutPadding& padding) noexcept;
     [[nodiscard]] const UiLayoutPadding& padding() const noexcept;
@@ -94,6 +105,11 @@ protected:
     void invalidate_intrinsic_layout() noexcept;
     // Hook for derived hosts that need to react when a child changes its intrinsic size.
     virtual void on_child_intrinsic_layout_invalidated(UiElement& child) noexcept;
+    virtual void on_child_base_style_invalidated(UiElement& child) noexcept;
+    void notify_host_base_style_invalidated() noexcept;
+    void attach_external_style_subtree(UiElement& element);
+    void detach_external_style_subtree(UiElement& element) noexcept;
+    void mark_child_as_composite_implementation(UiElement& child,UiElement& style_owner) noexcept;
 
     [[nodiscard]] elysia::core::Rect content_rect() const noexcept;
     [[nodiscard]] std::vector<ChildEntry>& children() noexcept;
@@ -124,14 +140,19 @@ protected:
     [[nodiscard]] bool needs_layout_rebuild() const noexcept;
 
 private:
+    friend class UiThemeManager;
     // Wires a newly adopted child into the intrinsic-layout invalidation tree.
     void attach_child_to_layout_tree(UiElement& child) noexcept;
     // Removes one child from the invalidation tree without changing ownership elsewhere.
     void detach_child_from_layout_tree(UiElement* child) noexcept;
     // Clears layout-parent links before bulk child removal or host reset.
     void detach_all_children_from_layout_tree() noexcept;
+    void attach_theme_manager(UiThemeManager& manager);
+    void detach_theme_manager(UiThemeManager& manager) noexcept;
 
     std::vector<ChildEntry> _children;
+    std::vector<UiElement*> _external_style_children;
+    UiThemeManager* _theme_manager = nullptr;
     UiLayoutPadding _padding{};
     bool _clip_children = false;
     bool _layout_dirty = true;

@@ -11,6 +11,7 @@
 #include "../engine/ui/composites/ui_dropdown.h"
 #include "../engine/ui/composites/ui_labeled_radio_button.h"
 #include "../engine/ui/style/ui_theme.h"
+#include "../engine/ui/style/ui_theme_manager.h"
 #include "../engine/ui/widgets/ui_checkbox.h"
 #include "../engine/ui/widgets/ui_drag_handle.h"
 #include "../engine/ui/widgets/ui_radio_button.h"
@@ -419,8 +420,8 @@ void test_builtin_theme_border_states()
     for (const auto theme_id : themes)
     {
         const auto theme = elysia::ui::make_builtin_theme(theme_id);
-        const auto& default_border = theme.button(elysia::ui::UiButtonThemeRole::Default).chrome.border;
-        const auto& primary_border = theme.button(elysia::ui::UiButtonThemeRole::Primary).chrome.border;
+        const auto& default_border = theme.button(elysia::ui::UiButtonVisualRole::Default).chrome.border;
+        const auto& primary_border = theme.button(elysia::ui::UiButtonVisualRole::Primary).chrome.border;
         require(default_border.idle != default_border.focused,
             "default theme border should distinguish idle and focused");
         require(default_border.focused != default_border.active,
@@ -428,6 +429,56 @@ void test_builtin_theme_border_states()
         require(primary_border.idle != primary_border.focused,
             "primary border should distinguish selected idle and focused");
     }
+}
+
+void test_container_driven_theme_tree()
+{
+    elysia::ui::UiThemeManager manager;
+    auto window = std::make_unique<elysia::ui::UiWindow>(elysia::core::Rect{ 0,0,640,360 });
+    auto button = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,120,40 });
+    elysia::ui::UiButton* raw = button.get();
+    window->add_child(std::move(button));
+    auto registration = manager.register_root(*window);
+
+    manager.set_theme(elysia::ui::UiBuiltinTheme::ElysiaDark);
+    require(raw->style().chrome.background.idle
+            == manager.current_theme().button(elysia::ui::UiButtonVisualRole::Default).chrome.background.idle,
+        "root registration should style existing atomic descendants");
+
+    auto dynamic_button = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,120,40 });
+    elysia::ui::UiButton* dynamic_raw = dynamic_button.get();
+    window->add_child(std::move(dynamic_button));
+    require(dynamic_raw->style().chrome.background.idle
+            == manager.current_theme().button(elysia::ui::UiButtonVisualRole::Default).chrome.background.idle,
+        "new descendants should receive the current theme immediately");
+
+    elysia::ui::UiButtonStyle custom = dynamic_raw->style();
+    custom.chrome.draw_background = false;
+    dynamic_raw->set_style(custom);
+    manager.set_theme(elysia::ui::UiBuiltinTheme::ElysiaLight);
+    require(!dynamic_raw->style().chrome.draw_background,"manual overrides must survive theme changes");
+    dynamic_raw->clear_style_override();
+    require(dynamic_raw->style().chrome.background.idle
+            == manager.current_theme().button(elysia::ui::UiButtonVisualRole::Default).chrome.background.idle,
+        "clearing an override should expose the latest base style");
+
+    auto* tooltip = window->create_child<elysia::ui::UiTooltip>(0);
+    auto tooltip_panel = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,180,60 });
+    elysia::ui::UiPanel* tooltip_panel_raw = tooltip_panel.get();
+    tooltip_panel_raw->set_visual_role(elysia::ui::UiPanelVisualRole::Dialog);
+    tooltip->set_content(std::move(tooltip_panel));
+    tooltip->register_with_window(*window);
+    require(tooltip_panel_raw->style().background
+            == manager.current_theme().panel(elysia::ui::UiPanelVisualRole::Dialog).background,
+        "tooltip content outside the ownership tree should receive the window theme");
+
+    manager.set_theme(elysia::ui::UiBuiltinTheme::QuietSlate);
+    require(tooltip_panel_raw->style().background
+            == manager.current_theme().panel(elysia::ui::UiPanelVisualRole::Dialog).background,
+        "tooltip content should follow later theme changes");
+
+    window.reset();
+    require(!registration.registered(),"destroying a registered root must invalidate its handle");
 }
 }
 
@@ -445,6 +496,7 @@ int main()
     test_textured_button_border();
     test_other_chrome_active_borders();
     test_builtin_theme_border_states();
+    test_container_driven_theme_tree();
     std::cout << "ui lifecycle tests passed\n";
     return EXIT_SUCCESS;
 }

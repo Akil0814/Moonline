@@ -1,6 +1,7 @@
 #include "ui_child_host.h"
 #include "ui_render_command_range_utils.h"
 #include "../layout/ui_layout_geometry.h"
+#include "../style/ui_theme_manager.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -22,8 +23,25 @@ UiChildHost::UiChildHost(const elysia::core::Vector2& position,const elysia::cor
 UiChildHost::UiChildHost(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order) noexcept
     : UiElement(center,size,from_center,order) {}
 
+UiChildHost::~UiChildHost()
+{
+    if (_theme_manager)
+        _theme_manager->on_host_destroying(*this);
+}
+
 void UiChildHost::reset() noexcept
 {
+    if (_theme_manager)
+        for (ChildEntry& entry : _children)
+            if (entry.element) _theme_manager->detach_subtree(*entry.element);
+    while (!_external_style_children.empty())
+    {
+        UiElement* external = _external_style_children.back();
+        if (external)
+            detach_external_style_subtree(*external);
+        else
+            _external_style_children.pop_back();
+    }
     detach_all_children_from_layout_tree();
     UiElement::reset();
     _children.clear();
@@ -49,6 +67,8 @@ UiElement* UiChildHost::insert_child(std::unique_ptr<UiElement> child,std::size_
     const std::size_t target_index = std::min(index,_children.size());
     _children.insert(_children.begin() + static_cast<std::ptrdiff_t>(target_index),ChildEntry{ std::move(child),options });
     attach_child_to_layout_tree(*child_ptr);
+    if (_theme_manager)
+        _theme_manager->attach_and_apply_subtree(*child_ptr);
     invalidate_intrinsic_layout();
     return child_ptr;
 }
@@ -58,6 +78,9 @@ void UiChildHost::clear_children()
     if (_children.empty())
         return;
 
+    if (_theme_manager)
+        for (ChildEntry& entry : _children)
+            if (entry.element) _theme_manager->detach_subtree(*entry.element);
     detach_all_children_from_layout_tree();
     _children.clear();
     invalidate_intrinsic_layout();
@@ -68,6 +91,8 @@ std::unique_ptr<UiElement> UiChildHost::extract_child(std::size_t index)
     if (index >= _children.size())
         return nullptr;
     ChildEntry& entry = _children[index];
+    if (_theme_manager && entry.element)
+        _theme_manager->detach_subtree(*entry.element);
     detach_child_from_layout_tree(entry.element.get());
     std::unique_ptr<UiElement> result = std::move(entry.element);
     _children.erase(_children.begin() + static_cast<std::ptrdiff_t>(index));
@@ -102,6 +127,17 @@ void UiChildHost::set_child_layout_options(std::size_t index,const UiLayoutChild
 const UiLayoutChildOptions* UiChildHost::child_layout_options(std::size_t index) const noexcept
 {
     return index < _children.size() ? &_children[index].layout : nullptr;
+}
+
+bool UiChildHost::move_child(std::size_t from,std::size_t to)
+{
+    if (from >= _children.size() || to >= _children.size() || from == to)
+        return from == to && from < _children.size();
+    ChildEntry moved = std::move(_children[from]);
+    _children.erase(_children.begin() + static_cast<std::ptrdiff_t>(from));
+    _children.insert(_children.begin() + static_cast<std::ptrdiff_t>(to),std::move(moved));
+    invalidate_intrinsic_layout();
+    return true;
 }
 
 void UiChildHost::set_padding(const UiLayoutPadding& padding) noexcept
@@ -146,6 +182,59 @@ void UiChildHost::on_child_intrinsic_layout_invalidated(UiElement& child) noexce
 
     mark_layout_dirty();
     notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+void UiChildHost::on_child_base_style_invalidated(UiElement& child) noexcept
+{
+    UiElement* target = &child;
+    for (const ChildEntry& entry : _children)
+    {
+        if (entry.element.get() == &child && entry.style_relation == UiChildStyleRelation::CompositeImplementation)
+        {
+            target = entry.style_owner ? entry.style_owner : this;
+            break;
+        }
+    }
+    if (_theme_manager)
+        _theme_manager->refresh_element(*target);
+    else
+        notify_base_style_invalidated();
+}
+
+void UiChildHost::notify_host_base_style_invalidated() noexcept
+{
+    if (_theme_manager)
+        _theme_manager->refresh_element(*this);
+    else
+        notify_base_style_invalidated();
+}
+
+void UiChildHost::attach_external_style_subtree(UiElement& element)
+{
+    if (std::find(_external_style_children.begin(),_external_style_children.end(),&element)
+        == _external_style_children.end())
+        _external_style_children.push_back(&element);
+    if (_theme_manager)
+        _theme_manager->attach_and_apply_subtree(element);
+}
+
+void UiChildHost::detach_external_style_subtree(UiElement& element) noexcept
+{
+    if (_theme_manager)
+        _theme_manager->detach_subtree(element);
+    std::erase(_external_style_children,&element);
+}
+
+void UiChildHost::mark_child_as_composite_implementation(UiElement& child,UiElement& style_owner) noexcept
+{
+    for (ChildEntry& entry : _children)
+    {
+        if (entry.element.get() != &child)
+            continue;
+        entry.style_relation = UiChildStyleRelation::CompositeImplementation;
+        entry.style_owner = &style_owner;
+        return;
+    }
 }
 
 void UiChildHost::update_layout_if_dirty()
@@ -322,6 +411,8 @@ void UiChildHost::cleanup_destroyed_children()
             return false;
 
         detach_child_from_layout_tree(entry.element.get());
+        if (_theme_manager && entry.element)
+            _theme_manager->detach_subtree(*entry.element);
         return true;
     });
     if (_children.size() != previous_count)
@@ -348,5 +439,16 @@ void UiChildHost::detach_all_children_from_layout_tree() noexcept
 {
     for (ChildEntry& entry : _children)
         detach_child_from_layout_tree(entry.element.get());
+}
+
+void UiChildHost::attach_theme_manager(UiThemeManager& manager)
+{
+    _theme_manager = &manager;
+}
+
+void UiChildHost::detach_theme_manager(UiThemeManager& manager) noexcept
+{
+    if (_theme_manager == &manager)
+        _theme_manager = nullptr;
 }
 }

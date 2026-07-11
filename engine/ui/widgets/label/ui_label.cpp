@@ -1,7 +1,6 @@
 #include "ui_label.h"
 
 #include "../../style/ui_style_defaults.h"
-#include "../../style/ui_theme.h"
 #include "../../../core/render/render_command.h"
 #include "../../../localization/localization_manager.h"
 #include "../../../localization/localized_text_style.h"
@@ -39,7 +38,7 @@ void UiLabel::reset() noexcept
     UiElement::reset();
     _text_content = UiTextContent{};
     _style_state.reset(UiStyleDefaults::label());
-    _theme_role = UiLabelThemeRole::Default;
+    _visual_role = UiLabelVisualRole::Default;
     _typography_role = UiTypographyRole::Label;
     _target_height.reset();
     _horizontal_align = resolve_ui_typography(_typography_role).horizontal_align_default;
@@ -128,6 +127,12 @@ void UiLabel::clear_target_height()
     _target_height.reset();
 }
 
+void UiLabel::set_base_style(const UiLabelStyle& style) noexcept
+{
+    _style_state.set_base_style(style);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
 void UiLabel::set_style(const UiLabelStyle& style) noexcept
 {
     _style_state.set_style_override(style);
@@ -150,15 +155,15 @@ void UiLabel::clear_style_override() noexcept
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-void UiLabel::set_theme_role(UiLabelThemeRole role) noexcept
+void UiLabel::set_visual_role(UiLabelVisualRole role) noexcept
 {
-    _theme_role = role;
-    request_theme_reapply();
+    _visual_role = role;
+    notify_base_style_invalidated();
 }
 
-UiLabelThemeRole UiLabel::theme_role() const noexcept
+UiLabelVisualRole UiLabel::visual_role() const noexcept
 {
-    return _theme_role;
+    return _visual_role;
 }
 
 void UiLabel::set_horizontal_align(TextHorizontalAlign align)
@@ -271,10 +276,5 @@ elysia::core::Rect UiLabel::text_render_rect(SDL_Texture* text_texture) const no
     return elysia::core::Rect(x,y,render_size.x,render_size.y);
 }
 
-void UiLabel::apply_theme(const UiTheme& theme)
-{
-    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.label(_theme_role)));
-    notify_layout_parent_of_intrinsic_layout_invalidation();
-}
 }
 

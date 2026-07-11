@@ -1,7 +1,6 @@
 #include "ui_button.h"
 
 #include "../style/ui_style_defaults.h"
-#include "../style/ui_theme.h"
 
 #include "../../audio/audio_service.h"
 #include "../../core/render/colors.h"
@@ -43,7 +42,6 @@ UiButton::UiButton(
 void UiButton::reset() noexcept
 {
     UiControl::reset();
-    set_use_theme(false);
 
     _text_content = UiTextContent{};
     _sounds = UiButtonSounds{};
@@ -51,7 +49,7 @@ void UiButton::reset() noexcept
     _on_click = nullptr;
     _visual_mode = UiButtonVisualMode::None;
     _style_state.reset(UiStyleDefaults::button());
-    _theme_role = UiButtonThemeRole::Default;
+    _visual_role = UiButtonVisualRole::Default;
     _typography_role = UiTypographyRole::Button;
     _padding = 10;
     _is_pushed = false;
@@ -314,6 +312,12 @@ void UiButton::set_on_click(ClickCallback on_click)
     _on_click = std::move(on_click);
 }
 
+void UiButton::set_base_style(const UiButtonStyle& style) noexcept
+{
+    _style_state.set_base_style(style);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
 void UiButton::set_style(const UiButtonStyle& style)
 {
     _style_state.set_style_override(style);
@@ -336,22 +340,18 @@ void UiButton::clear_style_override() noexcept
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-void UiButton::set_theme_role(UiButtonThemeRole role) noexcept
+void UiButton::set_visual_role(UiButtonVisualRole role) noexcept
 {
-    if (_theme_role == role)
+    if (_visual_role == role)
         return;
-    _theme_role = role;
-    // Keep role changes visible even for controls that are not registered with
-    // a UiThemeManager. A manual style override remains the effective style.
-    _style_state.set_theme_style(apply_theme_colors(
-        _style_state.theme_style(),UiStyleDefaults::theme().button(_theme_role)));
-    request_theme_reapply();
+    _visual_role = role;
+    notify_base_style_invalidated();
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-UiButtonThemeRole UiButton::theme_role() const noexcept
+UiButtonVisualRole UiButton::visual_role() const noexcept
 {
-    return _theme_role;
+    return _visual_role;
 }
 
 void UiButton::set_padding(int padding)
@@ -517,10 +517,5 @@ void UiButton::play_sound_if_set(std::string_view sound_key) const
     elysia::audio::AudioService::instance()->play_sound(sound_key);
 }
 
-void UiButton::apply_theme(const UiTheme& theme)
-{
-    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.button(_theme_role)));
-    notify_layout_parent_of_intrinsic_layout_invalidation();
-}
 }
 

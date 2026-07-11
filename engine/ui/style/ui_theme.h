@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ui_theme_roles.h"
+#include "ui_visual_roles.h"
 #include "ui_visual_styles.h"
 #include "../containers/ui_scroll_container.h"
 #include "../widgets/ui_button.h"
@@ -160,10 +160,10 @@ struct UiTheme
     UiTextInputThemeColors text_input_style{};
     UiScrollContainerThemeColors scroll_container_style{};
 
-    [[nodiscard]] const UiPanelThemeColors& panel(UiPanelThemeRole role = UiPanelThemeRole::Default) const noexcept;
-    [[nodiscard]] const UiLabelThemeColors& label(UiLabelThemeRole role = UiLabelThemeRole::Default) const noexcept;
-    [[nodiscard]] const UiButtonThemeColors& button(UiButtonThemeRole role = UiButtonThemeRole::Default) const noexcept;
-    [[nodiscard]] const UiBarThemeColors& bar(UiBarThemeRole role = UiBarThemeRole::Default) const noexcept;
+    [[nodiscard]] const UiPanelThemeColors& panel(UiPanelVisualRole role = UiPanelVisualRole::Default) const noexcept;
+    [[nodiscard]] const UiLabelThemeColors& label(UiLabelVisualRole role = UiLabelVisualRole::Default) const noexcept;
+    [[nodiscard]] const UiButtonThemeColors& button(UiButtonVisualRole role = UiButtonVisualRole::Default) const noexcept;
+    [[nodiscard]] const UiBarThemeColors& bar(UiBarVisualRole role = UiBarVisualRole::Default) const noexcept;
 };
 
 [[nodiscard]] inline UiChromeStyle apply_theme_colors(

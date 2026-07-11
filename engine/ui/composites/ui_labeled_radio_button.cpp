@@ -1,12 +1,17 @@
 #include "ui_labeled_radio_button.h"
 
 #include "../style/ui_style_defaults.h"
-#include "../style/ui_theme.h"
 
 #include <algorithm>
 
 namespace elysia::ui
 {
+void UiLabeledRadioButton::set_base_styles(const UiRadioButtonStyle& radio,const UiLabelStyle& label) noexcept
+{
+    _radio.set_base_style(radio);
+    _label.set_base_style(label);
+}
+
 UiLabeledRadioButton::UiLabeledRadioButton(const elysia::core::Rect& rect,int order) noexcept
     : UiControl(rect,order),_radio({},order),_label({},order) { reset(); }
 UiLabeledRadioButton::UiLabeledRadioButton(const elysia::core::Rect& rect,const UiLabeledRadioButtonConfig& config,int order) noexcept
@@ -18,7 +23,7 @@ UiLabeledRadioButton::UiLabeledRadioButton(const elysia::core::Rect& rect,const 
 }
 void UiLabeledRadioButton::reset() noexcept
 {
-    UiControl::reset(); _radio.reset(); _label.reset(); _radio.set_use_theme(false); _label.set_use_theme(false);
+    UiControl::reset(); _radio.reset(); _label.reset();
     _text_content = {}; _typography_role = UiTypographyRole::RadioLabel;
     _text_colors = UiStyleDefaults::labeled_checkbox_text();
     _label_placement = UiLabeledRadioLabelPlacement::Right; _text_placement = UiLabeledRadioTextPlacement::NearIndicator; _label_spacing = 8.0f;
@@ -94,13 +99,5 @@ UiInputEvent UiLabeledRadioButton::routed_event(const UiInputEvent& event) const
         && screen_rect().contains({ static_cast<float>(event.mouse_x),static_cast<float>(event.mouse_y) }))
     { const auto c = indicator_rect().center(); routed.mouse_x = static_cast<int>(c.x); routed.mouse_y = static_cast<int>(c.y); }
     return routed;
-}
-void UiLabeledRadioButton::apply_theme(const UiTheme& theme)
-{
-    _radio.set_style(apply_theme_colors(_radio.style(),theme.radio_button_style));
-    _text_colors = UiEnabledDisabledColors{
-        theme.label(UiLabelThemeRole::Default).text,
-        theme.button(UiButtonThemeRole::Default).text.disabled
-    };
 }
 }

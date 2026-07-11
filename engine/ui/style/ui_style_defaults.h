@@ -16,14 +16,14 @@ struct UiStyleDefaults
 
     [[nodiscard]] static UiEnabledDisabledColors text() noexcept
     {
-        return theme().button(UiButtonThemeRole::Default).text;
+        return theme().button(UiButtonVisualRole::Default).text;
     }
 
     [[nodiscard]] static UiEnabledDisabledColors muted_text() noexcept
     {
         return UiEnabledDisabledColors{
-            theme().label(UiLabelThemeRole::Muted).text,
-            theme().button(UiButtonThemeRole::Default).text.disabled
+            theme().label(UiLabelVisualRole::Muted).text,
+            theme().button(UiButtonVisualRole::Default).text.disabled
         };
     }
 
@@ -39,22 +39,22 @@ struct UiStyleDefaults
 
     [[nodiscard]] static UiInteractiveColors interactive_surface() noexcept
     {
-        return theme().button(UiButtonThemeRole::Default).chrome.background;
+        return theme().button(UiButtonVisualRole::Default).chrome.background;
     }
 
     [[nodiscard]] static UiChromeStyle interactive_chrome() noexcept
     {
-        return apply_theme_colors(UiChromeStyle{},theme().button(UiButtonThemeRole::Default).chrome);
+        return apply_theme_colors(UiChromeStyle{},theme().button(UiButtonVisualRole::Default).chrome);
     }
 
     [[nodiscard]] static UiLabelStyle label() noexcept
     {
-        return apply_theme_colors(UiLabelStyle{},theme().label(UiLabelThemeRole::Default));
+        return apply_theme_colors(UiLabelStyle{},theme().label(UiLabelVisualRole::Default));
     }
 
     [[nodiscard]] static UiTextBlockStyle text_block() noexcept
     {
-        return apply_theme_colors(UiTextBlockStyle{},theme().label(UiLabelThemeRole::Default));
+        return apply_theme_colors(UiTextBlockStyle{},theme().label(UiLabelVisualRole::Default));
     }
 
     [[nodiscard]] static UiDropdownStyle dropdown() noexcept
@@ -69,12 +69,12 @@ struct UiStyleDefaults
 
     [[nodiscard]] static UiBarStyle bar() noexcept
     {
-        return apply_theme_colors(UiBarStyle{},theme().bar(UiBarThemeRole::Default));
+        return apply_theme_colors(UiBarStyle{},theme().bar(UiBarVisualRole::Default));
     }
 
     [[nodiscard]] static UiPanelStyle panel() noexcept
     {
-        return apply_theme_colors(UiPanelStyle{},theme().panel(UiPanelThemeRole::Default));
+        return apply_theme_colors(UiPanelStyle{},theme().panel(UiPanelVisualRole::Default));
     }
 
     [[nodiscard]] static UiChromeContainerStyle chrome_container() noexcept
@@ -89,7 +89,7 @@ struct UiStyleDefaults
 
     [[nodiscard]] static UiButtonStyle button() noexcept
     {
-        return apply_theme_colors(UiButtonStyle{},theme().button(UiButtonThemeRole::Default));
+        return apply_theme_colors(UiButtonStyle{},theme().button(UiButtonVisualRole::Default));
     }
 
     [[nodiscard]] static UiCheckboxStyle checkbox() noexcept
@@ -130,8 +130,8 @@ struct UiStyleDefaults
     [[nodiscard]] static UiEnabledDisabledColors labeled_checkbox_text() noexcept
     {
         return UiEnabledDisabledColors{
-            theme().label(UiLabelThemeRole::Default).text,
-            theme().button(UiButtonThemeRole::Default).text.disabled
+            theme().label(UiLabelVisualRole::Default).text,
+            theme().button(UiButtonVisualRole::Default).text.disabled
         };
     }
 };

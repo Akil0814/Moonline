@@ -5,7 +5,6 @@
 #include "../layout/ui_anchor_layout.h"
 #include "../layout/ui_layout_geometry.h"
 #include "../style/ui_style_defaults.h"
-#include "../style/ui_theme.h"
 #include "../../core/render/render_command.h"
 
 #include <algorithm>
@@ -533,6 +532,11 @@ const UiLayoutPadding& UiChromeContainer::body_padding() const noexcept
     return _body_padding;
 }
 
+void UiChromeContainer::set_base_style(const UiChromeContainerStyle& style) noexcept
+{
+    _style_state.set_base_style(style);
+}
+
 void UiChromeContainer::set_style(const UiChromeContainerStyle& style) noexcept
 {
     _style_state.set_style_override(style);
@@ -829,8 +833,4 @@ elysia::core::Rect UiChromeContainer::body_rect() const noexcept
     );
 }
 
-void UiChromeContainer::apply_theme(const UiTheme& theme)
-{
-    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.chrome_container_style));
-}
 }

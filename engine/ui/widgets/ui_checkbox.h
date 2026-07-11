@@ -114,6 +114,7 @@ public:
 
     void set_on_toggled(UiCheckboxToggledCallback on_toggled);
 
+    void set_base_style(const UiCheckboxStyle& style) noexcept;
     void set_style(const UiCheckboxStyle& style) noexcept;
     [[nodiscard]] const UiCheckboxStyle& style() const noexcept;
     [[nodiscard]] bool has_style_override() const noexcept;
@@ -148,7 +149,6 @@ protected:
     [[nodiscard]] virtual elysia::core::Rect checkbox_rect() const noexcept;
     [[nodiscard]] elysia::core::Color current_background_color() const noexcept;
     [[nodiscard]] elysia::core::Color current_border_color() const noexcept;
-    void apply_theme(const UiTheme& theme) override;
 
 private:
     // Chooses the texture bank for the current checkbox logical state.

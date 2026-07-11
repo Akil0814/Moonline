@@ -3,7 +3,6 @@
 #include "../../audio/audio_service.h"
 #include "../../core/render/render_command.h"
 #include "../style/ui_style_defaults.h"
-#include "../style/ui_theme.h"
 
 
 #include <algorithm>
@@ -50,7 +49,6 @@ UiCheckbox::UiCheckbox(
 void UiCheckbox::reset() noexcept
 {
     UiControl::reset();
-    set_use_theme(false);
 
     _textures.reset();
     _sounds.reset();
@@ -284,6 +282,11 @@ void UiCheckbox::toggle()
     (void)toggle_internal(true,false);
 }
 
+void UiCheckbox::set_base_style(const UiCheckboxStyle& style) noexcept
+{
+    _style_state.set_base_style(style);
+}
+
 void UiCheckbox::set_style(const UiCheckboxStyle& style) noexcept
 {
     _style_state.set_style_override(style);
@@ -312,7 +315,7 @@ void UiCheckbox::set_mark_style(UiCheckboxMarkStyle mark_style) noexcept
     if (_style_state.has_style_override())
         _style_state.set_style_override(next_style);
     else
-        _style_state.set_theme_style(next_style);
+        _style_state.set_base_style(next_style);
 }
 
 UiCheckboxMarkStyle UiCheckbox::mark_style() const noexcept
@@ -536,9 +539,5 @@ UiCheckboxState UiCheckbox::toggled_state(UiCheckboxState state) noexcept
     }
 }
 
-void UiCheckbox::apply_theme(const UiTheme& theme)
-{
-    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.checkbox_style));
-}
 }
 

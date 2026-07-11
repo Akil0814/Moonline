@@ -3,7 +3,6 @@
 #include "../focus/ui_focus_scope_utils.h"
 #include "../layout/ui_layout_geometry.h"
 #include "../style/ui_style_defaults.h"
-#include "../style/ui_theme.h"
 #include "../core/ui_control.h"
 #include "../../core/render/render_command.h"
 
@@ -229,6 +228,12 @@ UiScrollAxis UiScrollContainer::resolved_scroll_axis() const noexcept
     auto* self = const_cast<UiScrollContainer*>(this);
     self->ensure_layout_current();
     return _scroll_state.resolved_axis();
+}
+
+void UiScrollContainer::set_base_style(const UiScrollContainerStyle& style) noexcept
+{
+    _style_state.set_base_style(style);
+    sync_scrollbar_handles(); mark_layout_dirty();
 }
 
 void UiScrollContainer::set_style(const UiScrollContainerStyle& style) noexcept
@@ -819,9 +824,7 @@ void UiScrollContainer::initialize_scrollbar_handles()
 
     // Scrollbar thumbs stay internal to the container. The container owns the theme style and
     // mirrors it into these drag handles through sync_scrollbar_handles() instead of registering
-    // the thumbs independently with UiThemeManager.
-    _horizontal_thumb.set_use_theme(false);
-    _vertical_thumb.set_use_theme(false);
+    // the thumbs independently through the external style resolver.
 
     _horizontal_thumb.set_on_dragged([this](const elysia::core::Vector2&)
     {
@@ -1059,14 +1062,6 @@ void UiScrollContainer::submit_scrollbar_render_commands(std::vector<elysia::cor
     }
 }
 
-void UiScrollContainer::apply_theme(const UiTheme& theme)
-{
-    // The viewport owns one scroll-container style, then rebuilds the internal thumb visuals
-    // from that style so theme management never needs to reach into the private thumb controls.
-    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.scroll_container_style));
-    sync_scrollbar_handles();
-    mark_layout_dirty();
-}
 
 }
 

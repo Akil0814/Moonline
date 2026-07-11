@@ -3,7 +3,7 @@
 #include "../focus/ui_control_focus_scope_host.h"
 #include "../focus/ui_delegated_focus_mixin.h"
 #include "../style/ui_style.h"
-#include "../style/ui_theme_roles.h"
+#include "../style/ui_visual_roles.h"
 #include "../style/ui_visual_styles.h"
 #include "../text/ui_text_content.h"
 #include "../window/ui_overlay.h"
@@ -19,7 +19,7 @@ class UiLabel;
 class UiTextBlock;
 
 // Reading-oriented overlay composite with a scrollable body and one dismiss action.
-// Internal controls opt out of direct theme registration; apply_theme() forwards one theme snapshot.
+// Reading-oriented composite whose owned controls are styled by the registered container tree.
 class UiDialog : public UiControlFocusScopeHost, public UiOverlayWindowClient, private UiDelegatedFocusMixin
 {
 public:
@@ -49,13 +49,14 @@ public:
     void set_header_visible(bool visible) noexcept;
     [[nodiscard]] bool header_visible() const noexcept;
 
+    void set_base_style(const UiDialogStyle& style) noexcept;
     void set_style(const UiDialogStyle& style) noexcept;
     [[nodiscard]] const UiDialogStyle& style() const noexcept;
     [[nodiscard]] bool has_style_override() const noexcept;
     void clear_style_override() noexcept;
 
-    void set_theme_role(UiDialogThemeRole role) noexcept;
-    [[nodiscard]] UiDialogThemeRole theme_role() const noexcept;
+    void set_visual_role(UiDialogVisualRole role) noexcept;
+    [[nodiscard]] UiDialogVisualRole visual_role() const noexcept;
 
     // The parent UiWindow must already own this dialog before overlay registration.
     void register_as_overlay(UiWindow& window,UiOverlayOptions options = {});
@@ -67,7 +68,6 @@ public:
 protected:
     void rebuild_layout() override;
     void rebuild_focus_registry() override;
-    void apply_theme(const UiTheme& theme) override;
 
 private:
     // Keeps the reading viewport logically focused for gamepad scrolling without moving Close focus.
@@ -76,7 +76,6 @@ private:
     void create_internal_children();
     void sync_sources_to_children();
     void sync_style_to_children();
-    void sync_theme_to_children(const UiTheme* theme = nullptr);
     [[nodiscard]] static bool is_default_overlay_options(const UiOverlayOptions& options) noexcept;
 
 private:
@@ -91,7 +90,7 @@ private:
     UiTextContent _body_content{};
     UiTextContent _action_content = ui_text_key("menu_scene.exit_confirm.cancel");
     UiStyleState<UiDialogStyle> _style_state;
-    UiDialogThemeRole _theme_role = UiDialogThemeRole::Default;
+    UiDialogVisualRole _visual_role = UiDialogVisualRole::Default;
     bool _body_scroll_enabled = true;
 };
 }

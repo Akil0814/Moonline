@@ -1,7 +1,6 @@
 #include "ui_text_block.h"
 
 #include "../../style/ui_style_defaults.h"
-#include "../../style/ui_theme.h"
 #include "../../../core/render/render_command.h"
 #include "../../../localization/localization_manager.h"
 #include "../../../localization/localized_text_style.h"
@@ -15,15 +14,15 @@ namespace elysia::ui
 {
 namespace
 {
-[[nodiscard]] UiLabelThemeRole label_role_for_text_block(UiTextBlockThemeRole role) noexcept
+[[nodiscard]] UiLabelVisualRole label_role_for_text_block(UiTextBlockVisualRole role) noexcept
 {
     switch (role)
     {
-    case UiTextBlockThemeRole::Muted:
-        return UiLabelThemeRole::Muted;
-    case UiTextBlockThemeRole::Default:
+    case UiTextBlockVisualRole::Muted:
+        return UiLabelVisualRole::Muted;
+    case UiTextBlockVisualRole::Default:
     default:
-        return UiLabelThemeRole::Default;
+        return UiLabelVisualRole::Default;
     }
 }
 }
@@ -51,7 +50,7 @@ void UiTextBlock::reset() noexcept
     UiElement::reset();
     _text_content = UiTextContent{};
     _style_state.reset(UiStyleDefaults::text_block());
-    _theme_role = UiTextBlockThemeRole::Default;
+    _visual_role = UiTextBlockVisualRole::Default;
     _typography_role = UiTypographyRole::DialogBody;
     _horizontal_align = resolve_ui_typography(_typography_role).horizontal_align_default;
     _padding = 0;
@@ -153,6 +152,12 @@ void UiTextBlock::clear_text()
     set_text_content(UiTextContent{});
 }
 
+void UiTextBlock::set_base_style(const UiTextBlockStyle& style) noexcept
+{
+    _style_state.set_base_style(style);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
 void UiTextBlock::set_style(const UiTextBlockStyle& style) noexcept
 {
     _style_state.set_style_override(style);
@@ -175,15 +180,15 @@ void UiTextBlock::clear_style_override() noexcept
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-void UiTextBlock::set_theme_role(UiTextBlockThemeRole role) noexcept
+void UiTextBlock::set_visual_role(UiTextBlockVisualRole role) noexcept
 {
-    _theme_role = role;
-    request_theme_reapply();
+    _visual_role = role;
+    notify_base_style_invalidated();
 }
 
-UiTextBlockThemeRole UiTextBlock::theme_role() const noexcept
+UiTextBlockVisualRole UiTextBlock::visual_role() const noexcept
 {
-    return _theme_role;
+    return _visual_role;
 }
 
 void UiTextBlock::set_typography_role(UiTypographyRole role) noexcept
@@ -294,9 +299,4 @@ std::string UiTextBlock::resolved_text() const
     return std::string(localization_manager->tr(_text_content.value));
 }
 
-void UiTextBlock::apply_theme(const UiTheme& theme)
-{
-    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.label(label_role_for_text_block(_theme_role))));
-    notify_layout_parent_of_intrinsic_layout_invalidation();
-}
 }

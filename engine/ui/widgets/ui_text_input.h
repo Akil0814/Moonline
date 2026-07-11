@@ -59,6 +59,7 @@ public:
     void set_max_length(std::optional<std::size_t> max_length);
     [[nodiscard]] const std::optional<std::size_t>& max_length() const noexcept;
 
+    void set_base_style(const UiTextInputStyle& style) noexcept;
     void set_style(const UiTextInputStyle& style) noexcept;
     [[nodiscard]] const UiTextInputStyle& style() const noexcept;
     [[nodiscard]] bool has_style_override() const noexcept;
@@ -115,7 +116,6 @@ private:
     void release_text_input_ownership() const;
     // Emits text-changed only when the visible text buffer actually changed.
     void notify_text_changed_if_needed(const std::string& previous_text) const;
-    void apply_theme(const UiTheme& theme) override;
 
 private:
     UiTextInputChangedCallback _on_text_changed;

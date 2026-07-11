@@ -2,7 +2,7 @@
 
 #include "../../core/render/colors.h"
 #include "../style/ui_style.h"
-#include "../style/ui_theme_roles.h"
+#include "../style/ui_visual_roles.h"
 #include "../style/ui_interaction_style.h"
 #include "../core/ui_control.h"
 #include "../text/ui_text_content.h"
@@ -119,13 +119,14 @@ public:
 
     void set_on_click(ClickCallback on_click);
 
+    void set_base_style(const UiButtonStyle& style) noexcept;
     void set_style(const UiButtonStyle& style);
     [[nodiscard]] const UiButtonStyle& style() const noexcept;
     [[nodiscard]] bool has_style_override() const noexcept;
     void clear_style_override() noexcept;
 
-    void set_theme_role(UiButtonThemeRole role) noexcept;
-    [[nodiscard]] UiButtonThemeRole theme_role() const noexcept;
+    void set_visual_role(UiButtonVisualRole role) noexcept;
+    [[nodiscard]] UiButtonVisualRole visual_role() const noexcept;
 
     void set_typography_role(UiTypographyRole role) noexcept;
     [[nodiscard]] UiTypographyRole typography_role() const noexcept;
@@ -160,7 +161,6 @@ private:
     void clear_pushed_state() noexcept;
     // Plays a configured sound only when the corresponding key is present.
     void play_sound_if_set(std::string_view sound_key) const;
-    void apply_theme(const UiTheme& theme) override;
 
 private:
     UiTextContent _text_content;
@@ -169,7 +169,7 @@ private:
     ClickCallback _on_click;
     UiButtonVisualMode _visual_mode = UiButtonVisualMode::None;
     UiStyleState<UiButtonStyle> _style_state;
-    UiButtonThemeRole _theme_role = UiButtonThemeRole::Default;
+    UiButtonVisualRole _visual_role = UiButtonVisualRole::Default;
     UiTypographyRole _typography_role = UiTypographyRole::Button;
 
     int _padding = 10;

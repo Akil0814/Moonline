@@ -2,7 +2,7 @@
 
 #include "../focus/ui_control_focus_scope_host.h"
 #include "../focus/ui_delegated_focus_mixin.h"
-#include "../style/ui_theme_roles.h"
+#include "../style/ui_visual_roles.h"
 #include "../text/ui_text_content.h"
 #include "../window/ui_overlay.h"
 
@@ -25,8 +25,8 @@ struct UiConfirmationDialogConfig
     UiTextContent confirm{};
     UiTextContent cancel{};
     UiTextContent close{};
-    UiButtonThemeRole confirm_theme_role = UiButtonThemeRole::Primary;
-    UiButtonThemeRole cancel_theme_role = UiButtonThemeRole::Default;
+    UiButtonVisualRole confirm_visual_role = UiButtonVisualRole::Primary;
+    UiButtonVisualRole cancel_visual_role = UiButtonVisualRole::Default;
 };
 
 using UiConfirmationDialogCallback = std::function<void()>;
@@ -64,13 +64,11 @@ public:
 protected:
     void rebuild_layout() override;
     void rebuild_focus_registry() override;
-    void apply_theme(const UiTheme& theme) override;
 
 private:
     // Internal children disable direct theme use; this composite forwards one resolved theme.
     void create_internal_children();
     void sync_config_to_children();
-    void sync_theme_to_children(const UiTheme* theme = nullptr);
     void sync_delegated_focus() noexcept;
     // Closes first so callbacks may safely switch scenes or destroy the current UI tree.
     void confirm();

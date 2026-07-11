@@ -68,6 +68,7 @@ public:
     // Applies axis, bounds, and style as one drag-handle configuration update.
     void set_drag_handle_config(const UiDragHandleConfig& config);
     [[nodiscard]] const UiDragHandleConfig& drag_handle_config() const noexcept;
+    void set_base_style(const UiDragHandleStyle& style) noexcept;
     void set_style(const UiDragHandleStyle& style);
     [[nodiscard]] const UiDragHandleStyle& style() const noexcept;
     [[nodiscard]] bool has_style_override() const noexcept;
@@ -105,7 +106,6 @@ private:
     [[nodiscard]] SDL_Texture* current_state_texture() const noexcept;
     [[nodiscard]] elysia::core::Color current_background_color() const noexcept;
     [[nodiscard]] elysia::core::Color current_border_color() const noexcept;
-    void apply_theme(const UiTheme& theme) override;
 
 private:
     UiDragHandleConfig _config{};

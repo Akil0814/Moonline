@@ -2,7 +2,6 @@
 
 #include "../layout/ui_layout_geometry.h"
 #include "../style/ui_style_defaults.h"
-#include "../style/ui_theme.h"
 
 #include <algorithm>
 
@@ -100,7 +99,7 @@ void UiPanel::reset() noexcept
     UiControlFocusScopeHost::reset();
     reset_delegated_focus_state();
     _style_state.reset(UiStyleDefaults::panel());
-    _theme_role = UiPanelThemeRole::Default;
+    _visual_role = UiPanelVisualRole::Default;
     _focus_links.clear();
     _last_focusable = nullptr;
     _last_child_layout_origin = elysia::core::Vector2::zero();
@@ -262,6 +261,11 @@ UiElement* UiPanel::add_child(std::unique_ptr<UiElement> child,UiLayoutChildOpti
     return UiChildHost::add_child(std::move(child),options);
 }
 
+void UiPanel::set_base_style(const UiPanelStyle& style) noexcept
+{
+    _style_state.set_base_style(style);
+}
+
 void UiPanel::set_style(const UiPanelStyle& style) noexcept
 {
     _style_state.set_style_override(style);
@@ -282,15 +286,15 @@ void UiPanel::clear_style_override() noexcept
     _style_state.clear_style_override();
 }
 
-void UiPanel::set_theme_role(UiPanelThemeRole role) noexcept
+void UiPanel::set_visual_role(UiPanelVisualRole role) noexcept
 {
-    _theme_role = role;
-    request_theme_reapply();
+    _visual_role = role;
+    notify_host_base_style_invalidated();
 }
 
-UiPanelThemeRole UiPanel::theme_role() const noexcept
+UiPanelVisualRole UiPanel::visual_role() const noexcept
 {
-    return _theme_role;
+    return _visual_role;
 }
 
 void UiPanel::rebuild_layout()
@@ -454,9 +458,5 @@ const UiPanel::FocusLink* UiPanel::find_link(const UiElement& element) const noe
     return found != _focus_links.end() ? &(*found) : nullptr;
 }
 
-void UiPanel::apply_theme(const UiTheme& theme)
-{
-    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.panel(_theme_role)));
-}
 }
 

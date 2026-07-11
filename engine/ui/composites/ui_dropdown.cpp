@@ -3,7 +3,6 @@
 #include "../containers/ui_list_container.h"
 #include "../layout/ui_layout_geometry.h"
 #include "../style/ui_style_defaults.h"
-#include "../style/ui_theme.h"
 #include "../window/ui_window.h"
 
 #include <algorithm>
@@ -44,17 +43,13 @@ void UiDropdown::reset() noexcept
 {
     unregister_as_transient_popup();
     UiControl::reset();
-    set_use_theme(false);
 
     _trigger.reset();
-    _trigger.set_use_theme(false);
     _trigger.set_typography_role(UiTypographyRole::Button);
     _trigger.set_on_click([this]() { toggle(); });
 
     _popup_panel.reset();
-    _popup_panel.set_use_theme(false);
     _popup_scroll.reset();
-    _popup_scroll.set_use_theme(false);
     _popup_scroll.set_scroll_axis(UiScrollAxis::Vertical);
     _popup_scroll.set_scrollbar_visibility(UiScrollBarVisibility::Auto);
     _popup_scroll.set_scroll_step(elysia::core::Vector2(0.0f,32.0f));
@@ -62,12 +57,11 @@ void UiDropdown::reset() noexcept
     _options.clear();
     _on_selection_changed = nullptr;
     _style_state.reset(UiStyleDefaults::dropdown());
-    _theme_role = UiDropdownThemeRole::Default;
+    _visual_role = UiDropdownVisualRole::Default;
     _selected_index.reset();
     _focused_option.reset();
     _expanded = false;
     create_popup_content();
-    sync_theme_to_children();
     sync_visual_state();
 }
 
@@ -221,6 +215,18 @@ void UiDropdown::unregister_as_transient_popup() noexcept
     close();
 }
 
+void UiDropdown::set_base_style(const UiDropdownBaseStyle& style) noexcept
+{
+    _style_state.set_base_style(style.layout);
+    _trigger.set_base_style(style.trigger);
+    _popup_panel.set_base_style(style.popup);
+    _popup_scroll.set_base_style(style.scroll);
+    if (_popup_list)
+        for (std::size_t index = 0; index < _popup_list->child_count(); ++index)
+            if (UiButton* button = option_button_at(index)) button->set_base_style(style.option);
+    if (_expanded) sync_popup_layout();
+}
+
 void UiDropdown::set_style(const UiDropdownStyle& style) noexcept
 {
     _style_state.set_style_override(style);
@@ -245,15 +251,15 @@ void UiDropdown::clear_style_override() noexcept
         sync_popup_layout();
 }
 
-void UiDropdown::set_theme_role(UiDropdownThemeRole role) noexcept
+void UiDropdown::set_visual_role(UiDropdownVisualRole role) noexcept
 {
-    _theme_role = role;
-    request_theme_reapply();
+    _visual_role = role;
+    notify_base_style_invalidated();
 }
 
-UiDropdownThemeRole UiDropdown::theme_role() const noexcept
+UiDropdownVisualRole UiDropdown::visual_role() const noexcept
 {
-    return _theme_role;
+    return _visual_role;
 }
 
 UiElement& UiDropdown::transient_popup_owner() noexcept
@@ -359,7 +365,6 @@ void UiDropdown::create_popup_content()
     auto list = std::make_unique<UiListContainer>();
     list->set_direction(UiListDirection::Vertical);
     list->set_item_spacing(0.0f);
-    list->set_use_theme(false);
     _popup_list = list.get();
     _popup_scroll.set_content(std::move(list));
 }
@@ -375,7 +380,6 @@ void UiDropdown::rebuild_option_buttons()
     for (std::size_t index = 0; index < _options.size(); ++index)
     {
         auto button = std::make_unique<UiButton>(elysia::core::Rect{ 0,0,width,option_height });
-        button->set_use_theme(false);
         button->set_text_content(_options[index].content);
         button->set_typography_role(UiTypographyRole::Button);
         button->set_enabled(_options[index].enabled);
@@ -386,7 +390,6 @@ void UiDropdown::rebuild_option_buttons()
         });
         _popup_list->add_back(std::move(button));
     }
-    sync_theme_to_children();
 }
 
 void UiDropdown::sync_visual_state()
@@ -449,25 +452,6 @@ void UiDropdown::sync_popup_layout()
     _popup_scroll.update_layout_if_dirty();
 }
 
-void UiDropdown::sync_theme_to_children(const UiTheme* theme)
-{
-    const UiTheme& resolved = theme ? *theme : builtin_theme(UiBuiltinTheme::BlueGlassMoon);
-    _trigger.set_style(apply_theme_colors(UiButtonStyle{},resolved.button(UiButtonThemeRole::Default)));
-    _popup_panel.set_style(apply_theme_colors(UiPanelStyle{},resolved.panel(UiPanelThemeRole::List)));
-
-    UiScrollContainerStyle scroll_style = apply_theme_colors(UiScrollContainerStyle{},resolved.scroll_container_style);
-    scroll_style.draw_background = false;
-    scroll_style.draw_border = false;
-    _popup_scroll.set_style(scroll_style);
-
-    if (!_popup_list)
-        return;
-    for (std::size_t index = 0; index < _popup_list->child_count(); ++index)
-    {
-        if (UiButton* button = option_button_at(index))
-            button->set_style(apply_theme_colors(UiButtonStyle{},resolved.button(UiButtonThemeRole::Default)));
-    }
-}
 
 std::optional<std::size_t> UiDropdown::first_enabled_option() const noexcept
 {
@@ -563,8 +547,4 @@ bool UiDropdown::is_pointer_event(const UiInputEvent& event) const noexcept
         || event.type == UiInputEventType::MouseWheel;
 }
 
-void UiDropdown::apply_theme(const UiTheme& theme)
-{
-    sync_theme_to_children(&theme);
-}
 }

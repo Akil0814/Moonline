@@ -3,7 +3,7 @@
 #include "../../core/ui_element.h"
 #include "../../core/ui_text_align.h"
 #include "../../style/ui_style.h"
-#include "../../style/ui_theme_roles.h"
+#include "../../style/ui_visual_roles.h"
 #include "../../style/ui_visual_styles.h"
 #include "../../text/ui_text_content.h"
 #include "../../text/ui_typography.h"
@@ -31,13 +31,14 @@ public:
     [[nodiscard]] const UiTextContent& text_content() const noexcept;
     void clear_text();
 
+    void set_base_style(const UiTextBlockStyle& style) noexcept;
     void set_style(const UiTextBlockStyle& style) noexcept;
     [[nodiscard]] const UiTextBlockStyle& style() const noexcept;
     [[nodiscard]] bool has_style_override() const noexcept;
     void clear_style_override() noexcept;
 
-    void set_theme_role(UiTextBlockThemeRole role) noexcept;
-    [[nodiscard]] UiTextBlockThemeRole theme_role() const noexcept;
+    void set_visual_role(UiTextBlockVisualRole role) noexcept;
+    [[nodiscard]] UiTextBlockVisualRole visual_role() const noexcept;
 
     void set_typography_role(UiTypographyRole role) noexcept;
     [[nodiscard]] UiTypographyRole typography_role() const noexcept;
@@ -52,12 +53,11 @@ private:
     [[nodiscard]] elysia::core::Rect content_rect() const noexcept;
     [[nodiscard]] elysia::core::Rect text_render_rect(SDL_Texture* text_texture) const noexcept;
     [[nodiscard]] std::string resolved_text() const;
-    void apply_theme(const UiTheme& theme) override;
 
 private:
     UiTextContent _text_content;
     UiStyleState<UiTextBlockStyle> _style_state;
-    UiTextBlockThemeRole _theme_role = UiTextBlockThemeRole::Default;
+    UiTextBlockVisualRole _visual_role = UiTextBlockVisualRole::Default;
     UiTypographyRole _typography_role = UiTypographyRole::DialogBody;
     TextHorizontalAlign _horizontal_align = TextHorizontalAlign::Left;
     int _padding = 0;

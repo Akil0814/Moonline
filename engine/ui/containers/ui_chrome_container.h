@@ -80,6 +80,7 @@ public:
     void set_body_padding(const UiLayoutPadding& padding) noexcept;
     [[nodiscard]] const UiLayoutPadding& body_padding() const noexcept;
 
+    void set_base_style(const UiChromeContainerStyle& style) noexcept;
     void set_style(const UiChromeContainerStyle& style) noexcept;
     [[nodiscard]] const UiChromeContainerStyle& style() const noexcept;
     [[nodiscard]] bool has_style_override() const noexcept;
@@ -90,7 +91,6 @@ protected:
     void rebuild_layout() override;
     // Rebuilds focus navigation across header controls and delegated body scope.
     void rebuild_focus_registry() override;
-    void apply_theme(const UiTheme& theme) override;
 
 private:
     // Creates the owned header/body slot hosts used by the chrome container.

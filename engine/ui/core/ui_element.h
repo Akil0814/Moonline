@@ -10,9 +10,7 @@
 
 namespace elysia::ui
 {
-struct UiTheme;
 class UiChildHost;
-class UiThemeManager;
 // Tag type for constructors that interpret the supplied position as a center point.
 struct UiFromCenterTag
 {
@@ -58,7 +56,6 @@ public:
     {
         elysia::core::SceneObject::reset();
         _layout_parent = nullptr;
-        _use_theme = false;
         _opacity = 255;
     }
 
@@ -107,11 +104,6 @@ public:
     void set_order(int order) noexcept { _order = order; }
     [[nodiscard]] int order() const noexcept { return _order; }
 
-    // Theme opt-in only allows managers to control this element. Callers still need to keep a
-    // UiThemeRegistration alive for any particular manager that should drive apply_theme().
-    void set_use_theme(bool use_theme) noexcept;
-    [[nodiscard]] bool uses_theme() const noexcept { return _use_theme; }
-
     void set_opacity(std::uint8_t opacity) noexcept { _opacity = opacity; }
     [[nodiscard]] std::uint8_t opacity() const noexcept { return _opacity; }
 
@@ -120,12 +112,11 @@ public:
     [[nodiscard]] bool receive_input_when_paused() const override{ return true;}
 
 protected:
-    // Applies theme-driven visuals when the element opts into theme ownership.
-    virtual void apply_theme(const UiTheme& theme) { (void)theme; }
     // Tells the owning layout host that this element's intrinsic size may have changed.
     void notify_layout_parent_of_intrinsic_layout_invalidation() noexcept;
-    // Requests a refresh from already-attached managers only; it does not create registrations.
-    void request_theme_reapply() noexcept;
+    // Reports that this element's semantic visual role changed. The owning container decides
+    // whether an external styling system needs to recompute its base style.
+    void notify_base_style_invalidated() noexcept;
 
     void apply_opacity(elysia::core::UiRenderCommand& command) const noexcept
     {
@@ -154,7 +145,6 @@ protected:
 
 private:
     friend class UiChildHost;
-    friend class UiThemeManager;
 
     static std::uint8_t multiply_alpha(std::uint8_t a, std::uint8_t b) noexcept
     {
@@ -162,15 +152,10 @@ private:
     }
 
     void set_layout_parent(UiChildHost* parent) noexcept { _layout_parent = parent; }
-    void attach_theme_manager(UiThemeManager& manager);
-    void detach_theme_manager(UiThemeManager& manager) noexcept;
-    void detach_all_theme_managers() noexcept;
 
     elysia::core::Rect _screen_rect{};
     UiChildHost* _layout_parent = nullptr;
-    std::vector<UiThemeManager*> _theme_managers;
     int _order = 0;
-    bool _use_theme = false;
     std::uint8_t _opacity = 255;
 };
 }

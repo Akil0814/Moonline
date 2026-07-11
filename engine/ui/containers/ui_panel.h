@@ -3,7 +3,7 @@
 #include "../focus/ui_control_focus_scope_host.h"
 #include "../focus/ui_delegated_focus_mixin.h"
 #include "../style/ui_style.h"
-#include "../style/ui_theme_roles.h"
+#include "../style/ui_visual_roles.h"
 #include "../style/ui_visual_styles.h"
 
 #include <vector>
@@ -40,20 +40,20 @@ public:
     void add_child(std::unique_ptr<UiElement> child,UiPanelInsertDirection direction = UiPanelInsertDirection::Down);
     UiElement* add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options) override;
 
+    void set_base_style(const UiPanelStyle& style) noexcept;
     void set_style(const UiPanelStyle& style) noexcept;
     [[nodiscard]] const UiPanelStyle& style() const noexcept;
     [[nodiscard]] bool has_style_override() const noexcept;
     void clear_style_override() noexcept;
 
-    void set_theme_role(UiPanelThemeRole role) noexcept;
-    [[nodiscard]] UiPanelThemeRole theme_role() const noexcept;
+    void set_visual_role(UiPanelVisualRole role) noexcept;
+    [[nodiscard]] UiPanelVisualRole visual_role() const noexcept;
 
 protected:
     // Repositions children using the panel's incremental insertion layout.
     void rebuild_layout() override;
     // Rebuilds directional focus neighbors based on insertion relationships.
     void rebuild_focus_registry() override;
-    void apply_theme(const UiTheme& theme) override;
 
 private:
     // Stores directional navigation links for one focusable child in the panel flow.
@@ -79,7 +79,7 @@ private:
 
 private:
     UiStyleState<UiPanelStyle> _style_state;
-    UiPanelThemeRole _theme_role = UiPanelThemeRole::Default;
+    UiPanelVisualRole _visual_role = UiPanelVisualRole::Default;
     std::vector<FocusLink> _focus_links;
     UiElement* _last_focusable = nullptr;
     elysia::core::Vector2 _last_child_layout_origin{};

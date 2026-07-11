@@ -54,6 +54,7 @@ public:
     void set_on_selected(UiRadioButtonSelectedCallback callback);
     void set_sounds(const UiRadioButtonSounds& sounds);
     void clear_sounds() noexcept;
+    void set_base_style(const UiRadioButtonStyle& style) noexcept;
     void set_style(const UiRadioButtonStyle& style) noexcept;
     [[nodiscard]] const UiRadioButtonStyle& style() const noexcept;
     void clear_style_override() noexcept;
@@ -72,7 +73,6 @@ private:
     [[nodiscard]] elysia::core::Color background_color() const noexcept;
     [[nodiscard]] elysia::core::Color border_color() const noexcept;
     [[nodiscard]] elysia::core::Color mark_color() const noexcept;
-    void apply_theme(const UiTheme& theme) override;
 
     UiRadioButtonSelectedCallback _on_selected;
     std::optional<UiRadioButtonSounds> _sounds;

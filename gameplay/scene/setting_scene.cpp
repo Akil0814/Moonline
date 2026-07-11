@@ -154,7 +154,7 @@ void SettingScene::build_ui()
 
     auto save = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,160,48 });
     save->set_text_content(elysia::ui::ui_raw_text("Save"));
-    save->set_theme_role(elysia::ui::UiButtonThemeRole::Primary);
+    save->set_visual_role(elysia::ui::UiButtonVisualRole::Primary);
     save->set_on_click([]()
     {
         (void)elysia::config::ConfigService::instance()->save_user_settings();

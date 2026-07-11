@@ -157,9 +157,9 @@ void UiTabBar::refresh_styles()
         UiButton* button = button_at(i);
         if (!button)
             continue;
-        const UiButtonThemeRole role = button == _selected ? UiButtonThemeRole::Primary : UiButtonThemeRole::Default;
-        if (button->theme_role() != role)
-            button->set_theme_role(role);
+        const UiButtonVisualRole role = button == _selected ? UiButtonVisualRole::Primary : UiButtonVisualRole::Default;
+        if (button->visual_role() != role)
+            button->set_visual_role(role);
     }
 }
 }

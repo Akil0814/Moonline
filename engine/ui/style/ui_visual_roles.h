@@ -3,7 +3,7 @@
 namespace elysia::ui
 {
 // Theme roles are semantic lookup keys. They do not own colors and remain stable across built-in themes.
-enum class UiPanelThemeRole
+enum class UiPanelVisualRole
 {
     Default,
     Screen,
@@ -11,7 +11,7 @@ enum class UiPanelThemeRole
     List
 };
 
-enum class UiLabelThemeRole
+enum class UiLabelVisualRole
 {
     Default,
     Title,
@@ -19,31 +19,31 @@ enum class UiLabelThemeRole
     Muted
 };
 
-enum class UiTextBlockThemeRole
+enum class UiTextBlockVisualRole
 {
     Default,
     Muted
 };
 
-enum class UiButtonThemeRole
+enum class UiButtonVisualRole
 {
     Default,
     Primary,
     Danger
 };
 
-enum class UiBarThemeRole
+enum class UiBarVisualRole
 {
     Default,
     Progress
 };
 
-enum class UiDialogThemeRole
+enum class UiDialogVisualRole
 {
     Default
 };
 
-enum class UiDropdownThemeRole
+enum class UiDropdownVisualRole
 {
     Default
 };

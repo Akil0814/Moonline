@@ -4,7 +4,7 @@
 #include "../containers/ui_scroll_container.h"
 #include "../core/ui_control.h"
 #include "../style/ui_style.h"
-#include "../style/ui_theme_roles.h"
+#include "../style/ui_visual_roles.h"
 #include "../style/ui_visual_styles.h"
 #include "../text/ui_text_content.h"
 #include "../window/ui_transient_popup.h"
@@ -19,6 +19,15 @@ namespace elysia::ui
 {
 class UiListContainer;
 class UiWindow;
+
+struct UiDropdownBaseStyle
+{
+    UiDropdownStyle layout{};
+    UiButtonStyle trigger{};
+    UiPanelStyle popup{};
+    UiScrollContainerStyle scroll{};
+    UiButtonStyle option{};
+};
 
 // One popup row; disabled entries remain visible but are skipped by focus navigation.
 struct UiDropdownOption
@@ -62,12 +71,13 @@ public:
     void register_as_transient_popup(UiWindow& window);
     void unregister_as_transient_popup() noexcept;
 
+    void set_base_style(const UiDropdownBaseStyle& style) noexcept;
     void set_style(const UiDropdownStyle& style) noexcept;
     [[nodiscard]] const UiDropdownStyle& style() const noexcept;
     [[nodiscard]] bool has_style_override() const noexcept;
     void clear_style_override() noexcept;
-    void set_theme_role(UiDropdownThemeRole role) noexcept;
-    [[nodiscard]] UiDropdownThemeRole theme_role() const noexcept;
+    void set_visual_role(UiDropdownVisualRole role) noexcept;
+    [[nodiscard]] UiDropdownVisualRole visual_role() const noexcept;
 
     [[nodiscard]] UiElement& transient_popup_owner() noexcept override;
     [[nodiscard]] const UiElement& transient_popup_owner() const noexcept override;
@@ -84,7 +94,6 @@ private:
     void rebuild_option_buttons();
     void sync_visual_state();
     void sync_popup_layout();
-    void sync_theme_to_children(const UiTheme* theme = nullptr);
     [[nodiscard]] std::optional<std::size_t> first_enabled_option() const noexcept;
     [[nodiscard]] std::optional<std::size_t> next_enabled_option(int direction) const noexcept;
     void set_focused_option(std::optional<std::size_t> index);
@@ -94,7 +103,6 @@ private:
     [[nodiscard]] const UiButton* option_button_at(std::size_t index) const noexcept;
     [[nodiscard]] bool contains_trigger_point(int mouse_x,int mouse_y) const noexcept;
     [[nodiscard]] bool is_pointer_event(const UiInputEvent& event) const noexcept;
-    void apply_theme(const UiTheme& theme) override;
 
 private:
     UiButton _trigger;
@@ -104,7 +112,7 @@ private:
     std::vector<UiDropdownOption> _options;
     UiDropdownSelectionChangedCallback _on_selection_changed;
     UiStyleState<UiDropdownStyle> _style_state;
-    UiDropdownThemeRole _theme_role = UiDropdownThemeRole::Default;
+    UiDropdownVisualRole _visual_role = UiDropdownVisualRole::Default;
     UiWindow* _window = nullptr;
     std::optional<std::size_t> _selected_index;
     std::optional<std::size_t> _focused_option;

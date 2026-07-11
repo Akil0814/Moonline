@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../../style/ui_style.h"
-#include "../../style/ui_theme_roles.h"
+#include "../../style/ui_visual_roles.h"
 #include "../../style/ui_visual_styles.h"
 #include "../../core/ui_element.h"
 #include "../../core/ui_text_align.h"
@@ -36,13 +36,14 @@ public:
     void set_text_content(UiTextContent text_content);
     [[nodiscard]] const UiTextContent& text_content() const noexcept;
 
+    void set_base_style(const UiLabelStyle& style) noexcept;
     void set_style(const UiLabelStyle& style) noexcept;
     [[nodiscard]] const UiLabelStyle& style() const noexcept;
     [[nodiscard]] bool has_style_override() const noexcept;
     void clear_style_override() noexcept;
 
-    void set_theme_role(UiLabelThemeRole role) noexcept;
-    [[nodiscard]] UiLabelThemeRole theme_role() const noexcept;
+    void set_visual_role(UiLabelVisualRole role) noexcept;
+    [[nodiscard]] UiLabelVisualRole visual_role() const noexcept;
 
     void set_horizontal_align(TextHorizontalAlign align);
     [[nodiscard]] TextHorizontalAlign horizontal_align() const noexcept;
@@ -66,12 +67,11 @@ private:
     [[nodiscard]] elysia::core::Rect content_rect() const noexcept;
     // Fits rendered text into the content rect using the active alignment and padding.
     [[nodiscard]] elysia::core::Rect text_render_rect(SDL_Texture* text_texture) const noexcept;
-    void apply_theme(const UiTheme& theme) override;
 
 private:
     UiTextContent _text_content;
     UiStyleState<UiLabelStyle> _style_state;
-    UiLabelThemeRole _theme_role = UiLabelThemeRole::Default;
+    UiLabelVisualRole _visual_role = UiLabelVisualRole::Default;
     UiTypographyRole _typography_role = UiTypographyRole::Label;
     std::optional<float> _target_height;
     TextHorizontalAlign _horizontal_align = TextHorizontalAlign::Left;

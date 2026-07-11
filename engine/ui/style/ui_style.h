@@ -10,21 +10,21 @@ class UiStyleState
 public:
     // Resets both theme-derived and manual state. Callers typically use this from reset()
     // so controls fall back to pure theme ownership until an explicit override is applied.
-    void reset(const Style& theme_style) noexcept
+    void reset(const Style& base_style) noexcept
     {
-        _theme_style = theme_style;
+        _base_style = base_style;
         _style_override.reset();
     }
 
     // Updates the theme-owned style without disturbing any active manual override.
-    void set_theme_style(const Style& style) noexcept
+    void set_base_style(const Style& style) noexcept
     {
-        _theme_style = style;
+        _base_style = style;
     }
 
-    [[nodiscard]] const Style& theme_style() const noexcept
+    [[nodiscard]] const Style& base_style() const noexcept
     {
-        return _theme_style;
+        return _base_style;
     }
 
     // A style override always wins over later theme refreshes until cleared explicitly.
@@ -61,11 +61,11 @@ public:
     // transparently shadow the current theme style.
     [[nodiscard]] const Style& effective_style() const noexcept
     {
-        return _style_override.has_value() ? *_style_override : _theme_style;
+        return _style_override.has_value() ? *_style_override : _base_style;
     }
 
 private:
-    Style _theme_style{};
+    Style _base_style{};
     std::optional<Style> _style_override;
 };
 }

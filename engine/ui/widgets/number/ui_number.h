@@ -46,6 +46,7 @@ public:
     void set_value(double value);
     [[nodiscard]] double value() const noexcept;
 
+    void set_base_style(const UiNumberStyle& style) noexcept;
     void set_style(const UiNumberStyle& style) noexcept;
     [[nodiscard]] const UiNumberStyle& style() const noexcept;
     [[nodiscard]] bool has_style_override() const noexcept;
@@ -100,7 +101,6 @@ private:
     );
     // Converts text alignment into the digit-renderer alignment enum.
     [[nodiscard]] elysia::number::DigitAlignment digit_alignment() const noexcept;
-    void apply_theme(const UiTheme& theme) override;
 
 private:
     mutable elysia::number::NumberTextureProvider _texture_provider;

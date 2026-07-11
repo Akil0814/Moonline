@@ -25,6 +25,7 @@ public:
     explicit UiLabeledRadioButton(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0) noexcept;
     UiLabeledRadioButton(const elysia::core::Rect& rect,const UiLabeledRadioButtonConfig& config,int order = 0) noexcept;
     void reset() noexcept override;
+    void set_base_styles(const UiRadioButtonStyle& radio,const UiLabelStyle& label) noexcept;
     void set_enabled(bool enabled) override;
     void set_focused(bool focused) override;
     bool on_ui_input_event(const UiInputEvent& event) override;
@@ -45,7 +46,6 @@ private:
     [[nodiscard]] elysia::core::Rect indicator_rect() const noexcept;
     [[nodiscard]] elysia::core::Rect label_rect() const noexcept;
     [[nodiscard]] UiInputEvent routed_event(const UiInputEvent& event) const noexcept;
-    void apply_theme(const UiTheme& theme) override;
     mutable UiRadioButton _radio;
     mutable UiLabel _label;
     UiTextContent _text_content;

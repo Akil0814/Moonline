@@ -5,7 +5,6 @@
 #include "../containers/ui_scroll_container.h"
 #include "../focus/ui_focus_scope_utils.h"
 #include "../style/ui_style_defaults.h"
-#include "../style/ui_theme.h"
 #include "../widgets/ui_button.h"
 #include "../widgets/label/ui_label.h"
 #include "../widgets/text/ui_text_block.h"
@@ -48,10 +47,10 @@ void UiDialog::reset() noexcept
     _body_content = UiTextContent{};
     _action_content = ui_text_key("menu_scene.exit_confirm.cancel");
     _style_state.reset(UiDialogStyle{});
-    _theme_role = UiDialogThemeRole::Default;
+    _visual_role = UiDialogVisualRole::Default;
     _body_scroll_enabled = true;
 
-    UiDialogStyle defaults = _style_state.theme_style();
+    UiDialogStyle defaults = _style_state.base_style();
     defaults.overlay_defaults.open = false;
     defaults.overlay_defaults.modal = true;
     defaults.overlay_defaults.close_on_cancel = true;
@@ -60,7 +59,7 @@ void UiDialog::reset() noexcept
     defaults.overlay_defaults.transition = UiOverlayTransition::None;
     defaults.overlay_defaults.fallback_size = elysia::core::Vector2(480.0f,360.0f);
     defaults.overlay_defaults.order = 1000;
-    _style_state.set_theme_style(defaults);
+    _style_state.set_base_style(defaults);
 
     create_internal_children();
     sync_sources_to_children();
@@ -183,6 +182,12 @@ bool UiDialog::header_visible() const noexcept
     return _chrome ? _chrome->header_visible() : true;
 }
 
+void UiDialog::set_base_style(const UiDialogStyle& style) noexcept
+{
+    _style_state.set_base_style(style);
+    sync_style_to_children(); mark_layout_dirty();
+}
+
 void UiDialog::set_style(const UiDialogStyle& style) noexcept
 {
     _style_state.set_style_override(style);
@@ -207,15 +212,15 @@ void UiDialog::clear_style_override() noexcept
     mark_layout_dirty();
 }
 
-void UiDialog::set_theme_role(UiDialogThemeRole role) noexcept
+void UiDialog::set_visual_role(UiDialogVisualRole role) noexcept
 {
-    _theme_role = role;
-    request_theme_reapply();
+    _visual_role = role;
+    notify_host_base_style_invalidated();
 }
 
-UiDialogThemeRole UiDialog::theme_role() const noexcept
+UiDialogVisualRole UiDialog::visual_role() const noexcept
 {
-    return _theme_role;
+    return _visual_role;
 }
 
 void UiDialog::register_as_overlay(UiWindow& window,UiOverlayOptions options)
@@ -312,15 +317,10 @@ void UiDialog::rebuild_focus_registry()
     set_focus_entries(std::move(entries));
 }
 
-void UiDialog::apply_theme(const UiTheme& theme)
-{
-    sync_theme_to_children(&theme);
-}
 
 void UiDialog::create_internal_children()
 {
     auto chrome = std::make_unique<UiChromeContainer>(screen_rect());
-    chrome->set_use_theme(false);
     chrome->set_header_height(48.0f);
     chrome->set_header_padding(UiLayoutPadding{ 12.0f,6.0f,12.0f,6.0f });
     chrome->set_body_padding(UiLayoutPadding{
@@ -333,34 +333,29 @@ void UiDialog::create_internal_children()
     UiChildHost::add_child(std::move(chrome));
 
     auto title = std::make_unique<UiLabel>(elysia::core::Rect{ 0,0,280,36 });
-    title->set_theme_role(UiLabelThemeRole::Title);
+    title->set_visual_role(UiLabelVisualRole::Title);
     title->set_typography_role(UiTypographyRole::DialogTitle);
     title->set_vertical_align(TextVerticalAlign::Center);
     title->set_horizontal_align(TextHorizontalAlign::Left);
-    title->set_use_theme(false);
     _title_label = title.get();
     _chrome->add_title_child(std::move(title));
 
     auto body = std::make_unique<UiPanel>(elysia::core::Rect{ 0,0,360,260 });
-    body->set_use_theme(false);
     _body_panel = body.get();
 
     auto scroll = std::make_unique<UiScrollContainer>(elysia::core::Rect{ 0,0,360,200 });
-    scroll->set_use_theme(false);
     scroll->set_scroll_axis(UiScrollAxis::Vertical);
     scroll->set_scrollbar_visibility(UiScrollBarVisibility::Auto);
     scroll->set_scroll_step(elysia::core::Vector2(20.0f,28.0f));
     _body_scroll = scroll.get();
 
     auto text = std::make_unique<UiTextBlock>(elysia::core::Rect{ 0,0,360,0 });
-    text->set_use_theme(false);
     text->set_typography_role(UiTypographyRole::DialogBody);
     text->set_horizontal_align(TextHorizontalAlign::Left);
     _body_text = text.get();
     _body_scroll->set_content(std::move(text));
 
     auto close_button = std::make_unique<UiButton>(elysia::core::Rect{ 0,0,160,42 });
-    close_button->set_use_theme(false);
     close_button->set_typography_role(UiTypographyRole::DialogAction);
     close_button->set_on_click([this]()
     {
@@ -406,23 +401,6 @@ void UiDialog::sync_style_to_children()
     mark_layout_dirty();
 }
 
-void UiDialog::sync_theme_to_children(const UiTheme* theme)
-{
-    const UiTheme& resolved_theme = theme ? *theme : builtin_theme(UiBuiltinTheme::BlueGlassMoon);
-
-    if (_chrome)
-        _chrome->set_style(apply_theme_colors(UiChromeContainerStyle{},resolved_theme.chrome_container_style));
-    if (_title_label)
-        _title_label->set_style(apply_theme_colors(UiLabelStyle{},resolved_theme.label(UiLabelThemeRole::Title)));
-    if (_body_panel)
-        _body_panel->set_style(apply_theme_colors(UiPanelStyle{},resolved_theme.panel(UiPanelThemeRole::Dialog)));
-    if (_body_text)
-        _body_text->set_style(apply_theme_colors(UiTextBlockStyle{},resolved_theme.label(UiLabelThemeRole::Default)));
-    if (_body_scroll)
-        _body_scroll->set_style(apply_theme_colors(UiScrollContainerStyle{},resolved_theme.scroll_container_style));
-    if (_close_button)
-        _close_button->set_style(apply_theme_colors(UiButtonStyle{},resolved_theme.dialog_style.action_button));
-}
 
 void UiDialog::sync_body_scroll_gamepad_focus() noexcept
 {

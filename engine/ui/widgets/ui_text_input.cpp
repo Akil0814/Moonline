@@ -2,7 +2,6 @@
 
 #include "../focus/ui_control_focus_scope_host.h"
 #include "../style/ui_style_defaults.h"
-#include "../style/ui_theme.h"
 #include "../window/ui_window.h"
 
 #include "../../core/render/render_command.h"
@@ -118,7 +117,6 @@ void UiTextInput::reset() noexcept
 {
     release_text_input_ownership();
     UiControl::reset();
-    set_use_theme(false);
 
     _on_text_changed = nullptr;
     _on_submit = nullptr;
@@ -387,6 +385,12 @@ void UiTextInput::set_max_length(std::optional<std::size_t> max_length)
 const std::optional<std::size_t>& UiTextInput::max_length() const noexcept
 {
     return _max_length;
+}
+
+void UiTextInput::set_base_style(const UiTextInputStyle& style) noexcept
+{
+    _style_state.set_base_style(style);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 void UiTextInput::set_style(const UiTextInputStyle& style) noexcept
@@ -803,11 +807,6 @@ void UiTextInput::notify_text_changed_if_needed(const std::string& previous_text
     _on_text_changed(_text);
 }
 
-void UiTextInput::apply_theme(const UiTheme& theme)
-{
-    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.text_input_style));
-    notify_layout_parent_of_intrinsic_layout_invalidation();
-}
 }
 
 

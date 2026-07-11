@@ -1,7 +1,6 @@
 #include "ui_number.h"
 
 #include "../../style/ui_style_defaults.h"
-#include "../../style/ui_theme.h"
 #include "../../../core/render/render_command.h"
 
 #include <SDL.h>
@@ -192,6 +191,12 @@ void UiNumber::set_value(double value)
 double UiNumber::value() const noexcept
 {
     return _value;
+}
+
+void UiNumber::set_base_style(const UiNumberStyle& style) noexcept
+{
+    _style_state.set_base_style(style);
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 void UiNumber::set_style(const UiNumberStyle& style) noexcept
@@ -417,9 +422,4 @@ elysia::number::DigitAlignment UiNumber::digit_alignment() const noexcept
     }
 }
 
-void UiNumber::apply_theme(const UiTheme& theme)
-{
-    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.number_style));
-    notify_layout_parent_of_intrinsic_layout_invalidation();
-}
 }

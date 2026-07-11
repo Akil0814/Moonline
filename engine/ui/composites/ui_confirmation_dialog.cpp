@@ -3,7 +3,6 @@
 #include "../containers/ui_chrome_container.h"
 #include "../containers/ui_list_container.h"
 #include "../containers/ui_panel.h"
-#include "../style/ui_theme.h"
 #include "../widgets/label/ui_label.h"
 #include "../widgets/ui_button.h"
 #include "../window/ui_window.h"
@@ -73,7 +72,6 @@ void UiConfirmationDialog::reset() noexcept
 
     create_internal_children();
     sync_config_to_children();
-    sync_theme_to_children();
 }
 
 void UiConfirmationDialog::update(double delta)
@@ -161,8 +159,7 @@ void UiConfirmationDialog::set_config(const UiConfirmationDialogConfig& config)
 {
     _config = config;
     sync_config_to_children();
-    sync_theme_to_children();
-    request_theme_reapply();
+    notify_base_style_invalidated();
     mark_layout_dirty();
 }
 
@@ -251,15 +248,10 @@ void UiConfirmationDialog::rebuild_focus_registry()
     set_focus_entries(std::move(entries));
 }
 
-void UiConfirmationDialog::apply_theme(const UiTheme& theme)
-{
-    sync_theme_to_children(&theme);
-}
 
 void UiConfirmationDialog::create_internal_children()
 {
     auto chrome = std::make_unique<UiChromeContainer>(screen_rect());
-    chrome->set_use_theme(false);
     chrome->set_header_height(kHeaderHeight);
     chrome->set_header_padding(UiLayoutPadding{ 12.0f,6.0f,12.0f,6.0f });
     chrome->set_body_padding(UiLayoutPadding{ 20.0f,20.0f,20.0f,20.0f });
@@ -267,26 +259,22 @@ void UiConfirmationDialog::create_internal_children()
     UiChildHost::add_child(std::move(chrome));
 
     auto title = std::make_unique<UiLabel>(elysia::core::Rect{ 0,0,280,36 });
-    title->set_use_theme(false);
-    title->set_theme_role(UiLabelThemeRole::Title);
+    title->set_visual_role(UiLabelVisualRole::Title);
     title->set_typography_role(UiTypographyRole::DialogTitle);
     title->set_vertical_align(TextVerticalAlign::Center);
     _title_label = title.get();
     _chrome->add_title_child(std::move(title));
 
     auto close_button = std::make_unique<UiButton>(elysia::core::Rect{ 0,0,36,36 });
-    close_button->set_use_theme(false);
     close_button->set_typography_role(UiTypographyRole::ButtonCompact);
     close_button->set_on_click([this]() { close(); });
     _close_button = close_button.get();
     _chrome->add_right_action(std::move(close_button));
 
     auto body = std::make_unique<UiPanel>(elysia::core::Rect{ 0,0,380,152 });
-    body->set_use_theme(false);
     _body_panel = body.get();
 
     auto message = std::make_unique<UiLabel>(elysia::core::Rect{ 0,0,380,kMessageHeight });
-    message->set_use_theme(false);
     message->set_horizontal_align(TextHorizontalAlign::Center);
     message->set_vertical_align(TextVerticalAlign::Center);
     _message_label = message.get();
@@ -294,20 +282,17 @@ void UiConfirmationDialog::create_internal_children()
         UiLayoutAnchor::TopCenter,elysia::core::Vector2(380.0f,kMessageHeight)));
 
     auto action_row = std::make_unique<UiListContainer>(elysia::core::Rect{ 0,0,380,kButtonHeight });
-    action_row->set_use_theme(false);
     action_row->set_direction(UiListDirection::Horizontal);
     action_row->set_item_spacing(kButtonSpacing);
     _action_row = action_row.get();
 
     auto cancel_button = std::make_unique<UiButton>(elysia::core::Rect{ 0,0,180,kButtonHeight });
-    cancel_button->set_use_theme(false);
     cancel_button->set_typography_role(UiTypographyRole::DialogAction);
     cancel_button->set_on_click([this]() { close(); });
     _cancel_button = cancel_button.get();
     _action_row->add_back(std::move(cancel_button));
 
     auto confirm_button = std::make_unique<UiButton>(elysia::core::Rect{ 0,0,180,kButtonHeight });
-    confirm_button->set_use_theme(false);
     confirm_button->set_typography_role(UiTypographyRole::DialogAction);
     confirm_button->set_on_click([this]() { confirm(); });
     _confirm_button = confirm_button.get();
@@ -338,29 +323,6 @@ void UiConfirmationDialog::sync_config_to_children()
     }
 }
 
-void UiConfirmationDialog::sync_theme_to_children(const UiTheme* theme)
-{
-    // One registered composite fans the resolved theme out to children that deliberately opted out.
-    const UiTheme& resolved = theme ? *theme : builtin_theme(UiBuiltinTheme::BlueGlassMoon);
-    if (_chrome)
-        _chrome->set_style(apply_theme_colors(UiChromeContainerStyle{},resolved.chrome_container_style));
-    if (_title_label)
-        _title_label->set_style(apply_theme_colors(UiLabelStyle{},resolved.label(UiLabelThemeRole::Title)));
-    if (_message_label)
-        _message_label->set_style(apply_theme_colors(UiLabelStyle{},resolved.label(UiLabelThemeRole::Default)));
-    if (_body_panel)
-    {
-        UiPanelStyle panel_style = apply_theme_colors(UiPanelStyle{},resolved.panel(UiPanelThemeRole::Dialog));
-        panel_style.draw_border = false;
-        _body_panel->set_style(panel_style);
-    }
-    if (_close_button)
-        _close_button->set_style(apply_theme_colors(UiButtonStyle{},resolved.dialog_style.action_button));
-    if (_cancel_button)
-        _cancel_button->set_style(apply_theme_colors(UiButtonStyle{},resolved.button(_config.cancel_theme_role)));
-    if (_confirm_button)
-        _confirm_button->set_style(apply_theme_colors(UiButtonStyle{},resolved.button(_config.confirm_theme_role)));
-}
 
 void UiConfirmationDialog::sync_delegated_focus() noexcept
 {

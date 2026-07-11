@@ -1,7 +1,6 @@
 #include "ui_slider.h"
 
 #include "../style/ui_style_defaults.h"
-#include "../style/ui_theme.h"
 #include "../../audio/audio_service.h"
 #include "../../core/render/render_command.h"
 
@@ -136,7 +135,6 @@ void UiSlider::reset() noexcept
     _bar.reset();
     _handle.reset();
     _value_number.reset();
-    set_use_theme(false);
 
     _sounds.reset();
     _style_state.reset(UiStyleDefaults::slider());
@@ -432,6 +430,12 @@ void UiSlider::set_on_value_changed(UiSliderValueChangedCallback on_value_change
     _on_value_changed = std::move(on_value_changed);
 }
 
+void UiSlider::set_base_style(const UiSliderStyle& style) noexcept
+{
+    _style_state.set_base_style(style);
+    _handle.set_base_style(this->style().handle);
+}
+
 void UiSlider::set_style(const UiSliderStyle& style)
 {
     _style_state.set_style_override(style);
@@ -585,11 +589,8 @@ void UiSlider::initialize_child_widgets()
 {
     // Slider sub-widgets are implementation details. The outer slider owns theme participation
     // and pushes resolved visuals into the bar/handle/value number manually.
-    _bar.set_use_theme(false);
     _bar.set_padding(0);
     _bar.set_fill_direction(BarFillDirection::LeftToRight);
-    _handle.set_use_theme(false);
-    _value_number.set_use_theme(false);
     UiNumberStyle number_style = _value_number.style();
     number_style.draw_background = false;
     _value_number.set_style(number_style);
@@ -914,15 +915,6 @@ void UiSlider::play_slide_sound_if_allowed()
     }
 }
 
-void UiSlider::apply_theme(const UiTheme& theme)
-{
-    // Theme updates stop at the outer slider. Internal child widgets stay non-themed and receive
-    // the resolved style through sync_child_visuals() to keep the slider visually coherent.
-    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.slider_style));
-    _handle.set_style(style().handle);
-    sync_child_visuals();
-    notify_layout_parent_of_intrinsic_layout_invalidation();
-}
 }
 
 

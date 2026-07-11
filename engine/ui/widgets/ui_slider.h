@@ -98,7 +98,8 @@ namespace elysia::ui
         [[nodiscard]] const std::optional<UiSliderSounds>& sounds() const noexcept;
         void set_on_value_changed(UiSliderValueChangedCallback on_value_changed);
 
-        void set_style(const UiSliderStyle& style);
+        void set_base_style(const UiSliderStyle& style) noexcept;
+    void set_style(const UiSliderStyle& style);
         [[nodiscard]] const UiSliderStyle& style() const noexcept;
         [[nodiscard]] bool has_style_override() const noexcept;
         void clear_style_override() noexcept;
@@ -166,7 +167,6 @@ namespace elysia::ui
         void play_sound_if_set(std::string_view sound_key) const;
         // Throttles repeated slide sounds while the thumb is actively moving.
         void play_slide_sound_if_allowed();
-        void apply_theme(const UiTheme& theme) override;
 
     private:
         mutable UiBar _bar;

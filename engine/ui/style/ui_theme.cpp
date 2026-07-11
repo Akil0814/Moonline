@@ -57,7 +57,7 @@ template<class Enum>
 [[nodiscard]] UiTheme finalize_dialog_theme(UiTheme theme) noexcept
 {
     // Keep the initial action appearance familiar while reserving a distinct semantic slot.
-    theme.dialog_style.action_button = theme.button(UiButtonThemeRole::Default);
+    theme.dialog_style.action_button = theme.button(UiButtonVisualRole::Default);
     return theme;
 }
 
@@ -102,19 +102,19 @@ template<class Enum>
         UiPalette::surface_disabled);
     const UiChromeThemeColors interactive_chrome = make_chrome(interactive_surface,border);
 
-    theme.label_styles[to_index(UiLabelThemeRole::Default)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Default)] = UiLabelThemeColors{
         UiPalette::text_primary,
         elysia::core::colors::transparent
     };
-    theme.label_styles[to_index(UiLabelThemeRole::Title)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Title)] = UiLabelThemeColors{
         elysia::core::colors::glacial_white,
         elysia::core::colors::transparent
     };
-    theme.label_styles[to_index(UiLabelThemeRole::Subtitle)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Subtitle)] = UiLabelThemeColors{
         UiPalette::text_secondary,
         elysia::core::colors::transparent
     };
-    theme.label_styles[to_index(UiLabelThemeRole::Muted)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Muted)] = UiLabelThemeColors{
         UiPalette::text_muted,
         elysia::core::colors::transparent
     };
@@ -124,30 +124,30 @@ template<class Enum>
         elysia::core::colors::transparent
     };
 
-    theme.bar_styles[to_index(UiBarThemeRole::Default)] = UiBarThemeColors{
+    theme.bar_styles[to_index(UiBarVisualRole::Default)] = UiBarThemeColors{
         UiPalette::surface_elevated,
         elysia::core::colors::powder_blue,
         elysia::core::colors::steel_blue
     };
-    theme.bar_styles[to_index(UiBarThemeRole::Progress)] = UiBarThemeColors{
+    theme.bar_styles[to_index(UiBarVisualRole::Progress)] = UiBarThemeColors{
         UiPalette::surface_elevated,
         elysia::core::colors::royal_blue,
         elysia::core::colors::alice_blue
     };
 
-    theme.panel_styles[to_index(UiPanelThemeRole::Default)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::Default)] = UiPanelThemeColors{
         UiPalette::surface_elevated,
         UiPalette::border_default
     };
-    theme.panel_styles[to_index(UiPanelThemeRole::Screen)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::Screen)] = UiPanelThemeColors{
         UiPalette::surface_base,
         UiPalette::border_focus
     };
-    theme.panel_styles[to_index(UiPanelThemeRole::Dialog)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::Dialog)] = UiPanelThemeColors{
         UiPalette::surface_elevated,
         UiPalette::border_focus
     };
-    theme.panel_styles[to_index(UiPanelThemeRole::List)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::List)] = UiPanelThemeColors{
         UiPalette::surface_elevated,
         UiPalette::border_default
     };
@@ -163,11 +163,11 @@ template<class Enum>
         UiPalette::surface_base
     };
 
-    theme.button_styles[to_index(UiButtonThemeRole::Default)] = UiButtonThemeColors{
+    theme.button_styles[to_index(UiButtonVisualRole::Default)] = UiButtonThemeColors{
         interactive_chrome,
         text
     };
-    theme.button_styles[to_index(UiButtonThemeRole::Primary)] = UiButtonThemeColors{
+    theme.button_styles[to_index(UiButtonVisualRole::Primary)] = UiButtonThemeColors{
         make_chrome(
             make_surface_colors(
                 elysia::core::colors::royal_blue,
@@ -177,7 +177,7 @@ template<class Enum>
             UiEnabledDisabledColors{ elysia::core::colors::alice_blue,UiPalette::border_disabled }),
         text
     };
-    theme.button_styles[to_index(UiButtonThemeRole::Danger)] = UiButtonThemeColors{
+    theme.button_styles[to_index(UiButtonVisualRole::Danger)] = UiButtonThemeColors{
         make_chrome(
             make_surface_colors(
                 elysia::core::colors::red_700,
@@ -257,19 +257,19 @@ template<class Enum>
         elysia::core::colors::gray_300);
     const UiChromeThemeColors interactive_chrome = make_chrome(interactive_surface,border);
 
-    theme.label_styles[to_index(UiLabelThemeRole::Default)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Default)] = UiLabelThemeColors{
         elysia::core::colors::elysia_plum,
         elysia::core::colors::transparent
     };
-    theme.label_styles[to_index(UiLabelThemeRole::Title)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Title)] = UiLabelThemeColors{
         elysia::core::colors::elysia_hair_rose,
         elysia::core::colors::transparent
     };
-    theme.label_styles[to_index(UiLabelThemeRole::Subtitle)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Subtitle)] = UiLabelThemeColors{
         elysia::core::colors::elysia_iris_mauve,
         elysia::core::colors::transparent
     };
-    theme.label_styles[to_index(UiLabelThemeRole::Muted)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Muted)] = UiLabelThemeColors{
         elysia::core::colors::gray_500,
         elysia::core::colors::transparent
     };
@@ -279,30 +279,30 @@ template<class Enum>
         elysia::core::colors::transparent
     };
 
-    theme.bar_styles[to_index(UiBarThemeRole::Default)] = UiBarThemeColors{
+    theme.bar_styles[to_index(UiBarVisualRole::Default)] = UiBarThemeColors{
         elysia::core::colors::elysia_pearl_white,
         elysia::core::colors::elysia_hair_rose,
         elysia::core::colors::elysia_plum
     };
-    theme.bar_styles[to_index(UiBarThemeRole::Progress)] = UiBarThemeColors{
+    theme.bar_styles[to_index(UiBarVisualRole::Progress)] = UiBarThemeColors{
         elysia::core::colors::elysia_pearl_white,
         elysia::core::colors::elysia_crystal_lilac,
         elysia::core::colors::elysia_hair_rose
     };
 
-    theme.panel_styles[to_index(UiPanelThemeRole::Default)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::Default)] = UiPanelThemeColors{
         elysia::core::colors::elysia_pearl_white,
         elysia::core::colors::elysia_hair_rose
     };
-    theme.panel_styles[to_index(UiPanelThemeRole::Screen)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::Screen)] = UiPanelThemeColors{
         elysia::core::colors::elysia_chiffon_pink,
         elysia::core::colors::elysia_opal_lilac
     };
-    theme.panel_styles[to_index(UiPanelThemeRole::Dialog)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::Dialog)] = UiPanelThemeColors{
         elysia::core::colors::elysia_silk_white,
         elysia::core::colors::elysia_crystal_lilac
     };
-    theme.panel_styles[to_index(UiPanelThemeRole::List)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::List)] = UiPanelThemeColors{
         elysia::core::colors::elysia_chiffon_pink,
         elysia::core::colors::elysia_opal_lilac
     };
@@ -318,11 +318,11 @@ template<class Enum>
         elysia::core::colors::elysia_opal_lilac
     };
 
-    theme.button_styles[to_index(UiButtonThemeRole::Default)] = UiButtonThemeColors{
+    theme.button_styles[to_index(UiButtonVisualRole::Default)] = UiButtonThemeColors{
         interactive_chrome,
         text
     };
-    theme.button_styles[to_index(UiButtonThemeRole::Primary)] = UiButtonThemeColors{
+    theme.button_styles[to_index(UiButtonVisualRole::Primary)] = UiButtonThemeColors{
         make_chrome(
             make_surface_colors(
                 elysia::core::colors::elysia_hair_rose,
@@ -332,7 +332,7 @@ template<class Enum>
             UiEnabledDisabledColors{ elysia::core::colors::elysia_plum,elysia::core::colors::gray_300 }),
         make_text_colors(elysia::core::colors::elysia_silk_white,elysia::core::colors::gray_100)
     };
-    theme.button_styles[to_index(UiButtonThemeRole::Danger)] = UiButtonThemeColors{
+    theme.button_styles[to_index(UiButtonVisualRole::Danger)] = UiButtonThemeColors{
         make_chrome(
             make_surface_colors(
                 elysia::core::colors::elysia_dusk_rose,
@@ -412,19 +412,19 @@ template<class Enum>
         elysia::core::colors::elysia_phantom_sea);
     const UiChromeThemeColors interactive_chrome = make_chrome(interactive_surface,border);
 
-    theme.label_styles[to_index(UiLabelThemeRole::Default)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Default)] = UiLabelThemeColors{
         elysia::core::colors::elysia_moonlit_lavender,
         elysia::core::colors::transparent
     };
-    theme.label_styles[to_index(UiLabelThemeRole::Title)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Title)] = UiLabelThemeColors{
         elysia::core::colors::elysia_crystal_orchid,
         elysia::core::colors::transparent
     };
-    theme.label_styles[to_index(UiLabelThemeRole::Subtitle)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Subtitle)] = UiLabelThemeColors{
         elysia::core::colors::elysia_starlight_lilac,
         elysia::core::colors::transparent
     };
-    theme.label_styles[to_index(UiLabelThemeRole::Muted)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Muted)] = UiLabelThemeColors{
         elysia::core::colors::elysia_silver_mist,
         elysia::core::colors::transparent
     };
@@ -434,30 +434,30 @@ template<class Enum>
         elysia::core::colors::transparent
     };
 
-    theme.bar_styles[to_index(UiBarThemeRole::Default)] = UiBarThemeColors{
+    theme.bar_styles[to_index(UiBarVisualRole::Default)] = UiBarThemeColors{
         elysia::core::colors::elysia_twilight_mist,
         elysia::core::colors::elysia_aurora_haze,
         elysia::core::colors::elysia_starlight_lilac
     };
-    theme.bar_styles[to_index(UiBarThemeRole::Progress)] = UiBarThemeColors{
+    theme.bar_styles[to_index(UiBarVisualRole::Progress)] = UiBarThemeColors{
         elysia::core::colors::elysia_twilight_mist,
         elysia::core::colors::elysia_crystal_orchid,
         elysia::core::colors::elysia_dream_rose
     };
 
-    theme.panel_styles[to_index(UiPanelThemeRole::Default)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::Default)] = UiPanelThemeColors{
         elysia::core::colors::elysia_twilight_mist,
         elysia::core::colors::elysia_starlight_lilac
     };
-    theme.panel_styles[to_index(UiPanelThemeRole::Screen)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::Screen)] = UiPanelThemeColors{
         elysia::core::colors::elysia_starsea_navy,
         elysia::core::colors::elysia_aurora_haze
     };
-    theme.panel_styles[to_index(UiPanelThemeRole::Dialog)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::Dialog)] = UiPanelThemeColors{
         elysia::core::colors::elysia_twilight_mist,
         elysia::core::colors::elysia_crystal_orchid
     };
-    theme.panel_styles[to_index(UiPanelThemeRole::List)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::List)] = UiPanelThemeColors{
         elysia::core::colors::elysia_twilight_mist,
         elysia::core::colors::elysia_aurora_haze
     };
@@ -473,11 +473,11 @@ template<class Enum>
         elysia::core::colors::elysia_aurora_haze
     };
 
-    theme.button_styles[to_index(UiButtonThemeRole::Default)] = UiButtonThemeColors{
+    theme.button_styles[to_index(UiButtonVisualRole::Default)] = UiButtonThemeColors{
         interactive_chrome,
         text
     };
-    theme.button_styles[to_index(UiButtonThemeRole::Primary)] = UiButtonThemeColors{
+    theme.button_styles[to_index(UiButtonVisualRole::Primary)] = UiButtonThemeColors{
         make_chrome(
             make_surface_colors(
                 elysia::core::colors::elysia_aurora_haze,
@@ -490,7 +490,7 @@ template<class Enum>
             }),
         text
     };
-    theme.button_styles[to_index(UiButtonThemeRole::Danger)] = UiButtonThemeColors{
+    theme.button_styles[to_index(UiButtonVisualRole::Danger)] = UiButtonThemeColors{
         make_chrome(
             make_surface_colors(
                 elysia::core::colors::elysia_twilight_rose,
@@ -582,19 +582,19 @@ template<class Enum>
         elysia::core::colors::gray_300);
     const UiChromeThemeColors interactive_chrome = make_chrome(interactive_surface,border);
 
-    theme.label_styles[to_index(UiLabelThemeRole::Default)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Default)] = UiLabelThemeColors{
         elysia::core::colors::eva_unit00_soft_graphite,
         elysia::core::colors::transparent
     };
-    theme.label_styles[to_index(UiLabelThemeRole::Title)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Title)] = UiLabelThemeColors{
         elysia::core::colors::eva_unit00_warning_yellow,
         elysia::core::colors::transparent
     };
-    theme.label_styles[to_index(UiLabelThemeRole::Subtitle)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Subtitle)] = UiLabelThemeColors{
         elysia::core::colors::eva_unit00_mist_blue,
         elysia::core::colors::transparent
     };
-    theme.label_styles[to_index(UiLabelThemeRole::Muted)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Muted)] = UiLabelThemeColors{
         elysia::core::colors::eva_unit00_border_blue,
         elysia::core::colors::transparent
     };
@@ -604,30 +604,30 @@ template<class Enum>
         elysia::core::colors::transparent
     };
 
-    theme.bar_styles[to_index(UiBarThemeRole::Default)] = UiBarThemeColors{
+    theme.bar_styles[to_index(UiBarVisualRole::Default)] = UiBarThemeColors{
         elysia::core::colors::eva_unit00_frost_blue,
         elysia::core::colors::eva_unit00_pale_blue,
         elysia::core::colors::eva_unit00_mist_blue
     };
-    theme.bar_styles[to_index(UiBarThemeRole::Progress)] = UiBarThemeColors{
+    theme.bar_styles[to_index(UiBarVisualRole::Progress)] = UiBarThemeColors{
         elysia::core::colors::eva_unit00_frost_blue,
         elysia::core::colors::eva_unit00_warning_yellow,
         elysia::core::colors::eva_unit00_amber_ochre
     };
 
-    theme.panel_styles[to_index(UiPanelThemeRole::Default)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::Default)] = UiPanelThemeColors{
         elysia::core::colors::eva_unit00_rei_white,
         elysia::core::colors::eva_unit00_pale_blue
     };
-    theme.panel_styles[to_index(UiPanelThemeRole::Screen)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::Screen)] = UiPanelThemeColors{
         elysia::core::colors::eva_unit00_frost_blue,
         elysia::core::colors::eva_unit00_border_blue
     };
-    theme.panel_styles[to_index(UiPanelThemeRole::Dialog)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::Dialog)] = UiPanelThemeColors{
         elysia::core::colors::eva_unit00_rei_white,
         elysia::core::colors::eva_unit00_pale_blue
     };
-    theme.panel_styles[to_index(UiPanelThemeRole::List)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::List)] = UiPanelThemeColors{
         elysia::core::colors::eva_unit00_frost_blue,
         elysia::core::colors::eva_unit00_pale_blue
     };
@@ -643,11 +643,11 @@ template<class Enum>
         elysia::core::colors::eva_unit00_frost_blue
     };
 
-    theme.button_styles[to_index(UiButtonThemeRole::Default)] = UiButtonThemeColors{
+    theme.button_styles[to_index(UiButtonVisualRole::Default)] = UiButtonThemeColors{
         interactive_chrome,
         text
     };
-    theme.button_styles[to_index(UiButtonThemeRole::Primary)] = UiButtonThemeColors{
+    theme.button_styles[to_index(UiButtonVisualRole::Primary)] = UiButtonThemeColors{
         make_chrome(
             make_surface_colors(
                 elysia::core::colors::eva_unit00_frost_blue,
@@ -657,7 +657,7 @@ template<class Enum>
             UiEnabledDisabledColors{ elysia::core::colors::eva_unit00_warning_yellow,elysia::core::colors::gray_300 }),
         make_text_colors(elysia::core::colors::eva_unit00_soft_graphite,elysia::core::colors::gray_700)
     };
-    theme.button_styles[to_index(UiButtonThemeRole::Danger)] = UiButtonThemeColors{
+    theme.button_styles[to_index(UiButtonVisualRole::Danger)] = UiButtonThemeColors{
         make_chrome(
             make_surface_colors(
                 elysia::core::colors::eva_unit00_amber_ochre,
@@ -737,19 +737,19 @@ template<class Enum>
         elysia::core::colors::gray_700);
     const UiChromeThemeColors interactive_chrome = make_chrome(interactive_surface,border);
 
-    theme.label_styles[to_index(UiLabelThemeRole::Default)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Default)] = UiLabelThemeColors{
         elysia::core::colors::frosted_white,
         elysia::core::colors::transparent
     };
-    theme.label_styles[to_index(UiLabelThemeRole::Title)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Title)] = UiLabelThemeColors{
         elysia::core::colors::eva_unit01_toxic_green,
         elysia::core::colors::transparent
     };
-    theme.label_styles[to_index(UiLabelThemeRole::Subtitle)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Subtitle)] = UiLabelThemeColors{
         elysia::core::colors::eva_unit01_lime_glow,
         elysia::core::colors::transparent
     };
-    theme.label_styles[to_index(UiLabelThemeRole::Muted)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Muted)] = UiLabelThemeColors{
         elysia::core::colors::eva_unit01_muted_lime,
         elysia::core::colors::transparent
     };
@@ -759,30 +759,30 @@ template<class Enum>
         elysia::core::colors::transparent
     };
 
-    theme.bar_styles[to_index(UiBarThemeRole::Default)] = UiBarThemeColors{
+    theme.bar_styles[to_index(UiBarVisualRole::Default)] = UiBarThemeColors{
         elysia::core::colors::eva_unit01_deep_purple,
         elysia::core::colors::eva_unit01_royal_purple,
         elysia::core::colors::eva_unit01_toxic_green
     };
-    theme.bar_styles[to_index(UiBarThemeRole::Progress)] = UiBarThemeColors{
+    theme.bar_styles[to_index(UiBarVisualRole::Progress)] = UiBarThemeColors{
         elysia::core::colors::eva_unit01_deep_purple,
         elysia::core::colors::eva_unit01_toxic_green,
         elysia::core::colors::eva_unit01_lime_glow
     };
 
-    theme.panel_styles[to_index(UiPanelThemeRole::Default)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::Default)] = UiPanelThemeColors{
         elysia::core::colors::eva_unit01_deep_purple,
         elysia::core::colors::eva_unit01_toxic_green
     };
-    theme.panel_styles[to_index(UiPanelThemeRole::Screen)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::Screen)] = UiPanelThemeColors{
         elysia::core::colors::eva_unit01_void_purple,
         elysia::core::colors::eva_unit01_royal_purple
     };
-    theme.panel_styles[to_index(UiPanelThemeRole::Dialog)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::Dialog)] = UiPanelThemeColors{
         elysia::core::colors::eva_unit01_deep_purple,
         elysia::core::colors::eva_unit01_orange_core
     };
-    theme.panel_styles[to_index(UiPanelThemeRole::List)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::List)] = UiPanelThemeColors{
         elysia::core::colors::eva_unit01_royal_purple,
         elysia::core::colors::eva_unit01_toxic_green
     };
@@ -798,11 +798,11 @@ template<class Enum>
         elysia::core::colors::eva_unit01_royal_purple
     };
 
-    theme.button_styles[to_index(UiButtonThemeRole::Default)] = UiButtonThemeColors{
+    theme.button_styles[to_index(UiButtonVisualRole::Default)] = UiButtonThemeColors{
         interactive_chrome,
         text
     };
-    theme.button_styles[to_index(UiButtonThemeRole::Primary)] = UiButtonThemeColors{
+    theme.button_styles[to_index(UiButtonVisualRole::Primary)] = UiButtonThemeColors{
         make_chrome(
             make_surface_colors(
                 elysia::core::colors::eva_unit01_royal_purple,
@@ -812,7 +812,7 @@ template<class Enum>
             UiEnabledDisabledColors{ elysia::core::colors::eva_unit01_toxic_green,elysia::core::colors::gray_500 }),
         text
     };
-    theme.button_styles[to_index(UiButtonThemeRole::Danger)] = UiButtonThemeColors{
+    theme.button_styles[to_index(UiButtonVisualRole::Danger)] = UiButtonThemeColors{
         make_chrome(
             make_surface_colors(
                 elysia::core::colors::eva_unit01_burnt_orange,
@@ -892,19 +892,19 @@ template<class Enum>
         elysia::core::colors::gray_700);
     const UiChromeThemeColors interactive_chrome = make_chrome(interactive_surface,border);
 
-    theme.label_styles[to_index(UiLabelThemeRole::Default)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Default)] = UiLabelThemeColors{
         elysia::core::colors::eva_unit02_bone_white,
         elysia::core::colors::transparent
     };
-    theme.label_styles[to_index(UiLabelThemeRole::Title)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Title)] = UiLabelThemeColors{
         elysia::core::colors::eva_unit02_sun_yellow,
         elysia::core::colors::transparent
     };
-    theme.label_styles[to_index(UiLabelThemeRole::Subtitle)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Subtitle)] = UiLabelThemeColors{
         elysia::core::colors::eva_unit02_orange,
         elysia::core::colors::transparent
     };
-    theme.label_styles[to_index(UiLabelThemeRole::Muted)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Muted)] = UiLabelThemeColors{
         elysia::core::colors::eva_unit02_muted_orange,
         elysia::core::colors::transparent
     };
@@ -914,30 +914,30 @@ template<class Enum>
         elysia::core::colors::transparent
     };
 
-    theme.bar_styles[to_index(UiBarThemeRole::Default)] = UiBarThemeColors{
+    theme.bar_styles[to_index(UiBarVisualRole::Default)] = UiBarThemeColors{
         elysia::core::colors::eva_unit02_deep_maroon,
         elysia::core::colors::eva_unit02_vermilion,
         elysia::core::colors::eva_unit02_orange
     };
-    theme.bar_styles[to_index(UiBarThemeRole::Progress)] = UiBarThemeColors{
+    theme.bar_styles[to_index(UiBarVisualRole::Progress)] = UiBarThemeColors{
         elysia::core::colors::eva_unit02_deep_maroon,
         elysia::core::colors::eva_unit02_sun_yellow,
         elysia::core::colors::eva_unit02_glow_amber
     };
 
-    theme.panel_styles[to_index(UiPanelThemeRole::Default)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::Default)] = UiPanelThemeColors{
         elysia::core::colors::eva_unit02_crimson,
         elysia::core::colors::eva_unit02_orange
     };
-    theme.panel_styles[to_index(UiPanelThemeRole::Screen)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::Screen)] = UiPanelThemeColors{
         elysia::core::colors::eva_unit02_deep_maroon,
         elysia::core::colors::eva_unit02_vermilion
     };
-    theme.panel_styles[to_index(UiPanelThemeRole::Dialog)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::Dialog)] = UiPanelThemeColors{
         elysia::core::colors::eva_unit02_crimson,
         elysia::core::colors::eva_unit02_sun_yellow
     };
-    theme.panel_styles[to_index(UiPanelThemeRole::List)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::List)] = UiPanelThemeColors{
         elysia::core::colors::eva_unit02_vermilion,
         elysia::core::colors::eva_unit02_orange
     };
@@ -953,11 +953,11 @@ template<class Enum>
         elysia::core::colors::eva_unit02_vermilion
     };
 
-    theme.button_styles[to_index(UiButtonThemeRole::Default)] = UiButtonThemeColors{
+    theme.button_styles[to_index(UiButtonVisualRole::Default)] = UiButtonThemeColors{
         interactive_chrome,
         text
     };
-    theme.button_styles[to_index(UiButtonThemeRole::Primary)] = UiButtonThemeColors{
+    theme.button_styles[to_index(UiButtonVisualRole::Primary)] = UiButtonThemeColors{
         make_chrome(
             make_surface_colors(
                 elysia::core::colors::eva_unit02_vermilion,
@@ -967,7 +967,7 @@ template<class Enum>
             UiEnabledDisabledColors{ elysia::core::colors::eva_unit02_glow_amber,elysia::core::colors::gray_500 }),
         make_text_colors(elysia::core::colors::eva_unit02_deep_maroon,elysia::core::colors::gray_700)
     };
-    theme.button_styles[to_index(UiButtonThemeRole::Danger)] = UiButtonThemeColors{
+    theme.button_styles[to_index(UiButtonVisualRole::Danger)] = UiButtonThemeColors{
         make_chrome(
             make_surface_colors(
                 elysia::core::colors::eva_unit02_deep_maroon,
@@ -1047,19 +1047,19 @@ template<class Enum>
         elysia::core::colors::gray_100);
     const UiChromeThemeColors interactive_chrome = make_chrome(interactive_surface,border);
 
-    theme.label_styles[to_index(UiLabelThemeRole::Default)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Default)] = UiLabelThemeColors{
         elysia::core::colors::gray_900,
         elysia::core::colors::transparent
     };
-    theme.label_styles[to_index(UiLabelThemeRole::Title)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Title)] = UiLabelThemeColors{
         elysia::core::colors::black,
         elysia::core::colors::transparent
     };
-    theme.label_styles[to_index(UiLabelThemeRole::Subtitle)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Subtitle)] = UiLabelThemeColors{
         elysia::core::colors::gray_700,
         elysia::core::colors::transparent
     };
-    theme.label_styles[to_index(UiLabelThemeRole::Muted)] = UiLabelThemeColors{
+    theme.label_styles[to_index(UiLabelVisualRole::Muted)] = UiLabelThemeColors{
         elysia::core::colors::gray_500,
         elysia::core::colors::transparent
     };
@@ -1069,30 +1069,30 @@ template<class Enum>
         elysia::core::colors::transparent
     };
 
-    theme.bar_styles[to_index(UiBarThemeRole::Default)] = UiBarThemeColors{
+    theme.bar_styles[to_index(UiBarVisualRole::Default)] = UiBarThemeColors{
         elysia::core::colors::gray_300,
         elysia::core::colors::gray_500,
         elysia::core::colors::gray_700
     };
-    theme.bar_styles[to_index(UiBarThemeRole::Progress)] = UiBarThemeColors{
+    theme.bar_styles[to_index(UiBarVisualRole::Progress)] = UiBarThemeColors{
         elysia::core::colors::gray_300,
         elysia::core::colors::black,
         elysia::core::colors::gray_700
     };
 
-    theme.panel_styles[to_index(UiPanelThemeRole::Default)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::Default)] = UiPanelThemeColors{
         elysia::core::colors::gray_100,
         elysia::core::colors::gray_700
     };
-    theme.panel_styles[to_index(UiPanelThemeRole::Screen)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::Screen)] = UiPanelThemeColors{
         elysia::core::colors::gray_300,
         elysia::core::colors::gray_500
     };
-    theme.panel_styles[to_index(UiPanelThemeRole::Dialog)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::Dialog)] = UiPanelThemeColors{
         elysia::core::colors::gray_100,
         elysia::core::colors::gray_700
     };
-    theme.panel_styles[to_index(UiPanelThemeRole::List)] = UiPanelThemeColors{
+    theme.panel_styles[to_index(UiPanelVisualRole::List)] = UiPanelThemeColors{
         elysia::core::colors::gray_300,
         elysia::core::colors::gray_700
     };
@@ -1108,11 +1108,11 @@ template<class Enum>
         elysia::core::colors::gray_300
     };
 
-    theme.button_styles[to_index(UiButtonThemeRole::Default)] = UiButtonThemeColors{
+    theme.button_styles[to_index(UiButtonVisualRole::Default)] = UiButtonThemeColors{
         interactive_chrome,
         text
     };
-    theme.button_styles[to_index(UiButtonThemeRole::Primary)] = UiButtonThemeColors{
+    theme.button_styles[to_index(UiButtonVisualRole::Primary)] = UiButtonThemeColors{
         make_chrome(
             make_surface_colors(
                 elysia::core::colors::gray_300,
@@ -1122,7 +1122,7 @@ template<class Enum>
             UiEnabledDisabledColors{ elysia::core::colors::black,elysia::core::colors::gray_300 }),
         make_text_colors(elysia::core::colors::white,elysia::core::colors::gray_300)
     };
-    theme.button_styles[to_index(UiButtonThemeRole::Danger)] = UiButtonThemeColors{
+    theme.button_styles[to_index(UiButtonVisualRole::Danger)] = UiButtonThemeColors{
         make_chrome(
             make_surface_colors(
                 elysia::core::colors::gray_500,
@@ -1179,22 +1179,22 @@ template<class Enum>
 }
 }
 
-const UiPanelThemeColors& UiTheme::panel(UiPanelThemeRole role) const noexcept
+const UiPanelThemeColors& UiTheme::panel(UiPanelVisualRole role) const noexcept
 {
     return panel_styles[to_index(role)];
 }
 
-const UiLabelThemeColors& UiTheme::label(UiLabelThemeRole role) const noexcept
+const UiLabelThemeColors& UiTheme::label(UiLabelVisualRole role) const noexcept
 {
     return label_styles[to_index(role)];
 }
 
-const UiButtonThemeColors& UiTheme::button(UiButtonThemeRole role) const noexcept
+const UiButtonThemeColors& UiTheme::button(UiButtonVisualRole role) const noexcept
 {
     return button_styles[to_index(role)];
 }
 
-const UiBarThemeColors& UiTheme::bar(UiBarThemeRole role) const noexcept
+const UiBarThemeColors& UiTheme::bar(UiBarVisualRole role) const noexcept
 {
     return bar_styles[to_index(role)];
 }

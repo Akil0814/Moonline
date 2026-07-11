@@ -85,7 +85,7 @@ void MainMenuScene::build_menu_buttons()
             .confirm = elysia::ui::ui_text_key("menu_scene.exit"),
             .cancel = elysia::ui::ui_text_key("menu_scene.exit_confirm.cancel"),
             .close = elysia::ui::ui_text_key("menu_scene.exit_confirm.close"),
-            .confirm_theme_role = elysia::ui::UiButtonThemeRole::Danger
+            .confirm_visual_role = elysia::ui::UiButtonVisualRole::Danger
             });
         _exit_confirmation->set_on_confirm([this]() { Scene::request_quit(); });
         _exit_confirmation->register_as_overlay(*_main_menu_window);
@@ -127,7 +127,7 @@ void MainMenuScene::build_menu_buttons()
     //Title
     std::unique_ptr<elysia::ui::UiLabel> ui_label =
         std::make_unique<elysia::ui::UiLabel>(elysia::core::Rect{ 0,0,600,120 }, 0, elysia::ui::ui_text_key("menu_scene.project_name"));
-    ui_label->set_theme_role(elysia::ui::UiLabelThemeRole::Title);
+    ui_label->set_visual_role(elysia::ui::UiLabelVisualRole::Title);
     ui_label->set_typography_role(elysia::ui::UiTypographyRole::Title);
     ui_label->set_target_height(96.0f);
     ui_label->set_horizontal_align(elysia::ui::TextHorizontalAlign::Center);

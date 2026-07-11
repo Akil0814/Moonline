@@ -214,11 +214,11 @@ namespace arcneco::scene
     void CharacterSelectScene::build_character_detailed()
     {
         auto info_panel = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,420,250 });
-        info_panel->set_theme_role(elysia::ui::UiPanelThemeRole::Dialog);
+        info_panel->set_visual_role(elysia::ui::UiPanelVisualRole::Dialog);
 
         auto title = std::make_unique<elysia::ui::UiLabel>(
             elysia::core::Rect{ 0,0,372,36 },0,elysia::ui::ui_raw_text("CHARACTER INFO"));
-        title->set_theme_role(elysia::ui::UiLabelThemeRole::Title);
+        title->set_visual_role(elysia::ui::UiLabelVisualRole::Title);
         title->set_typography_role(elysia::ui::UiTypographyRole::DialogTitle);
         _character_details.title_label = title.get();
         info_panel->add_child(std::move(title),{
@@ -230,7 +230,7 @@ namespace arcneco::scene
         {
             auto label = std::make_unique<elysia::ui::UiLabel>(
                 elysia::core::Rect{ 0,0,372,28 },0,elysia::ui::ui_raw_text(text));
-            label->set_theme_role(elysia::ui::UiLabelThemeRole::Subtitle);
+            label->set_visual_role(elysia::ui::UiLabelVisualRole::Subtitle);
             info_panel->add_child(std::move(label),{
                 ._anchor = elysia::ui::UiLayoutAnchor::TopLeft,
                 ._margin = elysia::ui::UiLayoutMargin{ .left = 24.0f,.top = top }
@@ -256,7 +256,7 @@ namespace arcneco::scene
         auto confirm = std::make_unique<elysia::ui::UiButton>(
             elysia::core::Rect{ 0,0,160,52 },
             elysia::ui::UiButtonConfig{ .content = elysia::ui::ui_raw_text("CONFIRM") });
-        confirm->set_theme_role(elysia::ui::UiButtonThemeRole::Primary);
+        confirm->set_visual_role(elysia::ui::UiButtonVisualRole::Primary);
         confirm->set_on_click([this]()
         {
             std::cout << "Character selection confirmed: " << _current_character_key << std::endl;

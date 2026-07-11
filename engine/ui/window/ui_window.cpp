@@ -2,7 +2,6 @@
 #include "../composites/ui_tooltip.h"
 
 #include "../style/ui_style_defaults.h"
-#include "../style/ui_theme.h"
 #include "../focus/ui_focus_scope_utils.h"
 #include "../focus/ui_control_focus_scope_host.h"
 #include "../containers/ui_scroll_container.h"
@@ -93,6 +92,11 @@ void UiWindow::reset() noexcept
     _transient_popup_pointer_active = false;
     _focus_input_device = elysia::input::InputDevice::Unknown;
     _on_cancel = {};
+}
+
+void UiWindow::set_base_style(const UiWindowStyle& style) noexcept
+{
+    _style_state.set_base_style(style);
 }
 
 void UiWindow::set_style(const UiWindowStyle& style) noexcept
@@ -347,13 +351,27 @@ void UiWindow::register_tooltip(UiTooltip& tooltip)
 {
     if (std::find(_tooltips.begin(),_tooltips.end(),&tooltip) == _tooltips.end())
         _tooltips.push_back(&tooltip);
+    if (UiElement* content = tooltip.content())
+        attach_tooltip_content(*content);
 }
 
 void UiWindow::unregister_tooltip(UiTooltip& tooltip) noexcept
 {
+    if (UiElement* content = tooltip.content())
+        detach_tooltip_content(*content);
     _tooltips.erase(std::remove(_tooltips.begin(),_tooltips.end(),&tooltip),_tooltips.end());
     if (tooltip._window == this)
         tooltip._window = nullptr;
+}
+
+void UiWindow::attach_tooltip_content(UiElement& content)
+{
+    attach_external_style_subtree(content);
+}
+
+void UiWindow::detach_tooltip_content(UiElement& content) noexcept
+{
+    detach_external_style_subtree(content);
 }
 
 bool UiWindow::is_tooltip_pointer_blocked(int mouse_x,int mouse_y) const noexcept
@@ -704,6 +722,8 @@ void UiWindow::prune_tooltips()
             return true;
         if (!is_live_child_element(tooltip))
         {
+            if (UiElement* content = tooltip->content())
+                detach_tooltip_content(*content);
             if (tooltip->_window == this)
                 tooltip->_window = nullptr;
             return true;
@@ -732,7 +752,11 @@ void UiWindow::detach_window_registrations() noexcept
 
     for (UiTooltip* tooltip : _tooltips)
     {
-        if (tooltip && tooltip->_window == this)
+        if (!tooltip)
+            continue;
+        if (UiElement* content = tooltip->content())
+            detach_tooltip_content(*content);
+        if (tooltip->_window == this)
             tooltip->_window = nullptr;
     }
     _tooltips.clear();
@@ -1156,10 +1180,6 @@ bool UiWindow::uses_pointer_focus_policy(elysia::input::InputDevice device) noex
     return device == elysia::input::InputDevice::Mouse;
 }
 
-void UiWindow::apply_theme(const UiTheme& theme)
-{
-    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.window_style));
-}
 }
 
 

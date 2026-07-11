@@ -1,7 +1,6 @@
 #include "ui_drag_handle.h"
 
 #include "../style/ui_style_defaults.h"
-#include "../style/ui_theme.h"
 #include "../../core/render/render_command.h"
 
 #include <SDL.h>
@@ -61,7 +60,6 @@ UiDragHandle::UiDragHandle(
 void UiDragHandle::reset() noexcept
 {
     UiControl::reset();
-    set_use_theme(false);
     _config = UiDragHandleConfig{};
     _style_state.reset(UiStyleDefaults::drag_handle());
     _config.style = _style_state.effective_style();
@@ -168,6 +166,11 @@ void UiDragHandle::set_drag_handle_config(const UiDragHandleConfig& config)
 const UiDragHandleConfig& UiDragHandle::drag_handle_config() const noexcept
 {
     return _config;
+}
+
+void UiDragHandle::set_base_style(const UiDragHandleStyle& style) noexcept
+{
+    _style_state.set_base_style(style);
 }
 
 void UiDragHandle::set_style(const UiDragHandleStyle& style)
@@ -351,14 +354,4 @@ elysia::core::Color UiDragHandle::current_border_color() const noexcept
     return resolve_interactive_color(style().chrome.border,is_enabled(),is_focused(),_is_dragging);
 }
 
-void UiDragHandle::apply_theme(const UiTheme& theme)
-{
-    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.drag_handle_style));
-    _config.style = _style_state.effective_style();
-    _config.style.size = elysia::core::Vector2(
-        clamp_non_negative(_config.style.size.x),
-        clamp_non_negative(_config.style.size.y)
-    );
-    set_size(_config.style.size);
-}
 }

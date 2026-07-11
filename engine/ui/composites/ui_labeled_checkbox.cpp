@@ -1,12 +1,17 @@
 #include "ui_labeled_checkbox.h"
 
 #include "../style/ui_style_defaults.h"
-#include "../style/ui_theme.h"
 
 #include <algorithm>
 
 namespace elysia::ui
 {
+void UiLabeledCheckbox::set_base_styles(const UiCheckboxStyle& checkbox,const UiLabelStyle& label) noexcept
+{
+    _checkbox.set_base_style(checkbox);
+    _label.set_base_style(label);
+}
+
 UiLabeledCheckbox::UiLabeledCheckbox(const elysia::core::Rect& rect,int order) noexcept
     : UiControl(rect,order),_checkbox({},order),_label({},order) { reset(); }
 UiLabeledCheckbox::UiLabeledCheckbox(const elysia::core::Rect& rect,const UiLabeledCheckboxConfig& config,int order) noexcept
@@ -15,7 +20,6 @@ UiLabeledCheckbox::UiLabeledCheckbox(const elysia::core::Rect& rect,const UiLabe
 void UiLabeledCheckbox::reset() noexcept
 {
     UiControl::reset(); _checkbox.reset(); _label.reset();
-    _checkbox.set_use_theme(false); _label.set_use_theme(false);
     _text_content = {}; _typography_role = UiTypographyRole::CheckboxLabel;
     _label_placement = UiLabeledCheckboxLabelPlacement::Right;
     _text_placement = UiLabeledCheckboxTextPlacement::NearBox;
@@ -114,13 +118,5 @@ UiInputEvent UiLabeledCheckbox::event_for_indicator(const UiInputEvent& event) c
         && screen_rect().contains({ static_cast<float>(event.mouse_x),static_cast<float>(event.mouse_y) }))
     { const auto c = indicator_rect().center(); routed.mouse_x = static_cast<int>(c.x); routed.mouse_y = static_cast<int>(c.y); }
     return routed;
-}
-void UiLabeledCheckbox::apply_theme(const UiTheme& theme)
-{
-    _checkbox.set_style(apply_theme_colors(_checkbox.style(),theme.checkbox_style));
-    _theme_text_colors = UiEnabledDisabledColors{
-        theme.label(UiLabelThemeRole::Default).text,
-        theme.button(UiButtonThemeRole::Default).text.disabled
-    };
 }
 }

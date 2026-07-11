@@ -229,8 +229,9 @@ void UiContainerTestScene::reset()
 
 void UiContainerTestScene::register_theme_element(elysia::ui::UiElement& element)
 {
-    element.set_use_theme(true);
-    _theme_registrations.push_back(_theme_manager.register_element(element));
+    auto* root = dynamic_cast<elysia::ui::UiChildHost*>(&element);
+    if (root == _root_window)
+        _theme_registrations.push_back(_theme_manager.register_root(*root));
 }
 
 void UiContainerTestScene::refresh_theme_preview_styles()
@@ -286,10 +287,10 @@ void UiContainerTestScene::sync_theme_switch_button_roles() noexcept
         if (!button)
             return;
 
-        button->set_theme_role(
+        button->set_visual_role(
             current_theme == theme
-            ? elysia::ui::UiButtonThemeRole::Primary
-            : elysia::ui::UiButtonThemeRole::Default);
+            ? elysia::ui::UiButtonVisualRole::Primary
+            : elysia::ui::UiButtonVisualRole::Default);
     };
 
     sync_role(_blue_glass_moon_theme_button,elysia::ui::UiBuiltinTheme::BlueGlassMoon);
@@ -371,7 +372,7 @@ void UiContainerTestScene::rebuild_ui()
     register_themed(horizontal_scroll);
 
     auto horizontal_panel = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,760,180 });
-    horizontal_panel->set_theme_role(elysia::ui::UiPanelThemeRole::Dialog);
+    horizontal_panel->set_visual_role(elysia::ui::UiPanelVisualRole::Dialog);
 
     auto horizontal_button_0 = std::make_unique<elysia::ui::UiButton>(
         elysia::core::Rect{ 70,68,120,44 },
@@ -452,11 +453,11 @@ void UiContainerTestScene::rebuild_ui()
     register_themed(widget_scroll);
 
     auto widget_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,340,1620 });
-    widget_content->set_theme_role(elysia::ui::UiPanelThemeRole::Dialog);
+    widget_content->set_visual_role(elysia::ui::UiPanelVisualRole::Dialog);
     register_themed(widget_content.get());
 
     auto* non_modal_overlay = _root_window->create_child<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,260,128 });
-    non_modal_overlay->set_theme_role(elysia::ui::UiPanelThemeRole::Dialog);
+    non_modal_overlay->set_visual_role(elysia::ui::UiPanelVisualRole::Dialog);
     register_themed(non_modal_overlay);
     auto overlay_close_button = std::make_unique<elysia::ui::UiButton>(
         elysia::core::Rect{ 40,42,180,44 },
@@ -737,7 +738,7 @@ void UiContainerTestScene::rebuild_ui()
     auto* panel_tooltip = _root_window->create_child<elysia::ui::UiTooltip>(0);
     auto panel_tooltip_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,250,104 });
     panel_tooltip_content->set_padding(elysia::ui::UiLayoutPadding{ 10.0f,10.0f,10.0f,10.0f });
-    panel_tooltip_content->set_theme_role(elysia::ui::UiPanelThemeRole::Dialog);
+    panel_tooltip_content->set_visual_role(elysia::ui::UiPanelVisualRole::Dialog);
     auto panel_tooltip_label = std::make_unique<elysia::ui::UiLabel>(
         elysia::core::Rect{ 0,0,220,36 },0,elysia::ui::ui_raw_text("Moved composite UiPanel"));
     register_themed(panel_tooltip_label.get());

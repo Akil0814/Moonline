@@ -94,19 +94,27 @@ UiElement* UiTooltip::set_content(std::unique_ptr<UiElement> content)
         return nullptr;
     }
     hide();
+    if (_window && _content)
+        _window->detach_tooltip_content(*_content);
     _content = std::move(content);
+    if (_window)
+        _window->attach_tooltip_content(*_content);
     return _content.get();
 }
 
 std::unique_ptr<UiElement> UiTooltip::release_content() noexcept
 {
     hide();
+    if (_window && _content)
+        _window->detach_tooltip_content(*_content);
     return std::move(_content);
 }
 
 void UiTooltip::clear_content() noexcept
 {
     hide();
+    if (_window && _content)
+        _window->detach_tooltip_content(*_content);
     _content.reset();
 }
 

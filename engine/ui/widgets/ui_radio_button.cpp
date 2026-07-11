@@ -1,7 +1,6 @@
 #include "ui_radio_button.h"
 
 #include "../style/ui_style_defaults.h"
-#include "../style/ui_theme.h"
 #include "../../audio/audio_service.h"
 #include "../../core/render/render_command.h"
 
@@ -95,6 +94,11 @@ void UiRadioButton::select() { (void)select_internal(true); }
 void UiRadioButton::set_on_selected(UiRadioButtonSelectedCallback callback) { _on_selected = std::move(callback); }
 void UiRadioButton::set_sounds(const UiRadioButtonSounds& sounds) { _sounds = sounds; }
 void UiRadioButton::clear_sounds() noexcept { _sounds.reset(); }
+void UiRadioButton::set_base_style(const UiRadioButtonStyle& style) noexcept
+{
+    _style_state.set_base_style(style);
+}
+
 void UiRadioButton::set_style(const UiRadioButtonStyle& style) noexcept { _style_state.set_style_override(style); }
 const UiRadioButtonStyle& UiRadioButton::style() const noexcept { return _style_state.effective_style(); }
 void UiRadioButton::clear_style_override() noexcept { _style_state.clear_style_override(); }
@@ -118,5 +122,4 @@ elysia::core::Color UiRadioButton::border_color() const noexcept
     return resolve_interactive_color(style().chrome.border,is_enabled(),is_focused(),_pushed);
 }
 elysia::core::Color UiRadioButton::mark_color() const noexcept { return resolve_enabled_disabled_color(style().mark,is_enabled()); }
-void UiRadioButton::apply_theme(const UiTheme& theme) { _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.radio_button_style)); }
 }

@@ -1,7 +1,6 @@
 #include "ui_bar.h"
 
 #include "../style/ui_style_defaults.h"
-#include "../style/ui_theme.h"
 #include "../../core/render/render_command.h"
 
 #include <algorithm>
@@ -34,7 +33,7 @@ void UiBar::reset() noexcept
     _max_value = 1.0f;
     _value = 0.0f;
     _style_state.reset(UiStyleDefaults::bar());
-    _theme_role = UiBarThemeRole::Default;
+    _visual_role = UiBarVisualRole::Default;
     _fill_direction = BarFillDirection::LeftToRight;
     _padding = 0;
 }
@@ -84,6 +83,11 @@ float UiBar::ratio() const
     return (_value - _min_value) / range;
 }
 
+void UiBar::set_base_style(const UiBarStyle& style) noexcept
+{
+    _style_state.set_base_style(style);
+}
+
 void UiBar::set_style(const UiBarStyle& style) noexcept
 {
     _style_state.set_style_override(style);
@@ -104,15 +108,15 @@ void UiBar::clear_style_override() noexcept
     _style_state.clear_style_override();
 }
 
-void UiBar::set_theme_role(UiBarThemeRole role) noexcept
+void UiBar::set_visual_role(UiBarVisualRole role) noexcept
 {
-    _theme_role = role;
-    request_theme_reapply();
+    _visual_role = role;
+    notify_base_style_invalidated();
 }
 
-UiBarThemeRole UiBar::theme_role() const noexcept
+UiBarVisualRole UiBar::visual_role() const noexcept
 {
-    return _theme_role;
+    return _visual_role;
 }
 
 void UiBar::set_fill_direction(BarFillDirection direction)
@@ -207,10 +211,6 @@ elysia::core::Rect UiBar::fill_rect(const elysia::core::Rect& rect) const
     return fill;
 }
 
-void UiBar::apply_theme(const UiTheme& theme)
-{
-    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.bar(_theme_role)));
-}
 
 }
 

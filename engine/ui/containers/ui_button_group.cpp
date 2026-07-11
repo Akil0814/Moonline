@@ -184,13 +184,13 @@ void UiButtonGroup::refresh_button_styles() noexcept
         if (!button)
             continue;
 
-        const UiButtonThemeRole role = button == _selected_button
-            ? UiButtonThemeRole::Primary
-            : UiButtonThemeRole::Default;
-        if (button->theme_role() == role)
+        const UiButtonVisualRole role = button == _selected_button
+            ? UiButtonVisualRole::Primary
+            : UiButtonVisualRole::Default;
+        if (button->visual_role() == role)
             continue;
 
-        button->set_theme_role(role);
+        button->set_visual_role(role);
     }
 }
 

@@ -26,6 +26,7 @@ public:
 
     void reset() noexcept override;
 
+    void set_base_style(const UiWindowStyle& style) noexcept;
     void set_style(const UiWindowStyle& style) noexcept;
     [[nodiscard]] const UiWindowStyle& style() const noexcept;
     [[nodiscard]] bool has_style_override() const noexcept;
@@ -76,9 +77,11 @@ public:
 protected:
     // Rebuilds child layout and reapplies overlay placement after size changes.
     void rebuild_layout() override;
-    void apply_theme(const UiTheme& theme) override;
 
 private:
+    friend class UiTooltip;
+    void attach_tooltip_content(UiElement& content);
+    void detach_tooltip_content(UiElement& content) noexcept;
     // Stores one registered focus scope plus its directional window neighbors.
     struct ScopeEntry
     {
