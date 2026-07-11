@@ -182,11 +182,15 @@ std::unique_ptr<elysia::ui::UiLabeledRadioButton> make_radio_button(
     const elysia::core::Rect& rect,
     const char* text_key,
     bool selected,
-    const char* scope
+    const char* scope,
+    elysia::ui::UiLabeledRadioLabelPlacement label_placement = elysia::ui::UiLabeledRadioLabelPlacement::Right,
+    elysia::ui::UiLabeledRadioTextPlacement text_placement = elysia::ui::UiLabeledRadioTextPlacement::NearIndicator
 )
 {
     elysia::ui::UiLabeledRadioButtonConfig config{};
     config.text_content = elysia::ui::ui_text_key(text_key);
+    config.label_placement = label_placement;
+    config.text_placement = text_placement;
     auto radio_button = std::make_unique<elysia::ui::UiLabeledRadioButton>(rect,config,0);
     radio_button->set_selected(selected);
     radio_button->set_on_selected([scope]()
@@ -570,12 +574,16 @@ void UiContainerTestScene::rebuild_ui()
         elysia::core::Rect{ 0,0,240,38 },
         "menu_scene.settings",
         true,
-        "widget-vertical")));
+        "widget-vertical",
+        elysia::ui::UiLabeledRadioLabelPlacement::Left,
+        elysia::ui::UiLabeledRadioTextPlacement::NearIndicator)));
     register_themed(vertical_radio_group->add_back(make_radio_button(
         elysia::core::Rect{ 0,0,240,38 },
         "menu_scene.about",
         false,
-        "widget-vertical")));
+        "widget-vertical",
+        elysia::ui::UiLabeledRadioLabelPlacement::Right,
+        elysia::ui::UiLabeledRadioTextPlacement::FarEdge)));
     widget_content->add_child(std::move(vertical_radio_group),elysia::ui::UiPanelInsertDirection::Down);
 
     auto horizontal_radio_group = std::make_unique<elysia::ui::UiRadioGroup>(elysia::core::Rect{ 18,452,280,54 });

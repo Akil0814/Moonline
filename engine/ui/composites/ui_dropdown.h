@@ -36,7 +36,7 @@ public:
     explicit UiDropdown(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0) noexcept;
     UiDropdown(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order = 0) noexcept;
     UiDropdown(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order = 0) noexcept;
-    ~UiDropdown() override = default;
+    ~UiDropdown() override;
 
     void reset() noexcept override;
     void set_enabled(bool enabled) override;

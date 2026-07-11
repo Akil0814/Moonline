@@ -20,6 +20,7 @@ void UiLabeledRadioButton::reset() noexcept
 {
     UiControl::reset(); _radio.reset(); _label.reset(); _radio.set_use_theme(false); _label.set_use_theme(false);
     _text_content = {}; _typography_role = UiTypographyRole::RadioLabel;
+    _text_colors = UiStyleDefaults::labeled_checkbox_text();
     _label_placement = UiLabeledRadioLabelPlacement::Right; _text_placement = UiLabeledRadioTextPlacement::NearIndicator; _label_spacing = 8.0f;
 }
 void UiLabeledRadioButton::set_enabled(bool enabled) { UiControl::set_enabled(enabled); _radio.set_enabled(enabled); }
@@ -48,7 +49,25 @@ void UiLabeledRadioButton::sync_children() const
 {
     _radio.set_screen_rect(indicator_rect()); _radio.set_visible(is_visible()); _radio.set_active(is_active()); _radio.set_enabled(is_enabled()); _radio.set_focused(is_focused()); _radio.set_opacity(opacity());
     _label.set_screen_rect(label_rect()); _label.set_visible(is_visible()); _label.set_active(is_active()); _label.set_opacity(opacity()); _label.set_text_content(_text_content); _label.set_typography_role(_typography_role);
-    auto style = UiStyleDefaults::label(); style.draw_background = false; _label.set_style(style);
+    auto style = UiStyleDefaults::label();
+    style.draw_background = false;
+    style.text = is_enabled() ? _text_colors.enabled : _text_colors.disabled;
+    _label.set_style(style);
+    _label.set_vertical_align(TextVerticalAlign::Center);
+    if (_label_placement == UiLabeledRadioLabelPlacement::Left)
+    {
+        _label.set_horizontal_align(
+            _text_placement == UiLabeledRadioTextPlacement::NearIndicator
+                ? TextHorizontalAlign::Right
+                : TextHorizontalAlign::Left);
+    }
+    else
+    {
+        _label.set_horizontal_align(
+            _text_placement == UiLabeledRadioTextPlacement::NearIndicator
+                ? TextHorizontalAlign::Left
+                : TextHorizontalAlign::Right);
+    }
 }
 elysia::core::Rect UiLabeledRadioButton::indicator_rect() const noexcept
 {
@@ -57,10 +76,16 @@ elysia::core::Rect UiLabeledRadioButton::indicator_rect() const noexcept
 }
 elysia::core::Rect UiLabeledRadioButton::label_rect() const noexcept
 {
-    const auto& r = screen_rect(); const auto indicator = indicator_rect();
+    const auto& r = screen_rect();
+    const auto indicator = indicator_rect();
+    const float spacing = _text_content.empty() ? 0.0f : _label_spacing;
     if (_label_placement == UiLabeledRadioLabelPlacement::Left)
-    { const float right = _text_placement == UiLabeledRadioTextPlacement::NearIndicator ? indicator.x() - _label_spacing : r.right(); return { r.x(),r.y(),std::max(0.0f,right-r.x()),r.height() }; }
-    const float left = _text_placement == UiLabeledRadioTextPlacement::NearIndicator ? indicator.right() + _label_spacing : r.x(); return { left,r.y(),std::max(0.0f,r.right()-left),r.height() };
+    {
+        const float right = indicator.x() - spacing;
+        return { r.x(),r.y(),std::max(0.0f,right-r.x()),r.height() };
+    }
+    const float left = indicator.right() + spacing;
+    return { left,r.y(),std::max(0.0f,r.right()-left),r.height() };
 }
 UiInputEvent UiLabeledRadioButton::routed_event(const UiInputEvent& event) const noexcept
 {
@@ -73,5 +98,9 @@ UiInputEvent UiLabeledRadioButton::routed_event(const UiInputEvent& event) const
 void UiLabeledRadioButton::apply_theme(const UiTheme& theme)
 {
     _radio.set_style(apply_theme_colors(_radio.style(),theme.radio_button_style));
+    _text_colors = UiEnabledDisabledColors{
+        theme.label(UiLabelThemeRole::Default).text,
+        theme.button(UiButtonThemeRole::Default).text.disabled
+    };
 }
 }

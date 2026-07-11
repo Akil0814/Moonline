@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.20)
 project(MoonLine LANGUAGES C CXX)
 
+include(CTest)
+option(MOONLINE_ENABLE_ASAN "Enable AddressSanitizer for project targets" OFF)
+
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -134,6 +137,26 @@ add_subdirectory(thirdparty/imgui)
 add_subdirectory(application)
 add_subdirectory(engine)
 add_subdirectory(gameplay)
+
+if(MOONLINE_ENABLE_ASAN AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    include(CheckCXXSourceCompiles)
+    set(CMAKE_REQUIRED_FLAGS "-fsanitize=address -fno-omit-frame-pointer")
+    set(CMAKE_REQUIRED_LINK_OPTIONS "-fsanitize=address")
+    check_cxx_source_compiles("int main() { return 0; }" MOONLINE_ASAN_AVAILABLE)
+    unset(CMAKE_REQUIRED_FLAGS)
+    unset(CMAKE_REQUIRED_LINK_OPTIONS)
+    if(NOT MOONLINE_ASAN_AVAILABLE)
+        message(FATAL_ERROR "MOONLINE_ENABLE_ASAN=ON, but this compiler has no usable AddressSanitizer runtime.")
+    endif()
+    foreach(MOONLINE_ASAN_TARGET engine_lib gameplay_lib app_lib)
+        target_compile_options(${MOONLINE_ASAN_TARGET} PRIVATE -fsanitize=address -fno-omit-frame-pointer)
+        target_link_options(${MOONLINE_ASAN_TARGET} INTERFACE -fsanitize=address)
+    endforeach()
+endif()
+
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
 
 add_executable(MoonLine "main.cpp")
 

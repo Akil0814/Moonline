@@ -35,6 +35,11 @@ UiDropdown::UiDropdown(
     const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order) noexcept
     : UiDropdown(elysia::core::Rect::from_center(center,size),order) {}
 
+UiDropdown::~UiDropdown()
+{
+    unregister_as_transient_popup();
+}
+
 void UiDropdown::reset() noexcept
 {
     unregister_as_transient_popup();

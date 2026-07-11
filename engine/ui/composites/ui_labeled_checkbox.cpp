@@ -19,7 +19,8 @@ void UiLabeledCheckbox::reset() noexcept
     _text_content = {}; _typography_role = UiTypographyRole::CheckboxLabel;
     _label_placement = UiLabeledCheckboxLabelPlacement::Right;
     _text_placement = UiLabeledCheckboxTextPlacement::NearBox;
-    _text_colors = UiStyleDefaults::labeled_checkbox_text();
+    _theme_text_colors = UiStyleDefaults::labeled_checkbox_text();
+    _text_colors_override.reset();
     _label_spacing = 8.0f; _indicator_padding = 4; _label_padding = 0;
 }
 void UiLabeledCheckbox::set_enabled(bool enabled) { UiControl::set_enabled(enabled); _checkbox.set_enabled(enabled); }
@@ -43,7 +44,7 @@ void UiLabeledCheckbox::set_labeled_checkbox_config(const UiLabeledCheckboxConfi
     _checkbox.set_checkbox_config(config.checkbox); _text_content = config.text_content;
     _label_placement = config.label_placement; _label_spacing = std::max(0.0f,config.label_spacing);
     _text_placement = config.text_placement;
-    _text_colors = config.text_colors.value_or(UiStyleDefaults::labeled_checkbox_text());
+    _text_colors_override = config.text_colors;
 }
 void UiLabeledCheckbox::set_state(UiCheckboxState state) noexcept { _checkbox.set_state(state); }
 UiCheckboxState UiLabeledCheckbox::state() const noexcept { return _checkbox.state(); }
@@ -65,8 +66,28 @@ void UiLabeledCheckbox::sync_children() const
     _checkbox.set_enabled(is_enabled()); _checkbox.set_focused(is_focused()); _checkbox.set_opacity(opacity());
     _label.set_screen_rect(label_rect()); _label.set_visible(is_visible()); _label.set_active(is_active()); _label.set_opacity(opacity());
     _label.set_text_content(_text_content); _label.set_typography_role(_typography_role); _label.set_padding(_label_padding);
-    auto style = UiStyleDefaults::label(); style.draw_background = false;
-    style.text = is_enabled() ? _text_colors.enabled : _text_colors.disabled; _label.set_style(style);
+    const UiEnabledDisabledColors& text_colors = _text_colors_override
+        ? *_text_colors_override
+        : _theme_text_colors;
+    auto style = UiStyleDefaults::label();
+    style.draw_background = false;
+    style.text = is_enabled() ? text_colors.enabled : text_colors.disabled;
+    _label.set_style(style);
+    _label.set_vertical_align(TextVerticalAlign::Center);
+    if (_label_placement == UiLabeledCheckboxLabelPlacement::Left)
+    {
+        _label.set_horizontal_align(
+            _text_placement == UiLabeledCheckboxTextPlacement::NearBox
+                ? TextHorizontalAlign::Right
+                : TextHorizontalAlign::Left);
+    }
+    else
+    {
+        _label.set_horizontal_align(
+            _text_placement == UiLabeledCheckboxTextPlacement::NearBox
+                ? TextHorizontalAlign::Left
+                : TextHorizontalAlign::Right);
+    }
 }
 elysia::core::Rect UiLabeledCheckbox::indicator_rect() const noexcept
 {
@@ -75,13 +96,15 @@ elysia::core::Rect UiLabeledCheckbox::indicator_rect() const noexcept
 }
 elysia::core::Rect UiLabeledCheckbox::label_rect() const noexcept
 {
-    const auto& r = screen_rect(); const auto box = indicator_rect();
+    const auto& r = screen_rect();
+    const auto box = indicator_rect();
+    const float spacing = _text_content.empty() ? 0.0f : _label_spacing;
     if (_label_placement == UiLabeledCheckboxLabelPlacement::Left)
     {
-        const float right = _text_placement == UiLabeledCheckboxTextPlacement::NearBox ? box.x() - _label_spacing : r.right();
+        const float right = box.x() - spacing;
         return { r.x(),r.y(),std::max(0.0f,right - r.x()),r.height() };
     }
-    const float left = _text_placement == UiLabeledCheckboxTextPlacement::NearBox ? box.right() + _label_spacing : r.x();
+    const float left = box.right() + spacing;
     return { left,r.y(),std::max(0.0f,r.right() - left),r.height() };
 }
 UiInputEvent UiLabeledCheckbox::event_for_indicator(const UiInputEvent& event) const noexcept
@@ -95,5 +118,9 @@ UiInputEvent UiLabeledCheckbox::event_for_indicator(const UiInputEvent& event) c
 void UiLabeledCheckbox::apply_theme(const UiTheme& theme)
 {
     _checkbox.set_style(apply_theme_colors(_checkbox.style(),theme.checkbox_style));
+    _theme_text_colors = UiEnabledDisabledColors{
+        theme.label(UiLabelThemeRole::Default).text,
+        theme.button(UiButtonThemeRole::Default).text.disabled
+    };
 }
 }

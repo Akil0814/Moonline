@@ -50,6 +50,7 @@ private:
     mutable UiLabel _label;
     UiTextContent _text_content;
     UiTypographyRole _typography_role = UiTypographyRole::RadioLabel;
+    UiEnabledDisabledColors _text_colors{};
     UiLabeledRadioLabelPlacement _label_placement = UiLabeledRadioLabelPlacement::Right;
     UiLabeledRadioTextPlacement _text_placement = UiLabeledRadioTextPlacement::NearIndicator;
     float _label_spacing = 8.0f;

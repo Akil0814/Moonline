@@ -62,7 +62,8 @@ private:
     UiTypographyRole _typography_role = UiTypographyRole::CheckboxLabel;
     UiLabeledCheckboxLabelPlacement _label_placement = UiLabeledCheckboxLabelPlacement::Right;
     UiLabeledCheckboxTextPlacement _text_placement = UiLabeledCheckboxTextPlacement::NearBox;
-    UiEnabledDisabledColors _text_colors{};
+    UiEnabledDisabledColors _theme_text_colors{};
+    std::optional<UiEnabledDisabledColors> _text_colors_override;
     float _label_spacing = 8.0f;
     int _indicator_padding = 4;
     int _label_padding = 0;
