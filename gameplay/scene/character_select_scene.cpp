@@ -114,7 +114,7 @@ namespace arcneco::scene
             .close = elysia::ui::ui_text_key("menu_scene.exit_confirm.close")
         });
         _exit_confirmation->set_on_confirm([this]() {
-            Scene::request_scene_switch(AppSceneKeys::MainMenu, MainMeunEnterPayload{ .play_theme_music = true });
+            Scene::request_scene_switch(AppSceneKeys::MainMenu, MainMeunEnterPayload{ .replay_theme_music = true });
         });
         _exit_confirmation->register_as_overlay(*_main_window);
     }
@@ -168,6 +168,9 @@ namespace arcneco::scene
                         .content = elysia::ui::UiButtonIconContent{ avatar_tex }
                     }
                 );
+                auto button_style = character_button->style();
+                button_style.chrome.draw_background = false;
+                character_button->set_style(button_style);
                 _character_button_keys.push_back(character_key);
                 button_group->add_button(std::move(character_button));
             }
