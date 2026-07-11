@@ -1,7 +1,5 @@
 #include "ui_button_group.h"
 
-#include "../style/ui_style_defaults.h"
-
 #include <utility>
 
 namespace elysia::ui
@@ -22,6 +20,7 @@ void UiButtonGroup::reset() noexcept
     _on_selection_changed = nullptr;
     _auto_select_first = true;
     _is_syncing_selection = false;
+    _selection_notification_pending = false;
 }
 
 void UiButtonGroup::update(double delta)
@@ -56,7 +55,7 @@ void UiButtonGroup::submit_ui_render_commands(std::vector<elysia::core::UiRender
 {
     auto* self = const_cast<UiButtonGroup*>(this);
     self->cleanup_destroyed_children();
-    self->sync_selection(true);
+    self->sync_selection(false);
     UiListContainer::submit_ui_render_commands(out_commands);
 }
 
@@ -167,8 +166,14 @@ void UiButtonGroup::sync_selection(bool notify)
     refresh_button_styles();
     _is_syncing_selection = false;
 
-    if (notify && previous_selected != _selected_button)
+    const bool changed = previous_selected != _selected_button;
+    if (changed && !notify)
+        _selection_notification_pending = true;
+    if (notify && (changed || _selection_notification_pending))
+    {
+        _selection_notification_pending = false;
         notify_selection_changed();
+    }
 }
 
 void UiButtonGroup::refresh_button_styles() noexcept
@@ -185,19 +190,13 @@ void UiButtonGroup::refresh_button_styles() noexcept
         if (button->theme_role() == role)
             continue;
 
-        // Buttons are not necessarily registered with a UiThemeManager. Apply the role's
-        // fallback theme colors directly so the selected state is always visible.
-        UiButtonStyle style = UiStyleDefaults::button();
-        style = apply_theme_colors(style,UiStyleDefaults::theme().button(role));
-        style.chrome.draw_background = true;
-        style.chrome.draw_border = true;
-        button->set_style(style);
         button->set_theme_role(role);
     }
 }
 
 void UiButtonGroup::notify_selection_changed()
 {
+    _selection_notification_pending = false;
     if (_on_selection_changed)
         _on_selection_changed(selected_index());
 }

@@ -16,9 +16,10 @@ UiRadioGroup::UiRadioGroup(const elysia::core::Vector2& center,const elysia::cor
 void UiRadioGroup::reset() noexcept
 {
     UiListContainer::reset();
-    _selected_index.reset();
+    _selected_button = nullptr;
     _on_selection_changed = nullptr;
     _is_syncing_selection = false;
+    _selection_notification_pending = false;
 }
 
 void UiRadioGroup::update(double delta)
@@ -47,16 +48,13 @@ void UiRadioGroup::submit_ui_render_commands(std::vector<elysia::core::UiRenderC
 {
     auto* self = const_cast<UiRadioGroup*>(this);
     self->cleanup_destroyed_children();
-    self->sync_selection(true);
+    self->sync_selection(false);
     UiListContainer::submit_ui_render_commands(out_commands);
 }
 
 std::optional<std::size_t> UiRadioGroup::selected_index() const noexcept
 {
-    auto* self = const_cast<UiRadioGroup*>(this);
-    self->cleanup_destroyed_children();
-    self->sync_selection(false);
-    return _selected_index;
+    return find_radio_index(_selected_button);
 }
 
 bool UiRadioGroup::set_selected_index(std::size_t index)
@@ -75,7 +73,7 @@ bool UiRadioGroup::set_selected_index(std::size_t index)
     }
 
     sync_selection(true);
-    return _selected_index && *_selected_index == index;
+    return _selected_button == target;
 }
 
 void UiRadioGroup::set_on_selection_changed(UiRadioGroupSelectionChangedCallback on_selection_changed)
@@ -90,9 +88,9 @@ void UiRadioGroup::sync_selection(bool notify)
 
     _is_syncing_selection = true;
 
-    std::optional<std::size_t> first_selected = std::nullopt;
-    std::optional<std::size_t> first_radio = std::nullopt;
-    std::optional<std::size_t> preferred_selected = std::nullopt;
+    UiRadioButton* first_selected = nullptr;
+    UiRadioButton* first_radio = nullptr;
+    UiRadioButton* preferred_selected = nullptr;
 
     if (UiControl* focused = UiListContainer::focused_target())
     {
@@ -101,7 +99,7 @@ void UiRadioGroup::sync_selection(bool notify)
             UiRadioItem* button = radio_item_at(index);
             if (button && &button->radio_item_element() == focused)
             {
-                preferred_selected = index;
+                preferred_selected = button;
                 break;
             }
         }
@@ -114,12 +112,12 @@ void UiRadioGroup::sync_selection(bool notify)
             continue;
 
         if (!first_radio)
-            first_radio = index;
+            first_radio = button;
 
         if (button->is_selected())
         {
             if (!first_selected)
-                first_selected = index;
+                first_selected = button;
         }
     }
 
@@ -138,7 +136,7 @@ void UiRadioGroup::sync_selection(bool notify)
         UiRadioItem* button = radio_item_at(index);
         if (!button || !button->is_selected())
             continue;
-        if (!keep_selected || index != *keep_selected)
+        if (button != keep_selected)
             button->set_selected(false);
     }
 
@@ -151,13 +149,32 @@ void UiRadioGroup::sync_selection(bool notify)
         }
     }
 
-    const std::optional<std::size_t> previous = _selected_index;
-    _selected_index = keep_selected;
+    UiRadioButton* previous = _selected_button;
+    _selected_button = keep_selected;
 
     _is_syncing_selection = false;
 
-    if (notify && previous != _selected_index && _on_selection_changed)
-        _on_selection_changed(_selected_index);
+    const bool changed = previous != _selected_button;
+    if (changed && !notify)
+        _selection_notification_pending = true;
+    if (notify && (changed || _selection_notification_pending))
+    {
+        _selection_notification_pending = false;
+        if (_on_selection_changed)
+            _on_selection_changed(selected_index());
+    }
+}
+
+std::optional<std::size_t> UiRadioGroup::find_radio_index(const UiRadioButton* button) const noexcept
+{
+    if (!button)
+        return std::nullopt;
+    for (std::size_t index = 0; index < child_count(); ++index)
+    {
+        if (radio_button_at(index) == button)
+            return index;
+    }
+    return std::nullopt;
 }
 
 UiRadioItem* UiRadioGroup::radio_item_at(std::size_t index) const noexcept

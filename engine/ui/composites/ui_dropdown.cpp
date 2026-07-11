@@ -37,6 +37,7 @@ UiDropdown::UiDropdown(
 
 void UiDropdown::reset() noexcept
 {
+    unregister_as_transient_popup();
     UiControl::reset();
     set_use_theme(false);
 
@@ -274,6 +275,14 @@ bool UiDropdown::contains_transient_popup_point(int mouse_x,int mouse_y) const n
 
 void UiDropdown::close_transient_popup() noexcept
 {
+    close();
+}
+
+void UiDropdownButtonSet::on_transient_popup_window_detached(UiWindow& window) noexcept
+{
+    if (_window != &window)
+        return;
+    _window = nullptr;
     close();
 }
 

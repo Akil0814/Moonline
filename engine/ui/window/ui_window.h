@@ -90,6 +90,7 @@ private:
     struct OverlayEntry
     {
         UiElement* element = nullptr;
+        UiOverlayWindowClient* client = nullptr;
         UiOverlayOptions options;
         UiFocusScope* restore_focus_scope = nullptr;
     };
@@ -107,6 +108,8 @@ private:
     void prune_overlays();
     void prune_transient_popups();
     void prune_tooltips();
+    // Breaks every reverse registration before reset/destruction releases children.
+    void detach_window_registrations() noexcept;
     // Repairs scope focus after scope removal, disablement, or overlay changes.
     void ensure_valid_scope_focus();
     // Pushes window-level focus state into registered scopes.

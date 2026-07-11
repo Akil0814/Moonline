@@ -75,20 +75,12 @@ UiWindow::UiWindow(const elysia::core::Vector2& center,const elysia::core::Vecto
 
 UiWindow::~UiWindow()
 {
-    for (UiTooltip* tooltip : _tooltips)
-        if (tooltip)
-            tooltip->_window = nullptr;
-    _tooltips.clear();
-    _active_transient_popup = nullptr;
-    _transient_popups.clear();
+    detach_window_registrations();
 }
 
 void UiWindow::reset() noexcept
 {
-    for (UiTooltip* tooltip : _tooltips)
-        if (tooltip)
-            tooltip->_window = nullptr;
-    _tooltips.clear();
+    detach_window_registrations();
     UiChildHost::reset();
     _scope_entries.clear();
     _overlay_entries.clear();
@@ -232,7 +224,8 @@ void UiWindow::register_overlay(UiElement& element,UiOverlayOptions options)
     }
     else
     {
-        _overlay_entries.push_back(OverlayEntry{ &element,options });
+        _overlay_entries.push_back(OverlayEntry{
+            &element,dynamic_cast<UiOverlayWindowClient*>(&element),options });
         OverlayEntry& added = _overlay_entries.back();
         element.set_order(options.order);
         sync_overlay_visibility(added);
@@ -252,10 +245,22 @@ void UiWindow::register_overlay(UiElement& element,UiOverlayOptions options)
 
 void UiWindow::unregister_overlay(UiElement& element)
 {
+    UiOverlayWindowClient* client = nullptr;
+    const bool registered = std::any_of(_overlay_entries.begin(),_overlay_entries.end(),[&](const OverlayEntry& entry)
+    {
+        if (entry.element == &element)
+            client = entry.client;
+        return entry.element == &element;
+    });
     _overlay_entries.erase(std::remove_if(_overlay_entries.begin(),_overlay_entries.end(),[&element](const OverlayEntry& entry)
     {
         return entry.element == &element;
     }),_overlay_entries.end());
+    if (registered)
+    {
+        if (client)
+            client->on_overlay_window_detached(*this);
+    }
 }
 
 void UiWindow::set_overlay_open(UiElement& element,bool open)
@@ -312,6 +317,10 @@ void UiWindow::register_transient_popup(UiTransientPopup& popup)
 
 void UiWindow::unregister_transient_popup(UiTransientPopup& popup)
 {
+    const bool registered = std::any_of(_transient_popups.begin(),_transient_popups.end(),[&popup](const TransientPopupEntry& entry)
+    {
+        return entry.popup == &popup;
+    });
     _transient_popups.erase(std::remove_if(_transient_popups.begin(),_transient_popups.end(),[&popup](const TransientPopupEntry& entry)
     {
         return entry.popup == &popup;
@@ -321,6 +330,8 @@ void UiWindow::unregister_transient_popup(UiTransientPopup& popup)
         _active_transient_popup = nullptr;
         _transient_popup_pointer_active = false;
     }
+    if (registered)
+        popup.on_transient_popup_window_detached(*this);
 }
 
 void UiWindow::activate_transient_popup(UiTransientPopup& popup)
@@ -637,7 +648,17 @@ void UiWindow::prune_overlays()
 {
     _overlay_entries.erase(std::remove_if(_overlay_entries.begin(),_overlay_entries.end(),[this](const OverlayEntry& entry)
     {
-        return !entry.element || entry.element->is_destroyed() || !is_live_child_element(entry.element);
+        if (!entry.element || !is_live_child_element(entry.element))
+        {
+            if (entry.client)
+                entry.client->on_overlay_window_detached(*this);
+            return true;
+        }
+        if (!entry.element->is_destroyed())
+            return false;
+        if (entry.client)
+            entry.client->on_overlay_window_detached(*this);
+        return true;
     }),_overlay_entries.end());
 }
 
@@ -645,7 +666,17 @@ void UiWindow::prune_transient_popups()
 {
     _transient_popups.erase(std::remove_if(_transient_popups.begin(),_transient_popups.end(),[this](const TransientPopupEntry& entry)
     {
-        return !entry.popup || !is_live_child_element(entry.owner);
+        if (!entry.popup)
+            return true;
+        if (!entry.owner || !is_live_child_element(entry.owner))
+        {
+            entry.popup->on_transient_popup_window_detached(*this);
+            return true;
+        }
+        if (!entry.owner->is_destroyed())
+            return false;
+        entry.popup->on_transient_popup_window_detached(*this);
+        return true;
     }),_transient_popups.end());
 
     if (_active_transient_popup
@@ -663,13 +694,48 @@ void UiWindow::prune_tooltips()
 {
     for (UiTooltip* tooltip : _tooltips)
     {
-        if (tooltip && tooltip->trigger() && !is_live_child_element(tooltip->trigger()))
+        if (tooltip && is_live_child_element(tooltip)
+            && tooltip->trigger() && !is_live_child_element(tooltip->trigger()))
             tooltip->clear_trigger();
     }
     _tooltips.erase(std::remove_if(_tooltips.begin(),_tooltips.end(),[this](UiTooltip* tooltip)
     {
-        return !tooltip || tooltip->is_destroyed() || !is_live_child_element(tooltip);
+        if (!tooltip)
+            return true;
+        if (!is_live_child_element(tooltip))
+        {
+            if (tooltip->_window == this)
+                tooltip->_window = nullptr;
+            return true;
+        }
+        return tooltip->is_destroyed();
     }),_tooltips.end());
+}
+
+void UiWindow::detach_window_registrations() noexcept
+{
+    for (OverlayEntry& entry : _overlay_entries)
+    {
+        if (entry.client)
+            entry.client->on_overlay_window_detached(*this);
+    }
+    _overlay_entries.clear();
+
+    for (TransientPopupEntry& entry : _transient_popups)
+    {
+        if (entry.popup)
+            entry.popup->on_transient_popup_window_detached(*this);
+    }
+    _transient_popups.clear();
+    _active_transient_popup = nullptr;
+    _transient_popup_pointer_active = false;
+
+    for (UiTooltip* tooltip : _tooltips)
+    {
+        if (tooltip && tooltip->_window == this)
+            tooltip->_window = nullptr;
+    }
+    _tooltips.clear();
 }
 
 void UiWindow::ensure_valid_scope_focus()

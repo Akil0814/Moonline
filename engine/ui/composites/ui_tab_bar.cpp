@@ -1,6 +1,5 @@
 #include "ui_tab_bar.h"
 
-#include "../style/ui_style_defaults.h"
 #include "../widgets/ui_button.h"
 
 namespace elysia::ui
@@ -159,12 +158,8 @@ void UiTabBar::refresh_styles()
         if (!button)
             continue;
         const UiButtonThemeRole role = button == _selected ? UiButtonThemeRole::Primary : UiButtonThemeRole::Default;
-        UiButtonStyle style = UiStyleDefaults::button();
-        style = apply_theme_colors(style,UiStyleDefaults::theme().button(role));
-        style.chrome.draw_background = true;
-        style.chrome.draw_border = true;
-        button->set_style(style);
-        button->set_theme_role(role);
+        if (button->theme_role() != role)
+            button->set_theme_role(role);
     }
 }
 }

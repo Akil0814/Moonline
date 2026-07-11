@@ -52,5 +52,6 @@ private:
     UiButtonGroupSelectionChangedCallback _on_selection_changed;
     bool _auto_select_first = true;
     bool _is_syncing_selection = false;
+    bool _selection_notification_pending = false;
 };
 }

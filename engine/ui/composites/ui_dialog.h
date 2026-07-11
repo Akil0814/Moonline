@@ -6,6 +6,7 @@
 #include "../style/ui_theme_roles.h"
 #include "../style/ui_visual_styles.h"
 #include "../text/ui_text_content.h"
+#include "../window/ui_overlay.h"
 
 namespace elysia::ui
 {
@@ -19,13 +20,13 @@ class UiTextBlock;
 
 // Reading-oriented overlay composite with a scrollable body and one dismiss action.
 // Internal controls opt out of direct theme registration; apply_theme() forwards one theme snapshot.
-class UiDialog : public UiControlFocusScopeHost, private UiDelegatedFocusMixin
+class UiDialog : public UiControlFocusScopeHost, public UiOverlayWindowClient, private UiDelegatedFocusMixin
 {
 public:
     explicit UiDialog(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0) noexcept;
     UiDialog(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order = 0) noexcept;
     UiDialog(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order = 0) noexcept;
-    ~UiDialog() override = default;
+    ~UiDialog() override;
 
     void reset() noexcept override;
     void update(double delta) override;
@@ -58,6 +59,8 @@ public:
 
     // The parent UiWindow must already own this dialog before overlay registration.
     void register_as_overlay(UiWindow& window,UiOverlayOptions options = {});
+    void unregister_as_overlay() noexcept;
+    void on_overlay_window_detached(UiWindow& window) noexcept override;
     void open(UiWindow& window);
     void close(UiWindow& window);
 

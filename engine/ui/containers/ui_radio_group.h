@@ -36,8 +36,9 @@ private:
     [[nodiscard]] UiRadioItem* radio_item_at(std::size_t index) const noexcept;
 
 private:
-    std::optional<std::size_t> _selected_index = std::nullopt;
+    UiRadioButton* _selected_button = nullptr;
     UiRadioGroupSelectionChangedCallback _on_selection_changed;
     bool _is_syncing_selection = false;
+    bool _selection_notification_pending = false;
 };
 }

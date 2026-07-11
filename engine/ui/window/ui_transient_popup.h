@@ -12,6 +12,7 @@ struct UiRenderCommand;
 namespace elysia::ui
 {
 class UiElement;
+class UiWindow;
 
 // A non-modal, window-rendered popup surface anchored by an ordinary UI control.
 // Implementations retain popup ownership; UiWindow coordinates only z-order and input priority.
@@ -25,6 +26,9 @@ public:
     [[nodiscard]] virtual bool is_transient_popup_open() const noexcept = 0;
     [[nodiscard]] virtual bool contains_transient_popup_point(int mouse_x,int mouse_y) const noexcept = 0;
     virtual void close_transient_popup() noexcept = 0;
+    // Clears implementation-side borrowed state when the registering window
+    // unregisters or is being reset/destroyed.
+    virtual void on_transient_popup_window_detached(UiWindow& window) noexcept = 0;
     virtual bool on_transient_popup_input_event(const UiInputEvent& event) = 0;
     virtual void submit_transient_popup_render_commands(
         std::vector<elysia::core::UiRenderCommand>& out_commands) const = 0;
