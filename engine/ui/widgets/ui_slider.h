@@ -4,23 +4,17 @@
 #include <optional>
 #include <string>
 #include <string_view>
-#include <variant>
 #include "../core/ui_control.h"
 #include "../style/ui_style.h"
 #include "../style/ui_interaction_style.h"
-#include "../text/ui_text_content.h"
-#include "label/ui_label.h"
 #include "number/ui_number.h"
 #include "ui_bar.h"
 #include "ui_drag_handle.h"
 
-struct SDL_Texture;
-
 namespace elysia::ui
 {
-    enum class UiSliderLabelPlacement { None, Left, Right, Above, Below, Center };
     enum class UiSliderOrientation { Horizontal, Vertical };
-    enum class UiSliderValueLabelMode { None, Value, Percent };
+    enum class UiSliderValueDisplay { None, Value, Percent };
 
     // Sound keys played as slider focus, movement, and settle state change.
     struct UiSliderSounds
@@ -31,12 +25,7 @@ namespace elysia::ui
         double min_slide_sound_interval = 0.05;
     };
 
-    // Icon label content rendered from a caller-owned texture.
-    struct UiSliderIconContent { SDL_Texture* texture = nullptr; };
-
-    using UiSliderLabelContent = std::variant<std::monostate,UiTextContent,UiSliderIconContent>;
-
-    // Visual styling for slider chrome, fill, label text, and drag handle.
+    // Visual styling for slider chrome, fill/value text, and drag handle.
     struct UiSliderStyle
     {
         UiChromeStyle chrome{};
@@ -48,10 +37,8 @@ namespace elysia::ui
     // Bundles slider range, presentation, sounds, and numeric formatting rules.
     struct UiSliderConfig
     {
-        UiSliderLabelContent label_content{};
-        UiSliderLabelPlacement label_placement = UiSliderLabelPlacement::None;
         UiSliderOrientation orientation = UiSliderOrientation::Horizontal;
-        UiSliderValueLabelMode value_label_mode = UiSliderValueLabelMode::None;
+        UiSliderValueDisplay value_display = UiSliderValueDisplay::None;
         std::optional<UiSliderSounds> slider_sound;
         float min_value = 0.0f;
         float max_value = 1.0f;
@@ -101,18 +88,10 @@ namespace elysia::ui
         void set_step(std::optional<float> step);
         [[nodiscard]] const std::optional<float>& step() const noexcept;
 
-        void set_label_content(const UiSliderLabelContent& content);
-        void clear_label_content() noexcept;
-        void set_text_content(UiTextContent text_content);
-        [[nodiscard]] const UiTextContent& text_content() const noexcept;
-        void set_icon_texture(SDL_Texture* texture) noexcept;
-
-        void set_label_placement(UiSliderLabelPlacement placement) noexcept;
-        [[nodiscard]] UiSliderLabelPlacement label_placement() const noexcept;
         void set_orientation(UiSliderOrientation orientation) noexcept;
         [[nodiscard]] UiSliderOrientation orientation() const noexcept;
-        void set_value_label_mode(UiSliderValueLabelMode mode) noexcept;
-        [[nodiscard]] UiSliderValueLabelMode value_label_mode() const noexcept;
+        void set_value_display(UiSliderValueDisplay display) noexcept;
+        [[nodiscard]] UiSliderValueDisplay value_display() const noexcept;
 
         void set_sounds(const UiSliderSounds& sounds);
         void clear_sounds() noexcept;
@@ -144,19 +123,17 @@ namespace elysia::ui
 
     private:
         struct SliderLayout;
-        // Creates the owned child widgets used to render the bar, thumb, label, and value.
+        // Creates the owned child widgets used to render the bar, thumb, and optional value.
         void initialize_child_widgets();
         // Applies the config payload without exposing intermediate slider state.
         void apply_slider_config(const UiSliderConfig& config);
-        // Switches the label between text, icon, or empty presentation.
-        void apply_label_content(const UiSliderLabelContent& content);
         // Pushes the computed layout into the owned child widgets.
         void sync_child_rects(const SliderLayout& layout) const;
         // Mirrors enabled, focus, and style state into the owned child widgets.
         void sync_child_visuals() const;
-        // Recomputes the formatted numeric label from the current slider value.
+        // Recomputes the optional formatted numeric display from the current slider value.
         void sync_value_number_content() const;
-        // Measures track, thumb, label, and value regions for the current slider state.
+        // Measures track, thumb, and optional value regions for the current slider state.
         [[nodiscard]] SliderLayout compute_layout() const noexcept;
         [[nodiscard]] float clamped_ratio() const noexcept;
         // Snaps a raw value to the configured step before it becomes visible state.
@@ -177,8 +154,6 @@ namespace elysia::ui
         [[nodiscard]] bool set_value_internal(float value,bool notify) noexcept;
         // Recomputes value from a pointer position and optionally notifies listeners.
         [[nodiscard]] bool update_value_from_point(const SliderLayout& layout,const elysia::core::Vector2& point,bool notify) noexcept;
-        // Fits an icon label into the requested bounds while preserving aspect ratio.
-        [[nodiscard]] elysia::core::Rect fitted_texture_rect(const elysia::core::Rect& bounds,SDL_Texture* texture) const noexcept;
         [[nodiscard]] elysia::core::Color current_background_color() const noexcept;
         [[nodiscard]] elysia::core::Color current_border_color() const noexcept;
         [[nodiscard]] elysia::core::Color current_fill_color() const noexcept;
@@ -196,16 +171,12 @@ namespace elysia::ui
     private:
         mutable UiBar _bar;
         mutable UiDragHandle _handle;
-        mutable UiLabel _label;
         mutable UiNumber _value_number;
-        UiTextContent _text_content;
-        SDL_Texture* _icon = nullptr;
         std::optional<UiSliderSounds> _sounds;
         UiStyleState<UiSliderStyle> _style_state;
         UiSliderValueChangedCallback _on_value_changed;
-        UiSliderLabelPlacement _label_placement = UiSliderLabelPlacement::None;
         UiSliderOrientation _orientation = UiSliderOrientation::Horizontal;
-        UiSliderValueLabelMode _value_label_mode = UiSliderValueLabelMode::None;
+        UiSliderValueDisplay _value_display = UiSliderValueDisplay::None;
         bool _drag_value_changed = false;
         float _bar_thickness = 6.0f;
         float _min_value = 0.0f;

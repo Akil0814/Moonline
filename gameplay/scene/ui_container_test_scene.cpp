@@ -163,15 +163,15 @@ std::unique_ptr<elysia::ui::UiTextInput> make_text_input(
 
 std::unique_ptr<elysia::ui::UiSlider> make_slider(
     const elysia::core::Rect& rect,
-    const char* text_key,
     float value,
-    const char* scope
+    const char* scope,
+    elysia::ui::UiSliderValueDisplay value_display,
+    elysia::ui::UiSliderOrientation orientation = elysia::ui::UiSliderOrientation::Horizontal
 )
 {
     auto slider = std::make_unique<elysia::ui::UiSlider>(rect,0);
-    slider->set_text_content(elysia::ui::ui_text_key(text_key));
-    slider->set_label_placement(elysia::ui::UiSliderLabelPlacement::Above);
-    slider->set_value_label_mode(elysia::ui::UiSliderValueLabelMode::Percent);
+    slider->set_value_display(value_display);
+    slider->set_orientation(orientation);
     slider->set_range(0.0f,1.0f);
     slider->set_value(value);
     slider->set_on_value_changed([scope](float changed_value)
@@ -632,13 +632,27 @@ void UiContainerTestScene::rebuild_ui()
     register_themed(text_input_limited.get());
     widget_content->add_child(std::move(text_input_limited),elysia::ui::UiPanelInsertDirection::Down);
 
-    auto slider = make_slider(
-        elysia::core::Rect{ 18,638,280,78 },
-        "menu_scene.start",
-        0.42f,
-        "widget");
-    register_themed(slider.get());
-    widget_content->add_child(std::move(slider),elysia::ui::UiPanelInsertDirection::Down);
+    auto slider_label = std::make_unique<elysia::ui::UiLabel>(
+        elysia::core::Rect{ 18,638,280,32 },0,elysia::ui::ui_raw_text("External slider label"));
+    register_themed(slider_label.get());
+    widget_content->add_child(std::move(slider_label),elysia::ui::UiPanelInsertDirection::Down);
+
+    auto slider_none = make_slider(
+        elysia::core::Rect{ 18,676,280,48 },0.25f,"widget-none",elysia::ui::UiSliderValueDisplay::None);
+    register_themed(slider_none.get());
+    widget_content->add_child(std::move(slider_none),elysia::ui::UiPanelInsertDirection::Down);
+
+    auto slider_value = make_slider(
+        elysia::core::Rect{ 18,730,280,48 },0.42f,"widget-value",elysia::ui::UiSliderValueDisplay::Value);
+    slider_value->set_value_decimal_places(2);
+    register_themed(slider_value.get());
+    widget_content->add_child(std::move(slider_value),elysia::ui::UiPanelInsertDirection::Down);
+
+    auto slider_percent_vertical = make_slider(
+        elysia::core::Rect{ 18,784,90,150 },0.68f,"widget-percent-vertical",
+        elysia::ui::UiSliderValueDisplay::Percent,elysia::ui::UiSliderOrientation::Vertical);
+    register_themed(slider_percent_vertical.get());
+    widget_content->add_child(std::move(slider_percent_vertical),elysia::ui::UiPanelInsertDirection::Down);
 
     auto open_overlay_button = std::make_unique<elysia::ui::UiButton>(
         elysia::core::Rect{ 18,732,150,40 },

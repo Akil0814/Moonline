@@ -9,7 +9,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <type_traits>
 #include <utility>
 
 namespace elysia::ui
@@ -29,15 +28,6 @@ constexpr float kHorizontalTrackEdgePadding = 6.0f;
     return std::max(0.0f,value);
 }
 
-[[nodiscard]] elysia::core::Rect take_left(elysia::core::Rect& rect,float width) noexcept
-{
-    width = std::clamp(width,0.0f,std::max(0.0f,rect.width()));
-    const elysia::core::Rect slot(rect.x(),rect.y(),width,rect.height());
-    rect.set_x(rect.x() + width);
-    rect.set_width(std::max(0.0f,rect.width() - width));
-    return slot;
-}
-
 [[nodiscard]] elysia::core::Rect take_right(elysia::core::Rect& rect,float width) noexcept
 {
     width = std::clamp(width,0.0f,std::max(0.0f,rect.width()));
@@ -51,14 +41,6 @@ constexpr float kHorizontalTrackEdgePadding = 6.0f;
     height = std::clamp(height,0.0f,std::max(0.0f,rect.height()));
     const elysia::core::Rect slot(rect.x(),rect.y(),rect.width(),height);
     rect.set_y(rect.y() + height);
-    rect.set_height(std::max(0.0f,rect.height() - height));
-    return slot;
-}
-
-[[nodiscard]] elysia::core::Rect take_bottom(elysia::core::Rect& rect,float height) noexcept
-{
-    height = std::clamp(height,0.0f,std::max(0.0f,rect.height()));
-    const elysia::core::Rect slot(rect.x(),rect.bottom() - height,rect.width(),height);
     rect.set_height(std::max(0.0f,rect.height() - height));
     return slot;
 }
@@ -113,7 +95,6 @@ struct UiSlider::SliderLayout
     elysia::core::Rect track_area = elysia::core::Rect::zero();
     elysia::core::Rect bar_rect = elysia::core::Rect::zero();
     elysia::core::Rect handle_rect = elysia::core::Rect::zero();
-    elysia::core::Rect label_rect = elysia::core::Rect::zero();
     elysia::core::Rect value_rect = elysia::core::Rect::zero();
 };
 
@@ -154,18 +135,14 @@ void UiSlider::reset() noexcept
     UiControl::reset();
     _bar.reset();
     _handle.reset();
-    _label.reset();
     _value_number.reset();
     set_use_theme(false);
 
-    _text_content = UiTextContent{};
-    _icon = nullptr;
     _sounds.reset();
     _style_state.reset(UiStyleDefaults::slider());
     _on_value_changed = nullptr;
-    _label_placement = UiSliderLabelPlacement::None;
     _orientation = UiSliderOrientation::Horizontal;
-    _value_label_mode = UiSliderValueLabelMode::None;
+    _value_display = UiSliderValueDisplay::None;
     _drag_value_changed = false;
     _bar_thickness = 6.0f;
     _min_value = 0.0f;
@@ -338,22 +315,7 @@ void UiSlider::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
     _bar.submit_ui_render_commands(out_commands);
     _handle.submit_ui_render_commands(out_commands);
 
-    if (_icon && !layout.label_rect.is_empty())
-    {
-        const elysia::core::Rect icon_rect = fitted_texture_rect(layout.label_rect,_icon);
-        if (!icon_rect.is_empty())
-        {
-            elysia::core::UiRenderCommand command = elysia::core::make_ui_texture_command(_icon,icon_rect);
-            apply_opacity(command);
-            out_commands.push_back(command);
-        }
-    }
-    else
-    {
-        _label.submit_ui_render_commands(out_commands);
-    }
-
-    if (_value_label_mode != UiSliderValueLabelMode::None)
+    if (_value_display != UiSliderValueDisplay::None)
         _value_number.submit_ui_render_commands(out_commands);
     if (style.chrome.draw_border)
         out_commands.push_back(elysia::core::make_ui_draw_rect_command(slider_rect,apply_opacity(current_border_color())));
@@ -428,48 +390,6 @@ const std::optional<float>& UiSlider::step() const noexcept
     return _step;
 }
 
-void UiSlider::set_label_content(const UiSliderLabelContent& content)
-{
-    apply_label_content(content);
-}
-
-void UiSlider::clear_label_content() noexcept
-{
-    _text_content = UiTextContent{};
-    _icon = nullptr;
-    notify_layout_parent_of_intrinsic_layout_invalidation();
-}
-
-void UiSlider::set_text_content(UiTextContent text_content)
-{
-    clear_label_content();
-    _text_content = std::move(text_content);
-    notify_layout_parent_of_intrinsic_layout_invalidation();
-}
-
-const UiTextContent& UiSlider::text_content() const noexcept
-{
-    return _text_content;
-}
-
-void UiSlider::set_icon_texture(SDL_Texture* texture) noexcept
-{
-    clear_label_content();
-    _icon = texture;
-    notify_layout_parent_of_intrinsic_layout_invalidation();
-}
-
-void UiSlider::set_label_placement(UiSliderLabelPlacement placement) noexcept
-{
-    _label_placement = placement;
-    notify_layout_parent_of_intrinsic_layout_invalidation();
-}
-
-UiSliderLabelPlacement UiSlider::label_placement() const noexcept
-{
-    return _label_placement;
-}
-
 void UiSlider::set_orientation(UiSliderOrientation orientation) noexcept
 {
     _orientation = orientation;
@@ -481,15 +401,15 @@ UiSliderOrientation UiSlider::orientation() const noexcept
     return _orientation;
 }
 
-void UiSlider::set_value_label_mode(UiSliderValueLabelMode mode) noexcept
+void UiSlider::set_value_display(UiSliderValueDisplay display) noexcept
 {
-    _value_label_mode = mode;
+    _value_display = display;
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-UiSliderValueLabelMode UiSlider::value_label_mode() const noexcept
+UiSliderValueDisplay UiSlider::value_display() const noexcept
 {
-    return _value_label_mode;
+    return _value_display;
 }
 
 void UiSlider::set_sounds(const UiSliderSounds& sounds)
@@ -639,9 +559,8 @@ void UiSlider::apply_slider_config(const UiSliderConfig& config)
     else
         clear_sounds();
 
-    set_label_placement(config.label_placement);
     set_orientation(config.orientation);
-    set_value_label_mode(config.value_label_mode);
+    set_value_display(config.value_display);
     if (config.style)
         set_style(*config.style);
     set_bar_thickness(config.bar_thickness);
@@ -660,25 +579,16 @@ void UiSlider::apply_slider_config(const UiSliderConfig& config)
         set_value_target_height(*config.value_target_height);
     else
         clear_value_target_height();
-    apply_label_content(config.label_content);
 }
 
 void UiSlider::initialize_child_widgets()
 {
     // Slider sub-widgets are implementation details. The outer slider owns theme participation
-    // and pushes resolved visuals into the bar/handle/label/value number manually.
+    // and pushes resolved visuals into the bar/handle/value number manually.
     _bar.set_use_theme(false);
     _bar.set_padding(0);
     _bar.set_fill_direction(BarFillDirection::LeftToRight);
     _handle.set_use_theme(false);
-    _label.set_use_theme(false);
-    UiLabelStyle label_style = _label.style();
-    label_style.draw_background = false;
-    _label.set_style(label_style);
-    _label.set_horizontal_align(TextHorizontalAlign::Center);
-    _label.set_vertical_align(TextVerticalAlign::Center);
-    _label.set_typography_role(UiTypographyRole::Label);
-    _label.set_padding(0);
     _value_number.set_use_theme(false);
     UiNumberStyle number_style = _value_number.style();
     number_style.draw_background = false;
@@ -697,19 +607,6 @@ void UiSlider::initialize_child_widgets()
     bind_handle_callbacks();
 }
 
-void UiSlider::apply_label_content(const UiSliderLabelContent& content)
-{
-    std::visit([this](const auto& value) {
-        using T = std::decay_t<decltype(value)>;
-        if constexpr (std::is_same_v<T,std::monostate>)
-            clear_label_content();
-        else if constexpr (std::is_same_v<T,UiTextContent>)
-            set_text_content(value);
-        else if constexpr (std::is_same_v<T,UiSliderIconContent>)
-            set_icon_texture(value.texture);
-    },content);
-}
-
 void UiSlider::sync_child_rects(const SliderLayout& layout) const
 {
     _bar.set_screen_rect(layout.bar_rect);
@@ -719,7 +616,6 @@ void UiSlider::sync_child_rects(const SliderLayout& layout) const
         _handle.clear_drag_bounds();
     else
         _handle.set_drag_bounds(handle_drag_bounds(layout));
-    _label.set_screen_rect(layout.label_rect);
     _value_number.set_screen_rect(layout.value_rect);
 }
 
@@ -731,10 +627,6 @@ void UiSlider::sync_child_visuals() const
     bar_style.background = current_background_color();
     bar_style.fill = current_fill_color();
     bar_style.draw_border = false;
-
-    UiLabelStyle label_style = UiStyleDefaults::label();
-    label_style.text = current_text_color();
-    label_style.draw_background = false;
 
     UiNumberStyle number_style = UiStyleDefaults::number();
     number_style.text = current_text_color();
@@ -753,16 +645,7 @@ void UiSlider::sync_child_visuals() const
     _handle.set_opacity(opacity());
     _handle.set_focused(is_focused());
 
-    _label.set_visible(!_text_content.empty() && !_icon && !_label.screen_rect().is_empty());
-    _label.set_opacity(opacity());
-    _label.set_text_content(_text_content);
-    _label.set_typography_role(UiTypographyRole::Label);
-    _label.set_style(label_style);
-    _label.set_horizontal_align(TextHorizontalAlign::Center);
-    _label.set_vertical_align(TextVerticalAlign::Center);
-    _label.set_padding(0);
-
-    _value_number.set_visible(_value_label_mode != UiSliderValueLabelMode::None && !_value_number.screen_rect().is_empty());
+    _value_number.set_visible(_value_display != UiSliderValueDisplay::None && !_value_number.screen_rect().is_empty());
     _value_number.set_opacity(opacity());
     _value_number.set_style(number_style);
     _value_number.set_horizontal_align(TextHorizontalAlign::Center);
@@ -772,8 +655,8 @@ void UiSlider::sync_child_visuals() const
 
 void UiSlider::sync_value_number_content() const
 {
-    _value_number.set_suffix(_value_label_mode == UiSliderValueLabelMode::Percent ? UiNumberSuffix::Percent : UiNumberSuffix::None);
-    _value_number.set_value(_value_label_mode == UiSliderValueLabelMode::Percent ? static_cast<double>(clamped_ratio() * 100.0f) : static_cast<double>(_value));
+    _value_number.set_suffix(_value_display == UiSliderValueDisplay::Percent ? UiNumberSuffix::Percent : UiNumberSuffix::None);
+    _value_number.set_value(_value_display == UiSliderValueDisplay::Percent ? static_cast<double>(clamped_ratio() * 100.0f) : static_cast<double>(_value));
 }
 
 UiSlider::SliderLayout UiSlider::compute_layout() const noexcept
@@ -783,7 +666,6 @@ UiSlider::SliderLayout UiSlider::compute_layout() const noexcept
     if (remaining.is_empty())
         return layout;
 
-    const bool has_label = !_text_content.empty() || _icon;
     const elysia::core::Vector2 handle_size(
         clamp_non_negative(style().handle.size.x),
         clamp_non_negative(style().handle.size.y)
@@ -792,37 +674,12 @@ UiSlider::SliderLayout UiSlider::compute_layout() const noexcept
     const float target_height = _value_number.target_height().value_or(24.0f);
     const float vertical_slot_extent = preferred_vertical_slot_extent(remaining,handle_size,target_height);
 
-    if (_value_label_mode != UiSliderValueLabelMode::None)
+    if (_value_display != UiSliderValueDisplay::None)
     {
         if (_orientation == UiSliderOrientation::Horizontal)
             layout.value_rect = take_right(remaining,side_slot_extent);
         else
             layout.value_rect = take_top(remaining,vertical_slot_extent);
-    }
-
-    if (has_label)
-    {
-        switch (_label_placement)
-        {
-        case UiSliderLabelPlacement::Left:
-            layout.label_rect = take_left(remaining,side_slot_extent);
-            break;
-        case UiSliderLabelPlacement::Right:
-            layout.label_rect = take_right(remaining,side_slot_extent);
-            break;
-        case UiSliderLabelPlacement::Above:
-            layout.label_rect = take_top(remaining,vertical_slot_extent);
-            break;
-        case UiSliderLabelPlacement::Below:
-            layout.label_rect = take_bottom(remaining,vertical_slot_extent);
-            break;
-        case UiSliderLabelPlacement::Center:
-            layout.label_rect = remaining;
-            break;
-        case UiSliderLabelPlacement::None:
-        default:
-            break;
-        }
     }
 
     layout.track_area = inset_track_area_for_handle(remaining,handle_size,_orientation);
@@ -981,29 +838,6 @@ bool UiSlider::update_value_from_point(const SliderLayout& layout,const elysia::
     if (_max_value <= _min_value)
         return set_value_internal(_min_value,notify);
     return set_value_internal(_min_value + (_max_value - _min_value) * ratio_from_point(layout,point),notify);
-}
-
-elysia::core::Rect UiSlider::fitted_texture_rect(const elysia::core::Rect& bounds,SDL_Texture* texture) const noexcept
-{
-    if (!texture || bounds.is_empty())
-        return elysia::core::Rect::zero();
-
-    int texture_width = 0;
-    int texture_height = 0;
-    if (SDL_QueryTexture(texture,nullptr,nullptr,&texture_width,&texture_height) != 0 || texture_width <= 0 || texture_height <= 0)
-        return elysia::core::Rect::zero();
-
-    const float width_scale = bounds.width() / static_cast<float>(texture_width);
-    const float height_scale = bounds.height() / static_cast<float>(texture_height);
-    const float scale = std::min(1.0f,std::min(width_scale,height_scale));
-    if (scale <= 0.0f)
-        return elysia::core::Rect::zero();
-
-    const elysia::core::Vector2 render_size(
-        static_cast<float>(texture_width) * scale,
-        static_cast<float>(texture_height) * scale
-    );
-    return elysia::core::Rect::from_center(bounds.center(),render_size);
 }
 
 elysia::core::Color UiSlider::current_background_color() const noexcept

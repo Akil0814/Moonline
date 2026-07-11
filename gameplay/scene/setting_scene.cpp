@@ -54,7 +54,7 @@ std::unique_ptr<elysia::ui::UiSlider> make_volume_slider(float value)
     config.max_value = 100.0f;
     config.value = value;
     config.step = 1.0f;
-    config.value_label_mode = elysia::ui::UiSliderValueLabelMode::Percent;
+    config.value_display = elysia::ui::UiSliderValueDisplay::Percent;
     return std::make_unique<elysia::ui::UiSlider>(
         elysia::core::Rect{ 0,0,control_width,row_height },config);
 }
