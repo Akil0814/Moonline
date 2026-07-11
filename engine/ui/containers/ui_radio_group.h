@@ -34,9 +34,10 @@ private:
     // Mirrors button-level selection back into the group and emits one callback when needed.
     void sync_selection(bool notify);
     [[nodiscard]] UiRadioItem* radio_item_at(std::size_t index) const noexcept;
+    [[nodiscard]] std::optional<std::size_t> find_radio_index(const UiRadioItem* item) const noexcept;
 
 private:
-    UiRadioButton* _selected_button = nullptr;
+    UiRadioItem* _selected_item = nullptr;
     UiRadioGroupSelectionChangedCallback _on_selection_changed;
     bool _is_syncing_selection = false;
     bool _selection_notification_pending = false;

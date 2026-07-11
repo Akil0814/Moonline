@@ -278,7 +278,7 @@ void UiDropdown::close_transient_popup() noexcept
     close();
 }
 
-void UiDropdownButtonSet::on_transient_popup_window_detached(UiWindow& window) noexcept
+void UiDropdown::on_transient_popup_window_detached(UiWindow& window) noexcept
 {
     if (_window != &window)
         return;
