@@ -41,9 +41,9 @@ void StartupLoadingScene::on_enter(const elysia::scene::ScenePayload& payload)
 
 	//loading bar
 	_loading_bar = elysia::scene::Scene::create_and_add_object<elysia::ui::UiBar>(elysia::core::Rect{ 20, 695, 1240, 5 });
-	elysia::ui::UiBarStyle loading_bar_style = _loading_bar->style();
+	elysia::ui::UiBarStyleOverrides loading_bar_style{};
 	loading_bar_style.draw_border = true;
-	_loading_bar->set_style(loading_bar_style);
+	_loading_bar->set_style_overrides(loading_bar_style);
 	_loading_bar->set_ratio(0.0);
 
 

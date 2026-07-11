@@ -188,9 +188,9 @@ void UiDialog::set_base_style(const UiDialogStyle& style) noexcept
     sync_style_to_children(); mark_layout_dirty();
 }
 
-void UiDialog::set_style(const UiDialogStyle& style) noexcept
+void UiDialog::set_style_overrides(const UiDialogStyleOverrides& overrides) noexcept
 {
-    _style_state.set_style_override(style);
+    _style_state.set_style_overrides(overrides);
     sync_style_to_children();
     mark_layout_dirty();
 }
@@ -200,14 +200,15 @@ const UiDialogStyle& UiDialog::style() const noexcept
     return _style_state.effective_style();
 }
 
-bool UiDialog::has_style_override() const noexcept
+const UiDialogStyleOverrides& UiDialog::style_overrides() const noexcept { return _style_state.style_overrides(); }
+bool UiDialog::has_style_overrides() const noexcept
 {
-    return _style_state.has_style_override();
+    return _style_state.has_style_overrides();
 }
 
-void UiDialog::clear_style_override() noexcept
+void UiDialog::clear_style_overrides() noexcept
 {
-    _style_state.clear_style_override();
+    _style_state.clear_style_overrides();
     sync_style_to_children();
     mark_layout_dirty();
 }
@@ -387,7 +388,9 @@ void UiDialog::sync_style_to_children()
         return;
 
     const UiDialogStyle& current_style = style();
-    _chrome->set_composite_corner_radius(current_style.corner_radius);
+    UiChromeContainerStyleOverrides chrome_overrides = _chrome->style_overrides();
+    chrome_overrides.corner_radius = current_style.corner_radius;
+    _chrome->set_style_overrides(chrome_overrides);
     _chrome->set_body_padding(UiLayoutPadding{
         static_cast<float>(current_style.body_padding),
         static_cast<float>(current_style.body_padding),

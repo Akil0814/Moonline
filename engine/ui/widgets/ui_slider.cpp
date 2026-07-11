@@ -436,16 +436,11 @@ void UiSlider::set_base_style(const UiSliderStyle& style) noexcept
     _handle.set_base_style(this->style().handle);
 }
 
-void UiSlider::set_style(const UiSliderStyle& style)
+void UiSlider::set_style_overrides(const UiSliderStyleOverrides& overrides)
 {
-    _style_state.set_style_override(style);
-    UiSliderStyle resolved = _style_state.effective_style();
-    resolved.handle.size = elysia::core::Vector2(
-        clamp_non_negative(resolved.handle.size.x),
-        clamp_non_negative(resolved.handle.size.y)
-    );
-    _style_state.set_style_override(resolved);
-    _handle.set_style(resolved.handle);
+    _style_state.set_style_overrides(overrides);
+    _handle.set_base_style(style().handle);
+    _handle.set_style_overrides(overrides.handle);
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
@@ -454,16 +449,17 @@ const UiSliderStyle& UiSlider::style() const noexcept
     return _style_state.effective_style();
 }
 
-bool UiSlider::has_style_override() const noexcept
+const UiSliderStyleOverrides& UiSlider::style_overrides() const noexcept { return _style_state.style_overrides(); }
+bool UiSlider::has_style_overrides() const noexcept
 {
-    return _style_state.has_style_override();
+    return _style_state.has_style_overrides();
 }
 
-void UiSlider::clear_style_override() noexcept
+void UiSlider::clear_style_overrides() noexcept
 {
-    _style_state.clear_style_override();
-    _handle.clear_style_override();
-    _handle.set_style(style().handle);
+    _style_state.clear_style_overrides();
+    _handle.clear_style_overrides();
+    _handle.set_base_style(style().handle);
     sync_child_visuals();
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
@@ -565,8 +561,10 @@ void UiSlider::apply_slider_config(const UiSliderConfig& config)
 
     set_orientation(config.orientation);
     set_value_display(config.value_display);
-    if (config.style)
-        set_style(*config.style);
+    if (config.style_overrides)
+        set_style_overrides(*config.style_overrides);
+    else
+        clear_style_overrides();
     set_bar_thickness(config.bar_thickness);
     set_range(config.min_value,config.max_value);
     set_step(config.step);
@@ -591,9 +589,9 @@ void UiSlider::initialize_child_widgets()
     // and pushes resolved visuals into the bar/handle/value number manually.
     _bar.set_padding(0);
     _bar.set_fill_direction(BarFillDirection::LeftToRight);
-    UiNumberStyle number_style = _value_number.style();
-    number_style.draw_background = false;
-    _value_number.set_style(number_style);
+    UiNumberStyleOverrides number_overrides{};
+    number_overrides.draw_background = false;
+    _value_number.set_style_overrides(number_overrides);
     _value_number.set_horizontal_align(TextHorizontalAlign::Center);
     _value_number.set_vertical_align(TextVerticalAlign::Center);
     _value_number.set_typography_role(UiTypographyRole::SliderValue);
@@ -603,7 +601,7 @@ void UiSlider::initialize_child_widgets()
     _value_number.set_trim_trailing_zeros(true);
     _value_number.set_keep_decimal_point(false);
     _value_number.set_suffix(UiNumberSuffix::None);
-    _handle.set_style(style().handle);
+    _handle.set_base_style(style().handle);
     sync_child_visuals();
     bind_handle_callbacks();
 }
@@ -638,7 +636,7 @@ void UiSlider::sync_child_visuals() const
     _bar.set_range(_min_value,_max_value);
     _bar.set_value(_value);
     _bar.set_fill_direction(_orientation == UiSliderOrientation::Horizontal ? BarFillDirection::LeftToRight : BarFillDirection::BottomToTop);
-    _bar.set_style(bar_style);
+    _bar.set_base_style(bar_style);
     _bar.set_padding(0);
 
     _handle.set_visible(!_handle.screen_rect().is_empty());
@@ -648,7 +646,7 @@ void UiSlider::sync_child_visuals() const
 
     _value_number.set_visible(_value_display != UiSliderValueDisplay::None && !_value_number.screen_rect().is_empty());
     _value_number.set_opacity(opacity());
-    _value_number.set_style(number_style);
+    _value_number.set_base_style(number_style);
     _value_number.set_horizontal_align(TextHorizontalAlign::Center);
     _value_number.set_vertical_align(TextVerticalAlign::Center);
     _value_number.set_padding(0);

@@ -72,10 +72,11 @@ public:
     void unregister_as_transient_popup() noexcept;
 
     void set_base_style(const UiDropdownBaseStyle& style) noexcept;
-    void set_style(const UiDropdownStyle& style) noexcept;
+    void set_style_overrides(const UiDropdownStyleOverrides& overrides) noexcept;
     [[nodiscard]] const UiDropdownStyle& style() const noexcept;
-    [[nodiscard]] bool has_style_override() const noexcept;
-    void clear_style_override() noexcept;
+    [[nodiscard]] const UiDropdownStyleOverrides& style_overrides() const noexcept;
+    [[nodiscard]] bool has_style_overrides() const noexcept;
+    void clear_style_overrides() noexcept;
     void set_visual_role(UiDropdownVisualRole role) noexcept;
     [[nodiscard]] UiDropdownVisualRole visual_role() const noexcept;
 

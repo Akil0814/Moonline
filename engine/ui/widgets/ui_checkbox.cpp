@@ -287,9 +287,9 @@ void UiCheckbox::set_base_style(const UiCheckboxStyle& style) noexcept
     _style_state.set_base_style(style);
 }
 
-void UiCheckbox::set_style(const UiCheckboxStyle& style) noexcept
+void UiCheckbox::set_style_overrides(const UiCheckboxStyleOverrides& overrides) noexcept
 {
-    _style_state.set_style_override(style);
+    _style_state.set_style_overrides(overrides);
 }
 
 const UiCheckboxStyle& UiCheckbox::style() const noexcept
@@ -297,25 +297,22 @@ const UiCheckboxStyle& UiCheckbox::style() const noexcept
     return _style_state.effective_style();
 }
 
-bool UiCheckbox::has_style_override() const noexcept
+const UiCheckboxStyleOverrides& UiCheckbox::style_overrides() const noexcept { return _style_state.style_overrides(); }
+bool UiCheckbox::has_style_overrides() const noexcept
 {
-    return _style_state.has_style_override();
+    return _style_state.has_style_overrides();
 }
 
-void UiCheckbox::clear_style_override() noexcept
+void UiCheckbox::clear_style_overrides() noexcept
 {
-    _style_state.clear_style_override();
+    _style_state.clear_style_overrides();
 }
 
 void UiCheckbox::set_mark_style(UiCheckboxMarkStyle mark_style) noexcept
 {
-    UiCheckboxStyle next_style = style();
-    next_style.mark_style = mark_style;
-
-    if (_style_state.has_style_override())
-        _style_state.set_style_override(next_style);
-    else
-        _style_state.set_base_style(next_style);
+    UiCheckboxStyleOverrides overrides = style_overrides();
+    overrides.mark_style = mark_style;
+    set_style_overrides(overrides);
 }
 
 UiCheckboxMarkStyle UiCheckbox::mark_style() const noexcept
@@ -388,8 +385,10 @@ void UiCheckbox::apply_checkbox_config(const UiCheckboxConfig& config)
     else
         clear_sounds();
 
-    if (config.style)
-        set_style(*config.style);
+    if (config.style_overrides)
+        set_style_overrides(*config.style_overrides);
+    else
+        clear_style_overrides();
 }
 
 bool UiCheckbox::set_state_internal(UiCheckboxState state,bool notify) noexcept

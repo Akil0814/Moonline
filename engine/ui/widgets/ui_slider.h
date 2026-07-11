@@ -33,6 +33,14 @@ namespace elysia::ui
         UiEnabledDisabledColors text{};
         UiDragHandleStyle handle{};
     };
+    struct UiSliderStyleOverrides
+    {
+        UiChromeStyleOverrides chrome{};
+        UiEnabledDisabledColorsOverrides fill{};
+        UiEnabledDisabledColorsOverrides text{};
+        UiDragHandleStyleOverrides handle{};
+    };
+    template<> struct UiStyleOverrideTraits<UiSliderStyle> { using Overrides=UiSliderStyleOverrides; static bool empty(const Overrides& o) noexcept { return elysia::ui::empty(o.chrome)&&elysia::ui::empty(o.fill)&&elysia::ui::empty(o.text)&&UiStyleOverrideTraits<UiDragHandleStyle>::empty(o.handle); } static void apply(UiSliderStyle& s,const Overrides& o) noexcept { apply_ui_style_overrides(s.chrome,o.chrome); apply_ui_style_overrides(s.fill,o.fill); apply_ui_style_overrides(s.text,o.text); UiStyleOverrideTraits<UiDragHandleStyle>::apply(s.handle,o.handle); } };
 
     // Bundles slider range, presentation, sounds, and numeric formatting rules.
     struct UiSliderConfig
@@ -44,7 +52,7 @@ namespace elysia::ui
         float max_value = 1.0f;
         float value = 0.0f;
         std::optional<float> step = std::nullopt;
-        std::optional<UiSliderStyle> style = std::nullopt;
+        std::optional<UiSliderStyleOverrides> style_overrides = std::nullopt;
         float bar_thickness = 6.0f;
         int value_decimal_places = 0;
         bool value_trim_trailing_zeros = true;
@@ -99,10 +107,11 @@ namespace elysia::ui
         void set_on_value_changed(UiSliderValueChangedCallback on_value_changed);
 
         void set_base_style(const UiSliderStyle& style) noexcept;
-    void set_style(const UiSliderStyle& style);
+    void set_style_overrides(const UiSliderStyleOverrides& overrides);
         [[nodiscard]] const UiSliderStyle& style() const noexcept;
-        [[nodiscard]] bool has_style_override() const noexcept;
-        void clear_style_override() noexcept;
+        [[nodiscard]] const UiSliderStyleOverrides& style_overrides() const noexcept;
+        [[nodiscard]] bool has_style_overrides() const noexcept;
+        void clear_style_overrides() noexcept;
 
         void set_value_decimal_places(int decimal_places);
         [[nodiscard]] int value_decimal_places() const noexcept;

@@ -47,10 +47,11 @@ public:
     [[nodiscard]] double value() const noexcept;
 
     void set_base_style(const UiNumberStyle& style) noexcept;
-    void set_style(const UiNumberStyle& style) noexcept;
+    void set_style_overrides(const UiNumberStyleOverrides& overrides) noexcept;
     [[nodiscard]] const UiNumberStyle& style() const noexcept;
-    [[nodiscard]] bool has_style_override() const noexcept;
-    void clear_style_override() noexcept;
+    [[nodiscard]] const UiNumberStyleOverrides& style_overrides() const noexcept;
+    [[nodiscard]] bool has_style_overrides() const noexcept;
+    void clear_style_overrides() noexcept;
 
     void set_horizontal_align(TextHorizontalAlign align);
     [[nodiscard]] TextHorizontalAlign horizontal_align() const noexcept;

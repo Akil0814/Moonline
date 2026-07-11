@@ -236,9 +236,9 @@ void UiScrollContainer::set_base_style(const UiScrollContainerStyle& style) noex
     sync_scrollbar_handles(); mark_layout_dirty();
 }
 
-void UiScrollContainer::set_style(const UiScrollContainerStyle& style) noexcept
+void UiScrollContainer::set_style_overrides(const UiScrollContainerStyleOverrides& overrides) noexcept
 {
-    _style_state.set_style_override(style);
+    _style_state.set_style_overrides(overrides);
     sync_scrollbar_handles();
     mark_layout_dirty();
 }
@@ -248,14 +248,15 @@ const UiScrollContainerStyle& UiScrollContainer::style() const noexcept
     return _style_state.effective_style();
 }
 
-bool UiScrollContainer::has_style_override() const noexcept
+const UiScrollContainerStyleOverrides& UiScrollContainer::style_overrides() const noexcept { return _style_state.style_overrides(); }
+bool UiScrollContainer::has_style_overrides() const noexcept
 {
-    return _style_state.has_style_override();
+    return _style_state.has_style_overrides();
 }
 
-void UiScrollContainer::clear_style_override() noexcept
+void UiScrollContainer::clear_style_overrides() noexcept
 {
-    _style_state.clear_style_override();
+    _style_state.clear_style_overrides();
     sync_scrollbar_handles();
     mark_layout_dirty();
 }
@@ -271,9 +272,11 @@ UiScrollBarVisibility UiScrollContainer::scrollbar_visibility() const noexcept
     return _scrollbar_visibility;
 }
 
-void UiScrollContainer::set_scrollbar_style(const UiScrollBarStyle& style)
+void UiScrollContainer::set_scrollbar_style_overrides(const UiScrollBarStyleOverrides& scrollbar_overrides)
 {
-    _style_state.ensure_style_override().scrollbar = style;
+    UiScrollContainerStyleOverrides overrides = style_overrides();
+    overrides.scrollbar = scrollbar_overrides;
+    _style_state.set_style_overrides(overrides);
     sync_scrollbar_handles();
     mark_layout_dirty();
 }
@@ -879,17 +882,17 @@ void UiScrollContainer::configure_scrollbar_thumb(
     config.axis = is_horizontal_axis(axis) ? UiDragAxis::Horizontal : UiDragAxis::Vertical;
     config.drag_bounds = track_rect;
 
-    config.style.size = thumb_rect.size();
-    config.style.chrome.draw_background = true;
-    config.style.chrome.draw_border = false;
-    config.style.chrome.background.idle = style().scrollbar.thumb_idle_color;
-    config.style.chrome.background.focused = style().scrollbar.thumb_focused_color;
-    config.style.chrome.background.active = style().scrollbar.thumb_dragging_color;
-    config.style.chrome.background.disabled = style().scrollbar.thumb_disabled_color;
-    config.style.chrome.border.idle = style().scrollbar.thumb_idle_color;
-    config.style.chrome.border.focused = style().scrollbar.thumb_focused_color;
-    config.style.chrome.border.active = style().scrollbar.thumb_dragging_color;
-    config.style.chrome.border.disabled = style().scrollbar.thumb_disabled_color;
+    config.style_overrides.size = thumb_rect.size();
+    config.style_overrides.chrome.draw_background = true;
+    config.style_overrides.chrome.draw_border = false;
+    config.style_overrides.chrome.background.idle = style().scrollbar.thumb_idle_color;
+    config.style_overrides.chrome.background.focused = style().scrollbar.thumb_focused_color;
+    config.style_overrides.chrome.background.active = style().scrollbar.thumb_dragging_color;
+    config.style_overrides.chrome.background.disabled = style().scrollbar.thumb_disabled_color;
+    config.style_overrides.chrome.border.idle = style().scrollbar.thumb_idle_color;
+    config.style_overrides.chrome.border.focused = style().scrollbar.thumb_focused_color;
+    config.style_overrides.chrome.border.active = style().scrollbar.thumb_dragging_color;
+    config.style_overrides.chrome.border.disabled = style().scrollbar.thumb_disabled_color;
     thumb.set_drag_handle_config(config);
     thumb.set_drag_axis(config.axis);
     thumb.set_drag_bounds(track_rect);

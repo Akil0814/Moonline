@@ -150,10 +150,10 @@ void MainMenuScene::build_menu_buttons()
     auto ui_background = std::make_unique<elysia::ui::UiImage>(tex, elysia::core::Rect{ 0,0,1404,844 }, -10);
     _main_menu_window->add_child(std::move(ui_background), { elysia::ui::UiLayoutAnchor::Center });
 
-    elysia::ui::UiWindowStyle window_style = _main_menu_window->style();
+    elysia::ui::UiWindowStyleOverrides window_style{};
     window_style.draw_background = true;
     window_style.draw_border = false;
-    _main_menu_window->set_style(window_style);
+    _main_menu_window->set_style_overrides(window_style);
 
     _main_menu_window->set_on_cancel([this]{
         if (_exit_confirmation)

@@ -23,11 +23,13 @@ struct UiRadioButtonStyle
     UiChromeStyle chrome{};
     UiEnabledDisabledColors mark{};
 };
+struct UiRadioButtonStyleOverrides { UiChromeStyleOverrides chrome{}; UiEnabledDisabledColorsOverrides mark{}; };
+template<> struct UiStyleOverrideTraits<UiRadioButtonStyle> { using Overrides=UiRadioButtonStyleOverrides; static bool empty(const Overrides& o) noexcept { return elysia::ui::empty(o.chrome)&&elysia::ui::empty(o.mark); } static void apply(UiRadioButtonStyle& s,const Overrides& o) noexcept { apply_ui_style_overrides(s.chrome,o.chrome); apply_ui_style_overrides(s.mark,o.mark); } };
 
 struct UiRadioButtonConfig
 {
     std::optional<UiRadioButtonSounds> sounds;
-    std::optional<UiRadioButtonStyle> style;
+    std::optional<UiRadioButtonStyleOverrides> style_overrides;
     int padding = 4;
 };
 
@@ -55,9 +57,11 @@ public:
     void set_sounds(const UiRadioButtonSounds& sounds);
     void clear_sounds() noexcept;
     void set_base_style(const UiRadioButtonStyle& style) noexcept;
-    void set_style(const UiRadioButtonStyle& style) noexcept;
+    void set_style_overrides(const UiRadioButtonStyleOverrides& overrides) noexcept;
     [[nodiscard]] const UiRadioButtonStyle& style() const noexcept;
-    void clear_style_override() noexcept;
+    [[nodiscard]] const UiRadioButtonStyleOverrides& style_overrides() const noexcept;
+    [[nodiscard]] bool has_style_overrides() const noexcept;
+    void clear_style_overrides() noexcept;
     void set_padding(int padding) noexcept;
     [[nodiscard]] int padding() const noexcept;
 

@@ -37,10 +37,11 @@ public:
     [[nodiscard]] float ratio() const;
 
     void set_base_style(const UiBarStyle& style) noexcept;
-    void set_style(const UiBarStyle& style) noexcept;
+    void set_style_overrides(const UiBarStyleOverrides& overrides) noexcept;
     [[nodiscard]] const UiBarStyle& style() const noexcept;
-    [[nodiscard]] bool has_style_override() const noexcept;
-    void clear_style_override() noexcept;
+    [[nodiscard]] const UiBarStyleOverrides& style_overrides() const noexcept;
+    [[nodiscard]] bool has_style_overrides() const noexcept;
+    void clear_style_overrides() noexcept;
 
     void set_visual_role(UiBarVisualRole role) noexcept;
     [[nodiscard]] UiBarVisualRole visual_role() const noexcept;

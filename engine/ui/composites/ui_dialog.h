@@ -50,10 +50,11 @@ public:
     [[nodiscard]] bool header_visible() const noexcept;
 
     void set_base_style(const UiDialogStyle& style) noexcept;
-    void set_style(const UiDialogStyle& style) noexcept;
+    void set_style_overrides(const UiDialogStyleOverrides& overrides) noexcept;
     [[nodiscard]] const UiDialogStyle& style() const noexcept;
-    [[nodiscard]] bool has_style_override() const noexcept;
-    void clear_style_override() noexcept;
+    [[nodiscard]] const UiDialogStyleOverrides& style_overrides() const noexcept;
+    [[nodiscard]] bool has_style_overrides() const noexcept;
+    void clear_style_overrides() noexcept;
 
     void set_visual_role(UiDialogVisualRole role) noexcept;
     [[nodiscard]] UiDialogVisualRole visual_role() const noexcept;

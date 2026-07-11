@@ -35,11 +35,11 @@ namespace arcneco::scene
 namespace
 {
 template<class Widget,class Mutator>
-void update_style(Widget& widget,Mutator&& mutator)
+void update_style_overrides(Widget& widget,Mutator&& mutator)
 {
-    auto style = widget.style();
-    mutator(style);
-    widget.set_style(style);
+    auto overrides = widget.style_overrides();
+    mutator(overrides);
+    widget.set_style_overrides(overrides);
 }
 
 [[nodiscard]] elysia::ui::UiButtonConfig make_button_config(const char* text_key)
@@ -239,12 +239,10 @@ void UiContainerTestScene::refresh_theme_preview_styles()
     if (!_root_window)
         return;
 
-    elysia::ui::UiWindowStyle window_style = elysia::ui::apply_theme_colors(
-        elysia::ui::UiWindowStyle{},
-        _theme_manager.current_theme().window_style);
-    window_style.draw_background = true;
-    window_style.draw_border = true;
-    _root_window->set_style(window_style);
+    auto overrides = _root_window->style_overrides();
+    overrides.draw_background = true;
+    overrides.draw_border = true;
+    _root_window->set_style_overrides(overrides);
 }
 
 void UiContainerTestScene::set_active_theme(elysia::ui::UiBuiltinTheme theme)
@@ -319,7 +317,7 @@ void UiContainerTestScene::rebuild_ui()
         request_back_to_menu();
     });
     register_themed(_root_window);
-    update_style(*_root_window,[](elysia::ui::UiWindowStyle& style) { style.corner_radius = 22.0f; });
+    update_style_overrides(*_root_window,[](elysia::ui::UiWindowStyleOverrides& style) { style.corner_radius = 22.0f; });
     refresh_theme_preview_styles();
 
     auto* vertical_scroll = _root_window->create_child<elysia::ui::UiScrollContainer>(elysia::core::Rect{ 0,0,260,420 });
@@ -456,7 +454,7 @@ void UiContainerTestScene::rebuild_ui()
     auto widget_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,340,1620 });
     widget_content->set_visual_role(elysia::ui::UiPanelVisualRole::Dialog);
     register_themed(widget_content.get());
-    update_style(*widget_content,[](elysia::ui::UiPanelStyle& style) { style.corner_radius = 18.0f; });
+    update_style_overrides(*widget_content,[](elysia::ui::UiPanelStyleOverrides& style) { style.corner_radius = 18.0f; });
 
     auto* non_modal_overlay = _root_window->create_child<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,260,128 });
     non_modal_overlay->set_visual_role(elysia::ui::UiPanelVisualRole::Dialog);
@@ -491,7 +489,7 @@ void UiContainerTestScene::rebuild_ui()
     localized_dialog->set_action_content(elysia::ui::ui_text_key("ui_test_scene.reading_dialog.close"));
     localized_dialog->register_as_overlay(*_root_window);
     register_themed(localized_dialog);
-    update_style(*localized_dialog,[](elysia::ui::UiDialogStyle& style) { style.corner_radius = 18.0f; });
+    update_style_overrides(*localized_dialog,[](elysia::ui::UiDialogStyleOverrides& style) { style.corner_radius = 18.0f; });
 
     auto* raw_text_dialog = _root_window->create_child<elysia::ui::UiDialog>(elysia::core::Rect{ 0,0,500,340 });
     raw_text_dialog->set_title_content(elysia::ui::ui_raw_text("Raw Text Preview"));
@@ -502,7 +500,7 @@ void UiContainerTestScene::rebuild_ui()
     raw_text_dialog->set_action_content(elysia::ui::ui_raw_text("Close"));
     raw_text_dialog->register_as_overlay(*_root_window);
     register_themed(raw_text_dialog);
-    update_style(*raw_text_dialog,[](elysia::ui::UiDialogStyle& style) { style.corner_radius = 10.0f; });
+    update_style_overrides(*raw_text_dialog,[](elysia::ui::UiDialogStyleOverrides& style) { style.corner_radius = 10.0f; });
 
     auto checkbox_0 = make_checkbox(
         elysia::core::Rect{ 18,18,36,36 },
@@ -510,7 +508,7 @@ void UiContainerTestScene::rebuild_ui()
         elysia::ui::UiCheckboxMarkStyle::Checkmark,
         "widget");
     register_themed(checkbox_0.get());
-    update_style(*checkbox_0,[](elysia::ui::UiCheckboxStyle& style) { style.chrome.corner_radius = 6.0f; });
+    update_style_overrides(*checkbox_0,[](elysia::ui::UiCheckboxStyleOverrides& style) { style.chrome.corner_radius = 6.0f; });
     widget_content->add_child(std::move(checkbox_0),elysia::ui::UiPanelInsertDirection::Down);
 
     auto checkbox_1 = make_checkbox(
@@ -623,7 +621,7 @@ void UiContainerTestScene::rebuild_ui()
         std::nullopt,
         "widget-main");
     register_themed(text_input_main.get());
-    update_style(*text_input_main,[](elysia::ui::UiTextInputStyle& style) { style.chrome.corner_radius = 10.0f; });
+    update_style_overrides(*text_input_main,[](elysia::ui::UiTextInputStyleOverrides& style) { style.chrome.corner_radius = 10.0f; });
     widget_content->add_child(std::move(text_input_main),elysia::ui::UiPanelInsertDirection::Down);
 
     auto text_input_limited = make_text_input(
@@ -642,14 +640,14 @@ void UiContainerTestScene::rebuild_ui()
     auto slider_none = make_slider(
         elysia::core::Rect{ 18,676,280,48 },0.25f,"widget-none",elysia::ui::UiSliderValueDisplay::None);
     register_themed(slider_none.get());
-    update_style(*slider_none,[](elysia::ui::UiSliderStyle& style) { style.chrome.corner_radius = 12.0f; });
+    update_style_overrides(*slider_none,[](elysia::ui::UiSliderStyleOverrides& style) { style.chrome.corner_radius = 12.0f; });
     widget_content->add_child(std::move(slider_none),elysia::ui::UiPanelInsertDirection::Down);
 
     auto slider_value = make_slider(
         elysia::core::Rect{ 18,730,280,48 },0.42f,"widget-value",elysia::ui::UiSliderValueDisplay::Value);
     slider_value->set_value_decimal_places(2);
     register_themed(slider_value.get());
-    update_style(*slider_value,[](elysia::ui::UiSliderStyle& style) { style.chrome.corner_radius = 18.0f; });
+    update_style_overrides(*slider_value,[](elysia::ui::UiSliderStyleOverrides& style) { style.chrome.corner_radius = 18.0f; });
     widget_content->add_child(std::move(slider_value),elysia::ui::UiPanelInsertDirection::Down);
 
     auto slider_percent_vertical = make_slider(
@@ -705,7 +703,7 @@ void UiContainerTestScene::rebuild_ui()
         elysia::ui::UiDropdownOption{ elysia::ui::ui_raw_text("Raw option C") },
         elysia::ui::UiDropdownOption{ elysia::ui::ui_raw_text("Raw option D") }
     });
-    update_style(*dropdown,[](elysia::ui::UiDropdownStyle& style)
+    update_style_overrides(*dropdown,[](elysia::ui::UiDropdownStyleOverrides& style)
     {
         style.popup_max_height = 126.0f;
     });

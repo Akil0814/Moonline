@@ -266,9 +266,9 @@ void UiPanel::set_base_style(const UiPanelStyle& style) noexcept
     _style_state.set_base_style(style);
 }
 
-void UiPanel::set_style(const UiPanelStyle& style) noexcept
+void UiPanel::set_style_overrides(const UiPanelStyleOverrides& overrides) noexcept
 {
-    _style_state.set_style_override(style);
+    _style_state.set_style_overrides(overrides);
 }
 
 const UiPanelStyle& UiPanel::style() const noexcept
@@ -276,14 +276,15 @@ const UiPanelStyle& UiPanel::style() const noexcept
     return _style_state.effective_style();
 }
 
-bool UiPanel::has_style_override() const noexcept
+const UiPanelStyleOverrides& UiPanel::style_overrides() const noexcept { return _style_state.style_overrides(); }
+bool UiPanel::has_style_overrides() const noexcept
 {
-    return _style_state.has_style_override();
+    return _style_state.has_style_overrides();
 }
 
-void UiPanel::clear_style_override() noexcept
+void UiPanel::clear_style_overrides() noexcept
 {
-    _style_state.clear_style_override();
+    _style_state.clear_style_overrides();
 }
 
 void UiPanel::set_visual_role(UiPanelVisualRole role) noexcept

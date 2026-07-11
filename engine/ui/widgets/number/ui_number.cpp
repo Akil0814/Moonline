@@ -199,9 +199,9 @@ void UiNumber::set_base_style(const UiNumberStyle& style) noexcept
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-void UiNumber::set_style(const UiNumberStyle& style) noexcept
+void UiNumber::set_style_overrides(const UiNumberStyleOverrides& overrides) noexcept
 {
-    _style_state.set_style_override(style);
+    _style_state.set_style_overrides(overrides);
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
@@ -210,14 +210,15 @@ const UiNumberStyle& UiNumber::style() const noexcept
     return _style_state.effective_style();
 }
 
-bool UiNumber::has_style_override() const noexcept
+const UiNumberStyleOverrides& UiNumber::style_overrides() const noexcept { return _style_state.style_overrides(); }
+bool UiNumber::has_style_overrides() const noexcept
 {
-    return _style_state.has_style_override();
+    return _style_state.has_style_overrides();
 }
 
-void UiNumber::clear_style_override() noexcept
+void UiNumber::clear_style_overrides() noexcept
 {
-    _style_state.clear_style_override();
+    _style_state.clear_style_overrides();
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 

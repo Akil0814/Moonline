@@ -26,6 +26,7 @@
 #include <iostream>
 #include <limits>
 #include <memory>
+#include <type_traits>
 #include <vector>
 
 namespace
@@ -60,6 +61,12 @@ elysia::ui::UiInteractiveColors test_border_colors()
     };
 }
 
+elysia::ui::UiInteractiveColorsOverrides test_border_color_overrides()
+{
+    const auto colors = test_border_colors();
+    return { colors.idle,colors.focused,colors.active,colors.disabled };
+}
+
 void test_corner_radius_normalization()
 {
     using namespace elysia::core;
@@ -82,9 +89,9 @@ void test_chrome_uses_single_rounded_outer_frame()
 {
     elysia::ui::UiChromeContainer chrome(elysia::core::Rect{ 0,0,240,160 });
     chrome.set_header_height(48.0f);
-    auto style = chrome.style();
+    elysia::ui::UiChromeContainerStyleOverrides style{};
     style.corner_radius = 12.0f;
-    chrome.set_style(style);
+    chrome.set_style_overrides(style);
 
     std::vector<elysia::core::UiRenderCommand> commands;
     chrome.submit_ui_render_commands(commands);
@@ -97,6 +104,46 @@ void test_chrome_uses_single_rounded_outer_frame()
     }
     require(rounded_fills == 2,"chrome should emit one outer fill and one clipped rounded header cap");
     require(rounded_borders == 1,"chrome should emit exactly one rounded outer border");
+}
+
+void test_field_level_style_cascade()
+{
+    elysia::ui::UiButton button(elysia::core::Rect{ 0,0,120,40 });
+    elysia::ui::UiButtonStyle base = button.style();
+    base.chrome.background.idle = elysia::core::Color{ 1,2,3,255 };
+    base.chrome.border.idle = elysia::core::Color{ 4,5,6,255 };
+    button.set_base_style(base);
+
+    elysia::ui::UiButtonStyleOverrides overrides{};
+    overrides.chrome.corner_radius = 9.0f;
+    overrides.chrome.border.focused = elysia::core::Color{ 7,8,9,255 };
+    button.set_style_overrides(overrides);
+
+    elysia::ui::UiButtonStyle next_base = base;
+    next_base.chrome.background.idle = elysia::core::Color{ 10,11,12,255 };
+    next_base.chrome.border.idle = elysia::core::Color{ 13,14,15,255 };
+    button.set_base_style(next_base);
+    require(button.style().chrome.corner_radius == 9.0f,"written radius leaf should survive base changes");
+    require(button.style().chrome.border.focused == elysia::core::Color{ 7,8,9,255 },
+        "written nested border leaf should survive base changes");
+    require(button.style().chrome.background.idle == next_base.chrome.background.idle,
+        "unwritten background leaf should follow the latest base style");
+    require(button.style().chrome.border.idle == next_base.chrome.border.idle,
+        "sibling border leaf should remain independent");
+
+    elysia::ui::UiButtonStyleOverrides replacement{};
+    replacement.chrome.draw_border = false;
+    button.set_style_overrides(replacement);
+    require(button.style().chrome.corner_radius == next_base.chrome.corner_radius,
+        "replacing overrides should restore omitted radius to base");
+    require(button.style().chrome.border.focused == next_base.chrome.border.focused,
+        "replacing overrides should restore omitted nested leaf to base");
+    require(!button.style().chrome.draw_border,"replacement override should apply its written leaf");
+    button.clear_style_overrides();
+    require(!button.has_style_overrides(),"clearing overrides should leave an empty sparse override tree");
+
+    static_assert(std::is_const_v<std::remove_reference_t<decltype(button.style())>>);
+    static_assert(std::is_const_v<std::remove_reference_t<decltype(button.style_overrides())>>);
 }
 
 void test_overlay_lifetime()
@@ -228,22 +275,22 @@ void test_radio_render_defers_callback()
 
 void test_group_preserves_button_override()
 {
-    elysia::ui::UiButtonStyle custom{};
+    elysia::ui::UiButtonStyleOverrides custom{};
     custom.chrome.draw_background = false;
     custom.chrome.draw_border = false;
     auto button = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,100,40 });
-    button->set_style(custom);
+    button->set_style_overrides(custom);
 
     elysia::ui::UiButtonGroup group(elysia::core::Rect{ 0,0,120,40 });
     elysia::ui::UiButton* raw = group.add_button(std::move(button));
-    require(raw && raw->has_style_override(),"group must retain explicit button style override");
+    require(raw && raw->has_style_overrides(),"group must retain explicit button style overrides");
     require(!raw->style().chrome.draw_background && !raw->style().chrome.draw_border,
         "selection role must not overwrite structural button style");
 
     elysia::ui::UiTabBar tabs(elysia::core::Rect{ 0,0,240,40 });
     elysia::ui::UiButton* tab = tabs.add_tab(elysia::ui::ui_raw_text("tab"));
     require(tab != nullptr,"tab should be created");
-    tab->set_style(custom);
+    tab->set_style_overrides(custom);
     tabs.set_selected_index(0);
     require(!tab->style().chrome.draw_background && !tab->style().chrome.draw_border,
         "tab selection must retain explicit button style override");
@@ -315,12 +362,13 @@ void require_command_color(
 
 void test_button_interactive_border_colors()
 {
-    elysia::ui::UiButtonStyle style{};
+    const auto border = test_border_colors();
+    elysia::ui::UiButtonStyleOverrides style{};
     style.chrome.draw_background = false;
     style.chrome.draw_border = true;
-    style.chrome.border = test_border_colors();
+    style.chrome.border = test_border_color_overrides();
     elysia::ui::UiButton button(elysia::core::Rect{ 0,0,100,40 });
-    button.set_style(style);
+    button.set_style_overrides(style);
 
     const auto render = [&button]()
     {
@@ -330,28 +378,28 @@ void test_button_interactive_border_colors()
     };
 
     require_command_color(render(),elysia::core::UiRenderCommandType::DrawRect,
-        style.chrome.border.idle,"button idle border color");
+        border.idle,"button idle border color");
     button.set_focused(true);
     require_command_color(render(),elysia::core::UiRenderCommandType::DrawRect,
-        style.chrome.border.focused,"button focused border color");
+        border.focused,"button focused border color");
     button.on_ui_input_event(elysia::ui::UiInputEvent{
         .action = elysia::ui::UiAction::Confirm,
         .type = elysia::ui::UiInputEventType::ActionPressed
     });
     require_command_color(render(),elysia::core::UiRenderCommandType::DrawRect,
-        style.chrome.border.active,"button active border color");
+        border.active,"button active border color");
     button.set_enabled(false);
     require_command_color(render(),elysia::core::UiRenderCommandType::DrawRect,
-        style.chrome.border.disabled,"button disabled border color");
+        border.disabled,"button disabled border color");
 }
 
 void test_textured_button_border()
 {
-    elysia::ui::UiButtonStyle style{};
+    elysia::ui::UiButtonStyleOverrides style{};
     style.chrome.draw_border = true;
-    style.chrome.border = test_border_colors();
+    style.chrome.border = test_border_color_overrides();
     elysia::ui::UiButton button(elysia::core::Rect{ 0,0,100,40 });
-    button.set_style(style);
+    button.set_style_overrides(style);
     auto* texture = reinterpret_cast<SDL_Texture*>(static_cast<std::uintptr_t>(1));
     button.set_state_textures(elysia::ui::UiButtonTextures{ .idle = texture });
 
@@ -364,7 +412,7 @@ void test_textured_button_border()
         "textured button border should render after texture");
 
     style.chrome.draw_border = false;
-    button.set_style(style);
+    button.set_style_overrides(style);
     commands.clear();
     button.submit_ui_render_commands(commands);
     require(commands.size() == 1 && commands[0].type == elysia::core::UiRenderCommandType::Texture,
@@ -380,20 +428,20 @@ void test_other_chrome_active_borders()
     };
     std::vector<elysia::core::UiRenderCommand> commands;
 
-    elysia::ui::UiCheckboxStyle checkbox_style{};
-    checkbox_style.chrome.border = border;
+    elysia::ui::UiCheckboxStyleOverrides checkbox_style{};
+    checkbox_style.chrome.border = test_border_color_overrides();
     elysia::ui::UiCheckbox checkbox(elysia::core::Rect{ 0,0,40,40 });
-    checkbox.set_style(checkbox_style);
+    checkbox.set_style_overrides(checkbox_style);
     checkbox.set_focused(true);
     checkbox.on_ui_input_event(confirm_pressed);
     checkbox.submit_ui_render_commands(commands);
     require_command_color(commands,elysia::core::UiRenderCommandType::DrawRect,
         border.active,"checkbox active border color");
 
-    elysia::ui::UiRadioButtonStyle radio_style{};
-    radio_style.chrome.border = border;
+    elysia::ui::UiRadioButtonStyleOverrides radio_style{};
+    radio_style.chrome.border = test_border_color_overrides();
     elysia::ui::UiRadioButton radio(elysia::core::Rect{ 0,0,40,40 });
-    radio.set_style(radio_style);
+    radio.set_style_overrides(radio_style);
     radio.set_focused(true);
     radio.on_ui_input_event(confirm_pressed);
     commands.clear();
@@ -401,10 +449,10 @@ void test_other_chrome_active_borders()
     require_command_color(commands,elysia::core::UiRenderCommandType::DrawCircle,
         border.active,"radio active border color");
 
-    elysia::ui::UiTextInputStyle input_style{};
-    input_style.chrome.border = border;
+    elysia::ui::UiTextInputStyleOverrides input_style{};
+    input_style.chrome.border = test_border_color_overrides();
     elysia::ui::UiTextInput input(elysia::core::Rect{ 0,0,160,40 });
-    input.set_style(input_style);
+    input.set_style_overrides(input_style);
     input.set_focused(true);
     input.on_ui_input_event(confirm_pressed);
     commands.clear();
@@ -419,20 +467,20 @@ void test_other_chrome_active_borders()
         .mouse_x = 9,
         .mouse_y = 9
     };
-    elysia::ui::UiDragHandleStyle handle_style{};
-    handle_style.chrome.border = border;
+    elysia::ui::UiDragHandleStyleOverrides handle_style{};
+    handle_style.chrome.border = test_border_color_overrides();
     elysia::ui::UiDragHandle handle(elysia::core::Rect{ 0,0,40,40 });
-    handle.set_style(handle_style);
+    handle.set_style_overrides(handle_style);
     handle.on_ui_input_event(pointer_pressed);
     commands.clear();
     handle.submit_ui_render_commands(commands);
     require_command_color(commands,elysia::core::UiRenderCommandType::DrawRect,
         border.active,"drag handle active border color");
 
-    elysia::ui::UiSliderStyle slider_style{};
-    slider_style.chrome.border = border;
+    elysia::ui::UiSliderStyleOverrides slider_style{};
+    slider_style.chrome.border = test_border_color_overrides();
     elysia::ui::UiSlider slider(elysia::core::Rect{ 0,0,180,40 });
-    slider.set_style(slider_style);
+    slider.set_style_overrides(slider_style);
     slider.on_ui_input_event(elysia::ui::UiInputEvent{
         .type = elysia::ui::UiInputEventType::PointerPressed,
         .device = elysia::input::InputDevice::Mouse,
@@ -493,12 +541,17 @@ void test_container_driven_theme_tree()
             == manager.current_theme().button(elysia::ui::UiButtonVisualRole::Default).chrome.background.idle,
         "new descendants should receive the current theme immediately");
 
-    elysia::ui::UiButtonStyle custom = dynamic_raw->style();
+    elysia::ui::UiButtonStyleOverrides custom{};
     custom.chrome.draw_background = false;
-    dynamic_raw->set_style(custom);
+    custom.chrome.corner_radius = 11.0f;
+    dynamic_raw->set_style_overrides(custom);
     manager.set_theme(elysia::ui::UiBuiltinTheme::ElysiaLight);
     require(!dynamic_raw->style().chrome.draw_background,"manual overrides must survive theme changes");
-    dynamic_raw->clear_style_override();
+    require(dynamic_raw->style().chrome.corner_radius == 11.0f,"corner radius override must survive theme changes");
+    require(dynamic_raw->style().chrome.background.idle
+            == manager.current_theme().button(elysia::ui::UiButtonVisualRole::Default).chrome.background.idle,
+        "unwritten color fields must follow theme changes");
+    dynamic_raw->clear_style_overrides();
     require(dynamic_raw->style().chrome.background.idle
             == manager.current_theme().button(elysia::ui::UiButtonVisualRole::Default).chrome.background.idle,
         "clearing an override should expose the latest base style");
@@ -527,6 +580,7 @@ int main()
 {
     test_corner_radius_normalization();
     test_chrome_uses_single_rounded_outer_frame();
+    test_field_level_style_cascade();
     test_overlay_lifetime();
     test_transient_popup_lifetime();
     test_tooltip_lifetime();

@@ -99,9 +99,9 @@ void UiWindow::set_base_style(const UiWindowStyle& style) noexcept
     _style_state.set_base_style(style);
 }
 
-void UiWindow::set_style(const UiWindowStyle& style) noexcept
+void UiWindow::set_style_overrides(const UiWindowStyleOverrides& overrides) noexcept
 {
-    _style_state.set_style_override(style);
+    _style_state.set_style_overrides(overrides);
 }
 
 const UiWindowStyle& UiWindow::style() const noexcept
@@ -109,14 +109,15 @@ const UiWindowStyle& UiWindow::style() const noexcept
     return _style_state.effective_style();
 }
 
-bool UiWindow::has_style_override() const noexcept
+const UiWindowStyleOverrides& UiWindow::style_overrides() const noexcept { return _style_state.style_overrides(); }
+bool UiWindow::has_style_overrides() const noexcept
 {
-    return _style_state.has_style_override();
+    return _style_state.has_style_overrides();
 }
 
-void UiWindow::clear_style_override() noexcept
+void UiWindow::clear_style_overrides() noexcept
 {
-    _style_state.clear_style_override();
+    _style_state.clear_style_overrides();
 }
 
 void UiWindow::set_hover_focus_enabled(bool enabled) noexcept

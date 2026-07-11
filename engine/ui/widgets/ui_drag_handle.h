@@ -35,13 +35,20 @@ struct UiDragHandleStyle
     std::optional<UiDragHandleTextures> textures = std::nullopt;
     UiChromeStyle chrome{};
 };
+struct UiDragHandleStyleOverrides
+{
+    std::optional<elysia::core::Vector2> size;
+    std::optional<std::optional<UiDragHandleTextures>> textures;
+    UiChromeStyleOverrides chrome{};
+};
+template<> struct UiStyleOverrideTraits<UiDragHandleStyle> { using Overrides=UiDragHandleStyleOverrides; static bool empty(const Overrides& o) noexcept { return !o.size&&!o.textures&&elysia::ui::empty(o.chrome); } static void apply(UiDragHandleStyle& s,const Overrides& o) noexcept { apply_ui_style_override(s.size,o.size); apply_ui_style_override(s.textures,o.textures); apply_ui_style_overrides(s.chrome,o.chrome); } };
 
 // Configures axis constraints, drag bounds, and visuals for a handle.
 struct UiDragHandleConfig
 {
     UiDragAxis axis = UiDragAxis::Free;
     std::optional<elysia::core::Rect> drag_bounds = std::nullopt;
-    UiDragHandleStyle style{};
+    UiDragHandleStyleOverrides style_overrides{};
 };
 
 using UiDragHandleDraggedCallback = std::function<void(const elysia::core::Vector2& center)>;
@@ -69,10 +76,11 @@ public:
     void set_drag_handle_config(const UiDragHandleConfig& config);
     [[nodiscard]] const UiDragHandleConfig& drag_handle_config() const noexcept;
     void set_base_style(const UiDragHandleStyle& style) noexcept;
-    void set_style(const UiDragHandleStyle& style);
+    void set_style_overrides(const UiDragHandleStyleOverrides& overrides);
     [[nodiscard]] const UiDragHandleStyle& style() const noexcept;
-    [[nodiscard]] bool has_style_override() const noexcept;
-    void clear_style_override() noexcept;
+    [[nodiscard]] const UiDragHandleStyleOverrides& style_overrides() const noexcept;
+    [[nodiscard]] bool has_style_overrides() const noexcept;
+    void clear_style_overrides() noexcept;
 
     void set_drag_axis(UiDragAxis axis) noexcept;
     [[nodiscard]] UiDragAxis drag_axis() const noexcept;

@@ -88,9 +88,9 @@ void UiBar::set_base_style(const UiBarStyle& style) noexcept
     _style_state.set_base_style(style);
 }
 
-void UiBar::set_style(const UiBarStyle& style) noexcept
+void UiBar::set_style_overrides(const UiBarStyleOverrides& overrides) noexcept
 {
-    _style_state.set_style_override(style);
+    _style_state.set_style_overrides(overrides);
 }
 
 const UiBarStyle& UiBar::style() const noexcept
@@ -98,14 +98,15 @@ const UiBarStyle& UiBar::style() const noexcept
     return _style_state.effective_style();
 }
 
-bool UiBar::has_style_override() const noexcept
+const UiBarStyleOverrides& UiBar::style_overrides() const noexcept { return _style_state.style_overrides(); }
+bool UiBar::has_style_overrides() const noexcept
 {
-    return _style_state.has_style_override();
+    return _style_state.has_style_overrides();
 }
 
-void UiBar::clear_style_override() noexcept
+void UiBar::clear_style_overrides() noexcept
 {
-    _style_state.clear_style_override();
+    _style_state.clear_style_overrides();
 }
 
 void UiBar::set_visual_role(UiBarVisualRole role) noexcept

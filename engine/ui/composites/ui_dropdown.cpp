@@ -227,9 +227,9 @@ void UiDropdown::set_base_style(const UiDropdownBaseStyle& style) noexcept
     if (_expanded) sync_popup_layout();
 }
 
-void UiDropdown::set_style(const UiDropdownStyle& style) noexcept
+void UiDropdown::set_style_overrides(const UiDropdownStyleOverrides& overrides) noexcept
 {
-    _style_state.set_style_override(style);
+    _style_state.set_style_overrides(overrides);
     if (_expanded)
         sync_popup_layout();
 }
@@ -239,14 +239,15 @@ const UiDropdownStyle& UiDropdown::style() const noexcept
     return _style_state.effective_style();
 }
 
-bool UiDropdown::has_style_override() const noexcept
+const UiDropdownStyleOverrides& UiDropdown::style_overrides() const noexcept { return _style_state.style_overrides(); }
+bool UiDropdown::has_style_overrides() const noexcept
 {
-    return _style_state.has_style_override();
+    return _style_state.has_style_overrides();
 }
 
-void UiDropdown::clear_style_override() noexcept
+void UiDropdown::clear_style_overrides() noexcept
 {
-    _style_state.clear_style_override();
+    _style_state.clear_style_overrides();
     if (_expanded)
         sync_popup_layout();
 }

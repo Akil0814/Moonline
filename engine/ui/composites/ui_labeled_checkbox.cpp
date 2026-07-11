@@ -76,7 +76,7 @@ void UiLabeledCheckbox::sync_children() const
     auto style = UiStyleDefaults::label();
     style.draw_background = false;
     style.text = is_enabled() ? text_colors.enabled : text_colors.disabled;
-    _label.set_style(style);
+    _label.set_base_style(style);
     _label.set_vertical_align(TextVerticalAlign::Center);
     if (_label_placement == UiLabeledCheckboxLabelPlacement::Left)
     {

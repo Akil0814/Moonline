@@ -61,13 +61,15 @@ struct UiButtonStyle
     UiChromeStyle chrome{};
     UiEnabledDisabledColors text{};
 };
+struct UiButtonStyleOverrides { UiChromeStyleOverrides chrome{}; UiEnabledDisabledColorsOverrides text{}; };
+template<> struct UiStyleOverrideTraits<UiButtonStyle> { using Overrides=UiButtonStyleOverrides; static bool empty(const Overrides& o) noexcept { return elysia::ui::empty(o.chrome)&&elysia::ui::empty(o.text); } static void apply(UiButtonStyle& s,const Overrides& o) noexcept { apply_ui_style_overrides(s.chrome,o.chrome); apply_ui_style_overrides(s.text,o.text); } };
 
 // Bundles content, sound, and style overrides for button construction or updates.
 struct UiButtonConfig
 {
     UiButtonContent content{};
     std::optional<UiButtonSounds> sounds;
-    std::optional<UiButtonStyle> style = std::nullopt;
+    std::optional<UiButtonStyleOverrides> style_overrides = std::nullopt;
 };
 
 class UiButton : public UiControl
@@ -120,10 +122,11 @@ public:
     void set_on_click(ClickCallback on_click);
 
     void set_base_style(const UiButtonStyle& style) noexcept;
-    void set_style(const UiButtonStyle& style);
+    void set_style_overrides(const UiButtonStyleOverrides& overrides);
     [[nodiscard]] const UiButtonStyle& style() const noexcept;
-    [[nodiscard]] bool has_style_override() const noexcept;
-    void clear_style_override() noexcept;
+    [[nodiscard]] const UiButtonStyleOverrides& style_overrides() const noexcept;
+    [[nodiscard]] bool has_style_overrides() const noexcept;
+    void clear_style_overrides() noexcept;
 
     void set_visual_role(UiButtonVisualRole role) noexcept;
     [[nodiscard]] UiButtonVisualRole visual_role() const noexcept;

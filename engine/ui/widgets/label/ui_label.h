@@ -37,10 +37,11 @@ public:
     [[nodiscard]] const UiTextContent& text_content() const noexcept;
 
     void set_base_style(const UiLabelStyle& style) noexcept;
-    void set_style(const UiLabelStyle& style) noexcept;
+    void set_style_overrides(const UiLabelStyleOverrides& overrides) noexcept;
     [[nodiscard]] const UiLabelStyle& style() const noexcept;
-    [[nodiscard]] bool has_style_override() const noexcept;
-    void clear_style_override() noexcept;
+    [[nodiscard]] const UiLabelStyleOverrides& style_overrides() const noexcept;
+    [[nodiscard]] bool has_style_overrides() const noexcept;
+    void clear_style_overrides() noexcept;
 
     void set_visual_role(UiLabelVisualRole role) noexcept;
     [[nodiscard]] UiLabelVisualRole visual_role() const noexcept;

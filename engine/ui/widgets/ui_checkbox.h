@@ -59,13 +59,15 @@ struct UiCheckboxStyle
     UiEnabledDisabledColors mark{};
     UiCheckboxMarkStyle mark_style = UiCheckboxMarkStyle::Checkmark;
 };
+struct UiCheckboxStyleOverrides { UiChromeStyleOverrides chrome{}; UiEnabledDisabledColorsOverrides mark{}; std::optional<UiCheckboxMarkStyle> mark_style; };
+template<> struct UiStyleOverrideTraits<UiCheckboxStyle> { using Overrides=UiCheckboxStyleOverrides; static bool empty(const Overrides& o) noexcept { return elysia::ui::empty(o.chrome)&&elysia::ui::empty(o.mark)&&!o.mark_style; } static void apply(UiCheckboxStyle& s,const Overrides& o) noexcept { apply_ui_style_overrides(s.chrome,o.chrome); apply_ui_style_overrides(s.mark,o.mark); apply_ui_style_override(s.mark_style,o.mark_style); } };
 
 // Bundles optional textures, sounds, and style overrides for a checkbox.
 struct UiCheckboxConfig
 {
     std::optional<UiCheckboxTextures> textures = std::nullopt;
     std::optional<UiCheckboxSounds> sounds = std::nullopt;
-    std::optional<UiCheckboxStyle> style = std::nullopt;
+    std::optional<UiCheckboxStyleOverrides> style_overrides = std::nullopt;
 };
 
 using UiCheckboxToggledCallback = std::function<void(UiCheckboxState state)>;
@@ -115,10 +117,11 @@ public:
     void set_on_toggled(UiCheckboxToggledCallback on_toggled);
 
     void set_base_style(const UiCheckboxStyle& style) noexcept;
-    void set_style(const UiCheckboxStyle& style) noexcept;
+    void set_style_overrides(const UiCheckboxStyleOverrides& overrides) noexcept;
     [[nodiscard]] const UiCheckboxStyle& style() const noexcept;
-    [[nodiscard]] bool has_style_override() const noexcept;
-    void clear_style_override() noexcept;
+    [[nodiscard]] const UiCheckboxStyleOverrides& style_overrides() const noexcept;
+    [[nodiscard]] bool has_style_overrides() const noexcept;
+    void clear_style_overrides() noexcept;
     void set_mark_style(UiCheckboxMarkStyle mark_style) noexcept;
     [[nodiscard]] UiCheckboxMarkStyle mark_style() const noexcept;
 

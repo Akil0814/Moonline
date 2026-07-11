@@ -158,8 +158,6 @@ void UiChromeContainer::reset() noexcept
     _header_padding = UiLayoutPadding{ 8.0f,6.0f,8.0f,6.0f };
     _body_padding = UiLayoutPadding{};
     _header_height = 48.0f;
-    _composite_corner_radius = 0.0f;
-    _has_composite_corner_radius = false;
     _header_visible = true;
     _scope_focused = false;
     _body_scope_active = false;
@@ -275,9 +273,7 @@ void UiChromeContainer::submit_ui_render_commands(std::vector<elysia::core::UiRe
 
     const elysia::core::Rect& rect = screen_rect();
     const UiChromeContainerStyle& style = _style_state.effective_style();
-    const float corner_radius = _has_composite_corner_radius
-        ? _composite_corner_radius
-        : style.corner_radius;
+    const float corner_radius = style.corner_radius;
     if (style.draw_background && !rect.is_empty())
         out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(style.background),corner_radius));
     if (_header_visible && style.draw_header_background && !header_rect().is_empty())
@@ -543,9 +539,9 @@ void UiChromeContainer::set_base_style(const UiChromeContainerStyle& style) noex
     _style_state.set_base_style(style);
 }
 
-void UiChromeContainer::set_style(const UiChromeContainerStyle& style) noexcept
+void UiChromeContainer::set_style_overrides(const UiChromeContainerStyleOverrides& overrides) noexcept
 {
-    _style_state.set_style_override(style);
+    _style_state.set_style_overrides(overrides);
 }
 
 const UiChromeContainerStyle& UiChromeContainer::style() const noexcept
@@ -553,21 +549,17 @@ const UiChromeContainerStyle& UiChromeContainer::style() const noexcept
     return _style_state.effective_style();
 }
 
-bool UiChromeContainer::has_style_override() const noexcept
+const UiChromeContainerStyleOverrides& UiChromeContainer::style_overrides() const noexcept { return _style_state.style_overrides(); }
+bool UiChromeContainer::has_style_overrides() const noexcept
 {
-    return _style_state.has_style_override();
+    return _style_state.has_style_overrides();
 }
 
-void UiChromeContainer::clear_style_override() noexcept
+void UiChromeContainer::clear_style_overrides() noexcept
 {
-    _style_state.clear_style_override();
+    _style_state.clear_style_overrides();
 }
 
-void UiChromeContainer::set_composite_corner_radius(float corner_radius) noexcept
-{
-    _composite_corner_radius = corner_radius;
-    _has_composite_corner_radius = true;
-}
 
 void UiChromeContainer::rebuild_layout()
 {

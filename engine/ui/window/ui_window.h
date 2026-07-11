@@ -27,10 +27,11 @@ public:
     void reset() noexcept override;
 
     void set_base_style(const UiWindowStyle& style) noexcept;
-    void set_style(const UiWindowStyle& style) noexcept;
+    void set_style_overrides(const UiWindowStyleOverrides& overrides) noexcept;
     [[nodiscard]] const UiWindowStyle& style() const noexcept;
-    [[nodiscard]] bool has_style_override() const noexcept;
-    void clear_style_override() noexcept;
+    [[nodiscard]] const UiWindowStyleOverrides& style_overrides() const noexcept;
+    [[nodiscard]] bool has_style_overrides() const noexcept;
+    void clear_style_overrides() noexcept;
     void set_hover_focus_enabled(bool enabled) noexcept;
     [[nodiscard]] bool hover_focus_enabled() const noexcept;
     void set_on_cancel(UiWindowCancelCallback on_cancel);

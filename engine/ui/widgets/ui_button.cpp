@@ -318,9 +318,9 @@ void UiButton::set_base_style(const UiButtonStyle& style) noexcept
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-void UiButton::set_style(const UiButtonStyle& style)
+void UiButton::set_style_overrides(const UiButtonStyleOverrides& overrides)
 {
-    _style_state.set_style_override(style);
+    _style_state.set_style_overrides(overrides);
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
@@ -329,14 +329,15 @@ const UiButtonStyle& UiButton::style() const noexcept
     return _style_state.effective_style();
 }
 
-bool UiButton::has_style_override() const noexcept
+const UiButtonStyleOverrides& UiButton::style_overrides() const noexcept { return _style_state.style_overrides(); }
+bool UiButton::has_style_overrides() const noexcept
 {
-    return _style_state.has_style_override();
+    return _style_state.has_style_overrides();
 }
 
-void UiButton::clear_style_override() noexcept
+void UiButton::clear_style_overrides() noexcept
 {
-    _style_state.clear_style_override();
+    _style_state.clear_style_overrides();
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
@@ -372,8 +373,10 @@ void UiButton::apply_button_config(const UiButtonConfig& config)
     else
         clear_sounds();
 
-    if (config.style)
-        set_style(*config.style);
+    if (config.style_overrides)
+        set_style_overrides(*config.style_overrides);
+    else
+        clear_style_overrides();
     apply_button_content(config.content);
 }
 

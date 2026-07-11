@@ -27,6 +27,8 @@ struct UiTextInputStyle
     UiEnabledDisabledColors placeholder{};
     elysia::core::Color caret{};
 };
+struct UiTextInputStyleOverrides { UiChromeStyleOverrides chrome{}; UiEnabledDisabledColorsOverrides text{}; UiEnabledDisabledColorsOverrides placeholder{}; std::optional<elysia::core::Color> caret; };
+template<> struct UiStyleOverrideTraits<UiTextInputStyle> { using Overrides=UiTextInputStyleOverrides; static bool empty(const Overrides& o) noexcept { return elysia::ui::empty(o.chrome)&&elysia::ui::empty(o.text)&&elysia::ui::empty(o.placeholder)&&!o.caret; } static void apply(UiTextInputStyle& s,const Overrides& o) noexcept { apply_ui_style_overrides(s.chrome,o.chrome); apply_ui_style_overrides(s.text,o.text); apply_ui_style_overrides(s.placeholder,o.placeholder); apply_ui_style_override(s.caret,o.caret); } };
 
 class UiTextInput : public UiControl
 {
@@ -60,10 +62,11 @@ public:
     [[nodiscard]] const std::optional<std::size_t>& max_length() const noexcept;
 
     void set_base_style(const UiTextInputStyle& style) noexcept;
-    void set_style(const UiTextInputStyle& style) noexcept;
+    void set_style_overrides(const UiTextInputStyleOverrides& overrides) noexcept;
     [[nodiscard]] const UiTextInputStyle& style() const noexcept;
-    [[nodiscard]] bool has_style_override() const noexcept;
-    void clear_style_override() noexcept;
+    [[nodiscard]] const UiTextInputStyleOverrides& style_overrides() const noexcept;
+    [[nodiscard]] bool has_style_overrides() const noexcept;
+    void clear_style_overrides() noexcept;
 
     void set_typography_role(UiTypographyRole role) noexcept;
     [[nodiscard]] UiTypographyRole typography_role() const noexcept;

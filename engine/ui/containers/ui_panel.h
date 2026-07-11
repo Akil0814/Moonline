@@ -41,10 +41,11 @@ public:
     UiElement* add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options) override;
 
     void set_base_style(const UiPanelStyle& style) noexcept;
-    void set_style(const UiPanelStyle& style) noexcept;
+    void set_style_overrides(const UiPanelStyleOverrides& overrides) noexcept;
     [[nodiscard]] const UiPanelStyle& style() const noexcept;
-    [[nodiscard]] bool has_style_override() const noexcept;
-    void clear_style_override() noexcept;
+    [[nodiscard]] const UiPanelStyleOverrides& style_overrides() const noexcept;
+    [[nodiscard]] bool has_style_overrides() const noexcept;
+    void clear_style_overrides() noexcept;
 
     void set_visual_role(UiPanelVisualRole role) noexcept;
     [[nodiscard]] UiPanelVisualRole visual_role() const noexcept;

@@ -393,9 +393,9 @@ void UiTextInput::set_base_style(const UiTextInputStyle& style) noexcept
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-void UiTextInput::set_style(const UiTextInputStyle& style) noexcept
+void UiTextInput::set_style_overrides(const UiTextInputStyleOverrides& overrides) noexcept
 {
-    _style_state.set_style_override(style);
+    _style_state.set_style_overrides(overrides);
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
@@ -404,14 +404,15 @@ const UiTextInputStyle& UiTextInput::style() const noexcept
     return _style_state.effective_style();
 }
 
-bool UiTextInput::has_style_override() const noexcept
+const UiTextInputStyleOverrides& UiTextInput::style_overrides() const noexcept { return _style_state.style_overrides(); }
+bool UiTextInput::has_style_overrides() const noexcept
 {
-    return _style_state.has_style_override();
+    return _style_state.has_style_overrides();
 }
 
-void UiTextInput::clear_style_override() noexcept
+void UiTextInput::clear_style_overrides() noexcept
 {
-    _style_state.clear_style_override();
+    _style_state.clear_style_overrides();
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 

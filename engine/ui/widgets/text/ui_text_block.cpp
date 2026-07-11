@@ -158,9 +158,9 @@ void UiTextBlock::set_base_style(const UiTextBlockStyle& style) noexcept
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-void UiTextBlock::set_style(const UiTextBlockStyle& style) noexcept
+void UiTextBlock::set_style_overrides(const UiTextBlockStyleOverrides& overrides) noexcept
 {
-    _style_state.set_style_override(style);
+    _style_state.set_style_overrides(overrides);
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
@@ -169,14 +169,15 @@ const UiTextBlockStyle& UiTextBlock::style() const noexcept
     return _style_state.effective_style();
 }
 
-bool UiTextBlock::has_style_override() const noexcept
+const UiTextBlockStyleOverrides& UiTextBlock::style_overrides() const noexcept { return _style_state.style_overrides(); }
+bool UiTextBlock::has_style_overrides() const noexcept
 {
-    return _style_state.has_style_override();
+    return _style_state.has_style_overrides();
 }
 
-void UiTextBlock::clear_style_override() noexcept
+void UiTextBlock::clear_style_overrides() noexcept
 {
-    _style_state.clear_style_override();
+    _style_state.clear_style_overrides();
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 

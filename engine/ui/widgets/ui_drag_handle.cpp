@@ -62,12 +62,11 @@ void UiDragHandle::reset() noexcept
     UiControl::reset();
     _config = UiDragHandleConfig{};
     _style_state.reset(UiStyleDefaults::drag_handle());
-    _config.style = _style_state.effective_style();
     _on_dragged = nullptr;
     _on_drag_ended = nullptr;
     _grab_offset = elysia::core::Vector2{};
     _is_dragging = false;
-    set_size(_config.style.size);
+    set_size(_style_state.effective_style().size);
 }
 
 void UiDragHandle::set_enabled(bool enabled)
@@ -173,15 +172,11 @@ void UiDragHandle::set_base_style(const UiDragHandleStyle& style) noexcept
     _style_state.set_base_style(style);
 }
 
-void UiDragHandle::set_style(const UiDragHandleStyle& style)
+void UiDragHandle::set_style_overrides(const UiDragHandleStyleOverrides& overrides)
 {
-    _style_state.set_style_override(style);
-    _config.style = _style_state.effective_style();
-    _config.style.size = elysia::core::Vector2(
-        clamp_non_negative(_config.style.size.x),
-        clamp_non_negative(_config.style.size.y)
-    );
-    set_size(_config.style.size);
+    _style_state.set_style_overrides(overrides);
+    const auto& resolved = _style_state.effective_style();
+    set_size(elysia::core::Vector2(clamp_non_negative(resolved.size.x),clamp_non_negative(resolved.size.y)));
 }
 
 const UiDragHandleStyle& UiDragHandle::style() const noexcept
@@ -189,16 +184,16 @@ const UiDragHandleStyle& UiDragHandle::style() const noexcept
     return _style_state.effective_style();
 }
 
-bool UiDragHandle::has_style_override() const noexcept
+const UiDragHandleStyleOverrides& UiDragHandle::style_overrides() const noexcept { return _style_state.style_overrides(); }
+bool UiDragHandle::has_style_overrides() const noexcept
 {
-    return _style_state.has_style_override();
+    return _style_state.has_style_overrides();
 }
 
-void UiDragHandle::clear_style_override() noexcept
+void UiDragHandle::clear_style_overrides() noexcept
 {
-    _style_state.clear_style_override();
-    _config.style = _style_state.effective_style();
-    set_size(_config.style.size);
+    _style_state.clear_style_overrides();
+    set_size(_style_state.effective_style().size);
 }
 
 void UiDragHandle::set_drag_axis(UiDragAxis axis) noexcept
@@ -256,12 +251,9 @@ bool UiDragHandle::is_dragging() const noexcept
 void UiDragHandle::apply_drag_handle_config(const UiDragHandleConfig& config)
 {
     _config = config;
-    _style_state.set_style_override(config.style);
-    _config.style.size = elysia::core::Vector2(
-        clamp_non_negative(_config.style.size.x),
-        clamp_non_negative(_config.style.size.y)
-    );
-    set_size(_config.style.size);
+    _style_state.set_style_overrides(config.style_overrides);
+    const auto& resolved = _style_state.effective_style();
+    set_size(elysia::core::Vector2(clamp_non_negative(resolved.size.x),clamp_non_negative(resolved.size.y)));
 }
 
 bool UiDragHandle::can_receive_pointer() const noexcept

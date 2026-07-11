@@ -133,9 +133,9 @@ void UiLabel::set_base_style(const UiLabelStyle& style) noexcept
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-void UiLabel::set_style(const UiLabelStyle& style) noexcept
+void UiLabel::set_style_overrides(const UiLabelStyleOverrides& overrides) noexcept
 {
-    _style_state.set_style_override(style);
+    _style_state.set_style_overrides(overrides);
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
@@ -144,14 +144,15 @@ const UiLabelStyle& UiLabel::style() const noexcept
     return _style_state.effective_style();
 }
 
-bool UiLabel::has_style_override() const noexcept
+const UiLabelStyleOverrides& UiLabel::style_overrides() const noexcept { return _style_state.style_overrides(); }
+bool UiLabel::has_style_overrides() const noexcept
 {
-    return _style_state.has_style_override();
+    return _style_state.has_style_overrides();
 }
 
-void UiLabel::clear_style_override() noexcept
+void UiLabel::clear_style_overrides() noexcept
 {
-    _style_state.clear_style_override();
+    _style_state.clear_style_overrides();
     notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 

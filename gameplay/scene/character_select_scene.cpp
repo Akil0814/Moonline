@@ -131,10 +131,10 @@ namespace arcneco::scene
         if (!horizontal_scroll)
             return;
 
-        auto scroll_style = horizontal_scroll->style();
+        elysia::ui::UiScrollContainerStyleOverrides scroll_style{};
         scroll_style.draw_background = false;
         scroll_style.draw_border = false;
-        horizontal_scroll->set_style(scroll_style);
+        horizontal_scroll->set_style_overrides(scroll_style);
         horizontal_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Horizontal);
         horizontal_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
         horizontal_scroll->set_scroll_step(elysia::core::Vector2(36.0f, 36.0f));
@@ -168,9 +168,9 @@ namespace arcneco::scene
                         .content = elysia::ui::UiButtonIconContent{ avatar_tex }
                     }
                 );
-                auto button_style = character_button->style();
+                elysia::ui::UiButtonStyleOverrides button_style{};
                 button_style.chrome.draw_background = false;
-                character_button->set_style(button_style);
+                character_button->set_style_overrides(button_style);
                 _character_button_keys.push_back(character_key);
                 button_group->add_button(std::move(character_button));
             }

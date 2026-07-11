@@ -85,7 +85,7 @@ void UiRadioButton::submit_ui_render_commands(std::vector<elysia::core::UiRender
 void UiRadioButton::set_radio_button_config(const UiRadioButtonConfig& config)
 {
     if (config.sounds) set_sounds(*config.sounds); else clear_sounds();
-    if (config.style) set_style(*config.style); else clear_style_override();
+    if (config.style_overrides) set_style_overrides(*config.style_overrides); else clear_style_overrides();
     set_padding(config.padding);
 }
 void UiRadioButton::set_selected(bool selected) noexcept { _selected = selected; }
@@ -99,9 +99,11 @@ void UiRadioButton::set_base_style(const UiRadioButtonStyle& style) noexcept
     _style_state.set_base_style(style);
 }
 
-void UiRadioButton::set_style(const UiRadioButtonStyle& style) noexcept { _style_state.set_style_override(style); }
+void UiRadioButton::set_style_overrides(const UiRadioButtonStyleOverrides& overrides) noexcept { _style_state.set_style_overrides(overrides); }
 const UiRadioButtonStyle& UiRadioButton::style() const noexcept { return _style_state.effective_style(); }
-void UiRadioButton::clear_style_override() noexcept { _style_state.clear_style_override(); }
+const UiRadioButtonStyleOverrides& UiRadioButton::style_overrides() const noexcept { return _style_state.style_overrides(); }
+bool UiRadioButton::has_style_overrides() const noexcept { return _style_state.has_style_overrides(); }
+void UiRadioButton::clear_style_overrides() noexcept { _style_state.clear_style_overrides(); }
 void UiRadioButton::set_padding(int padding) noexcept { _padding = std::max(0,padding); }
 int UiRadioButton::padding() const noexcept { return _padding; }
 bool UiRadioButton::select_internal(bool notify) noexcept

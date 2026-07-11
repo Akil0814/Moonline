@@ -32,10 +32,11 @@ public:
     void clear_text();
 
     void set_base_style(const UiTextBlockStyle& style) noexcept;
-    void set_style(const UiTextBlockStyle& style) noexcept;
+    void set_style_overrides(const UiTextBlockStyleOverrides& overrides) noexcept;
     [[nodiscard]] const UiTextBlockStyle& style() const noexcept;
-    [[nodiscard]] bool has_style_override() const noexcept;
-    void clear_style_override() noexcept;
+    [[nodiscard]] const UiTextBlockStyleOverrides& style_overrides() const noexcept;
+    [[nodiscard]] bool has_style_overrides() const noexcept;
+    void clear_style_overrides() noexcept;
 
     void set_visual_role(UiTextBlockVisualRole role) noexcept;
     [[nodiscard]] UiTextBlockVisualRole visual_role() const noexcept;
