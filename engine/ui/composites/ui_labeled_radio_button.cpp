@@ -6,10 +6,14 @@
 
 namespace elysia::ui
 {
-void UiLabeledRadioButton::set_base_styles(const UiRadioButtonStyle& radio,const UiLabelStyle& label) noexcept
+void UiLabeledRadioButton::set_base_styles(
+    const UiRadioButtonStyle& radio,
+    const UiLabelStyle& label,
+    const UiEnabledDisabledColors& text_colors) noexcept
 {
     _radio.set_base_style(radio);
     _label.set_base_style(label);
+    _theme_text_colors = text_colors;
 }
 
 UiLabeledRadioButton::UiLabeledRadioButton(const elysia::core::Rect& rect,int order) noexcept
@@ -25,7 +29,7 @@ void UiLabeledRadioButton::reset() noexcept
 {
     UiControl::reset(); _radio.reset(); _label.reset();
     _text_content = {}; _typography_role = UiTypographyRole::RadioLabel;
-    _text_colors = UiStyleDefaults::labeled_checkbox_text();
+    _theme_text_colors = UiStyleDefaults::labeled_checkbox_text();
     _label_placement = UiLabeledRadioLabelPlacement::Right; _text_placement = UiLabeledRadioTextPlacement::NearIndicator; _label_spacing = 8.0f;
 }
 void UiLabeledRadioButton::set_enabled(bool enabled) { UiControl::set_enabled(enabled); _radio.set_enabled(enabled); }
@@ -46,6 +50,10 @@ void UiLabeledRadioButton::set_selected(bool selected) noexcept { _radio.set_sel
 bool UiLabeledRadioButton::is_selected() const noexcept { return _radio.is_selected(); }
 void UiLabeledRadioButton::set_on_selected(UiRadioButtonSelectedCallback callback) { _radio.set_on_selected(std::move(callback)); }
 void UiLabeledRadioButton::set_text_content(UiTextContent content) { _text_content = std::move(content); }
+elysia::core::Color UiLabeledRadioButton::resolved_text_color() const noexcept
+{
+    return is_enabled() ? _theme_text_colors.enabled : _theme_text_colors.disabled;
+}
 void UiLabeledRadioButton::set_label_placement(UiLabeledRadioLabelPlacement placement) noexcept { _label_placement = placement; }
 void UiLabeledRadioButton::set_text_placement(UiLabeledRadioTextPlacement placement) noexcept { _text_placement = placement; }
 void UiLabeledRadioButton::set_label_spacing(float spacing) noexcept { _label_spacing = std::max(0.0f,spacing); }
@@ -56,7 +64,7 @@ void UiLabeledRadioButton::sync_children() const
     _label.set_screen_rect(label_rect()); _label.set_visible(is_visible()); _label.set_active(is_active()); _label.set_opacity(opacity()); _label.set_text_content(_text_content); _label.set_typography_role(_typography_role);
     auto style = UiStyleDefaults::label();
     style.draw_background = false;
-    style.text = is_enabled() ? _text_colors.enabled : _text_colors.disabled;
+    style.text = resolved_text_color();
     _label.set_base_style(style);
     _label.set_vertical_align(TextVerticalAlign::Center);
     if (_label_placement == UiLabeledRadioLabelPlacement::Left)

@@ -25,7 +25,10 @@ public:
     explicit UiLabeledRadioButton(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0) noexcept;
     UiLabeledRadioButton(const elysia::core::Rect& rect,const UiLabeledRadioButtonConfig& config,int order = 0) noexcept;
     void reset() noexcept override;
-    void set_base_styles(const UiRadioButtonStyle& radio,const UiLabelStyle& label) noexcept;
+    void set_base_styles(
+        const UiRadioButtonStyle& radio,
+        const UiLabelStyle& label,
+        const UiEnabledDisabledColors& text_colors) noexcept;
     void set_enabled(bool enabled) override;
     void set_focused(bool focused) override;
     bool on_ui_input_event(const UiInputEvent& event) override;
@@ -34,6 +37,7 @@ public:
     [[nodiscard]] bool is_selected() const noexcept override;
     void set_on_selected(UiRadioButtonSelectedCallback callback);
     void set_text_content(UiTextContent content);
+    [[nodiscard]] elysia::core::Color resolved_text_color() const noexcept;
     void set_label_placement(UiLabeledRadioLabelPlacement placement) noexcept;
     void set_text_placement(UiLabeledRadioTextPlacement placement) noexcept;
     void set_label_spacing(float spacing) noexcept;
@@ -50,7 +54,7 @@ private:
     mutable UiLabel _label;
     UiTextContent _text_content;
     UiTypographyRole _typography_role = UiTypographyRole::RadioLabel;
-    UiEnabledDisabledColors _text_colors{};
+    UiEnabledDisabledColors _theme_text_colors{};
     UiLabeledRadioLabelPlacement _label_placement = UiLabeledRadioLabelPlacement::Right;
     UiLabeledRadioTextPlacement _text_placement = UiLabeledRadioTextPlacement::NearIndicator;
     float _label_spacing = 8.0f;

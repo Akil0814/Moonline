@@ -28,7 +28,10 @@ public:
     explicit UiLabeledCheckbox(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0) noexcept;
     UiLabeledCheckbox(const elysia::core::Rect& rect,const UiLabeledCheckboxConfig& config,int order = 0) noexcept;
     void reset() noexcept override;
-    void set_base_styles(const UiCheckboxStyle& checkbox,const UiLabelStyle& label) noexcept;
+    void set_base_styles(
+        const UiCheckboxStyle& checkbox,
+        const UiLabelStyle& label,
+        const UiEnabledDisabledColors& text_colors) noexcept;
     void set_enabled(bool enabled) override;
     void set_focused(bool focused) override;
     bool on_ui_input_event(const UiInputEvent& event) override;
@@ -43,6 +46,7 @@ public:
     void set_on_toggled(UiCheckboxToggledCallback callback);
     void set_text_content(UiTextContent content);
     [[nodiscard]] const UiTextContent& text_content() const noexcept;
+    [[nodiscard]] elysia::core::Color resolved_text_color() const noexcept;
     void set_label_placement(UiLabeledCheckboxLabelPlacement placement) noexcept;
     void set_text_placement(UiLabeledCheckboxTextPlacement placement) noexcept;
     void set_label_spacing(float spacing) noexcept;

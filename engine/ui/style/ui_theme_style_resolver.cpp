@@ -61,12 +61,18 @@ void register_builtin_ui_theme_adapters(UiThemeStyleResolver& r)
         });
     },UiThemeStyleTraversal::Stop);
     (void)r.register_adapter<UiLabeledCheckbox>([](UiLabeledCheckbox& e,const UiTheme& t) {
-        e.set_base_styles(apply_theme_colors(UiCheckboxStyle{},t.checkbox_style),
-            apply_theme_colors(UiLabelStyle{},t.label(UiLabelVisualRole::Default)));
+        const UiLabelStyle label = apply_theme_colors(UiLabelStyle{},t.label(UiLabelVisualRole::Default));
+        e.set_base_styles(
+            apply_theme_colors(UiCheckboxStyle{},t.checkbox_style),
+            label,
+            UiEnabledDisabledColors{ label.text,t.button(UiButtonVisualRole::Default).text.disabled });
     },UiThemeStyleTraversal::Stop);
     (void)r.register_adapter<UiLabeledRadioButton>([](UiLabeledRadioButton& e,const UiTheme& t) {
-        e.set_base_styles(apply_theme_colors(UiRadioButtonStyle{},t.radio_button_style),
-            apply_theme_colors(UiLabelStyle{},t.label(UiLabelVisualRole::Default)));
+        const UiLabelStyle label = apply_theme_colors(UiLabelStyle{},t.label(UiLabelVisualRole::Default));
+        e.set_base_styles(
+            apply_theme_colors(UiRadioButtonStyle{},t.radio_button_style),
+            label,
+            UiEnabledDisabledColors{ label.text,t.button(UiButtonVisualRole::Default).text.disabled });
     },UiThemeStyleTraversal::Stop);
 }
 }

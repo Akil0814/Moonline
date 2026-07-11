@@ -6,10 +6,14 @@
 
 namespace elysia::ui
 {
-void UiLabeledCheckbox::set_base_styles(const UiCheckboxStyle& checkbox,const UiLabelStyle& label) noexcept
+void UiLabeledCheckbox::set_base_styles(
+    const UiCheckboxStyle& checkbox,
+    const UiLabelStyle& label,
+    const UiEnabledDisabledColors& text_colors) noexcept
 {
     _checkbox.set_base_style(checkbox);
     _label.set_base_style(label);
+    _theme_text_colors = text_colors;
 }
 
 UiLabeledCheckbox::UiLabeledCheckbox(const elysia::core::Rect& rect,int order) noexcept
@@ -58,6 +62,11 @@ void UiLabeledCheckbox::toggle() { _checkbox.toggle(); }
 void UiLabeledCheckbox::set_on_toggled(UiCheckboxToggledCallback callback) { _checkbox.set_on_toggled(std::move(callback)); }
 void UiLabeledCheckbox::set_text_content(UiTextContent content) { _text_content = std::move(content); }
 const UiTextContent& UiLabeledCheckbox::text_content() const noexcept { return _text_content; }
+elysia::core::Color UiLabeledCheckbox::resolved_text_color() const noexcept
+{
+    const UiEnabledDisabledColors& colors = _text_colors_override ? *_text_colors_override : _theme_text_colors;
+    return is_enabled() ? colors.enabled : colors.disabled;
+}
 void UiLabeledCheckbox::set_label_placement(UiLabeledCheckboxLabelPlacement placement) noexcept { _label_placement = placement; }
 void UiLabeledCheckbox::set_text_placement(UiLabeledCheckboxTextPlacement placement) noexcept { _text_placement = placement; }
 void UiLabeledCheckbox::set_label_spacing(float spacing) noexcept { _label_spacing = std::max(0.0f,spacing); }
@@ -70,12 +79,9 @@ void UiLabeledCheckbox::sync_children() const
     _checkbox.set_enabled(is_enabled()); _checkbox.set_focused(is_focused()); _checkbox.set_opacity(opacity());
     _label.set_screen_rect(label_rect()); _label.set_visible(is_visible()); _label.set_active(is_active()); _label.set_opacity(opacity());
     _label.set_text_content(_text_content); _label.set_typography_role(_typography_role); _label.set_padding(_label_padding);
-    const UiEnabledDisabledColors& text_colors = _text_colors_override
-        ? *_text_colors_override
-        : _theme_text_colors;
     auto style = UiStyleDefaults::label();
     style.draw_background = false;
-    style.text = is_enabled() ? text_colors.enabled : text_colors.disabled;
+    style.text = resolved_text_color();
     _label.set_base_style(style);
     _label.set_vertical_align(TextVerticalAlign::Center);
     if (_label_placement == UiLabeledCheckboxLabelPlacement::Left)

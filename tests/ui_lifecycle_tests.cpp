@@ -10,6 +10,7 @@
 #include "../engine/ui/composites/ui_tab_bar.h"
 #include "../engine/ui/widgets/ui_button.h"
 #include "../engine/ui/composites/ui_dropdown.h"
+#include "../engine/ui/composites/ui_labeled_checkbox.h"
 #include "../engine/ui/composites/ui_labeled_radio_button.h"
 #include "../engine/ui/style/ui_theme.h"
 #include "../engine/ui/style/ui_theme_manager.h"
@@ -574,6 +575,43 @@ void test_container_driven_theme_tree()
     window.reset();
     require(!registration.registered(),"destroying a registered root must invalidate its handle");
 }
+
+void test_labeled_control_text_follows_theme()
+{
+    elysia::ui::UiThemeManager manager;
+    auto window = std::make_unique<elysia::ui::UiWindow>(elysia::core::Rect{ 0,0,640,360 });
+    auto checkbox = std::make_unique<elysia::ui::UiLabeledCheckbox>(elysia::core::Rect{ 0,0,180,40 });
+    auto radio = std::make_unique<elysia::ui::UiLabeledRadioButton>(elysia::core::Rect{ 0,50,180,40 });
+    auto* checkbox_raw = checkbox.get();
+    auto* radio_raw = radio.get();
+    window->add_child(std::move(checkbox));
+    window->add_child(std::move(radio));
+    auto registration = manager.register_root(*window);
+
+    manager.set_theme(elysia::ui::UiBuiltinTheme::ElysiaLight);
+    require(checkbox_raw->resolved_text_color()
+            == manager.current_theme().label(elysia::ui::UiLabelVisualRole::Default).text,
+        "labeled checkbox enabled text should follow the current theme");
+    require(radio_raw->resolved_text_color()
+            == manager.current_theme().label(elysia::ui::UiLabelVisualRole::Default).text,
+        "labeled radio enabled text should follow the current theme");
+
+    manager.set_theme(elysia::ui::UiBuiltinTheme::EvangelionUnit01);
+    require(checkbox_raw->resolved_text_color()
+            == manager.current_theme().label(elysia::ui::UiLabelVisualRole::Default).text,
+        "labeled checkbox text should update after theme switching");
+    require(radio_raw->resolved_text_color()
+            == manager.current_theme().label(elysia::ui::UiLabelVisualRole::Default).text,
+        "labeled radio text should update after theme switching");
+
+    checkbox_raw->set_enabled(false);
+    radio_raw->set_enabled(false);
+    const auto disabled = manager.current_theme().button(elysia::ui::UiButtonVisualRole::Default).text.disabled;
+    require(checkbox_raw->resolved_text_color() == disabled,
+        "disabled labeled checkbox text should use the current theme disabled color");
+    require(radio_raw->resolved_text_color() == disabled,
+        "disabled labeled radio text should use the current theme disabled color");
+}
 }
 
 int main()
@@ -594,6 +632,7 @@ int main()
     test_other_chrome_active_borders();
     test_builtin_theme_border_states();
     test_container_driven_theme_tree();
+    test_labeled_control_text_follows_theme();
     std::cout << "ui lifecycle tests passed\n";
     return EXIT_SUCCESS;
 }
