@@ -12,7 +12,8 @@ void UiLabeledRadioButton::set_base_styles(
     const UiEnabledDisabledColors& text_colors) noexcept
 {
     _radio.set_base_style(radio);
-    _label.set_base_style(label);
+    _theme_label_style = label;
+    _label.set_base_style(_theme_label_style);
     _theme_text_colors = text_colors;
 }
 
@@ -29,6 +30,7 @@ void UiLabeledRadioButton::reset() noexcept
 {
     UiControl::reset(); _radio.reset(); _label.reset();
     _text_content = {}; _typography_role = UiTypographyRole::RadioLabel;
+    _theme_label_style = UiStyleDefaults::label();
     _theme_text_colors = UiStyleDefaults::labeled_checkbox_text();
     _label_placement = UiLabeledRadioLabelPlacement::Right; _text_placement = UiLabeledRadioTextPlacement::NearIndicator; _label_spacing = 8.0f;
 }
@@ -62,8 +64,7 @@ void UiLabeledRadioButton::sync_children() const
 {
     _radio.set_screen_rect(indicator_rect()); _radio.set_visible(is_visible()); _radio.set_active(is_active()); _radio.set_enabled(is_enabled()); _radio.set_focused(is_focused()); _radio.set_opacity(opacity());
     _label.set_screen_rect(label_rect()); _label.set_visible(is_visible()); _label.set_active(is_active()); _label.set_opacity(opacity()); _label.set_text_content(_text_content); _label.set_typography_role(_typography_role);
-    auto style = UiStyleDefaults::label();
-    style.draw_background = false;
+    auto style = _theme_label_style;
     style.text = resolved_text_color();
     _label.set_base_style(style);
     _label.set_vertical_align(TextVerticalAlign::Center);

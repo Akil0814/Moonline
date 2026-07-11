@@ -54,6 +54,7 @@ private:
     mutable UiLabel _label;
     UiTextContent _text_content;
     UiTypographyRole _typography_role = UiTypographyRole::RadioLabel;
+    UiLabelStyle _theme_label_style{};
     UiEnabledDisabledColors _theme_text_colors{};
     UiLabeledRadioLabelPlacement _label_placement = UiLabeledRadioLabelPlacement::Right;
     UiLabeledRadioTextPlacement _text_placement = UiLabeledRadioTextPlacement::NearIndicator;

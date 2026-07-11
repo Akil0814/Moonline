@@ -12,7 +12,8 @@ void UiLabeledCheckbox::set_base_styles(
     const UiEnabledDisabledColors& text_colors) noexcept
 {
     _checkbox.set_base_style(checkbox);
-    _label.set_base_style(label);
+    _theme_label_style = label;
+    _label.set_base_style(_theme_label_style);
     _theme_text_colors = text_colors;
 }
 
@@ -27,6 +28,7 @@ void UiLabeledCheckbox::reset() noexcept
     _text_content = {}; _typography_role = UiTypographyRole::CheckboxLabel;
     _label_placement = UiLabeledCheckboxLabelPlacement::Right;
     _text_placement = UiLabeledCheckboxTextPlacement::NearBox;
+    _theme_label_style = UiStyleDefaults::label();
     _theme_text_colors = UiStyleDefaults::labeled_checkbox_text();
     _text_colors_override.reset();
     _label_spacing = 8.0f; _indicator_padding = 4; _label_padding = 0;
@@ -79,8 +81,7 @@ void UiLabeledCheckbox::sync_children() const
     _checkbox.set_enabled(is_enabled()); _checkbox.set_focused(is_focused()); _checkbox.set_opacity(opacity());
     _label.set_screen_rect(label_rect()); _label.set_visible(is_visible()); _label.set_active(is_active()); _label.set_opacity(opacity());
     _label.set_text_content(_text_content); _label.set_typography_role(_typography_role); _label.set_padding(_label_padding);
-    auto style = UiStyleDefaults::label();
-    style.draw_background = false;
+    auto style = _theme_label_style;
     style.text = resolved_text_color();
     _label.set_base_style(style);
     _label.set_vertical_align(TextVerticalAlign::Center);

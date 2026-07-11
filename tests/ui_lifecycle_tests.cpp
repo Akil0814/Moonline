@@ -612,6 +612,50 @@ void test_labeled_control_text_follows_theme()
     require(radio_raw->resolved_text_color() == disabled,
         "disabled labeled radio text should use the current theme disabled color");
 }
+
+void test_labeled_controls_preserve_label_base_style()
+{
+    const elysia::core::Color label_background{ 17,31,47,255 };
+    const elysia::ui::UiEnabledDisabledColors text_colors{
+        elysia::core::Color{ 200,210,220,255 },elysia::core::Color{ 90,100,110,255 }
+    };
+    elysia::ui::UiLabelStyle label_style{};
+    label_style.corner_radius = 6.0f;
+    label_style.background = label_background;
+    label_style.draw_background = true;
+
+    elysia::ui::UiCheckboxStyle checkbox_style{};
+    checkbox_style.chrome.draw_background = false;
+    checkbox_style.chrome.draw_border = false;
+    elysia::ui::UiLabeledCheckbox checkbox(elysia::core::Rect{ 0,0,180,40 });
+    checkbox.set_base_styles(checkbox_style,label_style,text_colors);
+
+    elysia::ui::UiRadioButtonStyle radio_style{};
+    radio_style.chrome.draw_background = false;
+    radio_style.chrome.draw_border = false;
+    elysia::ui::UiLabeledRadioButton radio(elysia::core::Rect{ 0,50,180,40 });
+    radio.set_base_styles(radio_style,label_style,text_colors);
+
+    const auto has_label_background = [&label_background](const std::vector<elysia::core::UiRenderCommand>& commands)
+    {
+        for (const auto& command : commands)
+        {
+            if (command.type == elysia::core::UiRenderCommandType::FillRoundedRect
+                && command.color == label_background
+                && command.corner_radius == 6.0f)
+                return true;
+        }
+        return false;
+    };
+
+    std::vector<elysia::core::UiRenderCommand> commands;
+    checkbox.submit_ui_render_commands(commands);
+    require(has_label_background(commands),"labeled checkbox must retain themed label background and corner radius");
+
+    commands.clear();
+    radio.submit_ui_render_commands(commands);
+    require(has_label_background(commands),"labeled radio must retain themed label background and corner radius");
+}
 }
 
 int main()
@@ -633,6 +677,7 @@ int main()
     test_builtin_theme_border_states();
     test_container_driven_theme_tree();
     test_labeled_control_text_follows_theme();
+    test_labeled_controls_preserve_label_base_style();
     std::cout << "ui lifecycle tests passed\n";
     return EXIT_SUCCESS;
 }
