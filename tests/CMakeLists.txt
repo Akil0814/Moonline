@@ -1,4 +1,4 @@
-add_executable(ui_lifecycle_tests
+6add_executable(ui_lifecycle_tests
     "ui_lifecycle_tests.cpp"
 )
 
