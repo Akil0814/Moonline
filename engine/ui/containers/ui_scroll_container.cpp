@@ -169,7 +169,7 @@ void UiScrollContainer::submit_ui_render_commands(std::vector<elysia::core::UiRe
     const elysia::core::Rect rect = screen_rect();
     const UiScrollContainerStyle& style = _style_state.effective_style();
     if (style.draw_background && !rect.is_empty())
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(style.background_color)));
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(style.background_color),style.corner_radius));
 
     if (const UiElement* content_element = content())
     {
@@ -184,7 +184,7 @@ void UiScrollContainer::submit_ui_render_commands(std::vector<elysia::core::UiRe
     submit_scrollbar_render_commands(out_commands);
 
     if (style.draw_border && !rect.is_empty())
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(style.border_color)));
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(style.border_color),style.corner_radius));
 }
 
 UiElement* UiScrollContainer::add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options)
@@ -1039,7 +1039,8 @@ void UiScrollContainer::submit_scrollbar_render_commands(std::vector<elysia::cor
         {
             elysia::core::UiRenderCommand track = elysia::core::make_ui_fill_rect_command(
                 scrollbar_track_rect(UiScrollAxis::Horizontal),
-                current_track_color(_horizontal_thumb)
+                current_track_color(_horizontal_thumb),
+                style().scrollbar.corner_radius
             );
             apply_opacity(track);
             out_commands.push_back(track);
@@ -1053,7 +1054,8 @@ void UiScrollContainer::submit_scrollbar_render_commands(std::vector<elysia::cor
         {
             elysia::core::UiRenderCommand track = elysia::core::make_ui_fill_rect_command(
                 scrollbar_track_rect(UiScrollAxis::Vertical),
-                current_track_color(_vertical_thumb)
+                current_track_color(_vertical_thumb),
+                style().scrollbar.corner_radius
             );
             apply_opacity(track);
             out_commands.push_back(track);

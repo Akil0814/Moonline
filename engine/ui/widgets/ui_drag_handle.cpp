@@ -151,11 +151,11 @@ void UiDragHandle::submit_ui_render_commands(std::vector<elysia::core::UiRenderC
     }
     else if (style().chrome.draw_background)
     {
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(current_background_color())));
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(current_background_color()),style().chrome.corner_radius));
     }
 
     if (style().chrome.draw_border)
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(current_border_color())));
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(current_border_color()),style().chrome.corner_radius));
 }
 
 void UiDragHandle::set_drag_handle_config(const UiDragHandleConfig& config)

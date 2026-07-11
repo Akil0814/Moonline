@@ -178,16 +178,16 @@ void UiButton::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
         if (style().chrome.draw_border)
         {
             out_commands.push_back(elysia::core::make_ui_draw_rect_command(
-                button_rect,apply_opacity(current_border_color())));
+                button_rect,apply_opacity(current_border_color()),style().chrome.corner_radius));
         }
         return;
     }
 
     const UiButtonStyle& style = _style_state.effective_style();
     if (style.chrome.draw_background)
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(button_rect,apply_opacity(current_background_color())));
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(button_rect,apply_opacity(current_background_color()),style.chrome.corner_radius));
     if (style.chrome.draw_border)
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(button_rect,apply_opacity(current_border_color())));
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(button_rect,apply_opacity(current_border_color()),style.chrome.corner_radius));
 
     if (_visual_mode == UiButtonVisualMode::Icon)
     {

@@ -85,6 +85,9 @@ public:
     [[nodiscard]] const UiChromeContainerStyle& style() const noexcept;
     [[nodiscard]] bool has_style_override() const noexcept;
     void clear_style_override() noexcept;
+    // Allows an owning composite to control only geometry without freezing the
+    // ChromeContainer's theme-derived colors in a full style override.
+    void set_composite_corner_radius(float corner_radius) noexcept;
 
 protected:
     // Rebuilds header and body slot geometry from the current chrome settings.
@@ -132,6 +135,8 @@ private:
     UiLayoutPadding _header_padding{};
     UiLayoutPadding _body_padding{};
     float _header_height = 48.0f;
+    float _composite_corner_radius = 0.0f;
+    bool _has_composite_corner_radius = false;
     bool _header_visible = true;
     bool _scope_focused = false;
     bool _body_scope_active = false;

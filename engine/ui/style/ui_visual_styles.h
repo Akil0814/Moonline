@@ -8,6 +8,7 @@ namespace elysia::ui
 // Visual settings for text-only label widgets.
 struct UiLabelStyle
 {
+    float corner_radius = 0.0f;
     elysia::core::Color text{};
     elysia::core::Color background{};
     bool draw_background = false;
@@ -16,6 +17,7 @@ struct UiLabelStyle
 // Visual settings for wrapped long-form text blocks.
 struct UiTextBlockStyle
 {
+    float corner_radius = 0.0f;
     elysia::core::Color text{};
     elysia::core::Color background{};
     bool draw_background = false;
@@ -32,6 +34,7 @@ struct UiDropdownStyle
 // Visual settings for numeric glyph widgets.
 struct UiNumberStyle
 {
+    float corner_radius = 0.0f;
     elysia::core::Color text{};
     elysia::core::Color background{};
     bool draw_background = false;
@@ -40,6 +43,7 @@ struct UiNumberStyle
 // Visual settings for value bars and progress-like fills.
 struct UiBarStyle
 {
+    float corner_radius = 0.0f;
     elysia::core::Color background{};
     elysia::core::Color fill{};
     elysia::core::Color border{};
@@ -49,6 +53,7 @@ struct UiBarStyle
 // Visual settings for simple panel containers.
 struct UiPanelStyle
 {
+    float corner_radius = 0.0f;
     bool draw_background = true;
     bool draw_border = true;
     elysia::core::Color background{};
@@ -58,6 +63,7 @@ struct UiPanelStyle
 // Visual settings for containers with a framed body and optional header chrome.
 struct UiChromeContainerStyle
 {
+    float corner_radius = 0.0f;
     bool draw_background = true;
     bool draw_border = true;
     bool draw_header_background = true;
@@ -69,6 +75,7 @@ struct UiChromeContainerStyle
 // Visual settings for top-level UI windows.
 struct UiWindowStyle
 {
+    float corner_radius = 0.0f;
     bool draw_background = true;
     bool draw_border = true;
     elysia::core::Color background{};
@@ -78,6 +85,7 @@ struct UiWindowStyle
 // Layout defaults for composite reading dialogs.
 struct UiDialogStyle
 {
+    float corner_radius = 0.0f;
     UiOverlayOptions overlay_defaults{};
     float close_button_height = 42.0f;
     float body_footer_spacing = 12.0f;

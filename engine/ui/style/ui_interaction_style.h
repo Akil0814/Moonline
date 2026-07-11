@@ -23,6 +23,7 @@ struct UiInteractiveColors
 // Shared border/background styling used by interactive widgets.
 struct UiChromeStyle
 {
+    float corner_radius = 0.0f;
     UiInteractiveColors background{};
     UiInteractiveColors border{
         UiPalette::border_default,

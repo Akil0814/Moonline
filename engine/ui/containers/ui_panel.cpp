@@ -237,10 +237,10 @@ void UiPanel::submit_ui_render_commands(std::vector<elysia::core::UiRenderComman
     const elysia::core::Rect& rect = screen_rect();
     const UiPanelStyle& style = _style_state.effective_style();
     if (style.draw_background && !rect.is_empty())
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(style.background)));
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(style.background),style.corner_radius));
     submit_child_render_commands(out_commands);
     if (style.draw_border && !rect.is_empty())
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(style.border)));
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(style.border),style.corner_radius));
 }
 
 elysia::core::Vector2 UiPanel::content_extent() const noexcept

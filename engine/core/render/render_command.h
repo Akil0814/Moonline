@@ -6,6 +6,10 @@
 #include "../geometry/rect.h"
 #include "../geometry/vector2.h"
 
+#include <algorithm>
+#include <cmath>
+#include <vector>
+
 namespace elysia::core
 {
 enum class SpriteFlip
@@ -21,6 +25,8 @@ enum class UiRenderCommandType
     Texture,
     FillRect,
     DrawRect,
+    FillRoundedRect,
+    DrawRoundedRect,
     DrawLine,
     FillCircle,
     DrawCircle
@@ -82,8 +88,12 @@ struct UiRenderCommand
     bool use_clip_rect = false;
     Rect clip_rect{};
 
-    // Used by FillRect, DrawRect, and DrawLine.
+    // Used by rectangle, rounded rectangle, and line commands.
     Color color{};
+
+    // Used by FillRoundedRect and DrawRoundedRect. Command factories guarantee
+    // that this is finite and in [0, min(width, height) / 2].
+    float corner_radius = 0.0f;
 
     // Used by DrawLine.
     Vector2 line_start{};
@@ -118,6 +128,18 @@ inline void set_ui_command_clip_rect(UiRenderCommand& command, const Rect& clip_
     command.clip_rect = clip_rect;
 }
 
+// The single semantic normalization point for UI corner radii. Callers and
+// render backends consume its result without applying their own radius policy.
+[[nodiscard]] inline float normalize_ui_corner_radius(
+    const Rect& rect,
+    float requested_radius
+) noexcept
+{
+    if (rect.is_empty() || !std::isfinite(requested_radius) || requested_radius <= 0.0f)
+        return 0.0f;
+    return std::min(requested_radius,0.5f * std::min(rect.width(),rect.height()));
+}
+
 [[nodiscard]] inline UiRenderCommand make_ui_texture_command(
     SDL_Texture* texture,
     const Rect& screen_rect,
@@ -146,11 +168,15 @@ inline void set_ui_command_clip_rect(UiRenderCommand& command, const Rect& clip_
 
 [[nodiscard]] inline UiRenderCommand make_ui_fill_rect_command(
     const Rect& screen_rect,
-    Color color
+    Color color,
+    float corner_radius = 0.0f
 ) noexcept
 {
     UiRenderCommand command;
-    command.type = UiRenderCommandType::FillRect;
+    command.corner_radius = normalize_ui_corner_radius(screen_rect,corner_radius);
+    command.type = command.corner_radius > 0.0f
+        ? UiRenderCommandType::FillRoundedRect
+        : UiRenderCommandType::FillRect;
     command.screen_rect = screen_rect;
     command.color = color;
     return command;
@@ -159,21 +185,26 @@ inline void set_ui_command_clip_rect(UiRenderCommand& command, const Rect& clip_
 [[nodiscard]] inline UiRenderCommand make_ui_fill_rect_command(
     const Rect& screen_rect,
     Color color,
-    const Rect& clip_rect
+    const Rect& clip_rect,
+    float corner_radius = 0.0f
 ) noexcept
 {
-    UiRenderCommand command = make_ui_fill_rect_command(screen_rect, color);
+    UiRenderCommand command = make_ui_fill_rect_command(screen_rect,color,corner_radius);
     set_ui_command_clip_rect(command, clip_rect);
     return command;
 }
 
 [[nodiscard]] inline UiRenderCommand make_ui_draw_rect_command(
     const Rect& screen_rect,
-    Color color
+    Color color,
+    float corner_radius = 0.0f
 ) noexcept
 {
     UiRenderCommand command;
-    command.type = UiRenderCommandType::DrawRect;
+    command.corner_radius = normalize_ui_corner_radius(screen_rect,corner_radius);
+    command.type = command.corner_radius > 0.0f
+        ? UiRenderCommandType::DrawRoundedRect
+        : UiRenderCommandType::DrawRect;
     command.screen_rect = screen_rect;
     command.color = color;
     return command;
@@ -182,12 +213,52 @@ inline void set_ui_command_clip_rect(UiRenderCommand& command, const Rect& clip_
 [[nodiscard]] inline UiRenderCommand make_ui_draw_rect_command(
     const Rect& screen_rect,
     Color color,
-    const Rect& clip_rect
+    const Rect& clip_rect,
+    float corner_radius = 0.0f
 ) noexcept
 {
-    UiRenderCommand command = make_ui_draw_rect_command(screen_rect, color);
+    UiRenderCommand command = make_ui_draw_rect_command(screen_rect,color,corner_radius);
     set_ui_command_clip_rect(command, clip_rect);
     return command;
+}
+
+// Emits a header fill whose top corners match its outer surface while its
+// bottom edge remains square. Radius normalization happens exactly once here.
+inline void append_ui_fill_top_rounded_rect_commands(
+    std::vector<UiRenderCommand>& out_commands,
+    const Rect& outer_rect,
+    const Rect& header_rect,
+    Color color,
+    float corner_radius
+) noexcept
+{
+    if (header_rect.is_empty())
+        return;
+
+    const float radius = normalize_ui_corner_radius(outer_rect,corner_radius);
+    if (radius <= 0.0f)
+    {
+        out_commands.push_back(make_ui_fill_rect_command(header_rect,color));
+        return;
+    }
+
+    Rect cap_rect = header_rect;
+    cap_rect.set_height(std::max(header_rect.height(),2.0f * radius));
+    UiRenderCommand cap;
+    cap.type = UiRenderCommandType::FillRoundedRect;
+    cap.screen_rect = cap_rect;
+    cap.color = color;
+    cap.corner_radius = radius;
+    set_ui_command_clip_rect(cap,header_rect);
+    out_commands.push_back(cap);
+
+    const float square_top = std::min(header_rect.bottom(),header_rect.top() + radius);
+    if (square_top < header_rect.bottom())
+    {
+        out_commands.push_back(make_ui_fill_rect_command(
+            Rect{ header_rect.left(),square_top,header_rect.width(),header_rect.bottom() - square_top },
+            color));
+    }
 }
 
 [[nodiscard]] inline UiRenderCommand make_ui_draw_line_command(

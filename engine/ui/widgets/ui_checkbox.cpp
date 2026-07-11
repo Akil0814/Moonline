@@ -213,9 +213,9 @@ void UiCheckbox::submit_ui_render_commands(std::vector<elysia::core::UiRenderCom
     }
 
     if (style.chrome.draw_background)
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(current_background_color())));
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(current_background_color()),style.chrome.corner_radius));
     if (style.chrome.draw_border)
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(current_border_color())));
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(current_border_color()),style.chrome.corner_radius));
 
     if (_state == UiCheckboxState::Checked)
     {
@@ -228,7 +228,7 @@ void UiCheckbox::submit_ui_render_commands(std::vector<elysia::core::UiRenderCom
                 elysia::core::Vector2(std::round(rect.center().x),std::round(rect.center().y)),
                 fill_size);
             if (!fill_rect.is_empty())
-                out_commands.push_back(elysia::core::make_ui_fill_rect_command(fill_rect,mark_color));
+                out_commands.push_back(elysia::core::make_ui_fill_rect_command(fill_rect,mark_color,style.chrome.corner_radius));
         }
         else
         {

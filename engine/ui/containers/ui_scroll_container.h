@@ -18,6 +18,7 @@ enum class UiScrollBarVisibility
 // Visual settings for scrollbar tracks and thumbs owned by a scroll container.
 struct UiScrollBarStyle
 {
+    float corner_radius = 0.0f;
     float thickness = 10.0f;
     float margin = 4.0f;
     float min_thumb_length = 24.0f;
@@ -35,6 +36,7 @@ struct UiScrollBarStyle
 // Visual settings for the scroll viewport chrome plus its scrollbar theme.
 struct UiScrollContainerStyle
 {
+    float corner_radius = 0.0f;
     UiScrollBarStyle scrollbar{};
     bool draw_background = true;
     elysia::core::Color background_color{};

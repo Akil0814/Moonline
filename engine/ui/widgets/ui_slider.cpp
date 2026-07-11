@@ -305,7 +305,7 @@ void UiSlider::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
     const SliderLayout layout = compute_layout();
     const UiSliderStyle& style = _style_state.effective_style();
     if (style.chrome.draw_background)
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(slider_rect,apply_opacity(current_background_color())));
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(slider_rect,apply_opacity(current_background_color()),style.chrome.corner_radius));
 
     sync_child_rects(layout);
     sync_child_visuals();
@@ -316,7 +316,7 @@ void UiSlider::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
     if (_value_display != UiSliderValueDisplay::None)
         _value_number.submit_ui_render_commands(out_commands);
     if (style.chrome.draw_border)
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(slider_rect,apply_opacity(current_border_color())));
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(slider_rect,apply_opacity(current_border_color()),style.chrome.corner_radius));
 }
 
 void UiSlider::set_slider_config(const UiSliderConfig& config)

@@ -83,7 +83,7 @@ void UiNumber::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
 
     const UiNumberStyle& style = _style_state.effective_style();
     if (style.draw_background)
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(number_rect,apply_opacity(style.background)));
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(number_rect,apply_opacity(style.background),style.corner_radius));
 
     const std::string text = formatted_text();
     if (text.empty())

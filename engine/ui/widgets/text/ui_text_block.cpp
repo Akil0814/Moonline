@@ -96,7 +96,7 @@ void UiTextBlock::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
 
     const UiTextBlockStyle& style = _style_state.effective_style();
     if (style.draw_background)
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(block_rect,apply_opacity(style.background)));
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(block_rect,apply_opacity(style.background),style.corner_radius));
 
     if (!has_text())
         return;

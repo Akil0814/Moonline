@@ -2,6 +2,7 @@
 
 #include "../engine/ui/composites/ui_confirmation_dialog.h"
 #include "../engine/ui/containers/ui_button_group.h"
+#include "../engine/ui/containers/ui_chrome_container.h"
 #include "../engine/ui/containers/ui_list_container.h"
 #include "../engine/ui/containers/ui_panel.h"
 #include "../engine/ui/containers/ui_radio_group.h"
@@ -23,6 +24,7 @@
 #include <cstdlib>
 #include <cstdint>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <vector>
 
@@ -56,6 +58,45 @@ elysia::ui::UiInteractiveColors test_border_colors()
         elysia::core::Color{ 70,80,90,255 },
         elysia::core::Color{ 100,110,120,255 }
     };
+}
+
+void test_corner_radius_normalization()
+{
+    using namespace elysia::core;
+    const Rect rect{ 0,0,100,40 };
+    require(normalize_ui_corner_radius(rect,-4.0f) == 0.0f,"negative radius should normalize to zero");
+    require(normalize_ui_corner_radius(rect,0.0f) == 0.0f,"zero radius should stay zero");
+    require(normalize_ui_corner_radius(rect,std::numeric_limits<float>::infinity()) == 0.0f,
+        "non-finite radius should normalize to zero");
+    require(normalize_ui_corner_radius(Rect::zero(),8.0f) == 0.0f,"empty rect radius should normalize to zero");
+    require(normalize_ui_corner_radius(rect,80.0f) == 20.0f,"radius should clamp to half the short side");
+
+    const UiRenderCommand square = make_ui_fill_rect_command(rect,Color{},0.0f);
+    require(square.type == UiRenderCommandType::FillRect,"zero radius should preserve the fill-rect fast path");
+    const UiRenderCommand rounded = make_ui_draw_rect_command(rect,Color{},80.0f);
+    require(rounded.type == UiRenderCommandType::DrawRoundedRect,"positive radius should create rounded border command");
+    require(rounded.corner_radius == 20.0f,"rounded command should store the normalized radius");
+}
+
+void test_chrome_uses_single_rounded_outer_frame()
+{
+    elysia::ui::UiChromeContainer chrome(elysia::core::Rect{ 0,0,240,160 });
+    chrome.set_header_height(48.0f);
+    auto style = chrome.style();
+    style.corner_radius = 12.0f;
+    chrome.set_style(style);
+
+    std::vector<elysia::core::UiRenderCommand> commands;
+    chrome.submit_ui_render_commands(commands);
+    std::size_t rounded_fills = 0;
+    std::size_t rounded_borders = 0;
+    for (const auto& command : commands)
+    {
+        rounded_fills += command.type == elysia::core::UiRenderCommandType::FillRoundedRect ? 1u : 0u;
+        rounded_borders += command.type == elysia::core::UiRenderCommandType::DrawRoundedRect ? 1u : 0u;
+    }
+    require(rounded_fills == 2,"chrome should emit one outer fill and one clipped rounded header cap");
+    require(rounded_borders == 1,"chrome should emit exactly one rounded outer border");
 }
 
 void test_overlay_lifetime()
@@ -484,6 +525,8 @@ void test_container_driven_theme_tree()
 
 int main()
 {
+    test_corner_radius_normalization();
+    test_chrome_uses_single_rounded_outer_frame();
     test_overlay_lifetime();
     test_transient_popup_lifetime();
     test_tooltip_lifetime();

@@ -158,6 +158,8 @@ void UiChromeContainer::reset() noexcept
     _header_padding = UiLayoutPadding{ 8.0f,6.0f,8.0f,6.0f };
     _body_padding = UiLayoutPadding{};
     _header_height = 48.0f;
+    _composite_corner_radius = 0.0f;
+    _has_composite_corner_radius = false;
     _header_visible = true;
     _scope_focused = false;
     _body_scope_active = false;
@@ -273,13 +275,17 @@ void UiChromeContainer::submit_ui_render_commands(std::vector<elysia::core::UiRe
 
     const elysia::core::Rect& rect = screen_rect();
     const UiChromeContainerStyle& style = _style_state.effective_style();
+    const float corner_radius = _has_composite_corner_radius
+        ? _composite_corner_radius
+        : style.corner_radius;
     if (style.draw_background && !rect.is_empty())
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(style.background)));
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(style.background),corner_radius));
     if (_header_visible && style.draw_header_background && !header_rect().is_empty())
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(header_rect(),apply_opacity(style.header_background)));
+        elysia::core::append_ui_fill_top_rounded_rect_commands(
+            out_commands,rect,header_rect(),apply_opacity(style.header_background),corner_radius);
     submit_child_render_commands(out_commands);
     if (style.draw_border && !rect.is_empty())
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(style.border)));
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(style.border),corner_radius));
 }
 
 elysia::core::Vector2 UiChromeContainer::content_extent() const noexcept
@@ -555,6 +561,12 @@ bool UiChromeContainer::has_style_override() const noexcept
 void UiChromeContainer::clear_style_override() noexcept
 {
     _style_state.clear_style_override();
+}
+
+void UiChromeContainer::set_composite_corner_radius(float corner_radius) noexcept
+{
+    _composite_corner_radius = corner_radius;
+    _has_composite_corner_radius = true;
 }
 
 void UiChromeContainer::rebuild_layout()

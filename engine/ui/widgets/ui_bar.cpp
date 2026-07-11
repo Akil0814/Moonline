@@ -149,14 +149,14 @@ void UiBar::submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>
         return;
 
     const UiBarStyle& style = _style_state.effective_style();
-    out_commands.push_back(elysia::core::make_ui_fill_rect_command(bar_rect, apply_opacity(style.background)));
+    out_commands.push_back(elysia::core::make_ui_fill_rect_command(bar_rect,apply_opacity(style.background),style.corner_radius));
 
     const elysia::core::Rect fill = fill_rect(bar_rect);
     if (!fill.is_empty())
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(fill, apply_opacity(style.fill)));
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(fill,apply_opacity(style.fill),style.corner_radius));
 
     if (style.draw_border)
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(bar_rect, apply_opacity(style.border)));
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(bar_rect,apply_opacity(style.border),style.corner_radius));
 }
 
 elysia::core::Rect UiBar::content_rect(const elysia::core::Rect& rect) const

@@ -127,6 +127,8 @@ protected:
             break;
         case elysia::core::UiRenderCommandType::FillRect:
         case elysia::core::UiRenderCommandType::DrawRect:
+        case elysia::core::UiRenderCommandType::FillRoundedRect:
+        case elysia::core::UiRenderCommandType::DrawRoundedRect:
         case elysia::core::UiRenderCommandType::DrawLine:
         case elysia::core::UiRenderCommandType::FillCircle:
         case elysia::core::UiRenderCommandType::DrawCircle:

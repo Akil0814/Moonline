@@ -387,6 +387,7 @@ void UiDialog::sync_style_to_children()
         return;
 
     const UiDialogStyle& current_style = style();
+    _chrome->set_composite_corner_radius(current_style.corner_radius);
     _chrome->set_body_padding(UiLayoutPadding{
         static_cast<float>(current_style.body_padding),
         static_cast<float>(current_style.body_padding),

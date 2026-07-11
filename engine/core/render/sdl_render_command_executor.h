@@ -7,6 +7,7 @@
 #include "sdl_convert.h"
 
 #include <cmath>
+#include <cassert>
 #include <limits>
 #include <vector>
 
@@ -167,6 +168,32 @@ inline void execute_render_command(SDL_Renderer* renderer, const UiRenderCommand
             SDL_RenderDrawRect(renderer, &rect);
 
         SDL_SetRenderDrawColor(renderer, old_r, old_g, old_b, old_a);
+        break;
+    }
+
+    case UiRenderCommandType::FillRoundedRect:
+    case UiRenderCommandType::DrawRoundedRect:
+    {
+        if (render_command.screen_rect.is_empty())
+            break;
+
+        assert(std::isfinite(render_command.corner_radius));
+        assert(render_command.corner_radius > 0.0f);
+        assert(render_command.corner_radius <= 0.5f * std::min(
+            render_command.screen_rect.width(),render_command.screen_rect.height()));
+
+        const SDL_Rect rect = to_sdl_rect(render_command.screen_rect);
+        const SDL_Color color = to_sdl_color(render_command.color);
+        const Sint16 x1 = clamp_circle_component(static_cast<float>(rect.x));
+        const Sint16 y1 = clamp_circle_component(static_cast<float>(rect.y));
+        const Sint16 x2 = clamp_circle_component(static_cast<float>(rect.x + rect.w - 1));
+        const Sint16 y2 = clamp_circle_component(static_cast<float>(rect.y + rect.h - 1));
+        const Sint16 radius = clamp_circle_component(render_command.corner_radius);
+
+        if (render_command.type == UiRenderCommandType::FillRoundedRect)
+            roundedBoxRGBA(renderer,x1,y1,x2,y2,radius,color.r,color.g,color.b,color.a);
+        else
+            roundedRectangleRGBA(renderer,x1,y1,x2,y2,radius,color.r,color.g,color.b,color.a);
         break;
     }
 

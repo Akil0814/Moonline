@@ -632,13 +632,13 @@ void UiWindow::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
 
     const UiWindowStyle& style = _style_state.effective_style();
     if (style.draw_background)
-        out_commands.push_back(elysia::core::make_ui_fill_rect_command(screen_rect(),apply_opacity(style.background)));
+        out_commands.push_back(elysia::core::make_ui_fill_rect_command(screen_rect(),apply_opacity(style.background),style.corner_radius));
     submit_child_render_commands(out_commands);
     if (!active_modal_overlay())
         submit_active_transient_popup_render_commands(out_commands);
     submit_tooltip_render_commands(out_commands);
     if (style.draw_border)
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(screen_rect(),apply_opacity(style.border)));
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(screen_rect(),apply_opacity(style.border),style.corner_radius));
 }
 
 void UiWindow::rebuild_layout()
