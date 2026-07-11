@@ -1,5 +1,5 @@
-66add_executable(ui_lifecycle_tests
-    ui_lifecycle_tests.cpp
+add_executable(ui_lifecycle_tests
+    "ui_lifecycle_tests.cpp"
 )
 
 target_link_libraries(ui_lifecycle_tests PRIVATE engine_lib ${SDL2_LIBRARIES})
