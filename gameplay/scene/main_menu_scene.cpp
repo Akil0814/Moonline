@@ -21,13 +21,14 @@ namespace arcneco::scene
 {
 void MainMenuScene::on_enter(const elysia::scene::ScenePayload& payload)
 {
-    (void)payload;
+    
+    if (payload.has_value())//指针版 any_cast，不会抛异常
+        if (const MainMeunEnterPayload* p = std::any_cast<MainMeunEnterPayload>(&payload))
+            if (p->play_theme_music)
+                elysia::audio::AudioService::instance()->play_music("scene.main_meun_scene_main");
 
     if (_has_entered)
         return;
-
-    if (!elysia::audio::AudioService::instance()->play_music("scene.main_meun_scene_main"))
-        std::cout << "play main meun music error" << std::endl;
 
     if (!_main_menu_window || _main_menu_window->is_destroyed())
         build_menu_buttons();

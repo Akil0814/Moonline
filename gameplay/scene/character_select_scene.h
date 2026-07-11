@@ -70,7 +70,7 @@ namespace arcneco::scene
             elysia::ui::UiButton* confirm_button = nullptr;
             elysia::ui::UiButton* back_button = nullptr;
         };
-
+    
         elysia::ui::UiWindow* _main_window = nullptr;
         elysia::ui::UiConfirmationDialog* _exit_confirmation = nullptr;
 

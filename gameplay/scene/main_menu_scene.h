@@ -4,8 +4,6 @@
 
 #include "../../engine/ui/window/ui_window.h"
 
-
-
 #include <cstddef>
 #include <vector>
 
