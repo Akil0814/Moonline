@@ -1,8 +1,8 @@
 #include "ui_dialog.h"
 
-#include "ui_chrome_container.h"
-#include "ui_panel.h"
-#include "ui_scroll_container.h"
+#include "../containers/ui_chrome_container.h"
+#include "../containers/ui_panel.h"
+#include "../containers/ui_scroll_container.h"
 #include "../focus/ui_focus_scope_utils.h"
 #include "../style/ui_style_defaults.h"
 #include "../style/ui_theme.h"

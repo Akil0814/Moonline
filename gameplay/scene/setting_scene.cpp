@@ -9,7 +9,7 @@
 #include "../../engine/ui/widgets/label/ui_label.h"
 #include "../../engine/ui/widgets/ui_button.h"
 #include "../../engine/ui/widgets/ui_checkbox.h"
-#include "../../engine/ui/widgets/ui_dropdown_button_set.h"
+#include "../../engine/ui/composites/ui_dropdown.h"
 #include "../../engine/ui/widgets/ui_slider.h"
 
 #include <memory>
@@ -116,7 +116,7 @@ void SettingScene::build_ui()
 
     page->add_back(make_label("Display",field_width,elysia::ui::UiTypographyRole::Subtitle));
 
-    auto resolution = std::make_unique<elysia::ui::UiDropdownButtonSet>(
+    auto resolution = std::make_unique<elysia::ui::UiDropdown>(
         elysia::core::Rect{ 0,0,control_width,row_height });
     resolution->set_options({
         { elysia::ui::ui_raw_text("1280 x 720") },
@@ -138,7 +138,7 @@ void SettingScene::build_ui()
     page->add_back(make_field_row("Sound volume",make_volume_slider(static_cast<float>(settings.sound_volume()))));
 
     page->add_back(make_label("General",field_width,elysia::ui::UiTypographyRole::Subtitle));
-    auto language = std::make_unique<elysia::ui::UiDropdownButtonSet>(
+    auto language = std::make_unique<elysia::ui::UiDropdown>(
         elysia::core::Rect{ 0,0,control_width,row_height });
     language->set_options({
         { elysia::ui::ui_raw_text("English") },

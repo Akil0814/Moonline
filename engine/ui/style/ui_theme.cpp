@@ -181,8 +181,7 @@ template<class Enum>
 
     theme.radio_button_style = UiRadioButtonThemeColors{
         interactive_chrome,
-        UiEnabledDisabledColors{ UiPalette::accent_fill,UiPalette::text_disabled },
-        text
+        UiEnabledDisabledColors{ UiPalette::accent_fill,UiPalette::text_disabled }
     };
 
     theme.drag_handle_style = UiDragHandleThemeColors{
@@ -337,8 +336,7 @@ template<class Enum>
 
     theme.radio_button_style = UiRadioButtonThemeColors{
         interactive_chrome,
-        UiEnabledDisabledColors{ elysia::core::colors::elysia_hair_rose,elysia::core::colors::gray_500 },
-        text
+        UiEnabledDisabledColors{ elysia::core::colors::elysia_hair_rose,elysia::core::colors::gray_500 }
     };
 
     theme.drag_handle_style = UiDragHandleThemeColors{
@@ -505,8 +503,7 @@ template<class Enum>
         UiEnabledDisabledColors{
             elysia::core::colors::elysia_crystal_orchid,
             elysia::core::colors::elysia_silver_mist
-        },
-        text
+        }
     };
 
     theme.drag_handle_style = UiDragHandleThemeColors{
@@ -664,8 +661,7 @@ template<class Enum>
 
     theme.radio_button_style = UiRadioButtonThemeColors{
         interactive_chrome,
-        UiEnabledDisabledColors{ elysia::core::colors::eva_unit00_warning_yellow,elysia::core::colors::gray_500 },
-        text
+        UiEnabledDisabledColors{ elysia::core::colors::eva_unit00_warning_yellow,elysia::core::colors::gray_500 }
     };
 
     theme.drag_handle_style = UiDragHandleThemeColors{
@@ -820,8 +816,7 @@ template<class Enum>
 
     theme.radio_button_style = UiRadioButtonThemeColors{
         interactive_chrome,
-        UiEnabledDisabledColors{ elysia::core::colors::eva_unit01_toxic_green,elysia::core::colors::gray_500 },
-        text
+        UiEnabledDisabledColors{ elysia::core::colors::eva_unit01_toxic_green,elysia::core::colors::gray_500 }
     };
 
     theme.drag_handle_style = UiDragHandleThemeColors{
@@ -976,8 +971,7 @@ template<class Enum>
 
     theme.radio_button_style = UiRadioButtonThemeColors{
         interactive_chrome,
-        UiEnabledDisabledColors{ elysia::core::colors::eva_unit02_sun_yellow,elysia::core::colors::gray_500 },
-        text
+        UiEnabledDisabledColors{ elysia::core::colors::eva_unit02_sun_yellow,elysia::core::colors::gray_500 }
     };
 
     theme.drag_handle_style = UiDragHandleThemeColors{
@@ -1132,8 +1126,7 @@ template<class Enum>
 
     theme.radio_button_style = UiRadioButtonThemeColors{
         interactive_chrome,
-        UiEnabledDisabledColors{ elysia::core::colors::black,elysia::core::colors::gray_500 },
-        text
+        UiEnabledDisabledColors{ elysia::core::colors::black,elysia::core::colors::gray_500 }
     };
 
     theme.drag_handle_style = UiDragHandleThemeColors{

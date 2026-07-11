@@ -9,7 +9,7 @@ namespace elysia::ui
 {
 class UiWindow;
 
-// Passive window-level hint surface. The trigger is borrowed; displayed content is owned.
+// Passive window-level hint composite. The trigger is borrowed; displayed content is owned.
 class UiTooltip final : public UiElement, public elysia::core::Updatable
 {
 public:

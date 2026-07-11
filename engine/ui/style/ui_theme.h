@@ -93,7 +93,6 @@ struct UiRadioButtonThemeColors
 {
     UiChromeThemeColors chrome{};
     UiEnabledDisabledColors mark{};
-    UiEnabledDisabledColors text{};
 };
 
 struct UiDragHandleThemeColors
@@ -276,7 +275,6 @@ struct UiTheme
 {
     style.chrome = apply_theme_colors(style.chrome,colors.chrome);
     style.mark = colors.mark;
-    style.text = colors.text;
     return style;
 }
 

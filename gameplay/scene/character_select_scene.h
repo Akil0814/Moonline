@@ -52,10 +52,6 @@ namespace arcneco::scene
         void clear_character_detail_refs() noexcept;
 
     private:
-
-        elysia::ui::UiWindow* _main_window = nullptr;
-        elysia::ui::UiConfirmationDialog* _exit_confirmation = nullptr;
-
         // Borrowed pointers to window-owned character visuals. They are cleared before rebuilding the window.
         struct CharacterVisualRefs
         {
@@ -64,7 +60,6 @@ namespace arcneco::scene
             elysia::ui::UiAnimation* selected_background = nullptr;
             elysia::ui::UiAnimation* idle_preview = nullptr;
         };
-        CharacterVisualRefs _character_visuals{};
 
         // Borrowed pointers to window-owned character detail and action UI.
         struct CharacterDetailRefs
@@ -75,6 +70,11 @@ namespace arcneco::scene
             elysia::ui::UiButton* confirm_button = nullptr;
             elysia::ui::UiButton* back_button = nullptr;
         };
+
+        elysia::ui::UiWindow* _main_window = nullptr;
+        elysia::ui::UiConfirmationDialog* _exit_confirmation = nullptr;
+
+        CharacterVisualRefs _character_visuals{};
         CharacterDetailRefs _character_details{};
 
     private:

@@ -1,7 +1,7 @@
 #include "ui_tab_container.h"
 
 #include "ui_tab_bar.h"
-#include "ui_tab_view.h"
+#include "../containers/ui_tab_view.h"
 
 #include <algorithm>
 #include <cassert>

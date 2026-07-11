@@ -22,7 +22,7 @@ struct UiTextBlockStyle
 };
 
 // Layout settings for a transient dropdown menu. Child colors come from existing themes.
-struct UiDropdownButtonSetStyle
+struct UiDropdownStyle
 {
     float popup_gap = 4.0f;
     float option_height = 42.0f;

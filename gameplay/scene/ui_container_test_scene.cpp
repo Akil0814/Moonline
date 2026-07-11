@@ -10,16 +10,17 @@
 #include "../../engine/ui/containers/ui_panel.h"
 #include "../../engine/ui/containers/ui_radio_group.h"
 #include "../../engine/ui/containers/ui_scroll_container.h"
-#include "../../engine/ui/containers/ui_dialog.h"
-#include "../../engine/ui/containers/ui_tab_container.h"
+#include "../../engine/ui/composites/ui_dialog.h"
+#include "../../engine/ui/composites/ui_tab_container.h"
 #include "../../engine/ui/widgets/ui_button.h"
-#include "../../engine/ui/widgets/ui_dropdown_button_set.h"
+#include "../../engine/ui/composites/ui_dropdown.h"
 #include "../../engine/ui/widgets/ui_checkbox.h"
-#include "../../engine/ui/widgets/ui_labeled_checkbox.h"
+#include "../../engine/ui/composites/ui_labeled_checkbox.h"
+#include "../../engine/ui/composites/ui_labeled_radio_button.h"
 #include "../../engine/ui/widgets/ui_radio_button.h"
 #include "../../engine/ui/widgets/ui_slider.h"
 #include "../../engine/ui/widgets/ui_text_input.h"
-#include "../../engine/ui/widgets/ui_tooltip.h"
+#include "../../engine/ui/composites/ui_tooltip.h"
 #include "../../engine/ui/widgets/text/ui_text_block.h"
 #include "../../engine/ui/widgets/label/ui_label.h"
 #include "../../engine/ui/layout/ui_layout_types.h"
@@ -119,8 +120,6 @@ std::unique_ptr<elysia::ui::UiLabeledCheckbox> make_labeled_checkbox(
     bool checked,
     elysia::ui::UiLabeledCheckboxLabelPlacement label_placement,
     elysia::ui::UiLabeledCheckboxTextPlacement text_placement,
-    bool draw_background,
-    bool draw_border,
     const char* scope
 )
 {
@@ -128,8 +127,6 @@ std::unique_ptr<elysia::ui::UiLabeledCheckbox> make_labeled_checkbox(
     config.text_content = elysia::ui::ui_text_key(text_key);
     config.label_placement = label_placement;
     config.text_placement = text_placement;
-    config.draw_background = draw_background;
-    config.draw_border = draw_border;
 
     auto checkbox = std::make_unique<elysia::ui::UiLabeledCheckbox>(rect,config,0);
     checkbox->set_checked(checked);
@@ -181,15 +178,16 @@ std::unique_ptr<elysia::ui::UiSlider> make_slider(
     return slider;
 }
 
-std::unique_ptr<elysia::ui::UiRadioButton> make_radio_button(
+std::unique_ptr<elysia::ui::UiLabeledRadioButton> make_radio_button(
     const elysia::core::Rect& rect,
     const char* text_key,
     bool selected,
     const char* scope
 )
 {
-    auto radio_button = std::make_unique<elysia::ui::UiRadioButton>(rect,0);
-    radio_button->set_text_content(elysia::ui::ui_text_key(text_key));
+    elysia::ui::UiLabeledRadioButtonConfig config{};
+    config.text_content = elysia::ui::ui_text_key(text_key);
+    auto radio_button = std::make_unique<elysia::ui::UiLabeledRadioButton>(rect,config,0);
     radio_button->set_selected(selected);
     radio_button->set_on_selected([scope]()
     {
@@ -519,8 +517,6 @@ void UiContainerTestScene::rebuild_ui()
         false,
         elysia::ui::UiLabeledCheckboxLabelPlacement::Right,
         elysia::ui::UiLabeledCheckboxTextPlacement::NearBox,
-        false,
-        false,
         "widget");
     register_themed(labeled_checkbox_0.get());
     widget_content->add_child(std::move(labeled_checkbox_0),elysia::ui::UiPanelInsertDirection::Down);
@@ -531,8 +527,6 @@ void UiContainerTestScene::rebuild_ui()
         true,
         elysia::ui::UiLabeledCheckboxLabelPlacement::Right,
         elysia::ui::UiLabeledCheckboxTextPlacement::FarEdge,
-        true,
-        true,
         "widget");
     register_themed(labeled_checkbox_1.get());
     widget_content->add_child(std::move(labeled_checkbox_1),elysia::ui::UiPanelInsertDirection::Down);
@@ -543,8 +537,6 @@ void UiContainerTestScene::rebuild_ui()
         false,
         elysia::ui::UiLabeledCheckboxLabelPlacement::Left,
         elysia::ui::UiLabeledCheckboxTextPlacement::NearBox,
-        false,
-        false,
         "widget");
     register_themed(labeled_checkbox_2.get());
     widget_content->add_child(std::move(labeled_checkbox_2),elysia::ui::UiPanelInsertDirection::Down);
@@ -555,8 +547,6 @@ void UiContainerTestScene::rebuild_ui()
         true,
         elysia::ui::UiLabeledCheckboxLabelPlacement::Left,
         elysia::ui::UiLabeledCheckboxTextPlacement::FarEdge,
-        true,
-        true,
         "widget");
     register_themed(labeled_checkbox_3.get());
     widget_content->add_child(std::move(labeled_checkbox_3),elysia::ui::UiPanelInsertDirection::Down);
@@ -609,11 +599,8 @@ void UiContainerTestScene::rebuild_ui()
         "menu_scene.settings",
         false,
         "widget-horizontal")));
-    register_themed(horizontal_radio_group->add_back(make_radio_button(
-        elysia::core::Rect{ 0,0,84,36 },
-        "menu_scene.about",
-        false,
-        "widget-horizontal")));
+    auto atomic_radio = std::make_unique<elysia::ui::UiRadioButton>(elysia::core::Rect{ 0,0,36,36 },0);
+    register_themed(horizontal_radio_group->add_back(std::move(atomic_radio)));
     widget_content->add_child(std::move(horizontal_radio_group),elysia::ui::UiPanelInsertDirection::Down);
 
     auto text_input_main = make_text_input(
@@ -690,7 +677,7 @@ void UiContainerTestScene::rebuild_ui()
     register_themed(open_raw_dialog_button.get());
     widget_content->add_child(std::move(open_raw_dialog_button),elysia::ui::UiPanelInsertDirection::Down);
 
-    auto dropdown = std::make_unique<elysia::ui::UiDropdownButtonSet>(elysia::core::Rect{ 18,882,280,42 });
+    auto dropdown = std::make_unique<elysia::ui::UiDropdown>(elysia::core::Rect{ 18,882,280,42 });
     dropdown->set_options({
         elysia::ui::UiDropdownOption{ elysia::ui::ui_text_key("menu_scene.start") },
         elysia::ui::UiDropdownOption{ elysia::ui::ui_text_key("menu_scene.settings") },
@@ -701,7 +688,7 @@ void UiContainerTestScene::rebuild_ui()
         elysia::ui::UiDropdownOption{ elysia::ui::ui_raw_text("Raw option C") },
         elysia::ui::UiDropdownOption{ elysia::ui::ui_raw_text("Raw option D") }
     });
-    update_style(*dropdown,[](elysia::ui::UiDropdownButtonSetStyle& style)
+    update_style(*dropdown,[](elysia::ui::UiDropdownStyle& style)
     {
         style.popup_max_height = 126.0f;
     });

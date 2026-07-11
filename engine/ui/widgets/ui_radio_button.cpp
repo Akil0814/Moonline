@@ -1,290 +1,119 @@
 #include "ui_radio_button.h"
 
-#include "../../audio/audio_service.h"
 #include "../style/ui_style_defaults.h"
 #include "../style/ui_theme.h"
+#include "../../audio/audio_service.h"
+#include "../../core/render/render_command.h"
 
-#include <utility>
+#include <algorithm>
 
 namespace elysia::ui
 {
-UiRadioButton::UiRadioButton(const elysia::core::Rect& rect,int order) noexcept
-    : UiControl(rect,order),_checkbox(rect,order)
-{
-    reset();
-}
-
+UiRadioButton::UiRadioButton(const elysia::core::Rect& rect,int order) noexcept : UiControl(rect,order) { reset(); }
 UiRadioButton::UiRadioButton(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order) noexcept
-    : UiRadioButton(elysia::core::Rect(position.x,position.y,size.x,size.y),order) {}
-
+    : UiRadioButton(elysia::core::Rect(position,size),order) {}
 UiRadioButton::UiRadioButton(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order) noexcept
     : UiRadioButton(elysia::core::Rect::from_center(center,size),order) {}
-
 UiRadioButton::UiRadioButton(const elysia::core::Rect& rect,const UiRadioButtonConfig& config,int order) noexcept
-    : UiRadioButton(rect,order)
-{
-    set_radio_button_config(config);
-}
-
-UiRadioButton::UiRadioButton(const elysia::core::Vector2& position,const elysia::core::Vector2& size,const UiRadioButtonConfig& config,int order) noexcept
-    : UiRadioButton(elysia::core::Rect(position.x,position.y,size.x,size.y),config,order) {}
-
-UiRadioButton::UiRadioButton(
-    const elysia::core::Vector2& center,const elysia::core::Vector2& size,
-    UiFromCenterTag,const UiRadioButtonConfig& config,int order
-) noexcept : UiRadioButton(elysia::core::Rect::from_center(center,size),config,order) {}
+    : UiRadioButton(rect,order) { set_radio_button_config(config); }
 
 void UiRadioButton::reset() noexcept
 {
     UiControl::reset();
-    set_use_theme(false);
-
-    _checkbox.reset();
-    _checkbox.set_use_theme(false);
-
-    _on_selected = nullptr;
+    _on_selected = {};
     _sounds.reset();
     _style_state.reset(UiStyleDefaults::radio_button());
-    _text_content = UiTextContent{};
-    _typography_role = UiTypographyRole::RadioLabel;
-    _label_placement = UiRadioButtonLabelPlacement::Right;
-    _label_spacing = 8.0f;
-    _text_placement = UiRadioButtonTextPlacement::NearIndicator;
-    _text_color = style().text.enabled;
-    _disabled_text_color = style().text.disabled;
-    _padding = _checkbox.padding();
-    _label_padding = _checkbox.label_padding();
+    _padding = 4;
     _selected = false;
-    _draw_background = false;
-    _draw_border = false;
+    _pushed = false;
 }
 
-void UiRadioButton::set_enabled(bool enabled)
-{
-    UiControl::set_enabled(enabled);
-    _checkbox.set_enabled(enabled);
-}
-
+void UiRadioButton::set_enabled(bool enabled) { UiControl::set_enabled(enabled); if (!enabled) _pushed = false; }
 void UiRadioButton::set_focused(bool focused)
 {
+    const bool changed = focused != is_focused();
     UiControl::set_focused(focused);
-    _checkbox.set_focused(focused);
+    if (!focused) _pushed = false;
+    if (changed && focused && _sounds) play_sound_if_set(_sounds->focus);
 }
 
 bool UiRadioButton::on_ui_input_event(const UiInputEvent& event)
 {
-    sync_checkbox_state();
-
-    const bool was_selected = _selected;
-    const bool handled = _checkbox.on_ui_input_event(event);
-    const bool checkbox_checked = _checkbox.is_checked();
-
-    if (!was_selected && checkbox_checked)
-        (void)set_selected_internal(true,true);
-    else if (was_selected && !checkbox_checked)
-        _checkbox.set_checked(true);
-
-    sync_checkbox_state();
-    return handled || (was_selected && !checkbox_checked);
+    if (event.type == UiInputEventType::MouseMoved)
+    {
+        set_focused(is_active() && is_visible() && is_enabled() && contains_pointer(event.mouse_x,event.mouse_y));
+        return false;
+    }
+    if (event.type == UiInputEventType::PointerPressed)
+    {
+        if (!is_primary_pointer_event(event) || !can_interact() || !contains_pointer(event.mouse_x,event.mouse_y)) return false;
+        set_focused(true); _pushed = true; if (_sounds) play_sound_if_set(_sounds->press); return true;
+    }
+    if (event.type == UiInputEventType::PointerReleased)
+    {
+        if (!is_primary_pointer_event(event)) return false;
+        const bool activate = _pushed && can_interact() && contains_pointer(event.mouse_x,event.mouse_y);
+        const bool handled = _pushed; _pushed = false;
+        if (activate) return select_internal(true);
+        return handled;
+    }
+    if (event.action != UiAction::Confirm || !can_interact()) return false;
+    if (event.type == UiInputEventType::ActionPressed) { _pushed = true; if (_sounds) play_sound_if_set(_sounds->press); return true; }
+    if (event.type == UiInputEventType::ActionReleased) { const bool activate = _pushed; _pushed = false; return activate && select_internal(true); }
+    return false;
 }
 
-void UiRadioButton::submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const
+void UiRadioButton::submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out) const
 {
-    if (!is_visible())
-        return;
-
-    sync_checkbox_state();
-    _checkbox.submit_ui_render_commands(out_commands);
+    if (!is_visible()) return;
+    const auto& outer = screen_rect();
+    const float inset = static_cast<float>(_padding);
+    const elysia::core::Rect rect(
+        outer.x() + inset,outer.y() + inset,
+        std::max(0.0f,outer.width() - inset * 2.0f),
+        std::max(0.0f,outer.height() - inset * 2.0f));
+    if (rect.is_empty()) return;
+    const float radius = std::min(rect.width(),rect.height()) * 0.5f;
+    if (style().chrome.draw_background) out.push_back(elysia::core::make_ui_fill_circle_command(rect.center(),radius,apply_opacity(background_color())));
+    if (style().chrome.draw_border) out.push_back(elysia::core::make_ui_draw_circle_command(rect.center(),radius,apply_opacity(border_color())));
+    if (_selected)
+    {
+        const float dot = std::max(0.0f,radius - std::max(4.0f,std::min(rect.width(),rect.height()) * 0.32f));
+        if (dot > 0.0f) out.push_back(elysia::core::make_ui_fill_circle_command(rect.center(),dot,apply_opacity(mark_color())));
+    }
 }
 
 void UiRadioButton::set_radio_button_config(const UiRadioButtonConfig& config)
 {
-    apply_radio_button_config(config);
+    if (config.sounds) set_sounds(*config.sounds); else clear_sounds();
+    if (config.style) set_style(*config.style); else clear_style_override();
+    set_padding(config.padding);
 }
-
-void UiRadioButton::set_selected(bool selected) noexcept
+void UiRadioButton::set_selected(bool selected) noexcept { _selected = selected; }
+bool UiRadioButton::is_selected() const noexcept { return _selected; }
+void UiRadioButton::select() { (void)select_internal(true); }
+void UiRadioButton::set_on_selected(UiRadioButtonSelectedCallback callback) { _on_selected = std::move(callback); }
+void UiRadioButton::set_sounds(const UiRadioButtonSounds& sounds) { _sounds = sounds; }
+void UiRadioButton::clear_sounds() noexcept { _sounds.reset(); }
+void UiRadioButton::set_style(const UiRadioButtonStyle& style) noexcept { _style_state.set_style_override(style); }
+const UiRadioButtonStyle& UiRadioButton::style() const noexcept { return _style_state.effective_style(); }
+void UiRadioButton::clear_style_override() noexcept { _style_state.clear_style_override(); }
+void UiRadioButton::set_padding(int padding) noexcept { _padding = std::max(0,padding); }
+int UiRadioButton::padding() const noexcept { return _padding; }
+bool UiRadioButton::select_internal(bool notify) noexcept
 {
-    (void)set_selected_internal(selected,false);
-    sync_checkbox_state();
-}
-
-bool UiRadioButton::is_selected() const noexcept
-{
-    return _selected;
-}
-
-void UiRadioButton::select()
-{
-    (void)set_selected_internal(true,true);
-    sync_checkbox_state();
-}
-
-void UiRadioButton::set_on_selected(UiRadioButtonSelectedCallback on_selected)
-{
-    _on_selected = std::move(on_selected);
-}
-
-void UiRadioButton::set_text_content(UiTextContent text_content)
-{
-    _text_content = std::move(text_content);
-    notify_layout_parent_of_intrinsic_layout_invalidation();
-}
-
-const UiTextContent& UiRadioButton::text_content() const noexcept
-{
-    return _text_content;
-}
-
-void UiRadioButton::set_typography_role(UiTypographyRole role) noexcept
-{
-    _typography_role = role;
-    notify_layout_parent_of_intrinsic_layout_invalidation();
-}
-
-UiTypographyRole UiRadioButton::typography_role() const noexcept
-{
-    return _typography_role;
-}
-
-void UiRadioButton::set_style(const UiRadioButtonStyle& style) noexcept
-{
-    _style_state.set_style_override(style);
-    _text_color = this->style().text.enabled;
-    _disabled_text_color = this->style().text.disabled;
-}
-
-const UiRadioButtonStyle& UiRadioButton::style() const noexcept
-{
-    return _style_state.effective_style();
-}
-
-bool UiRadioButton::has_style_override() const noexcept
-{
-    return _style_state.has_style_override();
-}
-
-void UiRadioButton::clear_style_override() noexcept
-{
-    _style_state.clear_style_override();
-    _text_color = style().text.enabled;
-    _disabled_text_color = style().text.disabled;
-}
-
-void UiRadioButton::apply_radio_button_config(const UiRadioButtonConfig& config)
-{
-    _sounds = config.sounds;
-    if (config.style)
-        set_style(*config.style);
-
-    _text_content = config.text_content;
-    _label_placement = config.label_placement;
-    _label_spacing = config.label_spacing;
-    _text_placement = config.text_placement;
-    if (config.text_color)
-        _text_color = *config.text_color;
-    if (config.disabled_text_color)
-        _disabled_text_color = *config.disabled_text_color;
-    if (config.padding)
-        _padding = *config.padding;
-    if (config.label_padding)
-        _label_padding = *config.label_padding;
-    _draw_background = config.draw_background;
-    _draw_border = config.draw_border;
-
-    notify_layout_parent_of_intrinsic_layout_invalidation();
-}
-
-void UiRadioButton::sync_checkbox_state() const
-{
-    UiLabeledCheckboxConfig config{};
-    config.text_content = _text_content;
-    config.label_placement = to_checkbox_label_placement(_label_placement);
-    config.label_spacing = _label_spacing;
-    config.text_placement = to_checkbox_text_placement(_text_placement);
-    config.text_colors = UiEnabledDisabledColors{ _text_color,_disabled_text_color };
-    config.draw_background = _draw_background;
-    config.draw_border = _draw_border;
-
-    UiCheckboxConfig checkbox_config{};
-    checkbox_config.style = checkbox_style();
-    if (_sounds)
-        checkbox_config.sounds = checkbox_sounds();
-    config.checkbox = checkbox_config;
-
-    _checkbox.set_screen_rect(screen_rect());
-    _checkbox.set_visible(is_visible());
-    _checkbox.set_active(is_active());
-    _checkbox.set_enabled(is_enabled());
-    _checkbox.set_focused(is_focused());
-    _checkbox.set_opacity(opacity());
-    _checkbox.set_labeled_checkbox_config(config);
-    _checkbox.set_typography_role(_typography_role);
-    _checkbox.set_padding(_padding);
-    _checkbox.set_label_padding(_label_padding);
-    _checkbox.set_checked(_selected);
-}
-
-bool UiRadioButton::set_selected_internal(bool selected,bool notify) noexcept
-{
-    if (_selected == selected)
-        return false;
-
-    _selected = selected;
-    if (_selected && notify && _on_selected)
-        _on_selected();
-    if (_selected && notify && _sounds)
-        play_sound_if_set(_sounds->select);
+    if (_selected) return true;
+    _selected = true;
+    if (_sounds) play_sound_if_set(_sounds->select);
+    if (notify && _on_selected) _on_selected();
     return true;
 }
-
-void UiRadioButton::play_sound_if_set(const std::string& sound_key) const
-{
-    if (sound_key.empty())
-        return;
-    elysia::audio::AudioService::instance()->play_sound(sound_key);
-}
-
-UiCheckboxStyle UiRadioButton::checkbox_style() const noexcept
-{
-    UiCheckboxStyle style{};
-    style.chrome = this->style().chrome;
-    style.mark = this->style().mark;
-    style.mark_style = UiCheckboxMarkStyle::RadioDot;
-    return style;
-}
-
-UiCheckboxSounds UiRadioButton::checkbox_sounds() const noexcept
-{
-    UiCheckboxSounds sounds{};
-    if (_sounds)
-    {
-        sounds.focus = _sounds->focus;
-        sounds.press = _sounds->press;
-    }
-    return sounds;
-}
-
-UiLabeledCheckboxLabelPlacement UiRadioButton::to_checkbox_label_placement(UiRadioButtonLabelPlacement placement) noexcept
-{
-    return placement == UiRadioButtonLabelPlacement::Left
-        ? UiLabeledCheckboxLabelPlacement::Left
-        : UiLabeledCheckboxLabelPlacement::Right;
-}
-
-UiLabeledCheckboxTextPlacement UiRadioButton::to_checkbox_text_placement(UiRadioButtonTextPlacement placement) noexcept
-{
-    return placement == UiRadioButtonTextPlacement::FarEdge
-        ? UiLabeledCheckboxTextPlacement::FarEdge
-        : UiLabeledCheckboxTextPlacement::NearBox;
-}
-
-void UiRadioButton::apply_theme(const UiTheme& theme)
-{
-    // The outer radio button owns theme participation and translates it into local text colors.
-    // Its internal checkbox remains an implementation detail rather than a separately registered
-    // themed element.
-    _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.radio_button_style));
-    _text_color = style().text.enabled;
-    _disabled_text_color = style().text.disabled;
-}
+bool UiRadioButton::contains_pointer(int x,int y) const noexcept { return screen_rect().contains({ static_cast<float>(x),static_cast<float>(y) }); }
+bool UiRadioButton::can_interact() const noexcept { return is_active() && is_visible() && is_enabled(); }
+bool UiRadioButton::is_primary_pointer_event(const UiInputEvent& event) const noexcept { return event.device == elysia::input::InputDevice::Mouse && event.control == elysia::input::RawInputControl::MouseLeft; }
+void UiRadioButton::play_sound_if_set(const std::string& key) const { if (!key.empty()) elysia::audio::AudioService::instance()->play_sound(key); }
+elysia::core::Color UiRadioButton::background_color() const noexcept { return resolve_interactive_color(style().chrome.background,is_enabled(),is_focused(),_pushed); }
+elysia::core::Color UiRadioButton::border_color() const noexcept { return resolve_enabled_disabled_color(style().chrome.border,is_enabled()); }
+elysia::core::Color UiRadioButton::mark_color() const noexcept { return resolve_enabled_disabled_color(style().mark,is_enabled()); }
+void UiRadioButton::apply_theme(const UiTheme& theme) { _style_state.set_theme_style(apply_theme_colors(_style_state.theme_style(),theme.radio_button_style)); }
 }

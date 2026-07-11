@@ -1,4 +1,4 @@
-#include "ui_dropdown_button_set.h"
+#include "ui_dropdown.h"
 
 #include "../containers/ui_list_container.h"
 #include "../layout/ui_layout_geometry.h"
@@ -21,21 +21,21 @@ namespace
 }
 }
 
-UiDropdownButtonSet::UiDropdownButtonSet(const elysia::core::Rect& rect,int order) noexcept
+UiDropdown::UiDropdown(const elysia::core::Rect& rect,int order) noexcept
     : UiControl(rect,order),_trigger(rect,order)
 {
     reset();
 }
 
-UiDropdownButtonSet::UiDropdownButtonSet(
+UiDropdown::UiDropdown(
     const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order) noexcept
-    : UiDropdownButtonSet(elysia::core::Rect(position.x,position.y,size.x,size.y),order) {}
+    : UiDropdown(elysia::core::Rect(position.x,position.y,size.x,size.y),order) {}
 
-UiDropdownButtonSet::UiDropdownButtonSet(
+UiDropdown::UiDropdown(
     const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order) noexcept
-    : UiDropdownButtonSet(elysia::core::Rect::from_center(center,size),order) {}
+    : UiDropdown(elysia::core::Rect::from_center(center,size),order) {}
 
-void UiDropdownButtonSet::reset() noexcept
+void UiDropdown::reset() noexcept
 {
     UiControl::reset();
     set_use_theme(false);
@@ -55,8 +55,8 @@ void UiDropdownButtonSet::reset() noexcept
 
     _options.clear();
     _on_selection_changed = nullptr;
-    _style_state.reset(UiStyleDefaults::dropdown_button_set());
-    _theme_role = UiDropdownButtonSetThemeRole::Default;
+    _style_state.reset(UiStyleDefaults::dropdown());
+    _theme_role = UiDropdownThemeRole::Default;
     _selected_index.reset();
     _focused_option.reset();
     _expanded = false;
@@ -65,7 +65,7 @@ void UiDropdownButtonSet::reset() noexcept
     sync_visual_state();
 }
 
-void UiDropdownButtonSet::set_enabled(bool enabled)
+void UiDropdown::set_enabled(bool enabled)
 {
     UiControl::set_enabled(enabled);
     if (!enabled)
@@ -73,7 +73,7 @@ void UiDropdownButtonSet::set_enabled(bool enabled)
     sync_visual_state();
 }
 
-void UiDropdownButtonSet::set_focused(bool focused)
+void UiDropdown::set_focused(bool focused)
 {
     UiControl::set_focused(focused);
     if (!_expanded)
@@ -82,7 +82,7 @@ void UiDropdownButtonSet::set_focused(bool focused)
         set_focused_option(_focused_option);
 }
 
-bool UiDropdownButtonSet::on_ui_input_event(const UiInputEvent& event)
+bool UiDropdown::on_ui_input_event(const UiInputEvent& event)
 {
     sync_visual_state();
     if (_expanded)
@@ -90,17 +90,17 @@ bool UiDropdownButtonSet::on_ui_input_event(const UiInputEvent& event)
     return _trigger.on_ui_input_event(event);
 }
 
-void UiDropdownButtonSet::submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const
+void UiDropdown::submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const
 {
     if (!is_visible())
         return;
 
-    auto* self = const_cast<UiDropdownButtonSet*>(this);
+    auto* self = const_cast<UiDropdown*>(this);
     self->sync_visual_state();
     _trigger.submit_ui_render_commands(out_commands);
 }
 
-void UiDropdownButtonSet::set_options(std::vector<UiDropdownOption> options)
+void UiDropdown::set_options(std::vector<UiDropdownOption> options)
 {
     const std::optional<std::size_t> previous = _selected_index;
     _options = std::move(options);
@@ -117,12 +117,12 @@ void UiDropdownButtonSet::set_options(std::vector<UiDropdownOption> options)
     sync_visual_state();
 }
 
-const std::vector<UiDropdownOption>& UiDropdownButtonSet::options() const noexcept
+const std::vector<UiDropdownOption>& UiDropdown::options() const noexcept
 {
     return _options;
 }
 
-void UiDropdownButtonSet::add_option(UiDropdownOption option)
+void UiDropdown::add_option(UiDropdownOption option)
 {
     _options.push_back(std::move(option));
     rebuild_option_buttons();
@@ -132,7 +132,7 @@ void UiDropdownButtonSet::add_option(UiDropdownOption option)
     sync_visual_state();
 }
 
-void UiDropdownButtonSet::clear_options()
+void UiDropdown::clear_options()
 {
     _options.clear();
     _selected_index.reset();
@@ -142,12 +142,12 @@ void UiDropdownButtonSet::clear_options()
     sync_visual_state();
 }
 
-std::optional<std::size_t> UiDropdownButtonSet::selected_index() const noexcept
+std::optional<std::size_t> UiDropdown::selected_index() const noexcept
 {
     return _selected_index;
 }
 
-bool UiDropdownButtonSet::set_selected_index(std::size_t index)
+bool UiDropdown::set_selected_index(std::size_t index)
 {
     if (index >= _options.size() || !_options[index].enabled)
         return false;
@@ -161,12 +161,12 @@ bool UiDropdownButtonSet::set_selected_index(std::size_t index)
     return true;
 }
 
-void UiDropdownButtonSet::set_on_selection_changed(UiDropdownButtonSetSelectionChangedCallback on_selection_changed)
+void UiDropdown::set_on_selection_changed(UiDropdownSelectionChangedCallback on_selection_changed)
 {
     _on_selection_changed = std::move(on_selection_changed);
 }
 
-void UiDropdownButtonSet::open()
+void UiDropdown::open()
 {
     if (_expanded || !is_enabled() || !_selected_index || !_window)
         return;
@@ -178,7 +178,7 @@ void UiDropdownButtonSet::open()
     _window->activate_transient_popup(*this);
 }
 
-void UiDropdownButtonSet::close() noexcept
+void UiDropdown::close() noexcept
 {
     _expanded = false;
     _focused_option.reset();
@@ -186,7 +186,7 @@ void UiDropdownButtonSet::close() noexcept
     _trigger.set_focused(is_focused());
 }
 
-void UiDropdownButtonSet::toggle()
+void UiDropdown::toggle()
 {
     if (_expanded)
         close();
@@ -194,12 +194,12 @@ void UiDropdownButtonSet::toggle()
         open();
 }
 
-bool UiDropdownButtonSet::is_expanded() const noexcept
+bool UiDropdown::is_expanded() const noexcept
 {
     return _expanded;
 }
 
-void UiDropdownButtonSet::register_as_transient_popup(UiWindow& window)
+void UiDropdown::register_as_transient_popup(UiWindow& window)
 {
     if (_window && _window != &window)
         _window->unregister_transient_popup(*this);
@@ -207,7 +207,7 @@ void UiDropdownButtonSet::register_as_transient_popup(UiWindow& window)
     _window->register_transient_popup(*this);
 }
 
-void UiDropdownButtonSet::unregister_as_transient_popup() noexcept
+void UiDropdown::unregister_as_transient_popup() noexcept
 {
     if (_window)
         _window->unregister_transient_popup(*this);
@@ -215,69 +215,69 @@ void UiDropdownButtonSet::unregister_as_transient_popup() noexcept
     close();
 }
 
-void UiDropdownButtonSet::set_style(const UiDropdownButtonSetStyle& style) noexcept
+void UiDropdown::set_style(const UiDropdownStyle& style) noexcept
 {
     _style_state.set_style_override(style);
     if (_expanded)
         sync_popup_layout();
 }
 
-const UiDropdownButtonSetStyle& UiDropdownButtonSet::style() const noexcept
+const UiDropdownStyle& UiDropdown::style() const noexcept
 {
     return _style_state.effective_style();
 }
 
-bool UiDropdownButtonSet::has_style_override() const noexcept
+bool UiDropdown::has_style_override() const noexcept
 {
     return _style_state.has_style_override();
 }
 
-void UiDropdownButtonSet::clear_style_override() noexcept
+void UiDropdown::clear_style_override() noexcept
 {
     _style_state.clear_style_override();
     if (_expanded)
         sync_popup_layout();
 }
 
-void UiDropdownButtonSet::set_theme_role(UiDropdownButtonSetThemeRole role) noexcept
+void UiDropdown::set_theme_role(UiDropdownThemeRole role) noexcept
 {
     _theme_role = role;
     request_theme_reapply();
 }
 
-UiDropdownButtonSetThemeRole UiDropdownButtonSet::theme_role() const noexcept
+UiDropdownThemeRole UiDropdown::theme_role() const noexcept
 {
     return _theme_role;
 }
 
-UiElement& UiDropdownButtonSet::transient_popup_owner() noexcept
+UiElement& UiDropdown::transient_popup_owner() noexcept
 {
     return *this;
 }
 
-const UiElement& UiDropdownButtonSet::transient_popup_owner() const noexcept
+const UiElement& UiDropdown::transient_popup_owner() const noexcept
 {
     return *this;
 }
 
-bool UiDropdownButtonSet::is_transient_popup_open() const noexcept
+bool UiDropdown::is_transient_popup_open() const noexcept
 {
     return _expanded;
 }
 
-bool UiDropdownButtonSet::contains_transient_popup_point(int mouse_x,int mouse_y) const noexcept
+bool UiDropdown::contains_transient_popup_point(int mouse_x,int mouse_y) const noexcept
 {
     return contains_trigger_point(mouse_x,mouse_y)
         || (_expanded && _popup_panel.screen_rect().contains(elysia::core::Vector2(
             static_cast<float>(mouse_x),static_cast<float>(mouse_y))));
 }
 
-void UiDropdownButtonSet::close_transient_popup() noexcept
+void UiDropdown::close_transient_popup() noexcept
 {
     close();
 }
 
-bool UiDropdownButtonSet::on_transient_popup_input_event(const UiInputEvent& event)
+bool UiDropdown::on_transient_popup_input_event(const UiInputEvent& event)
 {
     if (!_expanded)
         return false;
@@ -328,19 +328,19 @@ bool UiDropdownButtonSet::on_transient_popup_input_event(const UiInputEvent& eve
     return false;
 }
 
-void UiDropdownButtonSet::submit_transient_popup_render_commands(
+void UiDropdown::submit_transient_popup_render_commands(
     std::vector<elysia::core::UiRenderCommand>& out_commands) const
 {
     if (!_expanded || !is_visible())
         return;
 
-    auto* self = const_cast<UiDropdownButtonSet*>(this);
+    auto* self = const_cast<UiDropdown*>(this);
     self->sync_popup_layout();
     _popup_panel.submit_ui_render_commands(out_commands);
     _popup_scroll.submit_ui_render_commands(out_commands);
 }
 
-void UiDropdownButtonSet::create_popup_content()
+void UiDropdown::create_popup_content()
 {
     auto list = std::make_unique<UiListContainer>();
     list->set_direction(UiListDirection::Vertical);
@@ -350,7 +350,7 @@ void UiDropdownButtonSet::create_popup_content()
     _popup_scroll.set_content(std::move(list));
 }
 
-void UiDropdownButtonSet::rebuild_option_buttons()
+void UiDropdown::rebuild_option_buttons()
 {
     if (!_popup_list)
         return;
@@ -375,7 +375,7 @@ void UiDropdownButtonSet::rebuild_option_buttons()
     sync_theme_to_children();
 }
 
-void UiDropdownButtonSet::sync_visual_state()
+void UiDropdown::sync_visual_state()
 {
     const bool has_selection = _selected_index.has_value() && *_selected_index < _options.size();
     _trigger.set_screen_rect(screen_rect());
@@ -388,12 +388,12 @@ void UiDropdownButtonSet::sync_visual_state()
         _trigger.set_focused(is_focused());
 }
 
-void UiDropdownButtonSet::sync_popup_layout()
+void UiDropdown::sync_popup_layout()
 {
     if (!_expanded || !_popup_list)
         return;
 
-    const UiDropdownButtonSetStyle& current_style = style();
+    const UiDropdownStyle& current_style = style();
     const elysia::core::Rect trigger_rect = screen_rect();
     const elysia::core::Rect bounds = _window ? _window->content_bounds() : trigger_rect;
     const float width = trigger_rect.width();
@@ -435,7 +435,7 @@ void UiDropdownButtonSet::sync_popup_layout()
     _popup_scroll.update_layout_if_dirty();
 }
 
-void UiDropdownButtonSet::sync_theme_to_children(const UiTheme* theme)
+void UiDropdown::sync_theme_to_children(const UiTheme* theme)
 {
     const UiTheme& resolved = theme ? *theme : builtin_theme(UiBuiltinTheme::BlueGlassMoon);
     _trigger.set_style(apply_theme_colors(UiButtonStyle{},resolved.button(UiButtonThemeRole::Default)));
@@ -455,7 +455,7 @@ void UiDropdownButtonSet::sync_theme_to_children(const UiTheme* theme)
     }
 }
 
-std::optional<std::size_t> UiDropdownButtonSet::first_enabled_option() const noexcept
+std::optional<std::size_t> UiDropdown::first_enabled_option() const noexcept
 {
     for (std::size_t index = 0; index < _options.size(); ++index)
     {
@@ -465,7 +465,7 @@ std::optional<std::size_t> UiDropdownButtonSet::first_enabled_option() const noe
     return std::nullopt;
 }
 
-std::optional<std::size_t> UiDropdownButtonSet::next_enabled_option(int direction) const noexcept
+std::optional<std::size_t> UiDropdown::next_enabled_option(int direction) const noexcept
 {
     if (_options.empty())
         return std::nullopt;
@@ -482,7 +482,7 @@ std::optional<std::size_t> UiDropdownButtonSet::next_enabled_option(int directio
     return std::nullopt;
 }
 
-void UiDropdownButtonSet::set_focused_option(std::optional<std::size_t> index)
+void UiDropdown::set_focused_option(std::optional<std::size_t> index)
 {
     _focused_option = index;
     _trigger.set_focused(!_expanded && is_focused());
@@ -497,7 +497,7 @@ void UiDropdownButtonSet::set_focused_option(std::optional<std::size_t> index)
     _popup_list->set_focused_target(focused_button);
 }
 
-void UiDropdownButtonSet::sync_focused_option_from_popup_list()
+void UiDropdown::sync_focused_option_from_popup_list()
 {
     if (!_popup_list)
     {
@@ -518,7 +518,7 @@ void UiDropdownButtonSet::sync_focused_option_from_popup_list()
     _focused_option.reset();
 }
 
-void UiDropdownButtonSet::ensure_focused_option_visible() noexcept
+void UiDropdown::ensure_focused_option_visible() noexcept
 {
     if (!_focused_option)
         return;
@@ -526,22 +526,22 @@ void UiDropdownButtonSet::ensure_focused_option_visible() noexcept
         _popup_scroll.ensure_visible(button->screen_rect());
 }
 
-UiButton* UiDropdownButtonSet::option_button_at(std::size_t index) noexcept
+UiButton* UiDropdown::option_button_at(std::size_t index) noexcept
 {
     return _popup_list ? dynamic_cast<UiButton*>(_popup_list->child_at(index)) : nullptr;
 }
 
-const UiButton* UiDropdownButtonSet::option_button_at(std::size_t index) const noexcept
+const UiButton* UiDropdown::option_button_at(std::size_t index) const noexcept
 {
     return _popup_list ? dynamic_cast<const UiButton*>(_popup_list->child_at(index)) : nullptr;
 }
 
-bool UiDropdownButtonSet::contains_trigger_point(int mouse_x,int mouse_y) const noexcept
+bool UiDropdown::contains_trigger_point(int mouse_x,int mouse_y) const noexcept
 {
     return screen_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
 }
 
-bool UiDropdownButtonSet::is_pointer_event(const UiInputEvent& event) const noexcept
+bool UiDropdown::is_pointer_event(const UiInputEvent& event) const noexcept
 {
     return event.type == UiInputEventType::MouseMoved
         || event.type == UiInputEventType::PointerPressed
@@ -549,7 +549,7 @@ bool UiDropdownButtonSet::is_pointer_event(const UiInputEvent& event) const noex
         || event.type == UiInputEventType::MouseWheel;
 }
 
-void UiDropdownButtonSet::apply_theme(const UiTheme& theme)
+void UiDropdown::apply_theme(const UiTheme& theme)
 {
     sync_theme_to_children(&theme);
 }

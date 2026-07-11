@@ -8,7 +8,7 @@
 #include "../style/ui_visual_styles.h"
 #include "../text/ui_text_content.h"
 #include "../window/ui_transient_popup.h"
-#include "ui_button.h"
+#include "../widgets/ui_button.h"
 
 #include <cstddef>
 #include <functional>
@@ -27,16 +27,16 @@ struct UiDropdownOption
     bool enabled = true;
 };
 
-using UiDropdownButtonSetSelectionChangedCallback = std::function<void(std::size_t selected_index)>;
+using UiDropdownSelectionChangedCallback = std::function<void(std::size_t selected_index)>;
 
-// Trigger control plus a window-rendered transient popup kept outside ordinary child z-order.
-class UiDropdownButtonSet final : public UiControl, public UiTransientPopup
+// Dropdown composite with a trigger and window-rendered transient option popup.
+class UiDropdown final : public UiControl, public UiTransientPopup
 {
 public:
-    explicit UiDropdownButtonSet(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0) noexcept;
-    UiDropdownButtonSet(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order = 0) noexcept;
-    UiDropdownButtonSet(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order = 0) noexcept;
-    ~UiDropdownButtonSet() override = default;
+    explicit UiDropdown(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0) noexcept;
+    UiDropdown(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order = 0) noexcept;
+    UiDropdown(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order = 0) noexcept;
+    ~UiDropdown() override = default;
 
     void reset() noexcept override;
     void set_enabled(bool enabled) override;
@@ -51,7 +51,7 @@ public:
 
     [[nodiscard]] std::optional<std::size_t> selected_index() const noexcept;
     [[nodiscard]] bool set_selected_index(std::size_t index);
-    void set_on_selection_changed(UiDropdownButtonSetSelectionChangedCallback on_selection_changed);
+    void set_on_selection_changed(UiDropdownSelectionChangedCallback on_selection_changed);
 
     void open();
     void close() noexcept;
@@ -62,12 +62,12 @@ public:
     void register_as_transient_popup(UiWindow& window);
     void unregister_as_transient_popup() noexcept;
 
-    void set_style(const UiDropdownButtonSetStyle& style) noexcept;
-    [[nodiscard]] const UiDropdownButtonSetStyle& style() const noexcept;
+    void set_style(const UiDropdownStyle& style) noexcept;
+    [[nodiscard]] const UiDropdownStyle& style() const noexcept;
     [[nodiscard]] bool has_style_override() const noexcept;
     void clear_style_override() noexcept;
-    void set_theme_role(UiDropdownButtonSetThemeRole role) noexcept;
-    [[nodiscard]] UiDropdownButtonSetThemeRole theme_role() const noexcept;
+    void set_theme_role(UiDropdownThemeRole role) noexcept;
+    [[nodiscard]] UiDropdownThemeRole theme_role() const noexcept;
 
     [[nodiscard]] UiElement& transient_popup_owner() noexcept override;
     [[nodiscard]] const UiElement& transient_popup_owner() const noexcept override;
@@ -101,9 +101,9 @@ private:
     UiScrollContainer _popup_scroll;
     UiListContainer* _popup_list = nullptr;
     std::vector<UiDropdownOption> _options;
-    UiDropdownButtonSetSelectionChangedCallback _on_selection_changed;
-    UiStyleState<UiDropdownButtonSetStyle> _style_state;
-    UiDropdownButtonSetThemeRole _theme_role = UiDropdownButtonSetThemeRole::Default;
+    UiDropdownSelectionChangedCallback _on_selection_changed;
+    UiStyleState<UiDropdownStyle> _style_state;
+    UiDropdownThemeRole _theme_role = UiDropdownThemeRole::Default;
     UiWindow* _window = nullptr;
     std::optional<std::size_t> _selected_index;
     std::optional<std::size_t> _focused_option;

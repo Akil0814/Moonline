@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ui_list_container.h"
-#include "../widgets/ui_radio_button.h"
+#include "../core/ui_radio_item.h"
 
 #include <cstddef>
 #include <functional>
@@ -33,7 +33,7 @@ public:
 private:
     // Mirrors button-level selection back into the group and emits one callback when needed.
     void sync_selection(bool notify);
-    [[nodiscard]] UiRadioButton* radio_button_at(std::size_t index) const noexcept;
+    [[nodiscard]] UiRadioItem* radio_item_at(std::size_t index) const noexcept;
 
 private:
     std::optional<std::size_t> _selected_index = std::nullopt;

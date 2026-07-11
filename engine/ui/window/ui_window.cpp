@@ -1,5 +1,5 @@
 #include "ui_window.h"
-#include "../widgets/ui_tooltip.h"
+#include "../composites/ui_tooltip.h"
 
 #include "../style/ui_style_defaults.h"
 #include "../style/ui_theme.h"
