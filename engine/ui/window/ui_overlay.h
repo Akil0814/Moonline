@@ -4,6 +4,18 @@
 
 namespace elysia::ui
 {
+class UiWindow;
+
+// Optional client protocol for overlay elements that keep a borrowed pointer to
+// their registering window. UiWindow calls this before its registration state
+// is discarded; implementations must only clear local state.
+class UiOverlayWindowClient
+{
+public:
+    virtual ~UiOverlayWindowClient() = default;
+    virtual void on_overlay_window_detached(UiWindow& window) noexcept = 0;
+};
+
 enum class UiOverlayPlacement
 {
     Center,

@@ -36,12 +36,6 @@ void UiControlFocusScopeHost::set_focused_target(UiControl* control)
 
 UiControl* UiControlFocusScopeHost::focused_target() const noexcept
 {
-    auto* self = const_cast<UiControlFocusScopeHost*>(this);
-    self->cleanup_destroyed_children();
-    self->update_layout_if_dirty();
-    self->refresh_focus_registry();
-    self->ensure_valid_focus();
-    self->apply_focus_state();
     return _focused_target;
 }
 
@@ -162,40 +156,22 @@ bool UiControlFocusScopeHost::contains_focus_point(int mouse_x,int mouse_y) cons
 
 void UiControlFocusScopeHost::update(double delta)
 {
-    cleanup_destroyed_children();
-    update_layout_if_dirty();
-    refresh_focus_registry();
-    ensure_valid_focus();
-    apply_focus_state();
+    synchronize_focus_state();
     update_child_objects(delta);
-    cleanup_destroyed_children();
-    refresh_focus_registry();
-    ensure_valid_focus();
-    apply_focus_state();
+    synchronize_focus_state();
 }
 
 void UiControlFocusScopeHost::on_ui_input_frame(const UiInputFrame& input)
 {
-    cleanup_destroyed_children();
-    update_layout_if_dirty();
-    refresh_focus_registry();
-    ensure_valid_focus();
-    apply_focus_state();
+    synchronize_focus_state();
     dispatch_frame_to_children(input);
-    cleanup_destroyed_children();
-    refresh_focus_registry();
-    ensure_valid_focus();
-    apply_focus_state();
+    synchronize_focus_state();
 }
 
 bool UiControlFocusScopeHost::on_ui_input_event(const UiInputEvent& event)
 {
     update_focus_input_device(event.device);
-    cleanup_destroyed_children();
-    update_layout_if_dirty();
-    refresh_focus_registry();
-    ensure_valid_focus();
-    apply_focus_state();
+    synchronize_focus_state();
 
     bool handled = false;
 
@@ -248,10 +224,7 @@ bool UiControlFocusScopeHost::on_ui_input_event(const UiInputEvent& event)
         handled = dispatch_input_to_children(event);
     }
 
-    cleanup_destroyed_children();
-    refresh_focus_registry();
-    ensure_valid_focus();
-    apply_focus_state();
+    synchronize_focus_state();
     return handled;
 }
 
@@ -260,12 +233,17 @@ void UiControlFocusScopeHost::submit_ui_render_commands(std::vector<elysia::core
     if (!is_visible())
         return;
     auto* self = const_cast<UiControlFocusScopeHost*>(this);
-    self->cleanup_destroyed_children();
-    self->update_layout_if_dirty();
-    self->refresh_focus_registry();
-    self->ensure_valid_focus();
-    self->apply_focus_state();
+    self->synchronize_focus_state();
     UiChildHost::submit_ui_render_commands(out_commands);
+}
+
+void UiControlFocusScopeHost::synchronize_focus_state()
+{
+    cleanup_destroyed_children();
+    update_layout_if_dirty();
+    refresh_focus_registry();
+    ensure_valid_focus();
+    apply_focus_state();
 }
 
 void UiControlFocusScopeHost::refresh_focus_registry()

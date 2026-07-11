@@ -36,7 +36,7 @@ public:
     explicit UiDropdownButtonSet(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0) noexcept;
     UiDropdownButtonSet(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order = 0) noexcept;
     UiDropdownButtonSet(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order = 0) noexcept;
-    ~UiDropdownButtonSet() override = default;
+    ~UiDropdownButtonSet() override;
 
     void reset() noexcept override;
     void set_enabled(bool enabled) override;
@@ -74,6 +74,7 @@ public:
     [[nodiscard]] bool is_transient_popup_open() const noexcept override;
     [[nodiscard]] bool contains_transient_popup_point(int mouse_x,int mouse_y) const noexcept override;
     void close_transient_popup() noexcept override;
+    void on_transient_popup_window_detached(UiWindow& window) noexcept override;
     bool on_transient_popup_input_event(const UiInputEvent& event) override;
     void submit_transient_popup_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
 

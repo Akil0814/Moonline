@@ -33,13 +33,13 @@ using UiConfirmationDialogCallback = std::function<void()>;
 
 // Convenience overlay composed from existing containers and controls.
 // UiChromeContainer is owned as a child rather than exposed through inheritance.
-class UiConfirmationDialog final : public UiControlFocusScopeHost, private UiDelegatedFocusMixin
+class UiConfirmationDialog final : public UiControlFocusScopeHost, public UiOverlayWindowClient, private UiDelegatedFocusMixin
 {
 public:
     explicit UiConfirmationDialog(const elysia::core::Rect& rect = elysia::core::Rect{ 0,0,420,240 },int order = 0) noexcept;
     UiConfirmationDialog(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order = 0) noexcept;
     UiConfirmationDialog(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order = 0) noexcept;
-    ~UiConfirmationDialog() override = default;
+    ~UiConfirmationDialog() override;
 
     void reset() noexcept override;
     void update(double delta) override;
@@ -56,6 +56,8 @@ public:
 
     // The owning window must adopt this element before overlay registration.
     void register_as_overlay(UiWindow& window,UiOverlayOptions options = {});
+    void unregister_as_overlay() noexcept;
+    void on_overlay_window_detached(UiWindow& window) noexcept override;
     void open();
     void close();
 

@@ -35,8 +35,14 @@ UiDropdownButtonSet::UiDropdownButtonSet(
     const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order) noexcept
     : UiDropdownButtonSet(elysia::core::Rect::from_center(center,size),order) {}
 
+UiDropdownButtonSet::~UiDropdownButtonSet()
+{
+    unregister_as_transient_popup();
+}
+
 void UiDropdownButtonSet::reset() noexcept
 {
+    unregister_as_transient_popup();
     UiControl::reset();
     set_use_theme(false);
 
@@ -274,6 +280,14 @@ bool UiDropdownButtonSet::contains_transient_popup_point(int mouse_x,int mouse_y
 
 void UiDropdownButtonSet::close_transient_popup() noexcept
 {
+    close();
+}
+
+void UiDropdownButtonSet::on_transient_popup_window_detached(UiWindow& window) noexcept
+{
+    if (_window != &window)
+        return;
+    _window = nullptr;
     close();
 }
 

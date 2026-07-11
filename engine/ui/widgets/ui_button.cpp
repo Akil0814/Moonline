@@ -333,8 +333,15 @@ void UiButton::clear_style_override() noexcept
 
 void UiButton::set_theme_role(UiButtonThemeRole role) noexcept
 {
+    if (_theme_role == role)
+        return;
     _theme_role = role;
+    // Keep role changes visible even for controls that are not registered with
+    // a UiThemeManager. A manual style override remains the effective style.
+    _style_state.set_theme_style(apply_theme_colors(
+        _style_state.theme_style(),UiStyleDefaults::theme().button(_theme_role)));
     request_theme_reapply();
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
 UiButtonThemeRole UiButton::theme_role() const noexcept

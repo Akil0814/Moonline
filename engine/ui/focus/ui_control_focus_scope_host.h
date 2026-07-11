@@ -54,6 +54,9 @@ public:
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
 
 protected:
+    // Repairs child ownership, layout, focus registry, and focused visuals at
+    // explicit lifecycle boundaries. Query methods never invoke this implicitly.
+    void synchronize_focus_state();
     virtual void rebuild_focus_registry() = 0;
 
     // Rebuilds directional focus links after children or layout relationships change.

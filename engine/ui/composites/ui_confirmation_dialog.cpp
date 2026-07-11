@@ -49,8 +49,14 @@ UiConfirmationDialog::UiConfirmationDialog(
     const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order
 ) noexcept : UiConfirmationDialog(elysia::core::Rect::from_center(center,size),order) {}
 
+UiConfirmationDialog::~UiConfirmationDialog()
+{
+    unregister_as_overlay();
+}
+
 void UiConfirmationDialog::reset() noexcept
 {
+    unregister_as_overlay();
     UiControlFocusScopeHost::reset();
     reset_delegated_focus_state();
     _chrome = nullptr;
@@ -172,6 +178,8 @@ void UiConfirmationDialog::set_on_confirm(UiConfirmationDialogCallback on_confir
 
 void UiConfirmationDialog::register_as_overlay(UiWindow& window,UiOverlayOptions options)
 {
+    if (_registered_window && _registered_window != &window)
+        _registered_window->unregister_overlay(*this);
     // UiWindow owns overlay state; this pointer only forwards later open/close requests.
     _registered_window = &window;
     if (is_default_overlay_options(options))
@@ -186,6 +194,20 @@ void UiConfirmationDialog::register_as_overlay(UiWindow& window,UiOverlayOptions
     }
     options.fallback_size = size();
     window.register_overlay(*this,options);
+}
+
+void UiConfirmationDialog::unregister_as_overlay() noexcept
+{
+    UiWindow* window = _registered_window;
+    _registered_window = nullptr;
+    if (window)
+        window->unregister_overlay(*this);
+}
+
+void UiConfirmationDialog::on_overlay_window_detached(UiWindow& window) noexcept
+{
+    if (_registered_window == &window)
+        _registered_window = nullptr;
 }
 
 void UiConfirmationDialog::open()
