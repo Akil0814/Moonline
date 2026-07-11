@@ -55,13 +55,7 @@ void StartupLoadingScene::on_enter(const elysia::scene::ScenePayload& payload)
 		elysia::core::Vector2{ 300, 32 },
 		elysia::ui::from_center
 	);
-	_start_text->configure_playback(
-		elysia::ui::effects::UiOpacityBlinkMode::VisibleFirst,
-		0.0,
-		0.45,
-		0.45,
-		std::nullopt
-	);
+	_start_text->configure_playback(elysia::ui::effects::UiOpacityBlinkMode::VisibleFirst, 0.0, 0.45, 0.45, std::nullopt);
 
 	_start_text->set_visible(false);
 
@@ -90,15 +84,11 @@ void StartupLoadingScene::on_update(double delta)
 		_has_logged_load_failure = true;
 		const std::string& error_message = _content_loader.error_message();
 		SDL_ShowSimpleMessageBox(
-			SDL_MESSAGEBOX_ERROR,
-			"Game Start Error",
-			error_message.c_str(),
-			nullptr);
+			SDL_MESSAGEBOX_ERROR,"Game Start Error",
+			error_message.c_str(),nullptr);
 		request_quit();
 		return;
 	}
-
-
 }
 
 void StartupLoadingScene::on_render(SDL_Renderer* renderer)
@@ -119,7 +109,7 @@ void StartupLoadingScene::on_input(const elysia::input::RawInputFrame& input, co
 			&& elysia::input::matches_control(elysia::input::RawInputControl::AnyControl,event.control))
 		{
 			_phase = StartupPhase::Transitioning;
-			request_scene_switch(AppSceneKeys::MainMenu, MainMeunEnterPayload{ .play_theme_music = true });
+			request_scene_switch(AppSceneKeys::MainMenu, MainMeunEnterPayload{ .replay_theme_music = true });
 			break;
 		}
 	}

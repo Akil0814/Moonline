@@ -1,6 +1,8 @@
 #include "setting_scene.h"
 
 #include "../../application/scene/scene_keys.h"
+#include "../../application/scene/scene_payloads.h"
+
 #include "../../engine/config/config_service.h"
 #include "../../engine/ui/containers/ui_list_container.h"
 #include "../../engine/ui/layout/ui_layout_types.h"
@@ -98,13 +100,11 @@ void SettingScene::build_ui()
     if (_main_setting_window && !_main_setting_window->is_destroyed())
         return;
 
-    _main_setting_window = Scene::create_and_add_object<elysia::ui::UiWindow>(
-        elysia::core::Rect{ 0,0,1280,720 },10);
+    _main_setting_window = Scene::create_and_add_object<elysia::ui::UiWindow>(elysia::core::Rect{ 0,0,1280,720 },10);
     if (!_main_setting_window)
         return;
 
-    auto page = std::make_unique<elysia::ui::UiListContainer>(
-        elysia::core::Rect{ 0,0,700,680 });
+    auto page = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,700,680 });
     page->set_direction(elysia::ui::UiListDirection::Vertical);
     page->set_item_spacing(6.0f);
     page->set_padding(elysia::ui::UiLayoutPadding{ 40.0f,24.0f,40.0f,24.0f });
@@ -174,7 +174,7 @@ void SettingScene::build_ui()
 
     _main_setting_window->set_on_cancel([this]()
     {
-        Scene::request_scene_switch(AppSceneKeys::MainMenu);
+            Scene::request_scene_switch(AppSceneKeys::MainMenu, MainMeunEnterPayload{ .replay_theme_music = false });
     });
 }
 

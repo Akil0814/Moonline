@@ -24,7 +24,7 @@ void MainMenuScene::on_enter(const elysia::scene::ScenePayload& payload)
     
     if (payload.has_value())//指针版 any_cast，不会抛异常
         if (const MainMeunEnterPayload* p = std::any_cast<MainMeunEnterPayload>(&payload))
-            if (p->play_theme_music)
+            if (p->replay_theme_music)
                 elysia::audio::AudioService::instance()->play_music("scene.main_meun_scene_main");
 
     if (_has_entered)

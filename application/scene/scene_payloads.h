@@ -4,7 +4,7 @@
 
 struct MainMeunEnterPayload
 {
-	bool play_theme_music = false;
+	bool replay_theme_music = false;
 };
 
 struct StageSelectEnterPayload
