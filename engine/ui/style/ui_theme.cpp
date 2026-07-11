@@ -34,24 +34,10 @@ template<class Enum>
 
 [[nodiscard]] UiChromeThemeColors make_chrome(
     const UiInteractiveColors& background,
-    const UiEnabledDisabledColors& border
+    const UiInteractiveColors& border
 ) noexcept
 {
-    const elysia::core::Color focused_border = background.focused != border.enabled
-        ? background.focused
-        : (background.active != border.enabled ? background.active : background.idle);
-    const elysia::core::Color active_border = background.active != focused_border
-        ? background.active
-        : (background.idle != focused_border ? background.idle : border.enabled);
-    return UiChromeThemeColors{
-        background,
-        UiInteractiveColors{
-            border.enabled,
-            focused_border,
-            active_border,
-            border.disabled
-        }
-    };
+    return UiChromeThemeColors{ background,border };
 }
 
 [[nodiscard]] UiTheme finalize_dialog_theme(UiTheme theme) noexcept
@@ -91,8 +77,10 @@ template<class Enum>
     const UiEnabledDisabledColors text = make_text_colors(UiPalette::text_primary);
     const UiEnabledDisabledColors secondary_text = make_text_colors(UiPalette::text_secondary);
     const UiEnabledDisabledColors placeholder_text = make_text_colors(UiPalette::text_placeholder);
-    const UiEnabledDisabledColors border = UiEnabledDisabledColors{
+    const UiInteractiveColors border = UiInteractiveColors{
         UiPalette::border_default,
+        UiPalette::border_focus,
+        UiPalette::accent,
         UiPalette::border_disabled
     };
     const UiInteractiveColors interactive_surface = make_surface_colors(
@@ -174,7 +162,11 @@ template<class Enum>
                 elysia::core::colors::blue_500,
                 elysia::core::colors::deep_cobalt_blue,
                 UiPalette::surface_disabled),
-            UiEnabledDisabledColors{ elysia::core::colors::alice_blue,UiPalette::border_disabled }),
+            UiInteractiveColors{
+                elysia::core::colors::alice_blue,
+                elysia::core::colors::frosted_white,
+                UiPalette::accent,
+                UiPalette::border_disabled }),
         text
     };
     theme.button_styles[to_index(UiButtonVisualRole::Danger)] = UiButtonThemeColors{
@@ -184,7 +176,11 @@ template<class Enum>
                 elysia::core::colors::red_500,
                 elysia::core::colors::red_300,
                 UiPalette::surface_disabled),
-            UiEnabledDisabledColors{ elysia::core::colors::red_300,UiPalette::border_disabled }),
+            UiInteractiveColors{
+                elysia::core::colors::alice_blue,
+                elysia::core::colors::white,
+                elysia::core::colors::deep_cobalt_blue,
+                UiPalette::border_disabled }),
         text
     };
 
@@ -246,9 +242,11 @@ template<class Enum>
     const UiEnabledDisabledColors secondary_text = make_text_colors(
         elysia::core::colors::elysia_iris_mauve,
         elysia::core::colors::gray_500);
-    const UiEnabledDisabledColors border = UiEnabledDisabledColors{
-        elysia::core::colors::elysia_hair_rose,
-        elysia::core::colors::gray_300
+    const UiInteractiveColors border = UiInteractiveColors{
+        elysia::core::colors::elysia_plum,
+        elysia::core::colors::elysia_velvet_rose,
+        elysia::core::colors::elysia_twilight_rose,
+        elysia::core::colors::gray_500
     };
     const UiInteractiveColors interactive_surface = make_surface_colors(
         elysia::core::colors::elysia_chiffon_pink,
@@ -329,17 +327,25 @@ template<class Enum>
                 elysia::core::colors::elysia_rose_pink,
                 elysia::core::colors::elysia_lilac,
                 elysia::core::colors::gray_300),
-            UiEnabledDisabledColors{ elysia::core::colors::elysia_plum,elysia::core::colors::gray_300 }),
+            UiInteractiveColors{
+                elysia::core::colors::elysia_twilight_rose,
+                elysia::core::colors::elysia_plum,
+                elysia::core::colors::elysia_twilight_rose,
+                elysia::core::colors::gray_500 }),
         make_text_colors(elysia::core::colors::elysia_silk_white,elysia::core::colors::gray_100)
     };
     theme.button_styles[to_index(UiButtonVisualRole::Danger)] = UiButtonThemeColors{
         make_chrome(
             make_surface_colors(
-                elysia::core::colors::elysia_dusk_rose,
+                elysia::core::colors::elysia_hair_rose,
                 elysia::core::colors::elysia_rose_pink,
                 elysia::core::colors::elysia_velvet_rose,
                 elysia::core::colors::gray_300),
-            UiEnabledDisabledColors{ elysia::core::colors::elysia_velvet_rose,elysia::core::colors::gray_300 }),
+            UiInteractiveColors{
+                elysia::core::colors::elysia_twilight_rose,
+                elysia::core::colors::elysia_plum,
+                elysia::core::colors::elysia_silk_white,
+                elysia::core::colors::gray_500 }),
         make_text_colors(elysia::core::colors::elysia_silk_white,elysia::core::colors::gray_100)
     };
 
@@ -401,8 +407,10 @@ template<class Enum>
     const UiEnabledDisabledColors placeholder_text = make_text_colors(
         elysia::core::colors::elysia_silver_mist,
         elysia::core::colors::elysia_silver_mist);
-    const UiEnabledDisabledColors border = UiEnabledDisabledColors{
+    const UiInteractiveColors border = UiInteractiveColors{
         elysia::core::colors::elysia_starlight_lilac,
+        elysia::core::colors::elysia_moonlit_lavender,
+        elysia::core::colors::elysia_phantom_sea,
         elysia::core::colors::elysia_silver_mist
     };
     const UiInteractiveColors interactive_surface = make_surface_colors(
@@ -484,8 +492,10 @@ template<class Enum>
                 elysia::core::colors::elysia_lilac,
                 elysia::core::colors::elysia_crystal_orchid,
                 elysia::core::colors::elysia_phantom_sea),
-            UiEnabledDisabledColors{
-                elysia::core::colors::elysia_crystal_orchid,
+            UiInteractiveColors{
+                elysia::core::colors::elysia_moonlit_lavender,
+                elysia::core::colors::elysia_twilight_mist,
+                elysia::core::colors::elysia_phantom_sea,
                 elysia::core::colors::elysia_silver_mist
             }),
         text
@@ -497,8 +507,10 @@ template<class Enum>
                 elysia::core::colors::elysia_dream_rose,
                 elysia::core::colors::elysia_crystal_orchid,
                 elysia::core::colors::elysia_phantom_sea),
-            UiEnabledDisabledColors{
+            UiInteractiveColors{
                 elysia::core::colors::elysia_crystal_orchid,
+                elysia::core::colors::elysia_deep_sea,
+                elysia::core::colors::elysia_phantom_sea,
                 elysia::core::colors::elysia_silver_mist
             }),
         text
@@ -571,9 +583,11 @@ template<class Enum>
     const UiEnabledDisabledColors placeholder_text = make_text_colors(
         elysia::core::colors::eva_unit00_border_blue,
         elysia::core::colors::gray_300);
-    const UiEnabledDisabledColors border = UiEnabledDisabledColors{
-        elysia::core::colors::eva_unit00_pale_blue,
-        elysia::core::colors::gray_300
+    const UiInteractiveColors border = UiInteractiveColors{
+        elysia::core::colors::gray_700,
+        elysia::core::colors::eva_unit00_soft_graphite,
+        elysia::core::colors::gray_900,
+        elysia::core::colors::gray_500
     };
     const UiInteractiveColors interactive_surface = make_surface_colors(
         elysia::core::colors::eva_unit00_rei_white,
@@ -654,7 +668,11 @@ template<class Enum>
                 elysia::core::colors::eva_unit00_pale_blue,
                 elysia::core::colors::eva_unit00_warning_yellow,
                 elysia::core::colors::gray_300),
-            UiEnabledDisabledColors{ elysia::core::colors::eva_unit00_warning_yellow,elysia::core::colors::gray_300 }),
+            UiInteractiveColors{
+                elysia::core::colors::eva_unit00_soft_graphite,
+                elysia::core::colors::gray_700,
+                elysia::core::colors::gray_900,
+                elysia::core::colors::gray_500 }),
         make_text_colors(elysia::core::colors::eva_unit00_soft_graphite,elysia::core::colors::gray_700)
     };
     theme.button_styles[to_index(UiButtonVisualRole::Danger)] = UiButtonThemeColors{
@@ -664,7 +682,11 @@ template<class Enum>
                 elysia::core::colors::eva_unit00_warning_yellow,
                 elysia::core::colors::eva_unit00_caution_gold,
                 elysia::core::colors::gray_300),
-            UiEnabledDisabledColors{ elysia::core::colors::eva_unit00_soft_graphite,elysia::core::colors::gray_500 }),
+            UiInteractiveColors{
+                elysia::core::colors::gray_900,
+                elysia::core::colors::gray_700,
+                elysia::core::colors::eva_unit00_soft_graphite,
+                elysia::core::colors::gray_500 }),
         text
     };
 
@@ -726,8 +748,10 @@ template<class Enum>
     const UiEnabledDisabledColors placeholder_text = make_text_colors(
         elysia::core::colors::eva_unit01_muted_lime,
         elysia::core::colors::gray_500);
-    const UiEnabledDisabledColors border = UiEnabledDisabledColors{
+    const UiInteractiveColors border = UiInteractiveColors{
         elysia::core::colors::eva_unit01_toxic_green,
+        elysia::core::colors::eva_unit01_lime_glow,
+        elysia::core::colors::eva_unit01_deep_purple,
         elysia::core::colors::gray_500
     };
     const UiInteractiveColors interactive_surface = make_surface_colors(
@@ -809,7 +833,11 @@ template<class Enum>
                 elysia::core::colors::eva_unit01_toxic_green,
                 elysia::core::colors::eva_unit01_lime_glow,
                 elysia::core::colors::gray_700),
-            UiEnabledDisabledColors{ elysia::core::colors::eva_unit01_toxic_green,elysia::core::colors::gray_500 }),
+            UiInteractiveColors{
+                elysia::core::colors::eva_unit01_lime_glow,
+                elysia::core::colors::eva_unit01_deep_purple,
+                elysia::core::colors::eva_unit01_royal_purple,
+                elysia::core::colors::gray_500 }),
         text
     };
     theme.button_styles[to_index(UiButtonVisualRole::Danger)] = UiButtonThemeColors{
@@ -819,7 +847,11 @@ template<class Enum>
                 elysia::core::colors::eva_unit01_orange_core,
                 elysia::core::colors::eva_unit01_alert_amber,
                 elysia::core::colors::gray_700),
-            UiEnabledDisabledColors{ elysia::core::colors::eva_unit01_alert_amber,elysia::core::colors::gray_500 }),
+            UiInteractiveColors{
+                elysia::core::colors::eva_unit01_void_purple,
+                elysia::core::colors::eva_unit01_deep_purple,
+                elysia::core::colors::eva_unit01_royal_purple,
+                elysia::core::colors::gray_500 }),
         make_text_colors(elysia::core::colors::eva_unit01_deep_purple,elysia::core::colors::gray_700)
     };
 
@@ -881,8 +913,10 @@ template<class Enum>
     const UiEnabledDisabledColors placeholder_text = make_text_colors(
         elysia::core::colors::eva_unit02_muted_orange,
         elysia::core::colors::gray_500);
-    const UiEnabledDisabledColors border = UiEnabledDisabledColors{
+    const UiInteractiveColors border = UiInteractiveColors{
         elysia::core::colors::eva_unit02_orange,
+        elysia::core::colors::eva_unit02_bone_white,
+        elysia::core::colors::eva_unit02_deep_maroon,
         elysia::core::colors::gray_500
     };
     const UiInteractiveColors interactive_surface = make_surface_colors(
@@ -964,7 +998,11 @@ template<class Enum>
                 elysia::core::colors::eva_unit02_orange,
                 elysia::core::colors::eva_unit02_sun_yellow,
                 elysia::core::colors::gray_700),
-            UiEnabledDisabledColors{ elysia::core::colors::eva_unit02_glow_amber,elysia::core::colors::gray_500 }),
+            UiInteractiveColors{
+                elysia::core::colors::eva_unit02_bone_white,
+                elysia::core::colors::eva_unit02_deep_maroon,
+                elysia::core::colors::eva_unit02_crimson,
+                elysia::core::colors::gray_500 }),
         make_text_colors(elysia::core::colors::eva_unit02_deep_maroon,elysia::core::colors::gray_700)
     };
     theme.button_styles[to_index(UiButtonVisualRole::Danger)] = UiButtonThemeColors{
@@ -974,7 +1012,11 @@ template<class Enum>
                 elysia::core::colors::eva_unit02_crimson,
                 elysia::core::colors::eva_unit02_vermilion,
                 elysia::core::colors::gray_700),
-            UiEnabledDisabledColors{ elysia::core::colors::eva_unit02_glow_amber,elysia::core::colors::gray_500 }),
+            UiInteractiveColors{
+                elysia::core::colors::eva_unit02_glow_amber,
+                elysia::core::colors::eva_unit02_sun_yellow,
+                elysia::core::colors::eva_unit02_bone_white,
+                elysia::core::colors::gray_500 }),
         text
     };
 
@@ -1036,8 +1078,10 @@ template<class Enum>
     const UiEnabledDisabledColors placeholder_text = make_text_colors(
         elysia::core::colors::gray_500,
         elysia::core::colors::gray_300);
-    const UiEnabledDisabledColors border = UiEnabledDisabledColors{
+    const UiInteractiveColors border = UiInteractiveColors{
         elysia::core::colors::gray_700,
+        elysia::core::colors::gray_900,
+        elysia::core::colors::black,
         elysia::core::colors::gray_500
     };
     const UiInteractiveColors interactive_surface = make_surface_colors(
@@ -1119,7 +1163,11 @@ template<class Enum>
                 elysia::core::colors::gray_500,
                 elysia::core::colors::gray_700,
                 elysia::core::colors::gray_100),
-            UiEnabledDisabledColors{ elysia::core::colors::black,elysia::core::colors::gray_300 }),
+            UiInteractiveColors{
+                elysia::core::colors::black,
+                elysia::core::colors::gray_900,
+                elysia::core::colors::white,
+                elysia::core::colors::gray_500 }),
         make_text_colors(elysia::core::colors::white,elysia::core::colors::gray_300)
     };
     theme.button_styles[to_index(UiButtonVisualRole::Danger)] = UiButtonThemeColors{
@@ -1129,7 +1177,11 @@ template<class Enum>
                 elysia::core::colors::gray_700,
                 elysia::core::colors::black,
                 elysia::core::colors::gray_100),
-            UiEnabledDisabledColors{ elysia::core::colors::black,elysia::core::colors::gray_300 }),
+            UiInteractiveColors{
+                elysia::core::colors::black,
+                elysia::core::colors::white,
+                elysia::core::colors::gray_500,
+                elysia::core::colors::gray_500 }),
         make_text_colors(elysia::core::colors::white,elysia::core::colors::gray_300)
     };
 
