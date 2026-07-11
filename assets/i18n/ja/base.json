@@ -1,30 +1,78 @@
 {
+  "common": {
+    "save": "保存",
+    "back": "戻る",
+    "confirm": "確定",
+    "cancel": "キャンセル",
+    "close": "閉じる",
+    "coming_soon": "近日公開"
+  },
   "menu_scene": {
-    "start": "\u958b\u59cb",
-    "settings": "\u8a2d\u5b9a",
-    "exit": "\u7d42\u4e86",
+    "project_name": "MoonLine",
+    "start": "開始",
+    "settings": "設定",
+    "exit": "終了",
     "exit_confirm": {
-      "title": "\u7d42\u4e86\u78ba\u8a8d",
-      "message": "MoonLine \u3092\u7d42\u4e86\u3057\u307e\u3059\u304b\uff1f",
-      "cancel": "\u30ad\u30e3\u30f3\u30bb\u30eb",
+      "title": "終了確認",
+      "message": "MoonLine を終了しますか？",
+      "cancel": "キャンセル",
       "close": "X"
     },
-    "about": "\u60c5\u5831"
+    "about": "情報"
+  },
+  "setting_scene": {
+    "title": "設定",
+    "sections": {
+      "display": "画面",
+      "audio": "オーディオ",
+      "general": "一般"
+    },
+    "fields": {
+      "resolution": "解像度",
+      "fullscreen": "フルスクリーン",
+      "master_volume": "マスター音量",
+      "music_volume": "音楽音量",
+      "sound_volume": "効果音音量",
+      "language": "言語"
+    },
+    "languages": {
+      "en": "English",
+      "zh_cn": "簡体中国語",
+      "ja": "日本語"
+    },
+    "actions": {
+      "save": "保存",
+      "back": "戻る"
+    }
+  },
+  "character_select_scene": {
+    "title": "キャラクター選択",
+    "character_info": "キャラクター情報",
+    "details_placeholder": "キャラクターの詳細がここに表示されます。",
+    "attributes": "ステータス",
+    "skills": "スキル",
+    "coming_soon": "近日公開",
+    "select_prompt": "キャラクターを選択して詳細を確認してください。",
+    "no_characters": "利用可能なキャラクターがいません。",
+    "actions": {
+      "confirm": "確定",
+      "back": "戻る"
+    }
   },
   "ui_test_scene": {
-    "theme_blue_glass_moon": "\u30b0\u30e9\u30b9\u30e0\u30fc\u30f3",
-    "theme_elysia_light": "\u30a8\u30ea\u30b7\u30a2\u30fb\u30e9\u30a4\u30c8",
-    "theme_elysia_dark": "\u30a8\u30ea\u30b7\u30a2\u30fb\u30c0\u30fc\u30af",
+    "theme_blue_glass_moon": "グラスムーン",
+    "theme_elysia_light": "エリシア・ライト",
+    "theme_elysia_dark": "エリシア・ダーク",
     "theme_evangelion_unit_00": "EVA-00",
     "theme_evangelion_unit_01": "EVA-01",
     "theme_evangelion_unit_02": "EVA-02",
-    "theme_quiet_slate": "\u30af\u30ef\u30a4\u30a8\u30c3\u30c8\u30b9\u30ec\u30fc\u30c8",
+    "theme_quiet_slate": "クワイエットスレート",
     "reading_dialog": {
-      "title": "\u8aad\u66f8\u30c0\u30a4\u30a2\u30ed\u30b0",
-      "body": "MoonLine \u306e\u518d\u5229\u7528\u53ef\u80fd\u306a\u8aad\u66f8\u30c0\u30a4\u30a2\u30ed\u30b0\u306f\u3001\u9577\u6587\u306e UI \u30b3\u30d4\u30fc\u3092\u6271\u3046\u305f\u3081\u306e\u3082\u306e\u3067\u3059\u3002\n\n\u3053\u306e\u30b5\u30f3\u30d7\u30eb\u672c\u6587\u306f\u308f\u3056\u3068\u8907\u6570\u6bb5\u843d\u306b\u3057\u3066\u3042\u308a\u3001\u30d3\u30e5\u30fc\u30dd\u30fc\u30c8\u304c\u30c6\u30ad\u30b9\u30c8\u3092\u7e2e\u5c0f\u3059\u308b\u306e\u3067\u306f\u306a\u304f\u3001\u30b9\u30af\u30ed\u30fc\u30eb\u3067\u898b\u305b\u308b\u3088\u3046\u306b\u306a\u3063\u3066\u3044\u307e\u3059\u3002\n\n\u5b9f\u904b\u7528\u3067\u306f\u3001\u4e16\u754c\u89b3\u3001\u30c1\u30e5\u30fc\u30c8\u30ea\u30a2\u30eb\u3001\u8a2d\u5b9a\u8aac\u660e\u3001\u30d1\u30c3\u30c1\u30ce\u30fc\u30c8\u306a\u3069\u3092\u3001\u4e00\u8cab\u3057\u305f\u30d5\u30a9\u30fc\u30ab\u30b9\u3068\u30e2\u30fc\u30c0\u30eb\u632f\u308b\u821e\u3044\u3067\u8868\u793a\u3067\u304d\u307e\u3059\u3002",
-      "close": "\u9589\u3058\u308b",
-      "open": "I18N \u30c0\u30a4\u30a2\u30ed\u30b0\u3092\u958b\u304f",
-      "open_raw": "Raw \u30c0\u30a4\u30a2\u30ed\u30b0\u3092\u958b\u304f"
+      "title": "読書ダイアログ",
+      "body": "MoonLine の再利用可能な読書ダイアログは、長文の UI コピーを扱うためのものです。\n\nこのサンプル本文はわざと複数段落にしてあり、ビューポートがテキストを縮小するのではなく、スクロールで見せるようになっています。\n\n実運用では、世界観、チュートリアル、設定説明、パッチノートなどを、一貫したフォーカスとモーダル振る舞いで表示できます。",
+      "close": "閉じる",
+      "open": "I18N ダイアログを開く",
+      "open_raw": "Raw ダイアログを開く"
     }
   }
 }

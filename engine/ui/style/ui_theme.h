@@ -1,4 +1,4 @@
-#pragma once
+  #pragma once
 
 #include "ui_visual_roles.h"
 #include "ui_visual_styles.h"

@@ -1,30 +1,78 @@
 {
+  "common": {
+    "save": "保存",
+    "back": "返回",
+    "confirm": "确认",
+    "cancel": "取消",
+    "close": "关闭",
+    "coming_soon": "即将推出"
+  },
   "menu_scene": {
-    "start": "\u5f00\u59cb",
-    "settings": "\u8bbe\u7f6e",
-    "exit": "\u9000\u51fa",
+    "project_name": "MoonLine",
+    "start": "开始",
+    "settings": "设置",
+    "exit": "退出",
     "exit_confirm": {
-      "title": "\u786e\u8ba4\u9000\u51fa",
-      "message": "\u8981\u9000\u51fa MoonLine \u5417\uff1f",
-      "cancel": "\u53d6\u6d88",
+      "title": "确认退出",
+      "message": "要退出 MoonLine 吗？",
+      "cancel": "取消",
       "close": "X"
     },
-    "about": "\u5173\u4e8e"
+    "about": "关于"
+  },
+  "setting_scene": {
+    "title": "设置",
+    "sections": {
+      "display": "显示",
+      "audio": "音频",
+      "general": "通用"
+    },
+    "fields": {
+      "resolution": "分辨率",
+      "fullscreen": "全屏",
+      "master_volume": "主音量",
+      "music_volume": "音乐音量",
+      "sound_volume": "音效音量",
+      "language": "语言"
+    },
+    "languages": {
+      "en": "English",
+      "zh_cn": "简体中文",
+      "ja": "日本语"
+    },
+    "actions": {
+      "save": "保存",
+      "back": "返回"
+    }
+  },
+  "character_select_scene": {
+    "title": "选择角色",
+    "character_info": "角色信息",
+    "details_placeholder": "角色详情将显示在这里。",
+    "attributes": "属性",
+    "skills": "技能",
+    "coming_soon": "即将推出",
+    "select_prompt": "请选择角色以查看详情。",
+    "no_characters": "暂无可用角色。",
+    "actions": {
+      "confirm": "确认",
+      "back": "返回"
+    }
   },
   "ui_test_scene": {
-    "theme_blue_glass_moon": "\u73bb\u7483\u6708",
-    "theme_elysia_light": "\u7231\u8389\u4eae",
-    "theme_elysia_dark": "\u7231\u8389\u6697",
+    "theme_blue_glass_moon": "玻璃月",
+    "theme_elysia_light": "爱莉亮",
+    "theme_elysia_dark": "爱莉暗",
     "theme_evangelion_unit_00": "EVA-00",
     "theme_evangelion_unit_01": "EVA-01",
     "theme_evangelion_unit_02": "EVA-02",
-    "theme_quiet_slate": "\u9759\u7070",
+    "theme_quiet_slate": "静灰",
     "reading_dialog": {
-      "title": "\u9605\u8bfb\u5bf9\u8bdd\u6846",
-      "body": "MoonLine \u7684\u53ef\u590d\u7528\u9605\u8bfb\u5bf9\u8bdd\u6846\u4e13\u95e8\u7528\u6765\u627f\u8f7d\u957f\u6587 UI \u6587\u6848\u3002\n\n\u8fd9\u6bb5\u793a\u4f8b\u6b63\u6587\u6545\u610f\u5199\u6210\u591a\u6bb5\uff0c\u8ba9\u89c6\u53e3\u5fc5\u987b\u901a\u8fc7\u6eda\u52a8\u6765\u67e5\u770b\uff0c\u800c\u4e0d\u662f\u628a\u6587\u5b57\u7f29\u5c0f\u586b\u6ee1\u6574\u4e2a\u6846\u3002\n\n\u5728\u5b9e\u9645\u9879\u76ee\u91cc\uff0c\u5b83\u53ef\u4ee5\u7528\u6765\u5c55\u793a\u4e16\u754c\u89c2\u3001\u6559\u7a0b\u3001\u8bbe\u7f6e\u8bf4\u660e\u6216\u7248\u672c\u66f4\u65b0\uff0c\u540c\u65f6\u4fdd\u6301\u4e00\u81f4\u7684\u7126\u70b9\u548c\u6a21\u6001\u884c\u4e3a\u3002",
-      "close": "\u5173\u95ed",
-      "open": "\u6253\u5f00 I18N \u5bf9\u8bdd\u6846",
-      "open_raw": "\u6253\u5f00 Raw \u5bf9\u8bdd\u6846"
+      "title": "阅读对话框",
+      "body": "MoonLine 的可复用阅读对话框专门用来承载长文 UI 文案。\n\n这段示例正文故意写成多段，让视口必须通过滚动来查看，而不是把文字缩小填满整个框。\n\n在实际项目里，它可以用来展示世界观、教程、设置说明或版本更新，同时保持一致的焦点和模态行为。",
+      "close": "关闭",
+      "open": "打开 I18N 对话框",
+      "open_raw": "打开 Raw 对话框"
     }
   }
 }

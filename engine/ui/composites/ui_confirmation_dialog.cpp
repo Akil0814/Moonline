@@ -272,6 +272,9 @@ void UiConfirmationDialog::create_internal_children()
     _chrome->add_right_action(std::move(close_button));
 
     auto body = std::make_unique<UiPanel>(elysia::core::Rect{ 0,0,380,152 });
+    auto body_style = body->style();
+    body_style.draw_border = false;
+    body->set_base_style(body_style);
     _body_panel = body.get();
 
     auto message = std::make_unique<UiLabel>(elysia::core::Rect{ 0,0,380,kMessageHeight });

@@ -175,7 +175,7 @@ private:
     UiButtonVisualRole _visual_role = UiButtonVisualRole::Default;
     UiTypographyRole _typography_role = UiTypographyRole::Button;
 
-    int _padding = 10;
+    int _padding = 5;
     bool _is_pushed = false;
 };
 }

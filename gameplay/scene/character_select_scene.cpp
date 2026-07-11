@@ -38,6 +38,7 @@ namespace arcneco::scene
             std::cout << "play character_select music error" << std::endl;
 
         const bool should_build_ui = !_main_window || _main_window->is_destroyed();
+
         if (should_build_ui)
             build_ui();
 
@@ -47,6 +48,7 @@ namespace arcneco::scene
             std::vector<arcneco::character::CharacterPrototype> character_list =
                 character_manager->get_character_prototype();
 
+            _character_keys.clear();
             for (const arcneco::character::CharacterPrototype& iter : character_list)
             {
                 _character_keys.emplace_back(iter.id);
@@ -74,6 +76,7 @@ namespace arcneco::scene
 
         clear_character_visual_refs();
         clear_character_detail_refs();
+
         _main_window = Scene::create_and_add_object<elysia::ui::UiWindow>(elysia::core::Rect{ 0,0,1280,720 });
 
         SDL_Texture* tex =
@@ -122,12 +125,20 @@ namespace arcneco::scene
     void CharacterSelectScene::build_character_list()
     {
         const elysia::ui::UiLayoutChildOptions scroll_layout{
-            ._anchor = elysia::ui::UiLayoutAnchor::TopCenter,
-            ._margin = elysia::ui::UiLayoutMargin{ .top = 20.0f }
+            ._anchor = elysia::ui::UiLayoutAnchor::TopLeft,
+            ._margin = elysia::ui::UiLayoutMargin{.left = 10.0f,.top = 75.0f}
         };
+
+        auto* character_select_text = _main_window->create_child<elysia::ui::UiLabel>(
+        elysia::core::Rect{0,0,100,50},0, elysia::ui::ui_text_key("character_select_scene.title")
+        );
+
+        character_select_text->set_typography_role(elysia::ui::UiTypographyRole::Subtitle);
+        character_select_text->set_target_height(50.0f);
+
         auto* horizontal_scroll = _main_window->create_child<elysia::ui::UiScrollContainer>(
             scroll_layout,
-            elysia::core::Rect{ 0,0,800,200 });
+            elysia::core::Rect{ 0,0,800,198 });
         if (!horizontal_scroll)
             return;
 
@@ -139,8 +150,9 @@ namespace arcneco::scene
         horizontal_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
         horizontal_scroll->set_scroll_step(elysia::core::Vector2(36.0f, 36.0f));
 
-        auto button_group = std::make_unique<elysia::ui::UiButtonGroup>(elysia::core::Rect{ 0,0,0,200 });
+        auto button_group = std::make_unique<elysia::ui::UiButtonGroup>(elysia::core::Rect{ 0,0,0,202 });
         button_group->set_direction(elysia::ui::UiListDirection::Horizontal);
+        button_group->set_item_spacing(5.0f);
         button_group->set_auto_select_first(false);
         _character_button_keys.clear();
         button_group->set_on_selection_changed([this](std::optional<std::size_t> selected_index)
@@ -170,6 +182,7 @@ namespace arcneco::scene
                 );
                 elysia::ui::UiButtonStyleOverrides button_style{};
                 button_style.chrome.draw_background = false;
+                character_button->set_padding(1);
                 character_button->set_style_overrides(button_style);
                 _character_button_keys.push_back(character_key);
                 button_group->add_button(std::move(character_button));
