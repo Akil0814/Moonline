@@ -73,6 +73,16 @@
       "close": "閉じる",
       "open": "I18N ダイアログを開く",
       "open_raw": "Raw ダイアログを開く"
-    }
+    },
+    "status": { "ready": "UI ワークベンチの準備完了" },
+    "pages": { "overview": "概要", "controls": "コントロール", "media": "コンテンツとメディア", "containers": "コンテナ", "overlays": "オーバーレイとフォーカス", "theme": "テーマと I18N" },
+    "sections": { "overview": "テーマ対応ダッシュボードと視覚ロールの例。", "controls": "操作するとステータス行が更新されます。", "media": "テキスト、数値、バー、画像、アニメーション。", "containers": "合成、スロット、スクロール、ネストしたタブ。", "overlays": "ウィンドウ管理のオーバーレイ、ダイアログ、ポップアップ、フォーカス復元。", "theme": "すべての組み込みテーマは登録済み UI ツリーを直ちに更新します。" },
+    "actions": { "replay": "再生", "reset": "ワークベンチを再構築" },
+    "controls": { "labeled_check": "ラベル付き塗りつぶしチェックボックス", "labeled_radio": "ラベル付きラジオ項目", "placeholder": "16 文字まで入力" },
+    "media": { "long_text": "このローカライズ済みテキストブロックは、折り返し、文字組み、テーマ対応レンダリングを検証します。", "texture_unavailable": "この実行環境ではテクスチャサンプルを利用できません。", "animation_unavailable": "この実行環境ではアニメーションサンプルを利用できません。" },
+    "containers": { "chrome": "Chrome スロット", "nested_tab": "ネストしたタブ" },
+    "overlays": { "open_overlay": "非モーダルオーバーレイを開く", "open_dialog": "読書ダイアログを開く", "open_confirm": "確認ダイアログを開く", "tooltip": "ホバーでツールチップ", "tooltip_text": "ツールチップ内容はフォーカスとポインター状態に追従します。" },
+    "dialog": { "title": "ワークベンチ読書ダイアログ", "body": "このダイアログはモーダル配置、フォーカス復元、ローカライズ済み長文を検証します。" },
+    "confirm": { "title": "ワークベンチ操作を確認", "message": "この確認ダイアログはオーバーレイ対象の一部です。" }
   }
 }
