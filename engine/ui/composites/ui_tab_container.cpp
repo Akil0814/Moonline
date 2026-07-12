@@ -54,6 +54,29 @@ bool UiTabContainer::on_ui_input_event(const UiInputEvent& event)
     {
         if (UiFocusScope* scope = delegated_owner_scope_of(focused_target()))
         {
+            if (is_navigation && scope == _tab_bar && event.action == UiAction::NavigateDown)
+            {
+                if (_tab_view->focus_first_available())
+                {
+                    UiControl* target = _tab_view->focused_target();
+                    set_focused_target(target);
+                    if (focused_target() == target)
+                    {
+                        sync_delegated_scope_focus(focused_target(),is_scope_focused(),delegated_focus_regions(*this));
+                        return true;
+                    }
+                }
+            }
+            if (is_navigation && scope == _tab_view && event.action == UiAction::NavigateUp)
+            {
+                UiControl* target = _tab_bar->focused_target();
+                set_focused_target(target);
+                if (focused_target() == target)
+                {
+                    sync_delegated_scope_focus(focused_target(),is_scope_focused(),delegated_focus_regions(*this));
+                    return true;
+                }
+            }
             if (auto* receiver = dynamic_cast<UiInputEventReceiver*>(&scope->focus_scope_element()))
             {
                 if (receiver->on_ui_input_event(event))
