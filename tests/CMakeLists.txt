@@ -18,6 +18,26 @@ endif()
 
 add_test(NAME ui_lifecycle_tests COMMAND ui_lifecycle_tests)
 
+add_executable(ui_focus_container_tests
+    "ui_focus_container_tests.cpp"
+)
+
+target_link_libraries(ui_focus_container_tests PRIVATE engine_lib ${SDL2_LIBRARIES})
+
+if(WIN32)
+    foreach(SDL2_RUNTIME_FILE IN LISTS SDL2_RUNTIME_FILES)
+        if(EXISTS "${SDL2_RUNTIME_FILE}")
+            add_custom_command(TARGET ui_focus_container_tests POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${SDL2_RUNTIME_FILE}"
+                    "$<TARGET_FILE_DIR:ui_focus_container_tests>"
+            )
+        endif()
+    endforeach()
+endif()
+
+add_test(NAME ui_focus_container_tests COMMAND ui_focus_container_tests)
+
 add_executable(ui_focus_routing_tests
     "ui_focus_routing_tests.cpp"
 )
