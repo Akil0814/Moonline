@@ -49,9 +49,11 @@ void layout_list_children(
         if (!child.element)
             continue;
 
+        // content_extent() is the child contract for desired/minimum layout size.
+        // size() only describes geometry allocated by a previous layout pass.
         elysia::core::Vector2 child_size = child.layout._use_size_override
             ? clamp_size(child.layout._size_override)
-            : clamp_size(child.element->size());
+            : clamp_size(child.element->content_extent());
         const UiLayoutAlign cross_align = child.layout._use_custom_cross_align ? child.layout._cross_align : config.cross_align;
         const UiLayoutAnchor anchor = list_anchor(config.direction,cross_align);
 
@@ -59,6 +61,18 @@ void layout_list_children(
         {
             if (child.layout._fill_cross_axis)
                 child_size.x = bounds.width();
+
+            // Constrain the cross axis before the final desired-height read. Widgets such
+            // as UiTextBlock measure wrapping from their current width, so a width change
+            // must be observable before their main-axis extent is consumed.
+            if (!child.layout._use_size_override)
+            {
+                child_size.x = std::min(child_size.x,bounds.width());
+                elysia::core::Rect measure_rect = child.element->screen_rect();
+                measure_rect.set_size(child_size);
+                child.element->set_screen_rect(measure_rect);
+                child_size.y = clamp_size(child.element->content_extent()).y;
+            }
             const elysia::core::Rect slot_rect(bounds.x(),bounds.y() + cursor,bounds.width(),child_size.y);
             child.element->set_screen_rect(aligned_rect_in_bounds(slot_rect,child_size,anchor,child.layout._margin));
             cursor += child_size.y + item_spacing;
@@ -67,6 +81,15 @@ void layout_list_children(
         {
             if (child.layout._fill_cross_axis)
                 child_size.y = bounds.height();
+
+            if (!child.layout._use_size_override)
+            {
+                child_size.y = std::min(child_size.y,bounds.height());
+                elysia::core::Rect measure_rect = child.element->screen_rect();
+                measure_rect.set_size(child_size);
+                child.element->set_screen_rect(measure_rect);
+                child_size.x = clamp_size(child.element->content_extent()).x;
+            }
             const elysia::core::Rect slot_rect(bounds.x() + cursor,bounds.y(),child_size.x,bounds.height());
             child.element->set_screen_rect(aligned_rect_in_bounds(slot_rect,child_size,anchor,child.layout._margin));
             cursor += child_size.x + item_spacing;

@@ -72,24 +72,26 @@ std::unique_ptr<UiScrollContainer> page_scroll(UiListContainer*& content)
     page->set_scroll_axis(UiScrollAxis::Vertical);
     page->set_scrollbar_visibility(UiScrollBarVisibility::Auto);
     page->set_scroll_step(elysia::core::Vector2(0.0f,36.0f));
-    auto list = std::make_unique<UiListContainer>(elysia::core::Rect{ 0,0,870,1800 });
+    auto list = std::make_unique<UiListContainer>(elysia::core::Rect{ 0,0,870,0 });
     list->set_padding(UiLayoutPadding{ 12,12,12,12 });
     list->set_item_spacing(12.0f);
+    list->set_cross_align(UiLayoutAlign::Start);
     content = list.get();
     page->set_content(std::move(list));
     return page;
 }
 
-UiListContainer* add_section(UiListContainer& page,const char* title,const char* description,float height = 220.0f)
+UiListContainer* add_section(UiListContainer& page,const char* title,const char* description)
 {
-    auto chrome = std::make_unique<UiChromeContainer>(elysia::core::Rect{ 0,0,840,height });
+    auto chrome = std::make_unique<UiChromeContainer>(elysia::core::Rect{ 0,0,840,0 });
     chrome->set_header_height(42.0f);
     auto heading = std::make_unique<UiLabel>(elysia::core::Rect{ 0,0,420,32 },0,ui_text_key(title));
     heading->set_visual_role(UiLabelVisualRole::Title);
     chrome->add_title_child(std::move(heading));
-    auto body = std::make_unique<UiListContainer>(elysia::core::Rect{ 0,0,820,height - 48.0f });
+    auto body = std::make_unique<UiListContainer>(elysia::core::Rect{ 0,0,820,0 });
     body->set_padding(UiLayoutPadding{ 12,8,12,8 });
     body->set_item_spacing(8.0f);
+    body->set_cross_align(UiLayoutAlign::Start);
     auto note = std::make_unique<UiLabel>(elysia::core::Rect{ 0,0,760,28 },0,ui_text_key(description));
     note->set_visual_role(UiLabelVisualRole::Muted);
     body->add_back(std::move(note));
@@ -178,7 +180,7 @@ void UiContainerTestScene::rebuild_ui()
     // Overview: a concise health dashboard and representative themed roles.
     UiListContainer* overview_list = nullptr;
     auto overview = page_scroll(overview_list);
-    auto* overview_section = add_section(*overview_list,"ui_test_scene.pages.overview","ui_test_scene.sections.overview",190);
+    auto* overview_section = add_section(*overview_list,"ui_test_scene.pages.overview","ui_test_scene.sections.overview");
     auto primary = button("ui_test_scene.actions.replay");
     primary->set_visual_role(UiButtonVisualRole::Primary);
     primary->set_on_click([this]() { set_status("Overview action invoked"); });
@@ -199,7 +201,7 @@ void UiContainerTestScene::rebuild_ui()
     // Controls: each interactive control has an observable callback or state change.
     UiListContainer* controls_list = nullptr;
     auto controls = page_scroll(controls_list);
-    auto* controls_section = add_section(*controls_list,"ui_test_scene.pages.controls","ui_test_scene.sections.controls",620);
+    auto* controls_section = add_section(*controls_list,"ui_test_scene.pages.controls","ui_test_scene.sections.controls");
     auto group = std::make_unique<UiButtonGroup>(elysia::core::Rect{ 0,0,320,120 });
     group->set_on_selection_changed([this](std::optional<std::size_t> index) { set_status(index ? "ButtonGroup selection changed" : "ButtonGroup cleared"); });
     group->add_button(button("menu_scene.start"));
@@ -239,7 +241,7 @@ void UiContainerTestScene::rebuild_ui()
     // Content and media: safely hide resource-dependent samples when data is unavailable.
     UiListContainer* media_list = nullptr;
     auto media = page_scroll(media_list);
-    auto* media_section = add_section(*media_list,"ui_test_scene.pages.media","ui_test_scene.sections.media",640);
+    auto* media_section = add_section(*media_list,"ui_test_scene.pages.media","ui_test_scene.sections.media");
     auto fade_label = std::make_unique<UiFadeLabel>(elysia::core::Rect{ 0,0,360,34 },0,ui_text_key("ui_test_scene.actions.replay"));
     fade_label->configure_playback(effects::UiOpacityFadeMode::FadeInOut,0.0,0.25,0.25); fade_label->play(); media_section->add_back(std::move(fade_label));
     auto blink_label = std::make_unique<UiBlinkLabel>(elysia::core::Rect{ 0,0,360,34 },0,ui_text_key("ui_test_scene.pages.media"));
@@ -279,7 +281,7 @@ void UiContainerTestScene::rebuild_ui()
     // Containers and layout.
     UiListContainer* containers_list = nullptr;
     auto containers = page_scroll(containers_list);
-    auto* container_section = add_section(*containers_list,"ui_test_scene.pages.containers","ui_test_scene.sections.containers",620);
+    auto* container_section = add_section(*containers_list,"ui_test_scene.pages.containers","ui_test_scene.sections.containers");
     auto grid = std::make_unique<UiGridContainer>(elysia::core::Rect{ 0,0,560,170 }); grid->set_column_count(3); grid->set_cell_spacing(elysia::core::Vector2(8,8));
     for (int index = 0; index < 6; ++index) grid->add_child(button(index % 2 ? "menu_scene.settings" : "menu_scene.start"));
     container_section->add_back(std::move(grid));
@@ -302,7 +304,7 @@ void UiContainerTestScene::rebuild_ui()
     // Overlays, transient popups and focus recovery.
     UiListContainer* overlays_list = nullptr;
     auto overlays = page_scroll(overlays_list);
-    auto* overlay_section = add_section(*overlays_list,"ui_test_scene.pages.overlays","ui_test_scene.sections.overlays",470);
+    auto* overlay_section = add_section(*overlays_list,"ui_test_scene.pages.overlays","ui_test_scene.sections.overlays");
     auto overlay = std::make_unique<UiPanel>(elysia::core::Rect{ 0,0,320,140 }); UiPanel* overlay_ptr = overlay.get();
     overlay->add_child(button("common.close")); _root_window->add_child(std::move(overlay),at(760,76,320,140));
     _root_window->register_overlay(*overlay_ptr,UiOverlayOptions{ .open=false,.modal=false,.close_on_cancel=true,.close_on_outside_click=true,.placement=UiOverlayPlacement::Center,.transition=UiOverlayTransition::Slide,.fallback_size=elysia::core::Vector2(320,140),.order=900 });
@@ -330,7 +332,7 @@ void UiContainerTestScene::rebuild_ui()
     // Theme and localization page.
     UiListContainer* theme_list = nullptr;
     auto themes_page = page_scroll(theme_list);
-    auto* theme_section = add_section(*theme_list,"ui_test_scene.pages.theme","ui_test_scene.sections.theme",520);
+    auto* theme_section = add_section(*theme_list,"ui_test_scene.pages.theme","ui_test_scene.sections.theme");
     static constexpr std::array<const char*,7> theme_keys{ "ui_test_scene.theme_blue_glass_moon","ui_test_scene.theme_elysia_light","ui_test_scene.theme_elysia_dark","ui_test_scene.theme_evangelion_unit_00","ui_test_scene.theme_evangelion_unit_01","ui_test_scene.theme_evangelion_unit_02","ui_test_scene.theme_quiet_slate" };
     static constexpr std::array<UiBuiltinTheme,7> themes{ UiBuiltinTheme::BlueGlassMoon,UiBuiltinTheme::ElysiaLight,UiBuiltinTheme::ElysiaDark,UiBuiltinTheme::EvangelionUnit00,UiBuiltinTheme::EvangelionUnit01,UiBuiltinTheme::EvangelionUnit02,UiBuiltinTheme::QuietSlate };
     for (std::size_t index = 0; index < themes.size(); ++index) { auto theme_button = button(theme_keys[index]); _theme_buttons[index] = theme_button.get(); theme_button->set_on_click([this,theme=themes[index]]() { set_active_theme(theme); }); theme_section->add_back(std::move(theme_button)); }

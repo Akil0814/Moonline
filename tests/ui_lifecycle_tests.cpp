@@ -71,6 +71,58 @@ elysia::ui::UiInteractiveColorsOverrides test_border_color_overrides()
     return { colors.idle,colors.focused,colors.active,colors.disabled };
 }
 
+class WidthAwareDesiredElement final : public elysia::ui::UiElement
+{
+public:
+    explicit WidthAwareDesiredElement(const elysia::core::Rect& rect)
+        : UiElement(rect) {}
+
+    [[nodiscard]] elysia::core::Vector2 content_extent() const noexcept override
+    {
+        return { 400.0f,size().x * 0.5f };
+    }
+};
+
+void test_list_consumes_desired_extent_and_cross_alignment()
+{
+    using namespace elysia;
+    ui::UiListContainer list(core::Rect{ 0,0,300,400 });
+    list.set_padding(ui::UiLayoutPadding{ 10,10,10,10 });
+
+    auto centered = std::make_unique<WidthAwareDesiredElement>(core::Rect{ 0,0,1,1 });
+    WidthAwareDesiredElement* centered_raw = centered.get();
+    list.add_back(std::move(centered));
+    list.update_layout_if_dirty();
+    require(centered_raw->screen_rect().width() == 280.0f,"list should constrain desired width to its content width");
+    require(centered_raw->screen_rect().height() == 140.0f,"width-constrained desired height should be remeasured");
+    require(centered_raw->screen_rect().x() == 10.0f,"oversized child should fill the constrained cross axis");
+
+    list.set_size(core::Vector2{ 200,400 });
+    list.update_layout_if_dirty();
+    require(centered_raw->screen_rect().width() == 180.0f,"parent width changes should relayout desired width");
+    require(centered_raw->screen_rect().height() == 90.0f,"parent width changes should remeasure desired height");
+
+    auto narrow = std::make_unique<ui::UiButton>(core::Rect{ 0,0,60,30 });
+    ui::UiButton* narrow_raw = narrow.get();
+    list.add_back(std::move(narrow));
+    list.update_layout_if_dirty();
+    require(narrow_raw->screen_rect().x() == 70.0f,"default list cross alignment should remain centered");
+
+    list.set_cross_align(ui::UiLayoutAlign::Start);
+    list.update_layout_if_dirty();
+    require(narrow_raw->screen_rect().x() == 10.0f,"start cross alignment should left-align narrow children");
+
+    ui::UiLayoutChildOptions fixed_options{};
+    fixed_options._size_override = core::Vector2{ 70,25 };
+    fixed_options._use_size_override = true;
+    auto fixed = std::make_unique<WidthAwareDesiredElement>(core::Rect{ 0,0,1,1 });
+    WidthAwareDesiredElement* fixed_raw = fixed.get();
+    list.add_child(std::move(fixed),fixed_options);
+    list.update_layout_if_dirty();
+    require(fixed_raw->screen_rect().size().nearly_equals(core::Vector2{ 70,25 }),
+        "explicit layout size override should take precedence over desired extent");
+}
+
 void test_corner_radius_normalization()
 {
     using namespace elysia::core;
@@ -874,6 +926,7 @@ void test_render_command_range_translation()
 
 int main()
 {
+    test_list_consumes_desired_extent_and_cross_alignment();
     test_corner_radius_normalization();
     test_chrome_uses_single_rounded_outer_frame();
     test_field_level_style_cascade();

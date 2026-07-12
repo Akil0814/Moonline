@@ -256,6 +256,19 @@ UiListDirection UiListContainer::direction() const noexcept
     return _layout.direction == UiLayoutDirection::Vertical ? UiListDirection::Vertical : UiListDirection::Horizontal;
 }
 
+void UiListContainer::set_cross_align(UiLayoutAlign align) noexcept
+{
+    if (_layout.cross_align == align)
+        return;
+    _layout.cross_align = align;
+    invalidate_intrinsic_layout();
+}
+
+UiLayoutAlign UiListContainer::cross_align() const noexcept
+{
+    return _layout.cross_align;
+}
+
 void UiListContainer::set_item_spacing(float item_spacing) noexcept
 {
     _layout.item_spacing = layout::clamp_non_negative(item_spacing);

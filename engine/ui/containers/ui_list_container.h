@@ -38,6 +38,9 @@ public:
 
     void set_direction(UiListDirection direction) noexcept;
     [[nodiscard]] UiListDirection direction() const noexcept;
+    // Selects how children are positioned across the list's non-scrolling axis.
+    void set_cross_align(UiLayoutAlign align) noexcept;
+    [[nodiscard]] UiLayoutAlign cross_align() const noexcept;
     void set_item_spacing(float item_spacing) noexcept;
     [[nodiscard]] float item_spacing() const noexcept;
 

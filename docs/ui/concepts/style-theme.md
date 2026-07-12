@@ -1,0 +1,8 @@
+# 样式、主题与视觉角色
+
+重复样式 API 的权威语义：
+
+- `set_base_style` 替换完整基准样式；`set_style_overrides` 替换稀疏 override；`style`/`style_overrides` 读取结果；`has_style_overrides` 查询；`clear_style_overrides` 清除局部覆盖。
+- `set_visual_role`/`visual_role` 选择主题语义角色，不直接拥有颜色。
+- `UiThemeManager::register_root` 注册一棵 child tree，返回必须长期保存的 `UiThemeRegistration`；`set_theme` 切换 `UiBuiltinTheme`，`reapply_theme` 强制重算。
+- `UiStyleState`、`UiThemeStyleResolver`、`UiTheme`、`UiPalette`、`UiVisualRole` 及全部 style/config structs 的字段定义在 `style/` 头文件；它们由对应组件页链接说明。

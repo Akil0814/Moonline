@@ -26,8 +26,8 @@ The current development priority is to complete the core engine and data pipelin
 ## UI Documentation
 
 The current `engine/ui` system has its own Chinese developer documentation in
-[`docs/ui/`](ui/README.md). It includes a usage guide, a complete public API reference,
-and an implementation-oriented architecture description.
+[`docs/ui/`](ui/README.md). It includes a component-by-component public API reference,
+shared API contracts, and a header coverage checklist.
 
 
 ## Planned Game Features
