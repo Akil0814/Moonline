@@ -1,6 +1,5 @@
+#include "../../tools/logger.h"
 #include "texture_manager.h"
-
-#include <iostream>
 #include <utility>
 
 namespace elysia::resources
@@ -9,14 +8,14 @@ bool TextureManager::store_texture(const std::string& key, TexturePtr texture)
 {
 	if (key.empty())
 	{
-		std::cout << "Store texture failed: key is empty." << std::endl;
+		ELYSIA_LOG_ERROR("resource","Store texture failed: key is empty.");
 		return false;
 	}
 
 	if (!texture)
 	{
-		std::cout << "Store texture failed: texture is null: "
-			<< key << std::endl;
+		ELYSIA_LOG_ERROR("resource","Store texture failed: texture is null: "
+			<< key);
 		return false;
 	}
 

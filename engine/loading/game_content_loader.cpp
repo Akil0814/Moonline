@@ -1,3 +1,4 @@
+#include "../tools/logger.h"
 #include "game_content_loader.h"
 
 #include "config_load_pipeline.h"
@@ -11,7 +12,6 @@
 
 #include <algorithm>
 #include <filesystem>
-#include <iostream>
 #include <utility>
 
 namespace elysia::loading
@@ -97,8 +97,8 @@ bool GameContentLoader::start(SDL_Renderer* renderer)
 	_state = GameContentLoaderState::StreamingTextureAndAtlasWork;
 	_progress = 0.0f;
 
-	std::cout << "Total requests built: " << _load_plan.total_request_count()
-		<< ", total work units: " << _total_work_units << std::endl;
+	ELYSIA_LOG_INFO("resource","Total requests built: " << _load_plan.total_request_count()
+		<< ", total work units: " << _total_work_units);
 	return true;
 }
 
@@ -659,7 +659,7 @@ void GameContentLoader::fail(std::string message)
 	_error_message = std::move(message);
 	_state = GameContentLoaderState::Failed;
 	update_progress_value();
-	std::cout << _error_message << std::endl;
+	ELYSIA_LOG_ERROR("resource",_error_message);
 }
 
 

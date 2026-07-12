@@ -1,6 +1,5 @@
+#include "../../tools/logger.h"
 #include "path_manager.h"
-
-#include <iostream>
 #include <string>
 
 namespace elysia::io
@@ -44,8 +43,8 @@ bool PathManager::validate_core_asset_dirs() const
         if (std::filesystem::is_directory(dir_path))
             return true;
 
-        std::cout << "Path manager init failed: required asset directory does not exist: "
-            << dir_name << " -> " << dir_path << std::endl;
+        ELYSIA_LOG_ERROR("path","Path manager init failed: required asset directory does not exist: "
+            << dir_name << " -> " << dir_path);
         return false;
     };
 
@@ -58,8 +57,7 @@ bool PathManager::validate_core_asset_dirs() const
     }
     catch (const std::filesystem::filesystem_error&)
     {
-        std::cout << "Path manager init failed: filesystem error while validating asset directories."
-            << std::endl;
+        ELYSIA_LOG_ERROR("path","Path manager init failed: filesystem error while validating asset directories.");
         return false;
     }
 }
@@ -179,7 +177,7 @@ std::optional<std::filesystem::path> PathManager::find_project_root(const std::f
         for (int depth = 0; depth < MAX_SEARCH_DEPTH; ++depth)
         {
             const std::filesystem::path assets_dir_path = current / "assets";
-            const std::filesystem::path assets_magic_file_path = assets_dir_path / ".moonline_root";
+            const std::filesystem::path assets_magic_file_path = assets_dir_path / ".elysia_root";
             const std::filesystem::path assets_structure_path = assets_dir_path / "assets_structure.json";
 
             const bool assets_is_dir = std::filesystem::is_directory(assets_dir_path);

@@ -1,9 +1,9 @@
+#include "../../tools/logger.h"
 #include "resource_request_builder.h"
 
 #include "../../io/path/path_manager.h"
 
 #include <algorithm>
-#include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -39,19 +39,19 @@ bool append_texture_request(
 {
 	if (key.empty())
 	{
-		std::cout << error_prefix << ": key is empty." << std::endl;
+		ELYSIA_LOG_ERROR("resource",error_prefix << ": key is empty.");
 		return false;
 	}
 
 	if (file_path.empty())
 	{
-		std::cout << error_prefix << ": file path is empty: " << key << std::endl;
+		ELYSIA_LOG_ERROR("resource",error_prefix << ": file path is empty: " << key);
 		return false;
 	}
 
 	if (!std::filesystem::is_regular_file(file_path))
 	{
-		std::cout << error_prefix << ": file does not exist: " << file_path << std::endl;
+		ELYSIA_LOG_ERROR("resource",error_prefix << ": file does not exist: " << file_path);
 		return false;
 	}
 
@@ -71,13 +71,13 @@ bool append_directory_texture_requests(
 {
 	if (base_key.empty())
 	{
-		std::cout << error_prefix << ": base key is empty." << std::endl;
+		ELYSIA_LOG_ERROR("resource",error_prefix << ": base key is empty.");
 		return false;
 	}
 
 	if (!std::filesystem::is_directory(directory_path))
 	{
-		std::cout << error_prefix << ": directory does not exist: " << directory_path << std::endl;
+		ELYSIA_LOG_ERROR("resource",error_prefix << ": directory does not exist: " << directory_path);
 		return false;
 	}
 
@@ -91,8 +91,8 @@ bool append_directory_texture_requests(
 	std::sort(file_paths.begin(), file_paths.end());
 	if (file_paths.empty())
 	{
-		std::cout << error_prefix << ": directory has no regular files: "
-			<< directory_path << std::endl;
+		ELYSIA_LOG_ERROR("resource",error_prefix << ": directory has no regular files: "
+			<< directory_path);
 		return false;
 	}
 
@@ -118,22 +118,22 @@ bool ResourceRequestBuilder::append_font_requests(
 	{
 		if (entry.key.empty())
 		{
-			std::cout << "Build font requests failed: key is empty." << std::endl;
+			ELYSIA_LOG_ERROR("resource","Build font requests failed: key is empty.");
 			return false;
 		}
 
 		if (entry.file_path.empty())
 		{
-			std::cout << "Build font requests failed: file path is empty: "
-				<< entry.key << std::endl;
+			ELYSIA_LOG_ERROR("resource","Build font requests failed: file path is empty: "
+				<< entry.key);
 			return false;
 		}
 
 		std::filesystem::path file_path = (font_root / entry.file_path).lexically_normal();
 		if (file_path.empty())
 		{
-			std::cout << "Build font requests failed: resolved file path is empty: "
-				<< entry.key << std::endl;
+			ELYSIA_LOG_ERROR("resource","Build font requests failed: resolved file path is empty: "
+				<< entry.key);
 			return false;
 		}
 
@@ -141,8 +141,8 @@ bool ResourceRequestBuilder::append_font_requests(
 		{
 			if (point_size <= 0)
 			{
-				std::cout << "Build font requests failed: point size is invalid: "
-					<< point_size << std::endl;
+				ELYSIA_LOG_ERROR("resource","Build font requests failed: point size is invalid: "
+					<< point_size);
 				return false;
 			}
 
@@ -169,22 +169,22 @@ bool ResourceRequestBuilder::append_audio_requests(
 	{
 		if (entry.key.empty())
 		{
-			std::cout << "Build sound requests failed: key is empty." << std::endl;
+			ELYSIA_LOG_ERROR("resource","Build sound requests failed: key is empty.");
 			return false;
 		}
 
 		if (entry.file_path.empty())
 		{
-			std::cout << "Build sound requests failed: file path is empty: "
-				<< entry.key << std::endl;
+			ELYSIA_LOG_ERROR("resource","Build sound requests failed: file path is empty: "
+				<< entry.key);
 			return false;
 		}
 
 		std::filesystem::path file_path = (audio_root / entry.file_path).lexically_normal();
 		if (file_path.empty())
 		{
-			std::cout << "Build sound requests failed: resolved file path is empty: "
-				<< entry.key << std::endl;
+			ELYSIA_LOG_ERROR("resource","Build sound requests failed: resolved file path is empty: "
+				<< entry.key);
 			return false;
 		}
 
@@ -198,22 +198,22 @@ bool ResourceRequestBuilder::append_audio_requests(
 	{
 		if (entry.key.empty())
 		{
-			std::cout << "Build music requests failed: key is empty." << std::endl;
+			ELYSIA_LOG_ERROR("resource","Build music requests failed: key is empty.");
 			return false;
 		}
 
 		if (entry.file_path.empty())
 		{
-			std::cout << "Build music requests failed: file path is empty: "
-				<< entry.key << std::endl;
+			ELYSIA_LOG_ERROR("resource","Build music requests failed: file path is empty: "
+				<< entry.key);
 			return false;
 		}
 
 		std::filesystem::path file_path = (audio_root / entry.file_path).lexically_normal();
 		if (file_path.empty())
 		{
-			std::cout << "Build music requests failed: resolved file path is empty: "
-				<< entry.key << std::endl;
+			ELYSIA_LOG_ERROR("resource","Build music requests failed: resolved file path is empty: "
+				<< entry.key);
 			return false;
 		}
 
@@ -235,14 +235,14 @@ bool ResourceRequestBuilder::append_texture_manifest_requests(
 {
 	if (key_prefix.empty())
 	{
-		std::cout << "Build texture requests failed: key prefix is empty." << std::endl;
+		ELYSIA_LOG_ERROR("resource","Build texture requests failed: key prefix is empty.");
 		return false;
 	}
 
 	if (texture_root.empty())
 	{
-		std::cout << "Build texture requests failed: texture root is empty: "
-			<< key_prefix << std::endl;
+		ELYSIA_LOG_ERROR("resource","Build texture requests failed: texture root is empty: "
+			<< key_prefix);
 		return false;
 	}
 
@@ -271,14 +271,14 @@ bool ResourceRequestBuilder::append_character_texture_requests(
 {
 	if (character_config.id.empty())
 	{
-		std::cout << "Build character texture requests failed: character id is empty." << std::endl;
+		ELYSIA_LOG_ERROR("resource","Build character texture requests failed: character id is empty.");
 		return false;
 	}
 
 	if (character_config.texture_root.empty())
 	{
-		std::cout << "Build character texture requests failed: texture root is empty: "
-			<< character_config.id << std::endl;
+		ELYSIA_LOG_ERROR("resource","Build character texture requests failed: texture root is empty: "
+			<< character_config.id);
 		return false;
 	}
 
@@ -316,8 +316,8 @@ bool ResourceRequestBuilder::append_character_texture_requests(
 			continue;
 		}
 
-		std::cout << "Build character texture requests failed: target does not exist: "
-			<< resolved_path << std::endl;
+		ELYSIA_LOG_ERROR("resource","Build character texture requests failed: target does not exist: "
+			<< resolved_path);
 		return false;
 	}
 
@@ -332,14 +332,14 @@ bool ResourceRequestBuilder::append_character_audio_requests(
 {
 	if (character_config.id.empty())
 	{
-		std::cout << "Build character audio requests failed: character id is empty." << std::endl;
+		ELYSIA_LOG_ERROR("resource","Build character audio requests failed: character id is empty.");
 		return false;
 	}
 
 	if (character_config.asset_key.empty())
 	{
-		std::cout << "Build character audio requests failed: asset key is empty: "
-			<< character_config.id << std::endl;
+		ELYSIA_LOG_ERROR("resource","Build character audio requests failed: asset key is empty: "
+			<< character_config.id);
 		return false;
 	}
 
@@ -348,22 +348,22 @@ bool ResourceRequestBuilder::append_character_audio_requests(
 	{
 		if (entry.key.empty())
 		{
-			std::cout << "Build character audio requests failed: sound key is empty." << std::endl;
+			ELYSIA_LOG_ERROR("resource","Build character audio requests failed: sound key is empty.");
 			return false;
 		}
 
 		if (entry.path.empty())
 		{
-			std::cout << "Build character audio requests failed: sound path is empty: "
-				<< entry.key << std::endl;
+			ELYSIA_LOG_ERROR("resource","Build character audio requests failed: sound path is empty: "
+				<< entry.key);
 			return false;
 		}
 
 		const std::filesystem::path file_path = (audio_root / entry.path).lexically_normal();
 		if (!std::filesystem::is_regular_file(file_path))
 		{
-			std::cout << "Build character audio requests failed: file does not exist: "
-				<< file_path << std::endl;
+			ELYSIA_LOG_ERROR("resource","Build character audio requests failed: file does not exist: "
+				<< file_path);
 			return false;
 		}
 
@@ -384,7 +384,7 @@ bool ResourceRequestBuilder::append_character_animation_requests(
 {
 	if (character_config.id.empty())
 	{
-		std::cout << "Build resource requests failed: character id is empty." << std::endl;
+		ELYSIA_LOG_ERROR("resource","Build resource requests failed: character id is empty.");
 		return false;
 	}
 
@@ -392,15 +392,15 @@ bool ResourceRequestBuilder::append_character_animation_requests(
 	{
 		if (clip_config.animation_name.empty())
 		{
-			std::cout << "Build resource requests failed: animation name is empty: "
-				<< character_config.id << std::endl;
+			ELYSIA_LOG_ERROR("resource","Build resource requests failed: animation name is empty: "
+				<< character_config.id);
 			return false;
 		}
 
 		if (clip_config.frame_count == 0 || clip_config.fps <= 0.0)
 		{
-			std::cout << "Build resource requests failed: animation clip timing is invalid: "
-				<< character_config.id << "." << clip_config.animation_name << std::endl;
+			ELYSIA_LOG_ERROR("resource","Build resource requests failed: animation clip timing is invalid: "
+				<< character_config.id << "." << clip_config.animation_name);
 			return false;
 		}
 
@@ -408,8 +408,8 @@ bool ResourceRequestBuilder::append_character_animation_requests(
 			(character_config.texture_root / clip_config.path).lexically_normal();
 		if (directory_path.empty())
 		{
-			std::cout << "Build resource requests failed: animation directory is empty: "
-				<< character_config.id << "." << clip_config.animation_name << std::endl;
+			ELYSIA_LOG_ERROR("resource","Build resource requests failed: animation directory is empty: "
+				<< character_config.id << "." << clip_config.animation_name);
 			return false;
 		}
 
@@ -448,7 +448,7 @@ bool ResourceRequestBuilder::append_character_effect_requests(
 {
 	if (character_config.id.empty())
 	{
-		std::cout << "Build effect requests failed: character id is empty." << std::endl;
+		ELYSIA_LOG_ERROR("resource","Build effect requests failed: character id is empty.");
 		return false;
 	}
 
@@ -461,8 +461,8 @@ bool ResourceRequestBuilder::append_character_effect_requests(
 
 		if (clip_config.animation_name.empty())
 		{
-			std::cout << "Build effect requests failed: animation name is empty: "
-				<< character_config.id << std::endl;
+			ELYSIA_LOG_ERROR("resource","Build effect requests failed: animation name is empty: "
+				<< character_config.id);
 			return false;
 		}
 
@@ -474,16 +474,16 @@ bool ResourceRequestBuilder::append_character_effect_requests(
 		{
 			if (!effect_entry.has_segment_path)
 			{
-				std::cout << "Build effect requests failed: segment_path is missing in effect config: "
-					<< clip_config.animation_name << std::endl;
+				ELYSIA_LOG_ERROR("resource","Build effect requests failed: segment_path is missing in effect config: "
+					<< clip_config.animation_name);
 				return false;
 			}
 
 			if (clip_config.segment_index >= effect_entry.segments.size())
 			{
-				std::cout << "Skip effect requests: segment playback is missing: "
+				ELYSIA_LOG_WARN("resource","Skip effect requests: segment playback is missing: "
 					<< character_config.id << "." << clip_config.animation_name
-					<< "." << clip_config.segment_index << std::endl;
+					<< "." << clip_config.segment_index);
 				continue;
 			}
 
@@ -497,8 +497,8 @@ bool ResourceRequestBuilder::append_character_effect_requests(
 		{
 			if (!effect_entry.has_path)
 			{
-				std::cout << "Build effect requests failed: path is missing in effect config: "
-					<< clip_config.animation_name << std::endl;
+				ELYSIA_LOG_ERROR("resource","Build effect requests failed: path is missing in effect config: "
+					<< clip_config.animation_name);
 				return false;
 			}
 
@@ -510,8 +510,8 @@ bool ResourceRequestBuilder::append_character_effect_requests(
 			(character_config.texture_root / effect_relative_path).lexically_normal();
 		if (directory_path.empty())
 		{
-			std::cout << "Build effect requests failed: effect directory is empty: "
-				<< character_config.id << "." << clip_config.animation_name << std::endl;
+			ELYSIA_LOG_ERROR("resource","Build effect requests failed: effect directory is empty: "
+				<< character_config.id << "." << clip_config.animation_name);
 			return false;
 		}
 

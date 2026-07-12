@@ -1,9 +1,7 @@
+#include "../../tools/logger.h"
 #include "surface_loader.h"
 
 #include <SDL_image.h>
-
-#include <iostream>
-
 namespace elysia::resources
 {
 void SurfaceDeleter::operator()(SDL_Surface* surface) const
@@ -21,22 +19,22 @@ SurfaceLoadResult SurfaceLoader::load_surface(const SurfaceLoadRequest& request)
 
 	if (request._asset_key.empty())
 	{
-		std::cout << "Load surface failed: asset key is empty." << std::endl;
+		ELYSIA_LOG_ERROR("resource","Load surface failed: asset key is empty.");
 		return result;
 	}
 
 	if (request._frame_path.empty())
 	{
-		std::cout << "Load surface failed: frame path is empty: "
-			<< request._asset_key << std::endl;
+		ELYSIA_LOG_ERROR("resource","Load surface failed: frame path is empty: "
+			<< request._asset_key);
 		return result;
 	}
 
 	SDL_Surface* surface = IMG_Load(request._frame_path.string().c_str());
 	if (!surface)
 	{
-		std::cout << "Load surface failed: " << request._frame_path
-			<< ", reason: " << IMG_GetError() << std::endl;
+		ELYSIA_LOG_ERROR("resource","Load surface failed: " << request._frame_path
+			<< ", reason: " << IMG_GetError());
 		return result;
 	}
 

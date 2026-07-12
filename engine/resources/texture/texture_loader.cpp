@@ -1,7 +1,5 @@
+#include "../../tools/logger.h"
 #include "texture_loader.h"
-
-#include <iostream>
-
 namespace elysia::resources
 {
 void TextureDeleter::operator()(SDL_Texture* texture) const
@@ -22,15 +20,15 @@ TextureLoadResult TextureLoader::load_texture(
 
 	if (!renderer)
 	{
-		std::cout << "Load texture failed: renderer is null: "
-			<< surface_result._asset_key << std::endl;
+		ELYSIA_LOG_ERROR("resource","Load texture failed: renderer is null: "
+			<< surface_result._asset_key);
 		return result;
 	}
 
 	if (!surface_result._success || !surface_result._surface)
 	{
-		std::cout << "Load texture failed: surface is invalid: "
-			<< surface_result._frame_path << std::endl;
+		ELYSIA_LOG_ERROR("resource","Load texture failed: surface is invalid: "
+			<< surface_result._frame_path);
 		return result;
 	}
 
@@ -41,8 +39,8 @@ TextureLoadResult TextureLoader::load_texture(
 
 	if (!texture)
 	{
-		std::cout << "Load texture failed: " << surface_result._frame_path
-			<< ", reason: " << SDL_GetError() << std::endl;
+		ELYSIA_LOG_ERROR("resource","Load texture failed: " << surface_result._frame_path
+			<< ", reason: " << SDL_GetError());
 		return result;
 	}
 

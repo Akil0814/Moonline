@@ -1,8 +1,7 @@
+#include "../../tools/logger.h"
 #include "character_effect_layout_loader.h"
 
 #include "../json/json_loader.h"
-
-#include <iostream>
 #include <utility>
 
 namespace elysia::io
@@ -18,32 +17,32 @@ bool parse_playback_config(
 {
 	if (!playback_node.is_object())
 	{
-		std::cout << error_prefix << ": playback entry is not an object: "
-			<< effect_key << std::endl;
+		ELYSIA_LOG_ERROR("io",error_prefix << ": playback entry is not an object: "
+			<< effect_key);
 		return false;
 	}
 
 	if (!playback_node.contains("frame_count")
 		|| !playback_node.at("frame_count").is_number_unsigned())
 	{
-		std::cout << error_prefix << ": frame_count is missing or invalid: "
-			<< effect_key << std::endl;
+		ELYSIA_LOG_ERROR("io",error_prefix << ": frame_count is missing or invalid: "
+			<< effect_key);
 		return false;
 	}
 
 	if (!playback_node.contains("fps")
 		|| !playback_node.at("fps").is_number())
 	{
-		std::cout << error_prefix << ": fps is missing or invalid: "
-			<< effect_key << std::endl;
+		ELYSIA_LOG_ERROR("io",error_prefix << ": fps is missing or invalid: "
+			<< effect_key);
 		return false;
 	}
 
 	if (!playback_node.contains("loop")
 		|| !playback_node.at("loop").is_boolean())
 	{
-		std::cout << error_prefix << ": loop is missing or invalid: "
-			<< effect_key << std::endl;
+		ELYSIA_LOG_ERROR("io",error_prefix << ": loop is missing or invalid: "
+			<< effect_key);
 		return false;
 	}
 
@@ -53,15 +52,15 @@ bool parse_playback_config(
 
 	if (out_config.frame_count == 0)
 	{
-		std::cout << error_prefix << ": frame_count must be positive: "
-			<< effect_key << std::endl;
+		ELYSIA_LOG_ERROR("io",error_prefix << ": frame_count must be positive: "
+			<< effect_key);
 		return false;
 	}
 
 	if (out_config.fps <= 0.0)
 	{
-		std::cout << error_prefix << ": fps must be positive: "
-			<< effect_key << std::endl;
+		ELYSIA_LOG_ERROR("io",error_prefix << ": fps must be positive: "
+			<< effect_key);
 		return false;
 	}
 
@@ -80,21 +79,21 @@ bool CharacterEffectLayoutLoader::load(
 	JsonReadResult result = loader.open_file(layout_path);
 	if (!result)
 	{
-		std::cout << "Load character effect layout failed: " << result.error;
+		ELYSIA_LOG_ERROR("io","Load character effect layout failed: " << result.error);
 		return false;
 	}
 
 	if (!loader.root().is_object())
 	{
-		std::cout << "Load character effect layout failed: root is not an object: "
-			<< layout_path << std::endl;
+		ELYSIA_LOG_ERROR("io","Load character effect layout failed: root is not an object: "
+			<< layout_path);
 		return false;
 	}
 
 	if (!loader.root().contains("effects") || !loader.root().at("effects").is_object())
 	{
-		std::cout << "Load character effect layout failed: effects is missing or not an object: "
-			<< layout_path << std::endl;
+		ELYSIA_LOG_ERROR("io","Load character effect layout failed: effects is missing or not an object: "
+			<< layout_path);
 		return false;
 	}
 
@@ -106,8 +105,8 @@ bool CharacterEffectLayoutLoader::load(
 	{
 		if (!effect.value().is_object())
 		{
-			std::cout << "Load character effect layout failed: effect entry is not an object: "
-				<< effect.key() << std::endl;
+			ELYSIA_LOG_ERROR("io","Load character effect layout failed: effect entry is not an object: "
+				<< effect.key());
 			return false;
 		}
 
@@ -121,15 +120,15 @@ bool CharacterEffectLayoutLoader::load(
 		{
 			if (has_segment_path || has_segments)
 			{
-				std::cout << "Load character effect layout failed: mixed fixed and segmented effect schema: "
-					<< effect.key() << std::endl;
+				ELYSIA_LOG_ERROR("io","Load character effect layout failed: mixed fixed and segmented effect schema: "
+					<< effect.key());
 				return false;
 			}
 
 			if (!effect_node.at("path").is_string())
 			{
-				std::cout << "Load character effect layout failed: path is not a string: "
-					<< effect.key() << std::endl;
+				ELYSIA_LOG_ERROR("io","Load character effect layout failed: path is not a string: "
+					<< effect.key());
 				return false;
 			}
 
@@ -148,15 +147,15 @@ bool CharacterEffectLayoutLoader::load(
 		{
 			if (!effect_node.at("segment_path").is_string())
 			{
-				std::cout << "Load character effect layout failed: segment_path is not a string: "
-					<< effect.key() << std::endl;
+				ELYSIA_LOG_ERROR("io","Load character effect layout failed: segment_path is not a string: "
+					<< effect.key());
 				return false;
 			}
 
 			if (!has_segments || !effect_node.at("segments").is_array())
 			{
-				std::cout << "Load character effect layout failed: segments is missing or not an array: "
-					<< effect.key() << std::endl;
+				ELYSIA_LOG_ERROR("io","Load character effect layout failed: segments is missing or not an array: "
+					<< effect.key());
 				return false;
 			}
 
@@ -165,8 +164,8 @@ bool CharacterEffectLayoutLoader::load(
 				|| effect_node.contains("loop")
 				|| effect_node.contains("path"))
 			{
-				std::cout << "Load character effect layout failed: segmented entry contains fixed playback fields: "
-					<< effect.key() << std::endl;
+				ELYSIA_LOG_ERROR("io","Load character effect layout failed: segmented entry contains fixed playback fields: "
+					<< effect.key());
 				return false;
 			}
 
@@ -176,8 +175,8 @@ bool CharacterEffectLayoutLoader::load(
 			const json& segments = effect_node.at("segments");
 			if (segments.empty())
 			{
-				std::cout << "Load character effect layout failed: segments is empty: "
-					<< effect.key() << std::endl;
+				ELYSIA_LOG_ERROR("io","Load character effect layout failed: segments is empty: "
+					<< effect.key());
 				return false;
 			}
 
@@ -200,8 +199,8 @@ bool CharacterEffectLayoutLoader::load(
 		}
 		else
 		{
-			std::cout << "Load character effect layout failed: path or segment_path is missing: "
-				<< effect.key() << std::endl;
+			ELYSIA_LOG_ERROR("io","Load character effect layout failed: path or segment_path is missing: "
+				<< effect.key());
 			return false;
 		}
 

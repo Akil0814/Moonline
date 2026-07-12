@@ -1,7 +1,5 @@
+#include "../../tools/logger.h"
 #include "atlas_builder.h"
-
-#include <iostream>
-
 namespace elysia::resources
 {
 bool AtlasBuilder::build_atlas(
@@ -12,22 +10,22 @@ bool AtlasBuilder::build_atlas(
 {
 	if (request.atlas_key.empty())
 	{
-		std::cout << "Build atlas failed: atlas key is empty." << std::endl;
+		ELYSIA_LOG_ERROR("resource","Build atlas failed: atlas key is empty.");
 		return false;
 	}
 
 	if (request.frame_count == 0)
 	{
-		std::cout << "Build atlas failed: frame count is zero: "
-			<< request.atlas_key << std::endl;
+		ELYSIA_LOG_ERROR("resource","Build atlas failed: frame count is zero: "
+			<< request.atlas_key);
 		return false;
 	}
 
 	if (committed_frames.size() != request.frame_count)
 	{
-		std::cout << "Build atlas failed: texture count mismatch: "
+		ELYSIA_LOG_ERROR("resource","Build atlas failed: texture count mismatch: "
 			<< request.atlas_key << ", expected " << request.frame_count
-			<< ", actual " << committed_frames.size() << std::endl;
+			<< ", actual " << committed_frames.size());
 		return false;
 	}
 
@@ -39,23 +37,23 @@ bool AtlasBuilder::build_atlas(
 		const AtlasCommittedFrame& committed_frame = committed_frames[index];
 		if (!committed_frame.texture)
 		{
-			std::cout << "Build atlas failed: texture is invalid: "
-				<< request.atlas_key << ", frame " << index << std::endl;
+			ELYSIA_LOG_ERROR("resource","Build atlas failed: texture is invalid: "
+				<< request.atlas_key << ", frame " << index);
 			return false;
 		}
 
 		if (committed_frame.frame_index != index)
 		{
-			std::cout << "Build atlas failed: frame index mismatch: "
+			ELYSIA_LOG_ERROR("resource","Build atlas failed: frame index mismatch: "
 				<< request.atlas_key << ", expected " << index
-				<< ", actual " << committed_frame.frame_index << std::endl;
+				<< ", actual " << committed_frame.frame_index);
 			return false;
 		}
 
 		if (!atlas.add_frame(committed_frame.frame_path, committed_frame.texture))
 		{
-			std::cout << "Build atlas failed: add frame failed: "
-				<< committed_frame.frame_path << std::endl;
+			ELYSIA_LOG_ERROR("resource","Build atlas failed: add frame failed: "
+				<< committed_frame.frame_path);
 			return false;
 		}
 	}

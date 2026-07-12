@@ -1,8 +1,7 @@
+#include "../../tools/logger.h"
 #include "audio_manifest_loader.h"
 
 #include "../json/json_loader.h"
-
-#include <iostream>
 #include <string>
 #include <utility>
 
@@ -18,8 +17,8 @@ bool append_audio_entries(
 {
 	if (!node.is_object())
 	{
-		std::cout << "Load audio manifest failed: " << group_name
-			<< " is not an object." << std::endl;
+		ELYSIA_LOG_ERROR("io","Load audio manifest failed: " << group_name
+			<< " is not an object.");
 		return false;
 	}
 
@@ -27,16 +26,16 @@ bool append_audio_entries(
 	{
 		if (!item.value().is_object())
 		{
-			std::cout << "Load audio manifest failed: entry is not an object: "
-				<< item.key() << std::endl;
+			ELYSIA_LOG_ERROR("io","Load audio manifest failed: entry is not an object: "
+				<< item.key());
 			return false;
 		}
 
 		const json& entry_node = item.value();
 		if (!entry_node.contains("path") || !entry_node.at("path").is_string())
 		{
-			std::cout << "Load audio manifest failed: path is missing or not a string: "
-				<< item.key() << std::endl;
+			ELYSIA_LOG_ERROR("io","Load audio manifest failed: path is missing or not a string: "
+				<< item.key());
 			return false;
 		}
 
@@ -61,28 +60,28 @@ bool AudioManifestLoader::load(
 	JsonReadResult result = loader.open_file(manifest_path);
 	if (!result)
 	{
-		std::cout << "Load audio manifest failed: " << result.error;
+		ELYSIA_LOG_ERROR("io","Load audio manifest failed: " << result.error);
 		return false;
 	}
 
 	if (!loader.root().is_object())
 	{
-		std::cout << "Load audio manifest failed: root is not an object: "
-			<< manifest_path << std::endl;
+		ELYSIA_LOG_ERROR("io","Load audio manifest failed: root is not an object: "
+			<< manifest_path);
 		return false;
 	}
 
 	if (!loader.root().contains("sounds"))
 	{
-		std::cout << "Load audio manifest failed: sounds is missing: "
-			<< manifest_path << std::endl;
+		ELYSIA_LOG_ERROR("io","Load audio manifest failed: sounds is missing: "
+			<< manifest_path);
 		return false;
 	}
 
 	if (!loader.root().contains("music"))
 	{
-		std::cout << "Load audio manifest failed: music is missing: "
-			<< manifest_path << std::endl;
+		ELYSIA_LOG_ERROR("io","Load audio manifest failed: music is missing: "
+			<< manifest_path);
 		return false;
 	}
 

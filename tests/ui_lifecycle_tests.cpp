@@ -1217,11 +1217,119 @@ std::string read_text_file(const std::filesystem::path& path)
     return { std::istreambuf_iterator<char>(input),std::istreambuf_iterator<char>() };
 }
 
+std::size_t count_occurrences(std::string_view text,std::string_view needle)
+{
+    std::size_t count = 0;
+    std::size_t position = 0;
+    while ((position = text.find(needle,position)) != std::string_view::npos)
+    {
+        ++count;
+        position += needle.size();
+    }
+    return count;
+}
+
 void remove_test_path(const std::filesystem::path& path)
 {
     std::error_code error;
     std::filesystem::remove_all(path,error);
     require(!error,"logger test cleanup must succeed");
+}
+
+struct CapturedSdlLogs
+{
+    std::vector<std::string> messages;
+};
+
+void SDLCALL capture_sdl_log(void* userdata,int,SDL_LogPriority,const char* message)
+{
+    auto* captured = static_cast<CapturedSdlLogs*>(userdata);
+    captured->messages.emplace_back(message ? message : "");
+}
+
+void test_logger_console_sink()
+{
+    using namespace elysia;
+    auto* path_manager = io::PathManager::instance();
+    require(path_manager->init() && path_manager->ensure_runtime_dirs(),
+        "console logger test must initialize runtime paths");
+    auto* logger = tools::Logger::instance();
+    logger->shutdown();
+
+    SDL_LogOutputFunction previous_callback = nullptr;
+    void* previous_userdata = nullptr;
+    SDL_LogGetOutputFunction(&previous_callback,&previous_userdata);
+    CapturedSdlLogs captured;
+    captured.messages.reserve(8);
+    SDL_LogSetOutputFunction(capture_sdl_log,&captured);
+
+    tools::LoggerConfig console_config;
+    console_config.file_mode = tools::LogFileMode::Disabled;
+    require(logger->configure(console_config),"logger must accept console configuration");
+    logger->initialize();
+    const unsigned int console_call_line = __LINE__ + 1;
+    logger->info("console-test","console marker");
+    require(captured.messages.size() == 1,"enabled console sink must emit exactly once");
+    require(captured.messages.front().find("[INFO]") != std::string::npos
+            && captured.messages.front().find("[console-test]") != std::string::npos
+            && captured.messages.front().find("console marker") != std::string::npos
+            && captured.messages.front().find("ui_lifecycle_tests.cpp:" + std::to_string(console_call_line)) != std::string::npos,
+        "console sink must emit the formatted file-log line with the original call site");
+    logger->shutdown();
+
+    captured.messages.clear();
+    const std::filesystem::path dual_sink_path = path_manager->logs() / "ui-lifecycle-console-dual.log";
+    remove_test_path(dual_sink_path);
+    tools::LoggerConfig dual_sink_config;
+    dual_sink_config.file_mode = tools::LogFileMode::Append;
+    dual_sink_config.append_file_name = dual_sink_path.filename().string();
+    require(logger->configure(dual_sink_config),"logger must accept dual-sink configuration");
+    logger->initialize();
+    logger->warn("console-test","dual sink marker");
+    logger->shutdown();
+    require(captured.messages.size() == 1 && captured.messages.front().find("dual sink marker") != std::string::npos,
+        "enabled console sink must receive one entry when the file sink succeeds");
+    require(count_occurrences(read_text_file(dual_sink_path),"dual sink marker") == 1,
+        "enabled file sink must receive the same entry exactly once");
+    remove_test_path(dual_sink_path);
+
+    captured.messages.clear();
+    const std::filesystem::path silent_path = path_manager->logs() / "ui-lifecycle-console-silent.log";
+    remove_test_path(silent_path);
+    tools::LoggerConfig silent_config;
+    silent_config.file_mode = tools::LogFileMode::Append;
+    silent_config.append_file_name = silent_path.filename().string();
+    silent_config.console_enabled = false;
+    require(logger->configure(silent_config),"logger must accept silent console configuration");
+    logger->info("console-test","preinit silent marker");
+    logger->initialize();
+    logger->warn("console-test","initialized silent marker");
+    require(captured.messages.empty(),"disabled console sink must suppress preinit and initialized output");
+    logger->shutdown();
+    require(read_text_file(silent_path).find("initialized silent marker") != std::string::npos,
+        "disabled console sink must not disable the configured file sink");
+    remove_test_path(silent_path);
+
+    const std::filesystem::path blocked_path = path_manager->logs() / "ui-lifecycle-console-blocked";
+    remove_test_path(blocked_path);
+    std::error_code directory_error;
+    std::filesystem::create_directory(blocked_path,directory_error);
+    require(!directory_error,"console logger test must create a blocking directory");
+    captured.messages.clear();
+    tools::LoggerConfig fallback_config;
+    fallback_config.file_mode = tools::LogFileMode::Append;
+    fallback_config.append_file_name = blocked_path.filename().string();
+    fallback_config.console_enabled = true;
+    require(logger->configure(fallback_config),"logger must accept file-fallback configuration");
+    logger->initialize();
+    logger->error("console-test","file fallback marker");
+    require(captured.messages.size() == 1
+            && captured.messages.front().find("file fallback marker") != std::string::npos,
+        "file failure must still emit once through the enabled console sink");
+    logger->shutdown();
+    remove_test_path(blocked_path);
+
+    SDL_LogSetOutputFunction(previous_callback,previous_userdata);
 }
 
 void test_logger_file_modes_and_noexcept()
@@ -1293,7 +1401,7 @@ void test_logger_file_modes_and_noexcept()
     require(logger->configure(new_run_config),"logger must accept new-run configuration");
     logger->initialize();
     const auto first_run_path = logger->active_file_path();
-    require(first_run_path.has_value() && first_run_path->filename().string().starts_with("Moonline-"),
+    require(first_run_path.has_value() && first_run_path->filename().string().starts_with("Elysia-"),
         "new-run logger must use a timestamped filename");
     logger->error("logger-test","new run marker");
     logger->shutdown();
@@ -1364,6 +1472,7 @@ int main()
     test_text_input_callback_can_remove_its_owner();
     test_button_group_preserves_button_callback_after_selection();
     test_logger_file_modes_and_noexcept();
+    test_logger_console_sink();
     std::cout << "ui lifecycle tests passed\n";
     return EXIT_SUCCESS;
 }

@@ -177,26 +177,31 @@ void Logger::log(LogLevel level,std::string_view category,std::string_view messa
         std::lock_guard lock(_mutex);
         if (!should_log(level))
             return;
-        if (!_file.is_open())
-        {
-            write_sdl_fallback(level,category,message,location);
+        if (!_file.is_open() && !_config.console_enabled)
             return;
-        }
-
-        _file << format_line(level,category,message,location) << '\n';
-        if (!_file.good())
+        const std::string line = format_line(level,category,message,location);
+        if (_file.is_open())
         {
-            disable_file_sink();
-            write_sdl_fallback(level,category,message,location);
-            return;
+            _file << line << '\n';
+            if (!_file.good())
+            {
+                disable_file_sink();
+            }
+            else if (level_rank(level) >= level_rank(LogLevel::Warn))
+            {
+                _file.flush();
+                if (!_file.good())
+                    disable_file_sink();
+            }
         }
-        if (level_rank(level) >= level_rank(LogLevel::Warn))
-            _file.flush();
+        if (_config.console_enabled)
+            write_console_line(level,line);
     }
     catch (...)
     {
         disable_file_sink();
-        write_sdl_fallback(level,category,message,location);
+        if (_config.console_enabled)
+            write_sdl_fallback(level,category,message,location);
     }
 }
 
@@ -231,7 +236,7 @@ std::filesystem::path Logger::new_run_file_path() const
     const std::time_t now = std::time(nullptr);
     std::ostringstream stem;
     const std::tm timestamp = local_time(now);
-    stem << "Moonline-" << std::put_time(&timestamp,"%Y%m%d-%H%M%S") << '-' << process_id();
+    stem << "Elysia-" << std::put_time(&timestamp,"%Y%m%d-%H%M%S") << '-' << process_id();
     const std::filesystem::path logs = path_manager->logs();
     for (unsigned int index = 0;; ++index)
     {
@@ -274,6 +279,19 @@ void Logger::disable_file_sink() noexcept
             _file.close();
         _file.clear();
         _active_file_path.reset();
+    }
+    catch (...)
+    {
+    }
+}
+
+void Logger::write_console_line(LogLevel level,std::string_view line) noexcept
+{
+    try
+    {
+        const char* text = line.empty() ? "" : line.data();
+        SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION,sdl_priority(level),"%.*s",
+            static_cast<int>(line.size()),text);
     }
     catch (...)
     {

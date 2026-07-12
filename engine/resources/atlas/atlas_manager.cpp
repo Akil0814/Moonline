@@ -1,10 +1,9 @@
+#include "../../tools/logger.h"
 #include "atlas_manager.h"
 
 #include "atlas_builder.h"
 #include "../texture/texture_loader.h"
 #include "../texture/texture_manager.h"
-
-#include <iostream>
 #include <utility>
 
 namespace elysia::resources
@@ -18,22 +17,22 @@ bool AtlasManager::begin_build(const AtlasBuildRequest& request)
 {
 	if (!request.is_valid())
 	{
-		std::cout << "Begin atlas build failed: request is invalid: "
-			<< request.atlas_key << std::endl;
+		ELYSIA_LOG_ERROR("resource","Begin atlas build failed: request is invalid: "
+			<< request.atlas_key);
 		return false;
 	}
 
 	if (_atlas_pool.contains(request.atlas_key))
 	{
-		std::cout << "Begin atlas build failed: atlas already exists: "
-			<< request.atlas_key << std::endl;
+		ELYSIA_LOG_ERROR("resource","Begin atlas build failed: atlas already exists: "
+			<< request.atlas_key);
 		return false;
 	}
 
 	if (_assembly_states.contains(request.atlas_key))
 	{
-		std::cout << "Begin atlas build failed: atlas build already exists: "
-			<< request.atlas_key << std::endl;
+		ELYSIA_LOG_ERROR("resource","Begin atlas build failed: atlas build already exists: "
+			<< request.atlas_key);
 		return false;
 	}
 
@@ -64,14 +63,14 @@ bool AtlasManager::commit_prepared_frame(
 {
 	if (!renderer)
 	{
-		std::cout << "Commit atlas frame failed: renderer is null: "
-			<< prepared_result.task.atlas_key << std::endl;
+		ELYSIA_LOG_ERROR("resource","Commit atlas frame failed: renderer is null: "
+			<< prepared_result.task.atlas_key);
 		return false;
 	}
 
 	if (prepared_result.task.atlas_key.empty())
 	{
-		std::cout << "Commit atlas frame failed: atlas key is empty." << std::endl;
+		ELYSIA_LOG_ERROR("resource","Commit atlas frame failed: atlas key is empty.");
 		return false;
 	}
 
@@ -79,53 +78,53 @@ bool AtlasManager::commit_prepared_frame(
 		_assembly_states.find(prepared_result.task.atlas_key);
 	if (iterator == _assembly_states.end())
 	{
-		std::cout << "Commit atlas frame failed: build state does not exist: "
-			<< prepared_result.task.atlas_key << std::endl;
+		ELYSIA_LOG_ERROR("resource","Commit atlas frame failed: build state does not exist: "
+			<< prepared_result.task.atlas_key);
 		return false;
 	}
 
 	AtlasAssemblyState& state = iterator->second;
 	if (state.finalized)
 	{
-		std::cout << "Commit atlas frame failed: atlas already finalized: "
-			<< prepared_result.task.atlas_key << std::endl;
+		ELYSIA_LOG_ERROR("resource","Commit atlas frame failed: atlas already finalized: "
+			<< prepared_result.task.atlas_key);
 		return false;
 	}
 
 	if (prepared_result.task.expected_frame_count != state.request.frame_count)
 	{
-		std::cout << "Commit atlas frame failed: frame count mismatch: "
-			<< prepared_result.task.atlas_key << std::endl;
+		ELYSIA_LOG_ERROR("resource","Commit atlas frame failed: frame count mismatch: "
+			<< prepared_result.task.atlas_key);
 		return false;
 	}
 
 	if (prepared_result.task.frame_index >= state.committed_frames.size())
 	{
-		std::cout << "Commit atlas frame failed: frame index out of range: "
+		ELYSIA_LOG_ERROR("resource","Commit atlas frame failed: frame index out of range: "
 			<< prepared_result.task.atlas_key << ", frame "
-			<< prepared_result.task.frame_index << std::endl;
+			<< prepared_result.task.frame_index);
 		return false;
 	}
 
 	const SurfaceLoadResult& surface_result = prepared_result.surface_result;
 	if (!surface_result._success || !surface_result._surface)
 	{
-		std::cout << "Commit atlas frame failed: prepared surface is invalid: "
-			<< prepared_result.task.frame_path << std::endl;
+		ELYSIA_LOG_ERROR("resource","Commit atlas frame failed: prepared surface is invalid: "
+			<< prepared_result.task.frame_path);
 		return false;
 	}
 
 	if (surface_result._asset_key != prepared_result.task.atlas_key)
 	{
-		std::cout << "Commit atlas frame failed: asset key mismatch: "
-			<< surface_result._asset_key << std::endl;
+		ELYSIA_LOG_ERROR("resource","Commit atlas frame failed: asset key mismatch: "
+			<< surface_result._asset_key);
 		return false;
 	}
 
 	if (surface_result._frame_index != prepared_result.task.frame_index)
 	{
-		std::cout << "Commit atlas frame failed: frame index mismatch: "
-			<< prepared_result.task.atlas_key << std::endl;
+		ELYSIA_LOG_ERROR("resource","Commit atlas frame failed: frame index mismatch: "
+			<< prepared_result.task.atlas_key);
 		return false;
 	}
 
@@ -133,9 +132,9 @@ bool AtlasManager::commit_prepared_frame(
 		state.committed_frames[prepared_result.task.frame_index];
 	if (frame_state.committed)
 	{
-		std::cout << "Commit atlas frame failed: frame already committed: "
+		ELYSIA_LOG_ERROR("resource","Commit atlas frame failed: frame already committed: "
 			<< prepared_result.task.atlas_key << ", frame "
-			<< prepared_result.task.frame_index << std::endl;
+			<< prepared_result.task.frame_index);
 		return false;
 	}
 
@@ -159,8 +158,8 @@ bool AtlasManager::commit_prepared_frame(
 
 	if (!frame_state.texture)
 	{
-		std::cout << "Commit atlas frame failed: stored texture lookup failed: "
-			<< texture_key << std::endl;
+		ELYSIA_LOG_ERROR("resource","Commit atlas frame failed: stored texture lookup failed: "
+			<< texture_key);
 		return false;
 	}
 
@@ -206,24 +205,24 @@ bool AtlasManager::finalize_build(const std::string& atlas_key)
 		_assembly_states.find(atlas_key);
 	if (iterator == _assembly_states.end())
 	{
-		std::cout << "Finalize atlas build failed: build state does not exist: "
-			<< atlas_key << std::endl;
+		ELYSIA_LOG_ERROR("resource","Finalize atlas build failed: build state does not exist: "
+			<< atlas_key);
 		return false;
 	}
 
 	AtlasAssemblyState& state = iterator->second;
 	if (state.finalized)
 	{
-		std::cout << "Finalize atlas build failed: atlas already finalized: "
-			<< atlas_key << std::endl;
+		ELYSIA_LOG_ERROR("resource","Finalize atlas build failed: atlas already finalized: "
+			<< atlas_key);
 		return false;
 	}
 
 	if (state.committed_frame_count != state.request.frame_count)
 	{
-		std::cout << "Finalize atlas build failed: committed frame count mismatch: "
+		ELYSIA_LOG_ERROR("resource","Finalize atlas build failed: committed frame count mismatch: "
 			<< atlas_key << ", expected " << state.request.frame_count
-			<< ", actual " << state.committed_frame_count << std::endl;
+			<< ", actual " << state.committed_frame_count);
 		return false;
 	}
 
@@ -234,8 +233,8 @@ bool AtlasManager::finalize_build(const std::string& atlas_key)
 		const AtlasAssemblyFrame& frame_state = state.committed_frames[index];
 		if (!frame_state.committed || !frame_state.texture)
 		{
-			std::cout << "Finalize atlas build failed: frame is missing: "
-				<< atlas_key << ", frame " << index << std::endl;
+			ELYSIA_LOG_ERROR("resource","Finalize atlas build failed: frame is missing: "
+				<< atlas_key << ", frame " << index);
 			return false;
 		}
 

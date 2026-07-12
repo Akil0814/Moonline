@@ -1,9 +1,8 @@
+#include "../../tools/logger.h"
 #include "assets_structure_loader.h"
 
 #include "../json/json_loader.h"
 #include "../path/path_manager.h"
-
-#include <iostream>
 #include <string>
 #include <string_view>
 
@@ -23,24 +22,24 @@ bool read_manifest_path(
 	const std::string key_string(key);
 	if (!manifests.contains(key_string))
 	{
-		std::cout << "Load assets structure failed: manifest key is missing: "
-			<< key << std::endl;
+		ELYSIA_LOG_ERROR("io","Load assets structure failed: manifest key is missing: "
+			<< key);
 		return false;
 	}
 
 	const json& path_node = manifests.at(key_string);
 	if (!path_node.is_string())
 	{
-		std::cout << "Load assets structure failed: manifest path is not a string: "
-			<< key << std::endl;
+		ELYSIA_LOG_ERROR("io","Load assets structure failed: manifest path is not a string: "
+			<< key);
 		return false;
 	}
 
 	out_path = path_manager.to_asset_path(path_node.get<std::string>());
 	if (!std::filesystem::is_regular_file(out_path))
 	{
-		std::cout << "Load assets structure failed: manifest file does not exist: "
-			<< out_path << std::endl;
+		ELYSIA_LOG_ERROR("io","Load assets structure failed: manifest file does not exist: "
+			<< out_path);
 		return false;
 	}
 
@@ -74,14 +73,14 @@ bool AssetsStructureLoader::load(
 	JsonReadResult result = loader.open_file(assets_structure_path);
 	if (!result)
 	{
-		std::cout << "Load assets structure failed: " << result.error;
+		ELYSIA_LOG_ERROR("io","Load assets structure failed: " << result.error);
 		return false;
 	}
 
 	if (!loader.root().is_object())
 	{
-		std::cout << "Load assets structure failed: JSON root is not an object: "
-			<< assets_structure_path << std::endl;
+		ELYSIA_LOG_ERROR("io","Load assets structure failed: JSON root is not an object: "
+			<< assets_structure_path);
 		return false;
 	}
 
@@ -91,15 +90,15 @@ bool AssetsStructureLoader::load(
 		{
 			if (item.key() != manifests_key)
 			{
-				std::cout << "Load assets structure failed: unknown root key: "
-					<< item.key() << std::endl;
+				ELYSIA_LOG_ERROR("io","Load assets structure failed: unknown root key: "
+					<< item.key());
 				return false;
 			}
 		}
 
 		if (!loader.root().contains(std::string(manifests_key)))
 		{
-			std::cout << "Load assets structure failed: manifests is missing." << std::endl;
+			ELYSIA_LOG_ERROR("io","Load assets structure failed: manifests is missing.");
 			return false;
 		}
 	}
@@ -107,8 +106,7 @@ bool AssetsStructureLoader::load(
 	const json& manifests = loader.root().at(std::string(manifests_key));
 	if (!manifests.is_object())
 	{
-		std::cout << "Load assets structure failed: manifests is not an object."
-			<< std::endl;
+		ELYSIA_LOG_ERROR("io","Load assets structure failed: manifests is not an object.");
 		return false;
 	}
 
@@ -118,8 +116,8 @@ bool AssetsStructureLoader::load(
 	{
 		if (!is_known_manifest_key(manifest_item.key()))
 		{
-			std::cout << "Load assets structure failed: unknown manifest key: "
-				<< manifest_item.key() << std::endl;
+			ELYSIA_LOG_ERROR("io","Load assets structure failed: unknown manifest key: "
+				<< manifest_item.key());
 			return false;
 		}
 	}
@@ -127,7 +125,7 @@ bool AssetsStructureLoader::load(
 	PathManager* path_manager = PathManager::instance();
 	if (!path_manager)
 	{
-		std::cout << "Load assets structure failed: path manager is null." << std::endl;
+		ELYSIA_LOG_ERROR("io","Load assets structure failed: path manager is null.");
 		return false;
 	}
 

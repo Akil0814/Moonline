@@ -5,7 +5,6 @@
 #include "../../application/scene/scene_payloads.h"
 #include "../../engine/bootstrap/bootstrapper.h"
 
-#include <iostream>
 #include <optional>
 
 namespace arcneco::scene

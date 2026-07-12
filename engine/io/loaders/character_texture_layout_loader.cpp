@@ -1,8 +1,7 @@
+#include "../../tools/logger.h"
 #include "character_texture_layout_loader.h"
 
 #include "../json/json_loader.h"
-
-#include <iostream>
 #include <utility>
 
 namespace elysia::io
@@ -18,14 +17,14 @@ bool CharacterTextureLayoutLoader::load(
 	JsonReadResult result = loader.open_file(layout_path);
 	if (!result)
 	{
-		std::cout << "Load character texture layout failed: " << result.error;
+		ELYSIA_LOG_ERROR("io","Load character texture layout failed: " << result.error);
 		return false;
 	}
 
 	if (!loader.root().is_object())
 	{
-		std::cout << "Load character texture layout failed: root is not an object: "
-			<< layout_path << std::endl;
+		ELYSIA_LOG_ERROR("io","Load character texture layout failed: root is not an object: "
+			<< layout_path);
 		return false;
 	}
 
@@ -36,8 +35,8 @@ bool CharacterTextureLayoutLoader::load(
 	{
 		if (!texture.value().is_string())
 		{
-			std::cout << "Load character texture layout failed: texture entry is not a string: "
-				<< texture.key() << std::endl;
+			ELYSIA_LOG_ERROR("io","Load character texture layout failed: texture entry is not a string: "
+				<< texture.key());
 			return false;
 		}
 

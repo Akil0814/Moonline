@@ -1,8 +1,7 @@
+#include "../../tools/logger.h"
 #include "fonts_manifest_loader.h"
 
 #include "../json/json_loader.h"
-
-#include <iostream>
 #include <array>
 #include <unordered_set>
 #include <utility>
@@ -20,28 +19,28 @@ bool FontsManifestLoader::load(
 	JsonReadResult result = loader.open_file(manifest_path);
 	if (!result)
 	{
-		std::cout << "Load fonts manifest failed: " << result.error;
+		ELYSIA_LOG_ERROR("io","Load fonts manifest failed: " << result.error);
 		return false;
 	}
 
 	if (!loader.root().is_object())
 	{
-		std::cout << "Load fonts manifest failed: root is not an object: "
-			<< manifest_path << std::endl;
+		ELYSIA_LOG_ERROR("io","Load fonts manifest failed: root is not an object: "
+			<< manifest_path);
 		return false;
 	}
 
 	if (!loader.root().contains("sizes") || !loader.root().at("sizes").is_array())
 	{
-		std::cout << "Load fonts manifest failed: sizes is missing or not an array: "
-			<< manifest_path << std::endl;
+		ELYSIA_LOG_ERROR("io","Load fonts manifest failed: sizes is missing or not an array: "
+			<< manifest_path);
 		return false;
 	}
 
 	if (!loader.root().contains("fonts") || !loader.root().at("fonts").is_array())
 	{
-		std::cout << "Load fonts manifest failed: fonts is missing or not an array: "
-			<< manifest_path << std::endl;
+		ELYSIA_LOG_ERROR("io","Load fonts manifest failed: fonts is missing or not an array: "
+			<< manifest_path);
 		return false;
 	}
 
@@ -50,8 +49,7 @@ bool FontsManifestLoader::load(
 	const json& sizes = loader.root().at("sizes");
 	if (sizes.size() != required_sizes.size())
 	{
-		std::cout << "Load fonts manifest failed: sizes must contain the complete 10-70 step-10 scale."
-			<< std::endl;
+		ELYSIA_LOG_ERROR("io","Load fonts manifest failed: sizes must contain the complete 10-70 step-10 scale.");
 		return false;
 	}
 
@@ -59,8 +57,7 @@ bool FontsManifestLoader::load(
 	{
 		if (!sizes.at(index).is_number_integer() || sizes.at(index).get<int>() != required_sizes[index])
 		{
-			std::cout << "Load fonts manifest failed: sizes must equal 10,20,30,40,50,60,70."
-				<< std::endl;
+			ELYSIA_LOG_ERROR("io","Load fonts manifest failed: sizes must equal 10,20,30,40,50,60,70.");
 			return false;
 		}
 		parsed_manifest.point_sizes.push_back(required_sizes[index]);
@@ -72,22 +69,19 @@ bool FontsManifestLoader::load(
 	{
 		if (!font.is_object())
 		{
-			std::cout << "Load fonts manifest failed: font entry is not an object."
-				<< std::endl;
+			ELYSIA_LOG_ERROR("io","Load fonts manifest failed: font entry is not an object.");
 			return false;
 		}
 
 		if (!font.contains("key") || !font.at("key").is_string())
 		{
-			std::cout << "Load fonts manifest failed: key is missing or not a string."
-				<< std::endl;
+			ELYSIA_LOG_ERROR("io","Load fonts manifest failed: key is missing or not a string.");
 			return false;
 		}
 
 		if (!font.contains("file") || !font.at("file").is_string())
 		{
-			std::cout << "Load fonts manifest failed: file is missing or not a string."
-				<< std::endl;
+			ELYSIA_LOG_ERROR("io","Load fonts manifest failed: file is missing or not a string.");
 			return false;
 		}
 
@@ -96,20 +90,19 @@ bool FontsManifestLoader::load(
 		entry.file_path = font.at("file").get<std::string>();
 		if (entry.key.empty() || entry.file_path.empty())
 		{
-			std::cout << "Load fonts manifest failed: font key and file must not be empty."
-				<< std::endl;
+			ELYSIA_LOG_ERROR("io","Load fonts manifest failed: font key and file must not be empty.");
 			return false;
 		}
 		if (!font_keys.insert(entry.key).second)
 		{
-			std::cout << "Load fonts manifest failed: duplicate font key: " << entry.key << std::endl;
+			ELYSIA_LOG_ERROR("io","Load fonts manifest failed: duplicate font key: " << entry.key);
 			return false;
 		}
 		parsed_manifest.fonts.push_back(std::move(entry));
 	}
 	if (parsed_manifest.fonts.empty())
 	{
-		std::cout << "Load fonts manifest failed: fonts must not be empty." << std::endl;
+		ELYSIA_LOG_ERROR("io","Load fonts manifest failed: fonts must not be empty.");
 		return false;
 	}
 

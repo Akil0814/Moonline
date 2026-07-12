@@ -1,3 +1,4 @@
+#include "../tools/logger.h"
 #include "config_load_pipeline.h"
 
 #include "../io/loaders/animation_config_loader.h"
@@ -11,8 +12,6 @@
 #include "../io/loaders/character_manifest_loader.h"
 #include "../io/loaders/fonts_manifest_loader.h"
 #include "../io/loaders/texture_manifest_loader.h"
-
-#include <iostream>
 #include <utility>
 
 namespace elysia::loading
@@ -144,7 +143,7 @@ const std::string& ConfigLoadPipeline::error_message() const
 void ConfigLoadPipeline::fail(std::string message)
 {
 	_error_message = std::move(message);
-	std::cout << _error_message << std::endl;
+	ELYSIA_LOG_ERROR("resource",_error_message);
 }
 
 }

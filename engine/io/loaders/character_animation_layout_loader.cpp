@@ -1,8 +1,7 @@
+#include "../../tools/logger.h"
 #include "character_animation_layout_loader.h"
 
 #include "../json/json_loader.h"
-
-#include <iostream>
 #include <utility>
 
 namespace elysia::io
@@ -18,21 +17,21 @@ bool CharacterAnimationLayoutLoader::load(
 	JsonReadResult result = loader.open_file(layout_path);
 	if (!result)
 	{
-		std::cout << "Load character animation layout failed: " << result.error;
+		ELYSIA_LOG_ERROR("io","Load character animation layout failed: " << result.error);
 		return false;
 	}
 
 	if (!loader.root().is_object())
 	{
-		std::cout << "Load character animation layout failed: root is not an object: "
-			<< layout_path << std::endl;
+		ELYSIA_LOG_ERROR("io","Load character animation layout failed: root is not an object: "
+			<< layout_path);
 		return false;
 	}
 
 	if (!loader.root().contains("animations") || !loader.root().at("animations").is_object())
 	{
-		std::cout << "Load character animation layout failed: animations is missing or not an object: "
-			<< layout_path << std::endl;
+		ELYSIA_LOG_ERROR("io","Load character animation layout failed: animations is missing or not an object: "
+			<< layout_path);
 		return false;
 	}
 
@@ -44,8 +43,8 @@ bool CharacterAnimationLayoutLoader::load(
 	{
 		if (!animation.value().is_object())
 		{
-			std::cout << "Load character animation layout failed: animation entry is not an object: "
-				<< animation.key() << std::endl;
+			ELYSIA_LOG_ERROR("io","Load character animation layout failed: animation entry is not an object: "
+				<< animation.key());
 			return false;
 		}
 
@@ -56,8 +55,8 @@ bool CharacterAnimationLayoutLoader::load(
 		{
 			if (!animation_node.at("path").is_string())
 			{
-				std::cout << "Load character animation layout failed: path is not a string: "
-					<< animation.key() << std::endl;
+				ELYSIA_LOG_ERROR("io","Load character animation layout failed: path is not a string: "
+					<< animation.key());
 				return false;
 			}
 
@@ -69,8 +68,8 @@ bool CharacterAnimationLayoutLoader::load(
 		{
 			if (!animation_node.at("segment_path").is_string())
 			{
-				std::cout << "Load character animation layout failed: segment_path is not a string: "
-					<< animation.key() << std::endl;
+				ELYSIA_LOG_ERROR("io","Load character animation layout failed: segment_path is not a string: "
+					<< animation.key());
 				return false;
 			}
 
@@ -80,8 +79,8 @@ bool CharacterAnimationLayoutLoader::load(
 
 		if (!entry.has_path && !entry.has_segment_path)
 		{
-			std::cout << "Load character animation layout failed: path or segment_path is missing: "
-				<< animation.key() << std::endl;
+			ELYSIA_LOG_ERROR("io","Load character animation layout failed: path or segment_path is missing: "
+				<< animation.key());
 			return false;
 		}
 

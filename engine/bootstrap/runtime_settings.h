@@ -9,7 +9,7 @@ namespace elysia::bootstrap
 {
 struct RuntimeSettings
 {
-    std::string window_title = "Moonline";
+    std::string window_title = "Elysia";
     int window_width = 1280;
     int window_height = 720;
     bool fullscreen = false;

@@ -1,9 +1,7 @@
+#include "../tools/logger.h"
 #include "effect_manager.h"
 
 #include "../animation/animation_manager.h"
-
-#include <iostream>
-
 namespace elysia::effects
 {
 namespace
@@ -83,19 +81,19 @@ bool EffectManager::register_effect(const elysia::resources::EffectBuildRequest&
 {
 	if (request.effect_key.empty())
 	{
-		std::cout << "Register effect failed: effect key is empty." << std::endl;
+		ELYSIA_LOG_ERROR("effects","Register effect failed: effect key is empty.");
 		return false;
 	}
 
 	if (request.animation_key.empty())
 	{
-		std::cout << "Register effect failed: animation key is empty." << std::endl;
+		ELYSIA_LOG_ERROR("effects","Register effect failed: animation key is empty.");
 		return false;
 	}
 
 	if (!elysia::animation::AnimationManager::instance()->find_definition(request.animation_key))
 	{
-		std::cout << "Register effect failed: can't find animation definition." << std::endl;
+		ELYSIA_LOG_ERROR("effects","Register effect failed: can't find animation definition.");
 		return false;
 	}
 
@@ -123,8 +121,8 @@ std::unique_ptr<Effect> EffectManager::create_effect(const EffectSpawnRequest& r
 
 	if (!definition)
 	{
-		std::cout << "Create effect failed: definition does not exist: "
-			<< request.effect_key << std::endl;
+		ELYSIA_LOG_ERROR("effects","Create effect failed: definition does not exist: "
+			<< request.effect_key);
 		return nullptr;
 	}
 
@@ -133,8 +131,8 @@ std::unique_ptr<Effect> EffectManager::create_effect(const EffectSpawnRequest& r
 
 	if (!animation)
 	{
-		std::cout << "Create effect failed: animation creation failed: "
-			<< definition->animation_key << std::endl;
+		ELYSIA_LOG_ERROR("effects","Create effect failed: animation creation failed: "
+			<< definition->animation_key);
 		return nullptr;
 	}
 

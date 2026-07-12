@@ -1,11 +1,10 @@
+#include "../../tools/logger.h"
 #include "atlas_build_preparer.h"
 
 #include "../texture/surface_loader.h"
 
 #include <algorithm>
 #include <cctype>
-#include <iostream>
-
 namespace elysia::resources
 {
 namespace
@@ -33,15 +32,15 @@ bool AtlasBuildPreparer::expand_build_request(
 
 	if (!request.is_valid())
 	{
-		std::cout << "Expand atlas build request failed: request is invalid: "
-			<< request.atlas_key << std::endl;
+		ELYSIA_LOG_ERROR("resource","Expand atlas build request failed: request is invalid: "
+			<< request.atlas_key);
 		return false;
 	}
 
 	if (!std::filesystem::is_directory(request.directory_path))
 	{
-		std::cout << "Expand atlas build request failed: directory does not exist: "
-			<< request.directory_path << std::endl;
+		ELYSIA_LOG_ERROR("resource","Expand atlas build request failed: directory does not exist: "
+			<< request.directory_path);
 		return false;
 	}
 
@@ -69,9 +68,9 @@ bool AtlasBuildPreparer::expand_build_request(
 
 	if (frame_paths.size() != request.frame_count)
 	{
-		std::cout << "Expand atlas build request failed: frame count mismatch: "
+		ELYSIA_LOG_ERROR("resource","Expand atlas build request failed: frame count mismatch: "
 			<< request.atlas_key << ", expected " << request.frame_count
-			<< ", actual " << frame_paths.size() << std::endl;
+			<< ", actual " << frame_paths.size());
 		return false;
 	}
 
@@ -98,21 +97,21 @@ AtlasFramePreparedResult AtlasBuildPreparer::prepare_frame(
 
 	if (task.atlas_key.empty())
 	{
-		std::cout << "Prepare atlas frame failed: atlas key is empty." << std::endl;
+		ELYSIA_LOG_ERROR("resource","Prepare atlas frame failed: atlas key is empty.");
 		return result;
 	}
 
 	if (task.frame_path.empty())
 	{
-		std::cout << "Prepare atlas frame failed: frame path is empty: "
-			<< task.atlas_key << std::endl;
+		ELYSIA_LOG_ERROR("resource","Prepare atlas frame failed: frame path is empty: "
+			<< task.atlas_key);
 		return result;
 	}
 
 	if (task.expected_frame_count == 0)
 	{
-		std::cout << "Prepare atlas frame failed: expected frame count is zero: "
-			<< task.atlas_key << std::endl;
+		ELYSIA_LOG_ERROR("resource","Prepare atlas frame failed: expected frame count is zero: "
+			<< task.atlas_key);
 		return result;
 	}
 

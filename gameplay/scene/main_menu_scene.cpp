@@ -14,7 +14,6 @@
 #include "../../engine/ui/containers/ui_list_container.h"
 #include "../../engine/ui/layout/ui_layout_types.h"
 
-#include <iostream>
 #include <memory>
 
 namespace arcneco::scene

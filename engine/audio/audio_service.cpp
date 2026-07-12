@@ -1,3 +1,4 @@
+#include "../tools/logger.h"
 #include "audio_service.h"
 
 #include "../resources/resource_manager.h"
@@ -5,8 +6,6 @@
 #include <SDL_mixer.h>
 
 #include <algorithm>
-#include <iostream>
-
 namespace elysia::audio
 {
 bool AudioService::init(const AudioSettings& settings)
@@ -34,21 +33,21 @@ bool AudioService::play_sound(const std::string_view& key, int loops)
 {
     if (!_initialized)
     {
-        std::cout << "Play sound failed: audio service is not initialized." << std::endl;
+        ELYSIA_LOG_ERROR("audio","Play sound failed: audio service is not initialized.");
         return false;
     }
 
     Mix_Chunk* sound = elysia::resources::ResourceManager::instance()->find_sound(key);
     if (!sound)
     {
-        std::cout << "Play sound failed: sound does not exist: " << key << std::endl;
+        ELYSIA_LOG_ERROR("audio","Play sound failed: sound does not exist: " << key);
         return false;
     }
 
     if (Mix_PlayChannel(-1, sound, loops) < 0)
     {
-        std::cout << "Play sound failed: " << key
-            << " error: " << Mix_GetError() << std::endl;
+        ELYSIA_LOG_ERROR("audio","Play sound failed: " << key
+            << " error: " << Mix_GetError());
         return false;
     }
 
@@ -59,14 +58,14 @@ bool AudioService::play_music(const std::string_view& key, int loops)
 {
     if (!_initialized)
     {
-        std::cout << "Play music failed: audio service is not initialized." << std::endl;
+        ELYSIA_LOG_ERROR("audio","Play music failed: audio service is not initialized.");
         return false;
     }
 
     Mix_Music* music = elysia::resources::ResourceManager::instance()->find_music(key);
     if (!music)
     {
-        std::cout << "Play music failed: music does not exist: " << key << std::endl;
+        ELYSIA_LOG_ERROR("audio","Play music failed: music does not exist: " << key);
         return false;
     }
 
@@ -74,8 +73,8 @@ bool AudioService::play_music(const std::string_view& key, int loops)
 
     if (Mix_PlayMusic(music, loops) != 0)
     {
-        std::cout << "Play music failed: " << key
-            << " error: " << Mix_GetError() << std::endl;
+        ELYSIA_LOG_ERROR("audio","Play music failed: " << key
+            << " error: " << Mix_GetError());
         return false;
     }
 

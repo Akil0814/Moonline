@@ -1,8 +1,7 @@
+#include "../../tools/logger.h"
 #include "character_audio_layout_loader.h"
 
 #include "../json/json_loader.h"
-
-#include <iostream>
 #include <utility>
 
 namespace elysia::io
@@ -18,14 +17,14 @@ bool CharacterAudioLayoutLoader::load(
 	JsonReadResult result = loader.open_file(layout_path);
 	if (!result)
 	{
-		std::cout << "Load character audio layout failed: " << result.error;
+		ELYSIA_LOG_ERROR("io","Load character audio layout failed: " << result.error);
 		return false;
 	}
 
 	if (!loader.root().is_object())
 	{
-		std::cout << "Load character audio layout failed: root is not an object: "
-			<< layout_path << std::endl;
+		ELYSIA_LOG_ERROR("io","Load character audio layout failed: root is not an object: "
+			<< layout_path);
 		return false;
 	}
 
@@ -36,8 +35,8 @@ bool CharacterAudioLayoutLoader::load(
 	{
 		if (!sound.value().is_string())
 		{
-			std::cout << "Load character audio layout failed: sound entry is not a string: "
-				<< sound.key() << std::endl;
+			ELYSIA_LOG_ERROR("io","Load character audio layout failed: sound entry is not a string: "
+				<< sound.key());
 			return false;
 		}
 

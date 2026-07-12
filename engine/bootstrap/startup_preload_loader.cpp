@@ -1,3 +1,4 @@
+#include "../tools/logger.h"
 #include "startup_preload_loader.h"
 
 #include "../resources/resource_manager.h"
@@ -6,8 +7,6 @@
 #include"../io/path/path_manager.h"
 
 #include <algorithm>
-#include <iostream>
-
 namespace elysia::bootstrap
 {
 void StartupPreloadLoader::set_manifest_path(const std::filesystem::path& preload_manifest_path)
@@ -33,14 +32,13 @@ bool StartupPreloadLoader::load(SDL_Renderer* renderer)
 
     if (!renderer)
     {
-        std::cout << "Bootstrapper phase2 failed: renderer is null." << std::endl;
+        ELYSIA_LOG_ERROR("bootstrap","Bootstrapper phase2 failed: renderer is null.");
         return false;
     }
 
     if (_manifest_path.empty())
     {
-        std::cout << "Bootstrapper phase2 failed: preload manifest path is not prepared."
-            << std::endl;
+        ELYSIA_LOG_ERROR("bootstrap","Bootstrapper phase2 failed: preload manifest path is not prepared.");
         return false;
     }
 
@@ -62,7 +60,7 @@ SDL_Texture* StartupPreloadLoader::get_texture(std::string_view key) const
         _preloaded_texture_keys.end(),
         requested_key) == _preloaded_texture_keys.end())
     {
-        std::cout << "Texture: " << requested_key << " is not preloaded" << std::endl;
+        ELYSIA_LOG_WARN("bootstrap","Texture: " << requested_key << " is not preloaded");
         return nullptr;
     }
 
@@ -74,7 +72,7 @@ bool StartupPreloadLoader::load_manifest()
     const elysia::io::JsonReadResult result = _manifest_loader.open_file(_manifest_path);
     if (!result.success)
     {
-        std::cout << "Load preload manifest failed: " << result.error;
+        ELYSIA_LOG_ERROR("bootstrap","Load preload manifest failed: " << result.error);
         return false;
     }
 
@@ -90,7 +88,7 @@ bool StartupPreloadLoader::load_textures(SDL_Renderer* renderer)
         _manifest_loader.get_array("textures", texture_paths);
     if (!array_result.success)
     {
-        std::cout << "Load preload textures failed: " << array_result.error;
+        ELYSIA_LOG_ERROR("bootstrap","Load preload textures failed: " << array_result.error);
         return false;
     }
 
@@ -103,7 +101,7 @@ bool StartupPreloadLoader::load_textures(SDL_Renderer* renderer)
     {
         if (relative_path.empty())
         {
-            std::cout << "Load preload textures failed: texture path is empty." << std::endl;
+            ELYSIA_LOG_ERROR("bootstrap","Load preload textures failed: texture path is empty.");
             return false;
         }
 
@@ -125,8 +123,8 @@ bool StartupPreloadLoader::load_textures(SDL_Renderer* renderer)
             relative_path,
             std::move(texture_result._texture)))
         {
-            std::cout << "Load preload textures failed: store texture failed: "
-                << relative_path << std::endl;
+            ELYSIA_LOG_ERROR("bootstrap","Load preload textures failed: store texture failed: "
+                << relative_path);
             return false;
         }
 

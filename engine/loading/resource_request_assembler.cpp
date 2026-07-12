@@ -1,12 +1,10 @@
+#include "../tools/logger.h"
 #include "resource_request_assembler.h"
 
 #include "config_load_pipeline.h"
 #include "resource_load_plan.h"
 #include "../io/path/path_manager.h"
 #include "../resources/pipeline/resource_request_builder.h"
-
-#include <iostream>
-
 namespace elysia::loading
 {
 bool ResourceRequestAssembler::assemble(
@@ -32,11 +30,10 @@ bool ResourceRequestAssembler::assemble(
 			return false;
 		}
 
-		std::cout << "Character animation requests built: atlases="
+		ELYSIA_LOG_ERROR("resource","Character animation requests built: atlases="
 			<< (out_plan.atlas_build_requests().size() - animation_atlas_count_before)
 			<< ", animations="
-			<< (out_plan.animation_build_requests().size() - animation_count_before)
-			<< std::endl;
+			<< (out_plan.animation_build_requests().size() - animation_count_before));
 
 		const size_t effect_atlas_count_before = out_plan.atlas_build_requests().size();
 		const size_t effect_animation_count_before = out_plan.animation_build_requests().size();
@@ -54,13 +51,12 @@ bool ResourceRequestAssembler::assemble(
 			return false;
 		}
 
-		std::cout << "Effect requests built: atlases="
+		ELYSIA_LOG_ERROR("resource","Effect requests built: atlases="
 			<< (out_plan.atlas_build_requests().size() - effect_atlas_count_before)
 			<< ", animations="
 			<< (out_plan.animation_build_requests().size() - effect_animation_count_before)
 			<< ", effects="
-			<< (out_plan.effect_build_requests().size() - effect_count_before)
-			<< std::endl;
+			<< (out_plan.effect_build_requests().size() - effect_count_before));
 	}
 
 	const size_t texture_count_before = out_plan.texture_requests().size();
@@ -97,8 +93,8 @@ bool ResourceRequestAssembler::assemble(
 		}
 	}
 
-	std::cout << "Texture requests built: "
-		<< (out_plan.texture_requests().size() - texture_count_before) << std::endl;
+	ELYSIA_LOG_ERROR("resource","Texture requests built: "
+		<< (out_plan.texture_requests().size() - texture_count_before));
 
 	if (!request_builder.append_font_requests(
 		config_result.font_manifest,
@@ -108,8 +104,8 @@ bool ResourceRequestAssembler::assemble(
 		return false;
 	}
 
-	std::cout << "Font requests built: "
-		<< out_plan.font_requests().size() << std::endl;
+	ELYSIA_LOG_ERROR("resource","Font requests built: "
+		<< out_plan.font_requests().size());
 
 	if (!request_builder.append_audio_requests(
 		config_result.audio_manifest,
@@ -132,8 +128,8 @@ bool ResourceRequestAssembler::assemble(
 		}
 	}
 
-	std::cout << "Audio requests built: sounds=" << out_plan.sound_requests().size()
-		<< ", music=" << out_plan.music_requests().size() << std::endl;
+	ELYSIA_LOG_ERROR("resource","Audio requests built: sounds=" << out_plan.sound_requests().size()
+		<< ", music=" << out_plan.music_requests().size());
 
 	return true;
 }

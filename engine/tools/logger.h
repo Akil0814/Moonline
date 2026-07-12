@@ -6,9 +6,12 @@
 #include <fstream>
 #include <mutex>
 #include <optional>
+#include <ostream>
 #include <source_location>
+#include <sstream>
 #include <string>
 #include <string_view>
+#include <utility>
 
 namespace elysia::tools
 {
@@ -31,7 +34,8 @@ struct LoggerConfig
 {
     LogLevel minimum_level{ LogLevel::Debug };
     LogFileMode file_mode{ LogFileMode::NewRunFile };
-    std::string append_file_name{ "Moonline.log" };
+    std::string append_file_name{ "Elysia.log" };
+    bool console_enabled = true;
 };
 
 class Logger : public Singleton<Logger>
@@ -56,6 +60,22 @@ public:
     void error(std::string_view category,std::string_view message,
         std::source_location location = std::source_location::current()) noexcept;
 
+    template <typename Writer>
+    void log_stream(LogLevel level,std::string_view category,Writer&& writer,
+        std::source_location location = std::source_location::current()) noexcept
+    {
+        try
+        {
+            std::ostringstream message;
+            std::forward<Writer>(writer)(message);
+            log(level,category,message.str(),location);
+        }
+        catch (...)
+        {
+            log(level,category,"Log message formatting failed",location);
+        }
+    }
+
 private:
     Logger() = default;
 
@@ -64,6 +84,7 @@ private:
     [[nodiscard]] std::string format_line(LogLevel level,std::string_view category,
         std::string_view message,const std::source_location& location) const;
     void disable_file_sink() noexcept;
+    static void write_console_line(LogLevel level,std::string_view line) noexcept;
     static void write_sdl_fallback(LogLevel level,std::string_view category,
         std::string_view message,const std::source_location& location) noexcept;
 
@@ -75,3 +96,13 @@ private:
     bool _initialized = false;
 };
 }
+
+#define ELYSIA_LOG_STREAM(level,category,...) \
+    (::elysia::tools::Logger::instance()->log_stream((level),(category), \
+        [&](std::ostream& elysia_log_stream) { elysia_log_stream << __VA_ARGS__; }, \
+        std::source_location::current()))
+
+#define ELYSIA_LOG_DEBUG(category,...) ELYSIA_LOG_STREAM(::elysia::tools::LogLevel::Debug,(category),__VA_ARGS__)
+#define ELYSIA_LOG_INFO(category,...) ELYSIA_LOG_STREAM(::elysia::tools::LogLevel::Info,(category),__VA_ARGS__)
+#define ELYSIA_LOG_WARN(category,...) ELYSIA_LOG_STREAM(::elysia::tools::LogLevel::Warn,(category),__VA_ARGS__)
+#define ELYSIA_LOG_ERROR(category,...) ELYSIA_LOG_STREAM(::elysia::tools::LogLevel::Error,(category),__VA_ARGS__)

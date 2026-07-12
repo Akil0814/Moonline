@@ -14,7 +14,6 @@
 
 #include <cstdlib>
 #include <ctime>
-#include <iostream>
 #include <expected>
 
 #include <SDL_ttf.h>
@@ -50,9 +49,11 @@ bool Application::init(int argc, char** argv)
 		return false;
 	}
 
+	elysia::tools::Logger::instance()->initialize();
+
 	if (!parse_result.warning.empty())
 	{
-		std::cout << "Startup warning: " << parse_result.warning << std::endl;
+		ELYSIA_LOG_WARN("application","Startup warning: " << parse_result.warning);
 	}
 
 	elysia::bootstrap::RuntimeSettings runtime_settings = parse_result.runtime_settings;
@@ -72,8 +73,6 @@ bool Application::init(int argc, char** argv)
 		return false;
 	}
 
-	elysia::tools::Logger::instance()->initialize();
-
 	elysia::config::ConfigService::instance()->register_settings_change_handler(*this);
 	_settings_handler_registered = true;
 
@@ -84,13 +83,13 @@ bool Application::init(int argc, char** argv)
 			elysia::localization::LocalizationManager::instance()->current_language());
 		if (!language_result)
 		{
-			std::cout << "Localization warning: normalize language in config failed: "
-				<< language_result.error().message << std::endl;
+			ELYSIA_LOG_WARN("application","Localization warning: normalize language in config failed: "
+				<< language_result.error().message);
 		}
 		else if (const auto save_result = elysia::config::ConfigService::instance()->save_user_settings(); !save_result)
 		{
-			std::cout << "Localization warning: save normalized language failed: "
-				<< save_result.error().message << std::endl;
+			ELYSIA_LOG_WARN("application","Localization warning: save normalized language failed: "
+				<< save_result.error().message);
 		}
 	}
 

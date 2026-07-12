@@ -1,9 +1,7 @@
+#include "../tools/logger.h"
 #include "animation_manager.h"
 
 #include "../resources/resource_manager.h"
-
-#include <iostream>
-
 namespace elysia::animation
 {
 bool AnimationManager::register_animation(
@@ -13,28 +11,28 @@ bool AnimationManager::register_animation(
 {
 	if (request.animation_key.empty())
 	{
-		std::cout << "Register animation failed: animation key is empty." << std::endl;
+		ELYSIA_LOG_ERROR("animation","Register animation failed: animation key is empty.");
 		return false;
 	}
 
 	if (request.atlas_key.empty())
 	{
-		std::cout << "Register animation failed: atlas key is empty: "
-			<< request.animation_key << std::endl;
+		ELYSIA_LOG_ERROR("animation","Register animation failed: atlas key is empty: "
+			<< request.animation_key);
 		return false;
 	}
 
 	if (!atlas)
 	{
-		std::cout << "Register animation failed: atlas is null: "
-			<< request.animation_key << std::endl;
+		ELYSIA_LOG_ERROR("animation","Register animation failed: atlas is null: "
+			<< request.animation_key);
 		return false;
 	}
 
 	if (request.fps <= 0.0)
 	{
-		std::cout << "Register animation failed: fps is invalid: "
-			<< request.animation_key << std::endl;
+		ELYSIA_LOG_ERROR("animation","Register animation failed: fps is invalid: "
+			<< request.animation_key);
 		return false;
 	}
 
@@ -80,8 +78,8 @@ std::unique_ptr<Animation> AnimationManager::create_animation(const std::string_
 	const AnimationDefinition* definition = find_definition(key);
 	if (!definition)
 	{
-		std::cout << "Create animation failed: definition does not exist: "
-			<< key << std::endl;
+		ELYSIA_LOG_ERROR("animation","Create animation failed: definition does not exist: "
+			<< key);
 		return nullptr;
 	}
 
