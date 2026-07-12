@@ -38,6 +38,27 @@ void apply_opacity_to_range(
     }
 }
 
+void apply_translation_to_range(
+    std::vector<elysia::core::UiRenderCommand>& out_commands,
+    std::size_t begin,
+    const elysia::core::Vector2& translation
+) noexcept
+{
+    if (translation.is_zero())
+        return;
+
+    for (std::size_t index = begin; index < out_commands.size(); ++index)
+    {
+        elysia::core::UiRenderCommand& command = out_commands[index];
+        command.screen_rect = command.screen_rect.translated(translation);
+        if (command.use_clip_rect)
+            command.clip_rect = command.clip_rect.translated(translation);
+        command.line_start += translation;
+        command.line_end += translation;
+        command.circle_center += translation;
+    }
+}
+
 void apply_clip_to_range(
     std::vector<elysia::core::UiRenderCommand>& out_commands,
     std::size_t begin,

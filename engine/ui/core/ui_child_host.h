@@ -94,6 +94,7 @@ public:
     void update_layout_if_dirty();
 
     void update(double delta) override;
+    void update_presentation_animations(double delta) override;
     void on_ui_input_frame(const UiInputFrame& input) override;
     bool on_ui_input_event(const UiInputEvent& event) override;
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
@@ -121,6 +122,11 @@ protected:
     void submit_child_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const;
     // Applies this host's opacity to commands emitted by children after begin.
     void apply_opacity_to_range(std::vector<elysia::core::UiRenderCommand>& out_commands,std::size_t begin) const;
+    void apply_child_presentation_translation_to_range(
+        std::vector<elysia::core::UiRenderCommand>& out_commands,
+        std::size_t begin,
+        const UiElement& child
+    ) const;
     // Clips child commands to the host-visible region when clipping is enabled.
     void apply_clip_to_range(std::vector<elysia::core::UiRenderCommand>& out_commands,std::size_t begin,const elysia::core::Rect& clip_rect) const;
     // Finalizes a child command range with the host's opacity and clipping policy.

@@ -422,7 +422,7 @@ bool UiCheckbox::can_receive_pointer() const noexcept
 
 bool UiCheckbox::contains_pointer(int mouse_x,int mouse_y) const noexcept
 {
-    return screen_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
+    return presentation_screen_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
 }
 
 bool UiCheckbox::is_primary_pointer_event(const UiInputEvent& event) const noexcept

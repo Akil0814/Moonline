@@ -174,7 +174,9 @@ void UiTooltip::sync_content_position() noexcept
     if (!_trigger || !_content || !_window)
         return;
 
-    const auto& anchor = _trigger->screen_rect();
+    elysia::core::Rect anchor = _trigger->presentation_screen_rect();
+    if (_window)
+        anchor = anchor.translated(-_window->presentation_translation());
     const auto& bounds = _window->content_bounds();
     const auto size = _content->size();
     float left = anchor.right() + tooltip_gap;
@@ -192,7 +194,7 @@ bool UiTooltip::trigger_is_active() const noexcept
 {
     const bool pointer_blocked = _window && _has_pointer
         && _window->is_tooltip_pointer_blocked(_mouse_x,_mouse_y);
-    const bool hovered = _has_pointer && !pointer_blocked && _trigger->screen_rect().contains(
+    const bool hovered = _has_pointer && !pointer_blocked && _trigger->presentation_screen_rect().contains(
         elysia::core::Vector2(static_cast<float>(_mouse_x),static_cast<float>(_mouse_y)));
     const auto* focusable = dynamic_cast<const UiFocusable*>(_trigger);
     const bool focus_blocked = _window && _window->blocks_background_tooltips();

@@ -151,7 +151,7 @@ bool UiControlFocusScopeHost::contains_focus_point(int mouse_x,int mouse_y) cons
 {
     if (!has_focusable_target() || is_destroyed() || !is_active() || !is_visible())
         return false;
-    return screen_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
+    return presentation_screen_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
 }
 
 void UiControlFocusScopeHost::update(double delta)
@@ -319,7 +319,7 @@ UiControl* UiControlFocusScopeHost::find_registered_target_at(int mouse_x,int mo
         UiControl* control = _focus_entries[index - 1].control;
         if (!is_control_usable(control))
             continue;
-        if (control->screen_rect().contains(point))
+        if (control->presentation_screen_rect().contains(point))
             return control;
     }
     return nullptr;

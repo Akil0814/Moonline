@@ -41,7 +41,7 @@ bool UiLabeledRadioButton::on_ui_input_event(const UiInputEvent& event)
     sync_children();
     if (event.type == UiInputEventType::MouseMoved)
     {
-        set_focused(is_active() && is_visible() && is_enabled() && screen_rect().contains({ static_cast<float>(event.mouse_x),static_cast<float>(event.mouse_y) }));
+        set_focused(is_active() && is_visible() && is_enabled() && presentation_screen_rect().contains({ static_cast<float>(event.mouse_x),static_cast<float>(event.mouse_y) }));
         return false;
     }
     return _radio.on_ui_input_event(routed_event(event));
@@ -105,7 +105,7 @@ UiInputEvent UiLabeledRadioButton::routed_event(const UiInputEvent& event) const
 {
     UiInputEvent routed = event;
     if ((event.type == UiInputEventType::PointerPressed || event.type == UiInputEventType::PointerReleased)
-        && screen_rect().contains({ static_cast<float>(event.mouse_x),static_cast<float>(event.mouse_y) }))
+        && presentation_screen_rect().contains({ static_cast<float>(event.mouse_x),static_cast<float>(event.mouse_y) }))
     { const auto c = indicator_rect().center(); routed.mouse_x = static_cast<int>(c.x); routed.mouse_y = static_cast<int>(c.y); }
     return routed;
 }

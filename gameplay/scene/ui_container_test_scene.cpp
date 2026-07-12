@@ -812,6 +812,25 @@ void UiContainerTestScene::rebuild_ui()
     register_themed(rebuild_tabs_button.get());
     widget_content->add_child(std::move(rebuild_tabs_button),elysia::ui::UiPanelInsertDirection::Down);
 
+    // The hidden-scroll sample is a container with interactive descendants, so replaying this
+    // animation verifies that one presentation translation moves and hit-tests the full subtree.
+    hidden_scroll->bind_translation_animation("slide_in",elysia::ui::UiTranslationAnimation{
+        .from = elysia::core::Vector2(-96.0f,0.0f),
+        .to = elysia::core::Vector2::zero(),
+        .duration_seconds = 0.45,
+        .easing = elysia::ui::UiTranslationAnimationEasing::EaseInOut
+    });
+    auto replay_slide_animation_button = std::make_unique<elysia::ui::UiButton>(
+        elysia::core::Rect{ 18,1450,280,40 },
+        elysia::ui::UiButtonConfig{ .content = elysia::ui::ui_raw_text("Replay nested slide animation") },
+        0);
+    replay_slide_animation_button->set_on_click([hidden_scroll]()
+    {
+        (void)hidden_scroll->play_translation_animation("slide_in");
+    });
+    register_themed(replay_slide_animation_button.get());
+    widget_content->add_child(std::move(replay_slide_animation_button),elysia::ui::UiPanelInsertDirection::Down);
+
     auto anchored_options_button = std::make_unique<elysia::ui::UiButton>(
         elysia::core::Rect{ 0,0,132,36 },
         make_button_config("menu_scene.settings"),
@@ -906,6 +925,8 @@ void UiContainerTestScene::rebuild_ui()
     _root_window->set_child_layout_options(2,make_window_child_options(624.0f,0.0f));
     _root_window->set_child_layout_options(3,make_window_child_options(288.0f,220.0f));
     _root_window->set_child_layout_options(4,make_window_child_options(624.0f,300.0f));
+
+    (void)hidden_scroll->play_translation_animation("slide_in");
 
     _root_window->register_focus_scope(*vertical_scroll,elysia::ui::UiFocusScopeNeighbors{ nullptr,hidden_scroll,nullptr,horizontal_scroll });
     _root_window->register_focus_scope(*horizontal_scroll,elysia::ui::UiFocusScopeNeighbors{ nullptr,hidden_scroll,vertical_scroll,grid_scroll });

@@ -461,7 +461,7 @@ bool UiTextInput::can_receive_pointer() const noexcept
 
 bool UiTextInput::contains_pointer(int mouse_x,int mouse_y) const noexcept
 {
-    return screen_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
+    return presentation_screen_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
 }
 
 bool UiTextInput::is_primary_pointer_event(const UiInputEvent& event) const noexcept
@@ -591,7 +591,8 @@ std::size_t UiTextInput::codepoint_index_at_x(int mouse_x) const
     style.color = current_text_color();
     style.wrap_width = 0;
 
-    const float target_text_x = static_cast<float>(mouse_x) - layout.text_x;
+    const float target_text_x = presentation_to_layout_point(
+        elysia::core::Vector2(static_cast<float>(mouse_x),0.0f)).x - layout.text_x;
     if (target_text_x <= 0.0f)
         return 0;
 

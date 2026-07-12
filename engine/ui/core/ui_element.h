@@ -7,6 +7,11 @@
 #include "../../core/geometry/vector2.h"
 #include "../../core/geometry/rect.h"
 #include "../../core/render/render_command.h"
+#include "../effects/ui_translation_animation_player.h"
+
+#include <optional>
+#include <string>
+#include <string_view>
 
 namespace elysia::ui
 {
@@ -57,6 +62,8 @@ public:
         elysia::core::SceneObject::reset();
         _layout_parent = nullptr;
         _opacity = 255;
+        _presentation_translation = {};
+        _translation_animation_player.clear();
     }
 
     // Updates the screen-space bounds and invalidates intrinsic layout when the size changes.
@@ -95,6 +102,27 @@ public:
     }
 
     [[nodiscard]] const elysia::core::Rect& screen_rect() const noexcept { return _screen_rect; }
+    // Returns the element's local layout-independent visual translation.
+    void set_presentation_translation(const elysia::core::Vector2& translation) noexcept { _presentation_translation = translation; }
+    [[nodiscard]] const elysia::core::Vector2& presentation_translation() const noexcept { return _presentation_translation; }
+    // Includes this element and all layout ancestors' presentation translations.
+    [[nodiscard]] elysia::core::Vector2 accumulated_presentation_translation() const noexcept;
+    // Geometry used by pointer hit testing and external presentation anchors.
+    [[nodiscard]] elysia::core::Rect presentation_screen_rect() const noexcept;
+    [[nodiscard]] elysia::core::Vector2 presentation_to_layout_point(const elysia::core::Vector2& point) const noexcept
+    {
+        return point - accumulated_presentation_translation();
+    }
+
+    void bind_translation_animation(std::string name,UiTranslationAnimation animation);
+    [[nodiscard]] bool remove_translation_animation(std::string_view name);
+    void clear_translation_animations() noexcept;
+    [[nodiscard]] bool play_translation_animation(std::string_view name) noexcept;
+    void stop_translation_animation() noexcept;
+    [[nodiscard]] bool is_translation_animation_playing() const noexcept;
+    [[nodiscard]] std::optional<std::string> active_translation_animation() const;
+    // Scene and child hosts call this once per frame; it does not touch layout geometry.
+    virtual void update_presentation_animations(double delta);
     [[nodiscard]] elysia::core::Vector2 position() const noexcept { return _screen_rect.position(); }
     [[nodiscard]] elysia::core::Vector2 center() const noexcept { return _screen_rect.center(); }
     [[nodiscard]] elysia::core::Vector2 size() const noexcept { return _screen_rect.size(); }
@@ -159,5 +187,7 @@ private:
     UiChildHost* _layout_parent = nullptr;
     int _order = 0;
     std::uint8_t _opacity = 255;
+    elysia::core::Vector2 _presentation_translation{};
+    UiTranslationAnimationPlayer _translation_animation_player;
 };
 }

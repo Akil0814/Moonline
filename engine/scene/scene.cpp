@@ -7,6 +7,7 @@
 #include "../core/render/sdl_render_command_executor.h"
 #include "../input/contracts/raw_input_event_receiver.h"
 #include "../input/contracts/raw_input_frame_receiver.h"
+#include "../ui/core/ui_render_command_range_utils.h"
 
 #include <algorithm>
 
@@ -82,6 +83,15 @@ void Scene::on_update(double delta)
         entry.updatable->update(delta);
     }
 
+    for (const std::unique_ptr<elysia::ui::UiElement>& ui_root : _ui_roots)
+    {
+        if (!ui_root || ui_root->is_destroyed() || !ui_root->is_active())
+            continue;
+        if (_paused && !ui_root->update_when_paused())
+            continue;
+        ui_root->update_presentation_animations(delta);
+    }
+
     if (!_paused)
     {
         _physics_system.step(_physics_body_entries, delta);
@@ -136,7 +146,10 @@ void Scene::on_render(SDL_Renderer* renderer)
         if (!ui_root || ui_root->is_destroyed() || !ui_root->is_visible())
             continue;
 
+        const std::size_t begin = ui_render_commands.size();
         ui_root->submit_ui_render_commands(ui_render_commands);
+        elysia::ui::render_command_range_utils::apply_translation_to_range(
+            ui_render_commands,begin,ui_root->presentation_translation());
     }
 
     elysia::core::execute_render_commands(renderer, ui_render_commands);

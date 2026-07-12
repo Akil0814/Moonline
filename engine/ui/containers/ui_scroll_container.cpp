@@ -177,6 +177,7 @@ void UiScrollContainer::submit_ui_render_commands(std::vector<elysia::core::UiRe
         {
             const std::size_t begin = out_commands.size();
             content_element->submit_ui_render_commands(out_commands);
+            apply_child_presentation_translation_to_range(out_commands,begin,*content_element);
             finalize_child_command_range(out_commands,begin,viewport_rect());
         }
     }
@@ -744,12 +745,14 @@ elysia::core::Rect UiScrollContainer::viewport_rect(const ScrollbarVisibilitySta
 
 bool UiScrollContainer::is_pointer_in_interactive_rect(int mouse_x,int mouse_y) const noexcept
 {
-    return interactive_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
+    return interactive_rect().translated(accumulated_presentation_translation()).contains(
+        elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
 }
 
 bool UiScrollContainer::is_pointer_in_viewport(int mouse_x,int mouse_y) const noexcept
 {
-    return viewport_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
+    return viewport_rect().translated(accumulated_presentation_translation()).contains(
+        elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
 }
 
 elysia::core::Rect UiScrollContainer::scrollbar_track_rect(UiScrollAxis axis) const noexcept

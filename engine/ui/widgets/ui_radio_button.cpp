@@ -114,7 +114,7 @@ bool UiRadioButton::select_internal(bool notify) noexcept
     if (notify && _on_selected) _on_selected();
     return true;
 }
-bool UiRadioButton::contains_pointer(int x,int y) const noexcept { return screen_rect().contains({ static_cast<float>(x),static_cast<float>(y) }); }
+bool UiRadioButton::contains_pointer(int x,int y) const noexcept { return presentation_screen_rect().contains({ static_cast<float>(x),static_cast<float>(y) }); }
 bool UiRadioButton::can_interact() const noexcept { return is_active() && is_visible() && is_enabled(); }
 bool UiRadioButton::is_primary_pointer_event(const UiInputEvent& event) const noexcept { return event.device == elysia::input::InputDevice::Mouse && event.control == elysia::input::RawInputControl::MouseLeft; }
 void UiRadioButton::play_sound_if_set(const std::string& key) const { if (!key.empty()) elysia::audio::AudioService::instance()->play_sound(key); }

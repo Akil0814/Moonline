@@ -203,7 +203,8 @@ bool UiSlider::on_ui_input_event(const UiInputEvent& event)
         if (!contains_track_or_handle(layout,event.mouse_x,event.mouse_y))
             return false;
 
-        const elysia::core::Vector2 pointer(static_cast<float>(event.mouse_x),static_cast<float>(event.mouse_y));
+        const elysia::core::Vector2 pointer = presentation_to_layout_point(
+            elysia::core::Vector2(static_cast<float>(event.mouse_x),static_cast<float>(event.mouse_y)));
         sync_child_rects(layout);
         sync_child_visuals();
         set_focused(true);
@@ -804,12 +805,13 @@ bool UiSlider::can_receive_pointer() const noexcept
 
 bool UiSlider::contains_pointer(int mouse_x,int mouse_y) const noexcept
 {
-    return screen_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
+    return presentation_screen_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
 }
 
 bool UiSlider::contains_track_or_handle(const SliderLayout& layout,int mouse_x,int mouse_y) const noexcept
 {
-    const elysia::core::Vector2 point(static_cast<float>(mouse_x),static_cast<float>(mouse_y));
+    const elysia::core::Vector2 point = presentation_to_layout_point(
+        elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
     return layout.bar_rect.contains(point) || layout.handle_rect.contains(point);
 }
 

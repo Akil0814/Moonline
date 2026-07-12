@@ -14,6 +14,12 @@ void apply_opacity_to_range(
     std::size_t begin,
     std::uint8_t opacity
 ) noexcept;
+// Translates every UI-space geometry field in commands appended after begin.
+void apply_translation_to_range(
+    std::vector<elysia::core::UiRenderCommand>& out_commands,
+    std::size_t begin,
+    const elysia::core::Vector2& translation
+) noexcept;
 // Clips commands appended after begin to the supplied child-visible region.
 void apply_clip_to_range(
     std::vector<elysia::core::UiRenderCommand>& out_commands,

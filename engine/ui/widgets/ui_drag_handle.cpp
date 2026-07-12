@@ -263,7 +263,7 @@ bool UiDragHandle::can_receive_pointer() const noexcept
 
 bool UiDragHandle::contains_pointer(int mouse_x,int mouse_y) const noexcept
 {
-    return screen_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
+    return presentation_screen_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
 }
 
 bool UiDragHandle::is_primary_pointer_event(const UiInputEvent& event) const noexcept
@@ -273,11 +273,13 @@ bool UiDragHandle::is_primary_pointer_event(const UiInputEvent& event) const noe
 
 bool UiDragHandle::drag_to_pointer(int mouse_x,int mouse_y)
 {
+    const elysia::core::Vector2 layout_pointer = presentation_to_layout_point(
+        elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
     elysia::core::Rect next_rect = screen_rect();
     if (_config.axis == UiDragAxis::Horizontal || _config.axis == UiDragAxis::Free)
-        next_rect.set_x(static_cast<float>(mouse_x) - _grab_offset.x);
+        next_rect.set_x(layout_pointer.x - _grab_offset.x);
     if (_config.axis == UiDragAxis::Vertical || _config.axis == UiDragAxis::Free)
-        next_rect.set_y(static_cast<float>(mouse_y) - _grab_offset.y);
+        next_rect.set_y(layout_pointer.y - _grab_offset.y);
     next_rect = clamped_rect(next_rect);
     if (same_rect(next_rect,screen_rect()))
         return false;
@@ -291,9 +293,10 @@ bool UiDragHandle::drag_to_pointer(int mouse_x,int mouse_y)
 void UiDragHandle::begin_drag_session(const elysia::core::Vector2& pointer) noexcept
 {
     const elysia::core::Rect& rect = screen_rect();
+    const elysia::core::Vector2 layout_pointer = presentation_to_layout_point(pointer);
     set_focused(true);
     _is_dragging = true;
-    _grab_offset = elysia::core::Vector2(pointer.x - rect.x(),pointer.y - rect.y());
+    _grab_offset = elysia::core::Vector2(layout_pointer.x - rect.x(),layout_pointer.y - rect.y());
 }
 
 elysia::core::Rect UiDragHandle::clamped_rect(const elysia::core::Rect& rect) const noexcept

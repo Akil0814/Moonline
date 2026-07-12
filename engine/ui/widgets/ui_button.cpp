@@ -499,7 +499,7 @@ elysia::core::Rect UiButton::text_render_rect(SDL_Texture* text_texture) const n
 
 bool UiButton::contains_pointer(int mouse_x,int mouse_y) const noexcept
 {
-    return screen_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
+    return presentation_screen_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
 }
 
 bool UiButton::is_primary_pointer_event(const UiInputEvent& event) const noexcept

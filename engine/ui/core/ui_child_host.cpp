@@ -261,6 +261,17 @@ void UiChildHost::update(double delta)
     update_child_objects(delta);
 }
 
+void UiChildHost::update_presentation_animations(double delta)
+{
+    UiElement::update_presentation_animations(delta);
+    for (ChildEntry& entry : _children)
+    {
+        if (!entry.element || entry.element->is_destroyed() || !entry.element->is_active())
+            continue;
+        entry.element->update_presentation_animations(delta);
+    }
+}
+
 void UiChildHost::on_ui_input_frame(const UiInputFrame& input)
 {
     cleanup_destroyed_children();
@@ -324,6 +335,7 @@ void UiChildHost::submit_child_render_commands(std::vector<elysia::core::UiRende
     {
         const std::size_t begin = out_commands.size();
         entry->element->submit_ui_render_commands(out_commands);
+        apply_child_presentation_translation_to_range(out_commands,begin,*entry->element);
         finalize_child_command_range(out_commands,begin,clip_rect);
     }
 }
@@ -331,6 +343,15 @@ void UiChildHost::submit_child_render_commands(std::vector<elysia::core::UiRende
 void UiChildHost::apply_opacity_to_range(std::vector<elysia::core::UiRenderCommand>& out_commands,std::size_t begin) const
 {
     render_command_range_utils::apply_opacity_to_range(out_commands,begin,opacity());
+}
+
+void UiChildHost::apply_child_presentation_translation_to_range(
+    std::vector<elysia::core::UiRenderCommand>& out_commands,
+    std::size_t begin,
+    const UiElement& child
+) const
+{
+    render_command_range_utils::apply_translation_to_range(out_commands,begin,child.presentation_translation());
 }
 
 void UiChildHost::apply_clip_to_range(

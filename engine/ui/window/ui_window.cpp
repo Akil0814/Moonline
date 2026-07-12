@@ -1110,7 +1110,8 @@ bool UiWindow::contains_overlay_point(const OverlayEntry& entry,int mouse_x,int 
         return false;
     if (entry.element->screen_rect().is_empty())
         return true;
-    return entry.element->screen_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
+    return entry.element->presentation_screen_rect().contains(
+        elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
 }
 
 UiTransientPopup* UiWindow::active_transient_popup() noexcept

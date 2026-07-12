@@ -280,9 +280,11 @@ bool UiDropdown::is_transient_popup_open() const noexcept
 
 bool UiDropdown::contains_transient_popup_point(int mouse_x,int mouse_y) const noexcept
 {
+    elysia::core::Vector2 popup_point(static_cast<float>(mouse_x),static_cast<float>(mouse_y));
+    if (_window)
+        popup_point -= _window->presentation_translation();
     return contains_trigger_point(mouse_x,mouse_y)
-        || (_expanded && _popup_panel.screen_rect().contains(elysia::core::Vector2(
-            static_cast<float>(mouse_x),static_cast<float>(mouse_y))));
+        || (_expanded && _popup_panel.screen_rect().contains(popup_point));
 }
 
 void UiDropdown::close_transient_popup() noexcept
@@ -334,10 +336,18 @@ bool UiDropdown::on_transient_popup_input_event(const UiInputEvent& event)
     if (is_pointer_event(event) && contains_trigger_point(event.mouse_x,event.mouse_y))
         return _trigger.on_ui_input_event(event);
 
-    if (is_pointer_event(event) && _popup_panel.screen_rect().contains(elysia::core::Vector2(
-        static_cast<float>(event.mouse_x),static_cast<float>(event.mouse_y))))
+    UiInputEvent popup_event = event;
+    if (_window && is_pointer_event(popup_event))
     {
-        const bool handled = _popup_scroll.on_ui_input_event(event);
+        const elysia::core::Vector2 local_pointer = _window->presentation_to_layout_point(
+            elysia::core::Vector2(static_cast<float>(event.mouse_x),static_cast<float>(event.mouse_y)));
+        popup_event.mouse_x = static_cast<int>(local_pointer.x);
+        popup_event.mouse_y = static_cast<int>(local_pointer.y);
+    }
+    if (is_pointer_event(event) && _popup_panel.screen_rect().contains(elysia::core::Vector2(
+        static_cast<float>(popup_event.mouse_x),static_cast<float>(popup_event.mouse_y))))
+    {
+        const bool handled = _popup_scroll.on_ui_input_event(popup_event);
         // Pointer focus is resolved by UiListContainer. Mirror that result only
         // after dispatch so keyboard/gamepad confirmation continues from the
         // option the user actually sees focused.
@@ -412,8 +422,14 @@ void UiDropdown::sync_popup_layout()
         return;
 
     const UiDropdownStyle& current_style = style();
-    const elysia::core::Rect trigger_rect = screen_rect();
-    const elysia::core::Rect bounds = _window ? _window->content_bounds() : trigger_rect;
+    elysia::core::Vector2 popup_translation = accumulated_presentation_translation();
+    if (_window)
+        popup_translation -= _window->presentation_translation();
+    const elysia::core::Rect trigger_rect = screen_rect().translated(popup_translation);
+    const elysia::core::Rect bounds = _window
+        ? _window->content_bounds().translated(
+            _window->accumulated_presentation_translation() - _window->presentation_translation())
+        : trigger_rect;
     const float width = trigger_rect.width();
     const float gap = std::max(0.0f,current_style.popup_gap);
     const float desired_height = static_cast<float>(_options.size()) * std::max(1.0f,current_style.option_height);
@@ -537,7 +553,7 @@ const UiButton* UiDropdown::option_button_at(std::size_t index) const noexcept
 
 bool UiDropdown::contains_trigger_point(int mouse_x,int mouse_y) const noexcept
 {
-    return screen_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
+    return presentation_screen_rect().contains(elysia::core::Vector2(static_cast<float>(mouse_x),static_cast<float>(mouse_y)));
 }
 
 bool UiDropdown::is_pointer_event(const UiInputEvent& event) const noexcept
