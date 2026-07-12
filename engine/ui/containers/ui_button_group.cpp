@@ -17,37 +17,35 @@ void UiButtonGroup::reset() noexcept
 {
     UiListContainer::reset();
     _selected_button = nullptr;
-    _on_selection_changed = nullptr;
     _auto_select_first = true;
     _is_syncing_selection = false;
-    _selection_notification_pending = false;
 }
 
 void UiButtonGroup::update(double delta)
 {
     cleanup_destroyed_children();
-    sync_selection(true);
+    sync_selection();
     UiListContainer::update(delta);
     cleanup_destroyed_children();
-    sync_selection(true);
+    sync_selection();
 }
 
 void UiButtonGroup::on_ui_input_frame(const UiInputFrame& input)
 {
     cleanup_destroyed_children();
-    sync_selection(true);
+    sync_selection();
     UiListContainer::on_ui_input_frame(input);
     cleanup_destroyed_children();
-    sync_selection(true);
+    sync_selection();
 }
 
 bool UiButtonGroup::on_ui_input_event(const UiInputEvent& event)
 {
     cleanup_destroyed_children();
-    sync_selection(true);
+    sync_selection();
     const bool handled = UiListContainer::on_ui_input_event(event);
     cleanup_destroyed_children();
-    sync_selection(true);
+    sync_selection();
     return handled;
 }
 
@@ -55,7 +53,7 @@ void UiButtonGroup::submit_ui_render_commands(std::vector<elysia::core::UiRender
 {
     auto* self = const_cast<UiButtonGroup*>(this);
     self->cleanup_destroyed_children();
-    self->sync_selection(false);
+    self->sync_selection();
     UiListContainer::submit_ui_render_commands(out_commands);
 }
 
@@ -65,7 +63,7 @@ UiButton* UiButtonGroup::add_button(std::unique_ptr<UiButton> button)
         return nullptr;
 
     UiButton* raw_button = button.get();
-    raw_button->set_on_click([this,raw_button]()
+    raw_button->prepend_on_click([this,raw_button]()
     {
         (void)select_button(raw_button);
     });
@@ -73,7 +71,7 @@ UiButton* UiButtonGroup::add_button(std::unique_ptr<UiButton> button)
     if (!UiListContainer::add_back(std::move(button)))
         return nullptr;
 
-    sync_selection(true);
+    sync_selection();
     return raw_button;
 }
 
@@ -98,11 +96,6 @@ bool UiButtonGroup::auto_select_first() const noexcept
     return _auto_select_first;
 }
 
-void UiButtonGroup::set_on_selection_changed(UiButtonGroupSelectionChangedCallback on_selection_changed)
-{
-    _on_selection_changed = std::move(on_selection_changed);
-}
-
 bool UiButtonGroup::select_button(UiButton* button)
 {
     if (!find_button_index(button))
@@ -116,7 +109,6 @@ bool UiButtonGroup::select_button(UiButton* button)
 
     _selected_button = button;
     refresh_button_styles();
-    notify_selection_changed();
     return true;
 }
 
@@ -139,14 +131,13 @@ UiButton* UiButtonGroup::button_at(std::size_t index) const noexcept
     return child ? dynamic_cast<UiButton*>(const_cast<UiElement*>(child)) : nullptr;
 }
 
-void UiButtonGroup::sync_selection(bool notify)
+void UiButtonGroup::sync_selection()
 {
     if (_is_syncing_selection)
         return;
 
     _is_syncing_selection = true;
 
-    UiButton* previous_selected = _selected_button;
     if (!find_button_index(_selected_button))
     {
         _selected_button = nullptr;
@@ -166,14 +157,6 @@ void UiButtonGroup::sync_selection(bool notify)
     refresh_button_styles();
     _is_syncing_selection = false;
 
-    const bool changed = previous_selected != _selected_button;
-    if (changed && !notify)
-        _selection_notification_pending = true;
-    if (notify && (changed || _selection_notification_pending))
-    {
-        _selection_notification_pending = false;
-        notify_selection_changed();
-    }
 }
 
 void UiButtonGroup::refresh_button_styles() noexcept
@@ -194,10 +177,4 @@ void UiButtonGroup::refresh_button_styles() noexcept
     }
 }
 
-void UiButtonGroup::notify_selection_changed()
-{
-    _selection_notification_pending = false;
-    if (_on_selection_changed)
-        _on_selection_changed(selected_index());
-}
 }

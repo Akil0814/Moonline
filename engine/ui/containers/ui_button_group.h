@@ -4,14 +4,11 @@
 #include "../widgets/ui_button.h"
 
 #include <cstddef>
-#include <functional>
 #include <memory>
 #include <optional>
 
 namespace elysia::ui
 {
-using UiButtonGroupSelectionChangedCallback = std::function<void(std::optional<std::size_t> selected_index)>;
-
 // A list of buttons that maintains a mutually exclusive selection.
 class UiButtonGroup : public UiListContainer
 {
@@ -35,23 +32,19 @@ public:
     // Controls whether the first valid button becomes selected when the group has no selection.
     void set_auto_select_first(bool enabled) noexcept;
     [[nodiscard]] bool auto_select_first() const noexcept;
-    void set_on_selection_changed(UiButtonGroupSelectionChangedCallback on_selection_changed);
 
 private:
     [[nodiscard]] bool select_button(UiButton* button);
     [[nodiscard]] std::optional<std::size_t> find_button_index(const UiButton* button) const noexcept;
     [[nodiscard]] UiButton* button_at(std::size_t index) const noexcept;
-    // Repairs selection after child removal or reordering and optionally notifies on identity changes.
-    void sync_selection(bool notify);
+    // Repairs selection after child removal or reordering.
+    void sync_selection();
     // Applies the selected/unselected theme roles to all live button members.
     void refresh_button_styles() noexcept;
-    void notify_selection_changed();
 
 private:
     UiButton* _selected_button = nullptr;
-    UiButtonGroupSelectionChangedCallback _on_selection_changed;
     bool _auto_select_first = true;
     bool _is_syncing_selection = false;
-    bool _selection_notification_pending = false;
 };
 }

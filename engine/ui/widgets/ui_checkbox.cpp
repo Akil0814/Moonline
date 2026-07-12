@@ -391,23 +391,32 @@ void UiCheckbox::apply_checkbox_config(const UiCheckboxConfig& config)
         clear_style_overrides();
 }
 
-bool UiCheckbox::set_state_internal(UiCheckboxState state,bool notify) noexcept
+bool UiCheckbox::set_state_internal(UiCheckboxState state,bool notify)
 {
     if (_state == state)
         return false;
 
     _state = state;
-    if (notify && _on_toggled)
-        _on_toggled(_state);
+    const UiCheckboxToggledCallback callback = notify ? _on_toggled : nullptr;
+    const UiCheckboxState callback_state = _state;
+    if (callback)
+        callback(callback_state);
     return true;
 }
 
-bool UiCheckbox::toggle_internal(bool notify,bool play_toggle_sound) noexcept
+bool UiCheckbox::toggle_internal(bool notify,bool play_toggle_sound)
 {
-    const bool changed = set_state_internal(toggled_state(_state),notify);
-    if (changed && play_toggle_sound && _sounds)
+    const UiCheckboxState next_state = toggled_state(_state);
+    if (_state == next_state)
+        return false;
+    _state = next_state;
+    if (play_toggle_sound && _sounds)
         play_sound_if_set(_sounds->toggle);
-    return changed;
+    const UiCheckboxToggledCallback callback = notify ? _on_toggled : nullptr;
+    const UiCheckboxState callback_state = _state;
+    if (callback)
+        callback(callback_state);
+    return true;
 }
 
 bool UiCheckbox::can_interact() const noexcept

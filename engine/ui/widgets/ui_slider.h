@@ -163,9 +163,9 @@ namespace elysia::ui
         [[nodiscard]] bool contains_track_or_handle(const SliderLayout& layout,int mouse_x,int mouse_y) const noexcept;
         [[nodiscard]] bool is_primary_pointer_event(const UiInputEvent& event) const noexcept;
         // Updates the value and optionally notifies listeners only when it changed.
-        [[nodiscard]] bool set_value_internal(float value,bool notify) noexcept;
+        [[nodiscard]] bool set_value_internal(float value,bool notify);
         // Recomputes value from a pointer position and optionally notifies listeners.
-        [[nodiscard]] bool update_value_from_point(const SliderLayout& layout,const elysia::core::Vector2& point,bool notify) noexcept;
+        [[nodiscard]] bool update_value_from_point(const SliderLayout& layout,const elysia::core::Vector2& point,bool notify);
         [[nodiscard]] elysia::core::Color current_background_color() const noexcept;
         [[nodiscard]] elysia::core::Color current_border_color() const noexcept;
         [[nodiscard]] elysia::core::Color current_fill_color() const noexcept;

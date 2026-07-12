@@ -224,11 +224,12 @@ UiDialogVisualRole UiDialog::visual_role() const noexcept
     return _visual_role;
 }
 
-void UiDialog::register_with_window(UiWindow& window,UiOverlayOptions options)
+bool UiDialog::register_with_window(UiWindow& window,UiOverlayOptions options)
 {
+    if (is_destroyed() || layout_parent() != &window)
+        return false;
     if (_registered_window && _registered_window != &window)
         _registered_window->unregister_overlay(*this);
-    _registered_window = &window;
     if (is_default_overlay_options(options))
         options = style().overlay_defaults;
 
@@ -237,7 +238,10 @@ void UiDialog::register_with_window(UiWindow& window,UiOverlayOptions options)
     else
         options.fallback_size = size();
 
-    window.register_overlay(*this,options);
+    if (!window.register_overlay(*this,options))
+        return false;
+    _registered_window = &window;
+    return true;
 }
 
 void UiDialog::unregister_from_window() noexcept

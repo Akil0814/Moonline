@@ -54,9 +54,10 @@ void UiFadeImage::notify_finished()
     if (_end_emitted)
         return;
     _end_emitted = true;
-    if (_on_end)
-        _on_end();
     destroy();
+    const FadeImageOnEnd callback = _on_end;
+    if (callback)
+        callback();
 }
 
 }

@@ -173,12 +173,13 @@ void UiConfirmationDialog::set_on_confirm(UiConfirmationDialogCallback on_confir
     _on_confirm = std::move(on_confirm);
 }
 
-void UiConfirmationDialog::register_with_window(UiWindow& window,UiOverlayOptions options)
+bool UiConfirmationDialog::register_with_window(UiWindow& window,UiOverlayOptions options)
 {
+    if (is_destroyed() || layout_parent() != &window)
+        return false;
     if (_registered_window && _registered_window != &window)
         _registered_window->unregister_overlay(*this);
     // UiWindow owns overlay state; this pointer only forwards later open/close requests.
-    _registered_window = &window;
     if (is_default_overlay_options(options))
     {
         options.open = false;
@@ -190,7 +191,10 @@ void UiConfirmationDialog::register_with_window(UiWindow& window,UiOverlayOption
         options.order = 1000;
     }
     options.fallback_size = size();
-    window.register_overlay(*this,options);
+    if (!window.register_overlay(*this,options))
+        return false;
+    _registered_window = &window;
+    return true;
 }
 
 void UiConfirmationDialog::unregister_from_window() noexcept

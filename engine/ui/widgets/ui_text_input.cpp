@@ -237,8 +237,10 @@ bool UiTextInput::on_ui_input_event(const UiInputEvent& event)
     {
         const bool should_submit = _is_pushed;
         clear_pushed_state();
-        if (should_submit && _on_submit)
-            _on_submit(_text);
+        const UiTextInputSubmitCallback callback = should_submit ? _on_submit : nullptr;
+        const std::string text = _text;
+        if (callback)
+            callback(text);
         return should_submit;
     }
 
@@ -498,10 +500,10 @@ bool UiTextInput::set_text_internal(std::string text,bool notify_text_changed,bo
     clear_composition();
 
     const bool changed = previous_text != _text;
-    if (notify_text_changed)
-        notify_text_changed_if_needed(previous_text);
     if (changed)
         notify_layout_parent_of_intrinsic_layout_invalidation();
+    if (notify_text_changed)
+        notify_text_changed_if_needed(previous_text);
     return changed;
 }
 
@@ -529,9 +531,9 @@ bool UiTextInput::insert_text_at_caret(std::string_view text)
     _caret_codepoint_index = insert_at + utf8_codepoint_count(sanitized);
     clear_composition();
     const bool changed = previous_text != _text;
-    notify_text_changed_if_needed(previous_text);
     if (changed)
         notify_layout_parent_of_intrinsic_layout_invalidation();
+    notify_text_changed_if_needed(previous_text);
     return changed;
 }
 
@@ -547,9 +549,9 @@ bool UiTextInput::erase_previous_codepoint()
     --_caret_codepoint_index;
     clear_composition();
     const bool changed = previous_text != _text;
-    notify_text_changed_if_needed(previous_text);
     if (changed)
         notify_layout_parent_of_intrinsic_layout_invalidation();
+    notify_text_changed_if_needed(previous_text);
     return changed;
 }
 
@@ -565,9 +567,9 @@ bool UiTextInput::erase_next_codepoint()
     _text.erase(start_byte,end_byte - start_byte);
     clear_composition();
     const bool changed = previous_text != _text;
-    notify_text_changed_if_needed(previous_text);
     if (changed)
         notify_layout_parent_of_intrinsic_layout_invalidation();
+    notify_text_changed_if_needed(previous_text);
     return changed;
 }
 
@@ -806,7 +808,9 @@ void UiTextInput::notify_text_changed_if_needed(const std::string& previous_text
 {
     if (previous_text == _text || !_on_text_changed)
         return;
-    _on_text_changed(_text);
+    const UiTextInputChangedCallback callback = _on_text_changed;
+    const std::string text = _text;
+    callback(text);
 }
 
 }

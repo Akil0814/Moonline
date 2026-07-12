@@ -95,6 +95,7 @@ private:
     void sync_popup_layout();
     [[nodiscard]] std::optional<std::size_t> first_enabled_option() const noexcept;
     [[nodiscard]] std::optional<std::size_t> next_enabled_option(int direction) const noexcept;
+    [[nodiscard]] bool commit_selected_index(std::size_t index);
     void set_focused_option(std::optional<std::size_t> index);
     void sync_focused_option_from_popup_list();
     void ensure_focused_option_visible() noexcept;

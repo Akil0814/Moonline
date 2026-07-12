@@ -248,8 +248,10 @@ bool UiWindow::focus_first_available_scope()
     return false;
 }
 
-void UiWindow::register_overlay(UiElement& element,UiOverlayOptions options)
+bool UiWindow::register_overlay(UiElement& element,UiOverlayOptions options)
 {
+    if (element.is_destroyed() || element.layout_parent() != this)
+        return false;
     if (OverlayEntry* entry = find_overlay(element))
     {
         const bool was_open = entry->options.open;
@@ -286,6 +288,7 @@ void UiWindow::register_overlay(UiElement& element,UiOverlayOptions options)
     prune_focus_scopes();
     ensure_valid_scope_focus();
     apply_scope_focus();
+    return true;
 }
 
 void UiWindow::unregister_overlay(UiElement& element)
@@ -628,11 +631,10 @@ bool UiWindow::on_ui_input_event(const UiInputEvent& event)
 
     if (event.type == UiInputEventType::ActionPressed && event.action == UiAction::Cancel)
     {
-        if (_on_cancel)
-        {
-            _on_cancel();
-            handled = true;
-        }
+        const UiWindowCancelCallback callback = _on_cancel;
+        if (callback)
+            callback();
+        return static_cast<bool>(callback);
     }
     else
     {

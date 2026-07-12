@@ -156,8 +156,9 @@ bool UiDropdown::set_selected_index(std::size_t index)
     _selected_index = index;
     _focused_option = index;
     sync_visual_state();
-    if (changed && _on_selection_changed)
-        _on_selection_changed(index);
+    const UiDropdownSelectionChangedCallback callback = changed ? _on_selection_changed : nullptr;
+    if (callback)
+        callback(index);
     return true;
 }
 
@@ -316,10 +317,7 @@ bool UiDropdown::on_popup_input_event(const UiInputEvent& event)
             return true;
         if (event.type == UiInputEventType::ActionReleased && _focused_option)
         {
-            const bool selected = set_selected_index(*_focused_option);
-            if (selected)
-                close();
-            return selected;
+            return commit_selected_index(*_focused_option);
         }
     }
 
@@ -386,8 +384,7 @@ void UiDropdown::rebuild_option_buttons()
         button->set_enabled(_options[index].enabled);
         button->set_on_click([this,index]()
         {
-            if (set_selected_index(index))
-                close();
+            (void)commit_selected_index(index);
         });
         _popup_list->add_back(std::move(button));
     }
@@ -485,6 +482,21 @@ std::optional<std::size_t> UiDropdown::next_enabled_option(int direction) const 
             return index;
     }
     return std::nullopt;
+}
+
+bool UiDropdown::commit_selected_index(std::size_t index)
+{
+    if (index >= _options.size() || !_options[index].enabled)
+        return false;
+    const bool changed = _selected_index != index;
+    _selected_index = index;
+    _focused_option = index;
+    sync_visual_state();
+    close();
+    const UiDropdownSelectionChangedCallback callback = changed ? _on_selection_changed : nullptr;
+    if (callback)
+        callback(index);
+    return true;
 }
 
 void UiDropdown::set_focused_option(std::optional<std::size_t> index)

@@ -88,7 +88,7 @@ void MainMenuScene::build_menu_buttons()
             .confirm_visual_role = elysia::ui::UiButtonVisualRole::Danger
             });
         _exit_confirmation->set_on_confirm([this]() { Scene::request_quit(); });
-        _exit_confirmation->register_with_window(*_main_menu_window);
+        (void)_exit_confirmation->register_with_window(*_main_menu_window);
     }
 
     //create the inner button container

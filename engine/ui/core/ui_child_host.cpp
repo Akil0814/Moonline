@@ -264,11 +264,15 @@ void UiChildHost::update(double delta)
 void UiChildHost::update_presentation_animations(double delta)
 {
     UiElement::update_presentation_animations(delta);
-    for (ChildEntry& entry : _children)
+    std::vector<UiElement*> child_snapshot;
+    child_snapshot.reserve(_children.size());
+    for (const ChildEntry& entry : _children)
+        if (entry.element) child_snapshot.push_back(entry.element.get());
+    for (UiElement* child : child_snapshot)
     {
-        if (!entry.element || entry.element->is_destroyed() || !entry.element->is_active())
+        if (!owns_live_child(child) || child->is_destroyed() || !child->is_active())
             continue;
-        entry.element->update_presentation_animations(delta);
+        child->update_presentation_animations(delta);
     }
 }
 
@@ -317,25 +321,28 @@ const std::vector<UiChildHost::ChildEntry>& UiChildHost::children() const noexce
 void UiChildHost::submit_child_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const
 {
     const elysia::core::Rect clip_rect = clips_children() ? content_rect() : elysia::core::Rect::zero();
-    std::vector<const ChildEntry*> render_children;
+    std::vector<const UiElement*> render_children;
     render_children.reserve(_children.size());
     for (const ChildEntry& entry : _children)
     {
         if (!entry.element || entry.element->is_destroyed() || !entry.element->is_visible())
             continue;
-        render_children.push_back(&entry);
+        render_children.push_back(entry.element.get());
     }
 
-    std::stable_sort(render_children.begin(),render_children.end(),[](const ChildEntry* left,const ChildEntry* right)
+    std::stable_sort(render_children.begin(),render_children.end(),[](const UiElement* left,const UiElement* right)
     {
-        return left->element->order() < right->element->order();
+        return left->order() < right->order();
     });
 
-    for (const ChildEntry* entry : render_children)
+    for (const UiElement* child : render_children)
     {
+        if (!owns_live_child(child) || !child->is_visible())
+            continue;
+        const elysia::core::Vector2 translation = child->presentation_translation();
         const std::size_t begin = out_commands.size();
-        entry->element->submit_ui_render_commands(out_commands);
-        apply_child_presentation_translation_to_range(out_commands,begin,*entry->element);
+        child->submit_ui_render_commands(out_commands);
+        render_command_range_utils::apply_translation_to_range(out_commands,begin,translation);
         finalize_child_command_range(out_commands,begin,clip_rect);
     }
 }
@@ -374,46 +381,56 @@ void UiChildHost::finalize_child_command_range(
 
 void UiChildHost::update_child_objects(double delta)
 {
-    for (ChildEntry& entry : _children)
+    std::vector<UiElement*> child_snapshot;
+    child_snapshot.reserve(_children.size());
+    for (const ChildEntry& entry : _children)
+        if (entry.element) child_snapshot.push_back(entry.element.get());
+    for (UiElement* child : child_snapshot)
     {
-        if (!entry.element || entry.element->is_destroyed() || !entry.element->is_active())
+        if (!owns_live_child(child) || child->is_destroyed() || !child->is_active())
             continue;
-        if (elysia::core::Updatable* updatable = dynamic_cast<elysia::core::Updatable*>(entry.element.get()))
+        if (elysia::core::Updatable* updatable = dynamic_cast<elysia::core::Updatable*>(child))
             updatable->update(delta);
     }
 }
 
 void UiChildHost::dispatch_frame_to_children(const UiInputFrame& input)
 {
-    for (ChildEntry& entry : _children)
+    std::vector<UiElement*> child_snapshot;
+    child_snapshot.reserve(_children.size());
+    for (const ChildEntry& entry : _children)
+        if (entry.element) child_snapshot.push_back(entry.element.get());
+    for (UiElement* child : child_snapshot)
     {
-        if (!entry.element || entry.element->is_destroyed() || !entry.element->is_active())
+        if (!owns_live_child(child) || child->is_destroyed() || !child->is_active())
             continue;
-        if (UiInputFrameReceiver* receiver = dynamic_cast<UiInputFrameReceiver*>(entry.element.get()))
+        if (UiInputFrameReceiver* receiver = dynamic_cast<UiInputFrameReceiver*>(child))
             receiver->on_ui_input_frame(input);
     }
 }
 
 bool UiChildHost::dispatch_input_to_children(const UiInputEvent& event)
 {
-    std::vector<ChildEntry*> input_children;
+    std::vector<UiElement*> input_children;
     input_children.reserve(_children.size());
     for (std::size_t index = _children.size(); index > 0; --index)
     {
         ChildEntry& entry = _children[index - 1];
         if (!entry.element || entry.element->is_destroyed() || !entry.element->is_active())
             continue;
-        input_children.push_back(&entry);
+        input_children.push_back(entry.element.get());
     }
 
-    std::stable_sort(input_children.begin(),input_children.end(),[](const ChildEntry* left,const ChildEntry* right)
+    std::stable_sort(input_children.begin(),input_children.end(),[](const UiElement* left,const UiElement* right)
     {
-        return left->element->order() > right->element->order();
+        return left->order() > right->order();
     });
 
-    for (ChildEntry* entry : input_children)
+    for (UiElement* child : input_children)
     {
-        if (UiInputEventReceiver* receiver = dynamic_cast<UiInputEventReceiver*>(entry->element.get()))
+        if (!owns_live_child(child) || child->is_destroyed() || !child->is_active())
+            continue;
+        if (UiInputEventReceiver* receiver = dynamic_cast<UiInputEventReceiver*>(child))
         {
             if (receiver->on_ui_input_event(event))
                 return true;
@@ -460,6 +477,14 @@ void UiChildHost::detach_all_children_from_layout_tree() noexcept
 {
     for (ChildEntry& entry : _children)
         detach_child_from_layout_tree(entry.element.get());
+}
+
+bool UiChildHost::owns_live_child(const UiElement* child) const noexcept
+{
+    return child && std::any_of(_children.begin(),_children.end(),[child](const ChildEntry& entry)
+    {
+        return entry.element.get() == child;
+    });
 }
 
 void UiChildHost::attach_theme_manager(UiThemeManager& manager)

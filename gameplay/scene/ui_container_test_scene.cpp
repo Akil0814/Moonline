@@ -203,7 +203,6 @@ void UiContainerTestScene::rebuild_ui()
     auto controls = page_scroll(controls_list);
     auto* controls_section = add_section(*controls_list,"ui_test_scene.pages.controls","ui_test_scene.sections.controls");
     auto group = std::make_unique<UiButtonGroup>(elysia::core::Rect{ 0,0,320,120 });
-    group->set_on_selection_changed([this](std::optional<std::size_t> index) { set_status(index ? "ButtonGroup selection changed" : "ButtonGroup cleared"); });
     group->add_button(button("menu_scene.start"));
     group->add_button(button("menu_scene.settings"));
     group->add_button(button("menu_scene.about"));
@@ -307,15 +306,15 @@ void UiContainerTestScene::rebuild_ui()
     auto* overlay_section = add_section(*overlays_list,"ui_test_scene.pages.overlays","ui_test_scene.sections.overlays");
     auto overlay = std::make_unique<UiPanel>(elysia::core::Rect{ 0,0,320,140 }); UiPanel* overlay_ptr = overlay.get();
     overlay->add_child(button("common.close")); _root_window->add_child(std::move(overlay),at(760,76,320,140));
-    _root_window->register_overlay(*overlay_ptr,UiOverlayOptions{ .open=false,.modal=false,.close_on_cancel=true,.close_on_outside_click=true,.placement=UiOverlayPlacement::Center,.transition=UiOverlayTransition::Slide,.fallback_size=elysia::core::Vector2(320,140),.order=900 });
+    (void)_root_window->register_overlay(*overlay_ptr,UiOverlayOptions{ .open=false,.modal=false,.close_on_cancel=true,.close_on_outside_click=true,.placement=UiOverlayPlacement::Center,.transition=UiOverlayTransition::Slide,.fallback_size=elysia::core::Vector2(320,140),.order=900 });
     auto open_overlay = button("ui_test_scene.overlays.open_overlay"); open_overlay->set_on_click([this,overlay_ptr]() { _root_window->open_overlay(*overlay_ptr); set_status("Non-modal overlay opened"); }); overlay_section->add_back(std::move(open_overlay));
     auto dialog = std::make_unique<UiDialog>(elysia::core::Rect{ 0,0,480,300 }); UiDialog* dialog_ptr = dialog.get();
     dialog->set_title_content(ui_text_key("ui_test_scene.dialog.title")); dialog->set_body_content(ui_text_key("ui_test_scene.dialog.body")); dialog->set_action_content(ui_text_key("common.close"));
-    _root_window->add_child(std::move(dialog),at(760,230,480,300)); dialog_ptr->register_with_window(*_root_window);
+    _root_window->add_child(std::move(dialog),at(760,230,480,300)); (void)dialog_ptr->register_with_window(*_root_window);
     auto open_dialog = button("ui_test_scene.overlays.open_dialog"); open_dialog->set_on_click([dialog_ptr]() { dialog_ptr->open(); }); overlay_section->add_back(std::move(open_dialog));
     auto confirm = std::make_unique<UiConfirmationDialog>(elysia::core::Rect{ 0,0,440,220 }); UiConfirmationDialog* confirm_ptr = confirm.get();
     confirm->set_config(UiConfirmationDialogConfig{ .title=ui_text_key("ui_test_scene.confirm.title"),.message=ui_text_key("ui_test_scene.confirm.message"),.confirm=ui_text_key("common.confirm"),.cancel=ui_text_key("common.cancel"),.close=ui_text_key("common.close") });
-    _root_window->add_child(std::move(confirm),at(760,230,440,220)); confirm_ptr->register_with_window(*_root_window);
+    _root_window->add_child(std::move(confirm),at(760,230,440,220)); (void)confirm_ptr->register_with_window(*_root_window);
     auto open_confirm = button("ui_test_scene.overlays.open_confirm"); open_confirm->set_on_click([confirm_ptr]() { confirm_ptr->open(); }); overlay_section->add_back(std::move(open_confirm));
     auto dropdown = std::make_unique<UiDropdown>(elysia::core::Rect{ 0,0,320,42 });
     dropdown->set_options({ UiDropdownOption{ui_text_key("menu_scene.start")},UiDropdownOption{ui_text_key("menu_scene.settings")},UiDropdownOption{ui_text_key("menu_scene.about")},UiDropdownOption{ui_text_key("menu_scene.exit")} });

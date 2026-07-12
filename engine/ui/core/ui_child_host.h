@@ -144,6 +144,7 @@ protected:
     // Drops destroyed children from the host without disturbing surviving entries.
     void cleanup_destroyed_children();
     [[nodiscard]] bool needs_layout_rebuild() const noexcept;
+    [[nodiscard]] bool owns_live_child(const UiElement* child) const noexcept;
 
 private:
     friend class UiThemeManager;

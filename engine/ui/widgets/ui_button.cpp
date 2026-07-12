@@ -312,6 +312,19 @@ void UiButton::set_on_click(ClickCallback on_click)
     _on_click = std::move(on_click);
 }
 
+void UiButton::prepend_on_click(ClickCallback on_click)
+{
+    if (!on_click)
+        return;
+    ClickCallback existing = std::move(_on_click);
+    _on_click = [before = std::move(on_click),after = std::move(existing)]()
+    {
+        before();
+        if (after)
+            after();
+    };
+}
+
 void UiButton::set_base_style(const UiButtonStyle& style) noexcept
 {
     _style_state.set_base_style(style);

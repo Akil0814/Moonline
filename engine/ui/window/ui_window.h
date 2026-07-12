@@ -52,7 +52,7 @@ public:
     [[nodiscard]] const UiScrollContainer* gamepad_scroll_target() const noexcept;
 
     // Registers an owned child element as a window-managed overlay surface.
-    void register_overlay(UiElement& element,UiOverlayOptions options = {});
+    [[nodiscard]] bool register_overlay(UiElement& element,UiOverlayOptions options = {});
     void unregister_overlay(UiElement& element);
     // Opens or closes a registered overlay and updates focus restoration state.
     void open_overlay(UiElement& element);

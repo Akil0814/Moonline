@@ -132,9 +132,9 @@ private:
     // Applies the config payload without exposing intermediate visual states.
     void apply_checkbox_config(const UiCheckboxConfig& config);
     // Updates state and emits callbacks only when the value actually changes.
-    [[nodiscard]] bool set_state_internal(UiCheckboxState state,bool notify) noexcept;
+    [[nodiscard]] bool set_state_internal(UiCheckboxState state,bool notify);
     // Handles toggle transitions while optionally suppressing notifications or sounds.
-    [[nodiscard]] bool toggle_internal(bool notify,bool play_toggle_sound) noexcept;
+    [[nodiscard]] bool toggle_internal(bool notify,bool play_toggle_sound);
     // Returns true only when the checkbox should react to confirm or pointer input.
     [[nodiscard]] bool can_interact() const noexcept;
     [[nodiscard]] bool can_receive_pointer() const noexcept;

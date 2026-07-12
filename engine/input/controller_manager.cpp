@@ -1,5 +1,7 @@
 #include "controller_manager.h"
 
+#include "../tools/logger.h"
+
 #include <algorithm>
 
 namespace elysia::input
@@ -67,7 +69,8 @@ void ControllerManager::open_controller(int joystick_index)
     SDL_GameController* controller = SDL_GameControllerOpen(joystick_index);
     if (!controller)
     {
-        SDL_Log("Failed to open controller %d: %s", joystick_index, SDL_GetError());
+        elysia::tools::Logger::instance()->warn("input","Failed to open controller");
+        elysia::tools::Logger::instance()->warn("input",SDL_GetError());
         SDL_ClearError();
         return;
     }

@@ -131,15 +131,6 @@ namespace arcneco::scene
         button_group->set_item_spacing(5.0f);
         button_group->set_auto_select_first(false);
         _character_button_keys.clear();
-        button_group->set_on_selection_changed([this](std::optional<std::size_t> selected_index)
-        {
-                if (selected_index && *selected_index < _character_button_keys.size())
-                {
-                    _current_character_key = _character_button_keys[*selected_index];
-                    elysia::audio::AudioService::instance()->play_sound(_current_character_key + ".selected");
-                    on_character_change();
-                }
-        });
 
         constexpr int character_ui_width = 96;
         constexpr int character_ui_height = 192;
@@ -160,6 +151,12 @@ namespace arcneco::scene
                 button_style.chrome.draw_background = false;
                 character_button->set_padding(1);
                 character_button->set_style_overrides(button_style);
+                character_button->set_on_click([this,selected_key = character_key]()
+                {
+                    _current_character_key = selected_key;
+                    elysia::audio::AudioService::instance()->play_sound(_current_character_key + ".selected");
+                    on_character_change();
+                });
                 _character_button_keys.push_back(character_key);
                 button_group->add_button(std::move(character_button));
             }

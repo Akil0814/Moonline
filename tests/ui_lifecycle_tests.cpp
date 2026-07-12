@@ -25,12 +25,21 @@
 #include "../engine/ui/window/ui_window.h"
 #include "../engine/ui/core/ui_render_command_range_utils.h"
 #include "../engine/ui/input/ui_gamepad_scroll_synthesizer.h"
+#include "../engine/scene/scene.h"
+#include "../engine/io/path/path_manager.h"
+#include "../engine/tools/logger.h"
+#include "../application/application_event_boundary.h"
 
 #include <cstdlib>
 #include <cstdint>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
+#include <iterator>
 #include <limits>
 #include <memory>
+#include <stdexcept>
+#include <string>
 #include <type_traits>
 #include <vector>
 
@@ -115,6 +124,55 @@ void test_scroll_offset_does_not_remeasure_allocated_content_as_growth()
     require(scroll.content_size().y == initial_height,
         "scrolling must only reposition content, not repeatedly expand its measured height");
 }
+
+class TestScene final : public elysia::scene::Scene
+{
+public:
+    void on_enter(const elysia::scene::ScenePayload&) override {}
+    void on_exit() override {}
+    void reset() override {}
+};
+
+class ClearingChild final : public elysia::ui::UiElement,
+    public elysia::core::Updatable,
+    public elysia::ui::UiInputFrameReceiver,
+    public elysia::ui::UiInputEventReceiver
+{
+public:
+    enum class Trigger { Update,Frame,Event };
+
+    ClearingChild(elysia::ui::UiChildHost& host,Trigger trigger,int& calls)
+        : _host(host),_trigger(trigger),_calls(calls) {}
+
+    void update(double) override { if (_trigger == Trigger::Update) { ++_calls; _host.clear_children(); } }
+    void on_ui_input_frame(const elysia::ui::UiInputFrame&) override
+    { if (_trigger == Trigger::Frame) { ++_calls; _host.clear_children(); } }
+    bool on_ui_input_event(const elysia::ui::UiInputEvent&) override
+    {
+        if (_trigger == Trigger::Event) { ++_calls; _host.clear_children(); }
+        return false;
+    }
+
+private:
+    elysia::ui::UiChildHost& _host;
+    Trigger _trigger;
+    int& _calls;
+};
+
+class CountingChild final : public elysia::ui::UiElement,
+    public elysia::core::Updatable,
+    public elysia::ui::UiInputFrameReceiver,
+    public elysia::ui::UiInputEventReceiver
+{
+public:
+    explicit CountingChild(int& calls) : _calls(calls) {}
+    void update(double) override { ++_calls; }
+    void on_ui_input_frame(const elysia::ui::UiInputFrame&) override { ++_calls; }
+    bool on_ui_input_event(const elysia::ui::UiInputEvent&) override { ++_calls; return false; }
+
+private:
+    int& _calls;
+};
 
 void test_list_consumes_desired_extent_and_cross_alignment()
 {
@@ -238,34 +296,23 @@ void test_field_level_style_cascade()
 void test_overlay_lifetime()
 {
     elysia::ui::UiConfirmationDialog dialog(elysia::core::Rect{ 0,0,320,180 });
-    {
-        elysia::ui::UiWindow window(elysia::core::Rect{ 0,0,640,480 });
-        dialog.register_with_window(window);
-        dialog.open();
-        require(window.is_overlay_open(dialog),"external dialog should open");
-    }
-    dialog.open(); // Window destruction must have cleared the borrowed pointer.
+    elysia::ui::UiWindow unowned_window(elysia::core::Rect{ 0,0,640,480 });
+    require(!dialog.register_with_window(unowned_window),"unowned dialogs must not register as overlays");
 
-    elysia::ui::UiWindow first_window(elysia::core::Rect{ 0,0,640,480 });
-    elysia::ui::UiWindow second_window(elysia::core::Rect{ 0,0,640,480 });
-    dialog.register_with_window(first_window);
-    dialog.register_with_window(second_window);
-    require(!first_window.is_overlay_open(dialog),"moving an overlay must unregister the old window");
-    dialog.unregister_from_window();
-    dialog.open();
-
-    {
-        auto short_lived = std::make_unique<elysia::ui::UiConfirmationDialog>(
-            elysia::core::Rect{ 0,0,320,180 });
-        short_lived->register_with_window(first_window);
-    }
-    first_window.update(0.0);
+    auto nested_host = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,640,480 });
+    auto nested_dialog = std::make_unique<elysia::ui::UiConfirmationDialog>(elysia::core::Rect{ 0,0,320,180 });
+    auto* nested_dialog_raw = nested_dialog.get();
+    nested_host->add_child(std::move(nested_dialog));
+    unowned_window.add_child(std::move(nested_host));
+    require(!nested_dialog_raw->register_with_window(unowned_window),"nested dialogs must not register as overlays");
 
     elysia::ui::UiWindow window(elysia::core::Rect{ 0,0,640,480 });
     auto* owned = window.create_child<elysia::ui::UiConfirmationDialog>(
         elysia::core::Rect{ 0,0,320,180 });
     require(owned != nullptr,"owned dialog should be created");
-    owned->register_with_window(window);
+    require(owned->register_with_window(window),"direct window children should register as overlays");
+    owned->open();
+    require(window.is_overlay_open(*owned),"registered direct child should open");
     owned->destroy();
     window.update(0.0);
 }
@@ -328,21 +375,18 @@ void test_tooltip_lifetime()
     window.update(0.0);
 }
 
-void test_group_render_defers_callback()
+void test_group_repairs_selection_without_group_callback()
 {
     elysia::ui::UiButtonGroup group(elysia::core::Rect{ 0,0,240,40 });
     group.add_button(std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,100,40 }));
     group.add_button(std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,100,40 }));
-    int callback_count = 0;
-    group.set_on_selection_changed([&](std::optional<std::size_t>) { ++callback_count; });
     require(group.selected_index() == 0,"button group should auto-select first");
     group.child_at(0)->destroy();
 
     std::vector<elysia::core::UiRenderCommand> commands;
     group.submit_ui_render_commands(commands);
-    require(callback_count == 0,"render must not notify button group callback");
     group.update(0.0);
-    require(callback_count == 1,"next update should deliver deferred button group callback once");
+    require(group.selected_index() == 0,"selection should repair after the selected child is removed");
 }
 
 void test_radio_render_defers_callback()
@@ -1056,6 +1100,233 @@ void test_gamepad_scroll_synthesizer_axes()
     frame.device_switched_this_frame = false;
     require(!synthesizer.synthesize(frame).has_value(),"post-switch input should restart accumulation from zero");
 }
+
+void test_callback_exceptions_reach_window_scene_and_boundary()
+{
+    using namespace elysia;
+    const ui::UiInputEvent pressed{ .action=ui::UiAction::Confirm,.type=ui::UiInputEventType::ActionPressed };
+    const ui::UiInputEvent released{ .action=ui::UiAction::Confirm,.type=ui::UiInputEventType::ActionReleased };
+
+    ui::UiWindow window(core::Rect{ 0,0,320,120 });
+    auto panel = std::make_unique<ui::UiPanel>(core::Rect{ 0,0,320,120 });
+    ui::UiPanel* panel_raw = panel.get();
+    auto checkbox = std::make_unique<ui::UiCheckbox>(core::Rect{ 0,0,40,40 });
+    checkbox->set_on_toggled([](ui::UiCheckboxState) { throw std::runtime_error("checkbox callback"); });
+    panel_raw->add_child(std::move(checkbox));
+    window.add_child(std::move(panel));
+    window.register_focus_scope(*panel_raw);
+    require(window.focus_first_available_scope(),"window should focus the checkbox panel");
+    require(window.on_ui_input_event(pressed),"checkbox confirm press should route through window");
+    bool window_threw = false;
+    try { (void)window.on_ui_input_event(released); }
+    catch (const std::runtime_error&) { window_threw = true; }
+    require(window_threw,"callback exceptions must escape the window input path");
+
+    TestScene scene;
+    auto scene_window = std::make_unique<ui::UiWindow>(core::Rect{ 0,0,320,120 });
+    auto scene_panel = std::make_unique<ui::UiPanel>(core::Rect{ 0,0,320,120 });
+    ui::UiPanel* scene_panel_raw = scene_panel.get();
+    auto scene_checkbox = std::make_unique<ui::UiCheckbox>(core::Rect{ 0,0,40,40 });
+    scene_checkbox->set_on_toggled([](ui::UiCheckboxState) { throw std::runtime_error("scene callback"); });
+    scene_panel_raw->add_child(std::move(scene_checkbox));
+    scene_window->add_child(std::move(scene_panel));
+    scene_window->register_focus_scope(*scene_panel_raw);
+    require(scene_window->focus_first_available_scope(),"scene window should focus the checkbox panel");
+    scene.add_object(std::move(scene_window));
+    const input::RawInputEvent raw_press{ .control=input::RawInputControl::KeyEnter,.type=input::RawInputEventType::ControlPressed,.device=input::InputDevice::Keyboard };
+    const input::RawInputEvent raw_release{ .control=input::RawInputControl::KeyEnter,.type=input::RawInputEventType::ControlReleased,.device=input::InputDevice::Keyboard };
+    bool scene_threw = false;
+    try { scene.on_input({}, { raw_press,raw_release }); }
+    catch (const std::runtime_error&) { scene_threw = true; }
+    require(scene_threw,"callback exceptions must escape the full Scene UI input route");
+
+    bool continued = false;
+    const bool completed = moonline::application::run_event_boundary("test",[&]()
+    {
+        throw std::runtime_error("boundary callback");
+        continued = true;
+    });
+    require(!completed && !continued,"application boundary must catch callback exceptions and stop the phase");
+}
+
+void test_child_host_tolerates_callback_tree_mutation()
+{
+    using namespace elysia;
+    for (const auto trigger : { ClearingChild::Trigger::Update,ClearingChild::Trigger::Frame,ClearingChild::Trigger::Event })
+    {
+        ui::UiChildHost host;
+        int clear_calls = 0;
+        int sibling_calls = 0;
+        if (trigger == ClearingChild::Trigger::Event)
+        {
+            host.add_child(std::make_unique<CountingChild>(sibling_calls));
+            host.add_child(std::make_unique<ClearingChild>(host,trigger,clear_calls));
+        }
+        else
+        {
+            host.add_child(std::make_unique<ClearingChild>(host,trigger,clear_calls));
+            host.add_child(std::make_unique<CountingChild>(sibling_calls));
+        }
+        if (trigger == ClearingChild::Trigger::Update)
+            host.update(0.0);
+        else if (trigger == ClearingChild::Trigger::Frame)
+            host.on_ui_input_frame({});
+        else
+            (void)host.on_ui_input_event({});
+        require(clear_calls == 1 && sibling_calls == 0 && host.child_count() == 0,
+            "host traversal must tolerate a child clearing the tree");
+    }
+}
+
+void test_text_input_callback_can_remove_its_owner()
+{
+    using namespace elysia;
+    ui::UiChildHost host;
+    auto input = std::make_unique<ui::UiTextInput>(core::Rect{ 0,0,160,40 });
+    ui::UiTextInput* raw_input = input.get();
+    raw_input->set_on_text_changed([&](std::string_view) { host.clear_children(); });
+    host.add_child(std::move(input));
+    raw_input->set_text("new text");
+    require(host.child_count() == 0,"text callback should be able to remove its owning subtree");
+}
+
+void test_button_group_preserves_button_callback_after_selection()
+{
+    using namespace elysia;
+    ui::UiButtonGroup group(core::Rect{ 0,0,240,40 });
+    auto first = std::make_unique<ui::UiButton>(core::Rect{ 0,0,100,40 });
+    auto second = std::make_unique<ui::UiButton>(core::Rect{ 0,0,100,40 });
+    int callback_count = 0;
+    second->set_on_click([&]()
+    {
+        ++callback_count;
+        require(group.selected_index() == 1,"button callback must observe the new group selection");
+    });
+    group.add_button(std::move(first));
+    ui::UiButton* second_raw = group.add_button(std::move(second));
+    require(second_raw != nullptr,"group should adopt second button");
+    second_raw->set_focused(true);
+    (void)second_raw->on_ui_input_event({ .action=ui::UiAction::Confirm,.type=ui::UiInputEventType::ActionPressed });
+    (void)second_raw->on_ui_input_event({ .action=ui::UiAction::Confirm,.type=ui::UiInputEventType::ActionReleased });
+    require(callback_count == 1,"group decoration must preserve the original button callback");
+}
+
+std::string read_text_file(const std::filesystem::path& path)
+{
+    std::ifstream input(path);
+    return { std::istreambuf_iterator<char>(input),std::istreambuf_iterator<char>() };
+}
+
+void remove_test_path(const std::filesystem::path& path)
+{
+    std::error_code error;
+    std::filesystem::remove_all(path,error);
+    require(!error,"logger test cleanup must succeed");
+}
+
+void test_logger_file_modes_and_noexcept()
+{
+    using namespace elysia;
+    auto* path_manager = io::PathManager::instance();
+    require(path_manager->init(),"logger test must initialize PathManager");
+    require(path_manager->ensure_runtime_dirs(),"logger test must create runtime directories");
+
+    auto* logger = tools::Logger::instance();
+    logger->shutdown();
+
+    tools::LoggerConfig disabled_config;
+    disabled_config.file_mode = tools::LogFileMode::Disabled;
+    require(logger->configure(disabled_config),"logger must accept configuration before initialization");
+    logger->initialize();
+    logger->debug("logger-test","disabled marker");
+    require(!logger->active_file_path().has_value(),"disabled logger must not open a file");
+    require(!logger->configure(disabled_config),"logger configuration must be fixed after initialization");
+    logger->shutdown();
+
+    const std::filesystem::path append_path = path_manager->logs() / "ui-lifecycle-logger-append.log";
+    remove_test_path(append_path);
+    tools::LoggerConfig append_config;
+    append_config.file_mode = tools::LogFileMode::Append;
+    append_config.append_file_name = append_path.filename().string();
+    require(logger->configure(append_config),"logger must accept append configuration");
+    logger->initialize();
+    const unsigned int append_call_line = __LINE__ + 1;
+    logger->info("logger-test","append first marker");
+    const auto active_append_path = logger->active_file_path();
+    require(active_append_path.has_value() && *active_append_path == append_path,
+        "append logger must expose its active file path");
+    logger->shutdown();
+    require(read_text_file(append_path).find("append first marker") != std::string::npos,
+        "append logger must create and write its configured file");
+    require(read_text_file(append_path).find("ui_lifecycle_tests.cpp:" + std::to_string(append_call_line)) != std::string::npos,
+        "logger must retain the call-site source location");
+
+    require(logger->configure(append_config),"logger must allow reconfiguration after shutdown");
+    logger->initialize();
+    logger->warn("logger-test","append second marker");
+    logger->shutdown();
+    const std::string append_contents = read_text_file(append_path);
+    require(append_contents.find("append first marker") != std::string::npos
+            && append_contents.find("append second marker") != std::string::npos,
+        "append logger must preserve earlier content");
+    remove_test_path(append_path);
+
+    const std::filesystem::path filtered_path = path_manager->logs() / "ui-lifecycle-logger-filtered.log";
+    remove_test_path(filtered_path);
+    tools::LoggerConfig filtered_config;
+    filtered_config.minimum_level = tools::LogLevel::Warn;
+    filtered_config.file_mode = tools::LogFileMode::Append;
+    filtered_config.append_file_name = filtered_path.filename().string();
+    require(logger->configure(filtered_config),"logger must accept level filtering configuration");
+    logger->initialize();
+    logger->debug("logger-test","filtered debug marker");
+    logger->warn("logger-test","retained warn marker");
+    logger->shutdown();
+    const std::string filtered_contents = read_text_file(filtered_path);
+    require(filtered_contents.find("filtered debug marker") == std::string::npos
+            && filtered_contents.find("retained warn marker") != std::string::npos,
+        "logger must filter entries below its configured minimum level");
+    remove_test_path(filtered_path);
+
+    tools::LoggerConfig new_run_config;
+    new_run_config.file_mode = tools::LogFileMode::NewRunFile;
+    require(logger->configure(new_run_config),"logger must accept new-run configuration");
+    logger->initialize();
+    const auto first_run_path = logger->active_file_path();
+    require(first_run_path.has_value() && first_run_path->filename().string().starts_with("Moonline-"),
+        "new-run logger must use a timestamped filename");
+    logger->error("logger-test","new run marker");
+    logger->shutdown();
+    require(logger->configure(new_run_config),"logger must allow a second new-run configuration");
+    logger->initialize();
+    const auto second_run_path = logger->active_file_path();
+    require(second_run_path.has_value() && *second_run_path != *first_run_path,
+        "new-run logger must avoid reusing an existing run file");
+    logger->shutdown();
+    require(read_text_file(*first_run_path).find("new run marker") != std::string::npos,
+        "new-run logger must write its active file");
+    remove_test_path(*first_run_path);
+    remove_test_path(*second_run_path);
+
+    const std::filesystem::path blocked_path = path_manager->logs() / "ui-lifecycle-logger-blocked";
+    remove_test_path(blocked_path);
+    std::error_code directory_error;
+    std::filesystem::create_directory(blocked_path,directory_error);
+    require(!directory_error,"logger test must create a blocking directory");
+    tools::LoggerConfig blocked_config;
+    blocked_config.file_mode = tools::LogFileMode::Append;
+    blocked_config.append_file_name = blocked_path.filename().string();
+    require(logger->configure(blocked_config),"logger must accept blocking-file configuration");
+    logger->initialize();
+    require(!logger->active_file_path().has_value(),"failed file open must disable the file sink");
+    logger->log(tools::LogLevel::Debug,"logger-test","file failure log marker");
+    logger->debug("logger-test","file failure debug marker");
+    logger->info("logger-test","file failure info marker");
+    logger->warn("logger-test","file failure warn marker");
+    logger->error("logger-test","file failure error marker");
+    logger->shutdown();
+    remove_test_path(blocked_path);
+}
 }
 
 int main()
@@ -1068,7 +1339,7 @@ int main()
     test_overlay_lifetime();
     test_transient_popup_lifetime();
     test_tooltip_lifetime();
-    test_group_render_defers_callback();
+    test_group_repairs_selection_without_group_callback();
     test_radio_render_defers_callback();
     test_group_preserves_button_override();
     test_empty_focus_scopes();
@@ -1088,6 +1359,11 @@ int main()
     test_presentation_translation_subtree_render_and_hit_test();
     test_render_command_range_translation();
     test_gamepad_scroll_synthesizer_axes();
+    test_callback_exceptions_reach_window_scene_and_boundary();
+    test_child_host_tolerates_callback_tree_mutation();
+    test_text_input_callback_can_remove_its_owner();
+    test_button_group_preserves_button_callback_after_selection();
+    test_logger_file_modes_and_noexcept();
     std::cout << "ui lifecycle tests passed\n";
     return EXIT_SUCCESS;
 }

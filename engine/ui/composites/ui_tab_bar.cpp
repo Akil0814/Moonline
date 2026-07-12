@@ -97,8 +97,9 @@ bool UiTabBar::set_focused_index(std::size_t index)
     set_focused_target(button);
     const auto after = focused_index();
     _last_focused = after;
-    if (!_suppress_callbacks && before != after && _on_focused_changed)
-        _on_focused_changed(after);
+    const IndexChangedCallback callback = (!_suppress_callbacks && before != after) ? _on_focused_changed : nullptr;
+    if (callback)
+        callback(after);
     return after == index;
 }
 
@@ -110,8 +111,10 @@ bool UiTabBar::set_selected_index(std::size_t index)
     const auto before = selected_index();
     _selected = button;
     refresh_styles();
-    if (!_suppress_callbacks && before != selected_index() && _on_selected_changed)
-        _on_selected_changed(selected_index());
+    const auto selected = selected_index();
+    const IndexChangedCallback callback = (!_suppress_callbacks && before != selected) ? _on_selected_changed : nullptr;
+    if (callback)
+        callback(selected);
     return true;
 }
 
@@ -142,12 +145,14 @@ std::optional<std::size_t> UiTabBar::index_of(const UiButton* button) const noex
 void UiTabBar::sync_state(bool notify)
 {
     const auto focused = focused_index();
-    if (notify && !_suppress_callbacks && focused != _last_focused && _on_focused_changed)
-        _on_focused_changed(focused);
+    const bool focus_changed = focused != _last_focused;
     _last_focused = focused;
     if (_selected && !selected_index())
         _selected = nullptr;
     refresh_styles();
+    const IndexChangedCallback callback = (notify && !_suppress_callbacks && focus_changed) ? _on_focused_changed : nullptr;
+    if (callback)
+        callback(focused);
 }
 
 void UiTabBar::refresh_styles()

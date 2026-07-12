@@ -69,7 +69,7 @@ public:
     [[nodiscard]] const UiElement& radio_item_element() const noexcept override { return *this; }
 
 private:
-    [[nodiscard]] bool select_internal(bool notify) noexcept;
+    [[nodiscard]] bool select_internal(bool notify);
     [[nodiscard]] bool contains_pointer(int x,int y) const noexcept;
     [[nodiscard]] bool can_interact() const noexcept;
     [[nodiscard]] bool is_primary_pointer_event(const UiInputEvent& event) const noexcept;

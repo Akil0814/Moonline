@@ -77,6 +77,7 @@ private:
     elysia::scene::SceneManager _scene_manager;
 
     bool _active = { true };
+    bool _normal_exit_requested = false;
     bool _has_shutdown = false;
     bool _settings_handler_registered = false;
 

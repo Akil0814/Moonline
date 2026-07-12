@@ -124,8 +124,9 @@ bool UiDragHandle::on_ui_input_event(const UiInputEvent& event)
         const bool is_inside = can_receive_pointer() && contains_pointer(event.mouse_x,event.mouse_y);
         _is_dragging = false;
         set_focused(is_inside);
-        if (was_dragging && _on_drag_ended)
-            _on_drag_ended(center);
+        const UiDragHandleDragEndedCallback callback = was_dragging ? _on_drag_ended : nullptr;
+        if (callback)
+            callback(center);
         return was_dragging;
     }
 
@@ -285,8 +286,10 @@ bool UiDragHandle::drag_to_pointer(int mouse_x,int mouse_y)
         return false;
 
     set_screen_rect(next_rect);
-    if (_on_dragged)
-        _on_dragged(next_rect.center());
+    const UiDragHandleDraggedCallback callback = _on_dragged;
+    const elysia::core::Vector2 center = next_rect.center();
+    if (callback)
+        callback(center);
     return true;
 }
 

@@ -55,7 +55,8 @@ void UiPulseLabel::notify_finished()
     if (_end_emitted)
         return;
     _end_emitted = true;
-    if (_on_end)
-        _on_end();
+    const PulseLabelOnEnd callback = _on_end;
+    if (callback)
+        callback();
 }
 }

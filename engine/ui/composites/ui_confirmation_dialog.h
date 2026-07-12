@@ -55,7 +55,7 @@ public:
     void set_on_confirm(UiConfirmationDialogCallback on_confirm);
 
     // The owning window must adopt this element before overlay registration.
-    void register_with_window(UiWindow& window,UiOverlayOptions options = {});
+    [[nodiscard]] bool register_with_window(UiWindow& window,UiOverlayOptions options = {});
     void unregister_from_window() noexcept;
     void on_window_detached(UiWindow& window) noexcept override;
     void open();

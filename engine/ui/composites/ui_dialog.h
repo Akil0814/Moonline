@@ -60,7 +60,7 @@ public:
     [[nodiscard]] UiDialogVisualRole visual_role() const noexcept;
 
     // The parent UiWindow must already own this dialog before overlay registration.
-    void register_with_window(UiWindow& window,UiOverlayOptions options = {});
+    [[nodiscard]] bool register_with_window(UiWindow& window,UiOverlayOptions options = {});
     void unregister_from_window() noexcept;
     void on_window_detached(UiWindow& window) noexcept override;
     void open();

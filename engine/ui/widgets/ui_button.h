@@ -120,6 +120,8 @@ public:
     [[nodiscard]] const UiButtonSounds& sounds() const noexcept;
 
     void set_on_click(ClickCallback on_click);
+    // Adds a callback that runs before the current click callback.
+    void prepend_on_click(ClickCallback on_click);
 
     void set_base_style(const UiButtonStyle& style) noexcept;
     void set_style_overrides(const UiButtonStyleOverrides& overrides);

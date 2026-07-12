@@ -57,3 +57,13 @@ if(WIN32)
 endif()
 
 add_test(NAME ui_focus_routing_tests COMMAND ui_focus_routing_tests)
+
+find_package(Threads REQUIRED)
+
+add_executable(termination_manager_tests
+    "termination_manager_tests.cpp"
+)
+
+target_link_libraries(termination_manager_tests PRIVATE engine_lib Threads::Threads)
+
+add_test(NAME termination_manager_tests COMMAND termination_manager_tests)

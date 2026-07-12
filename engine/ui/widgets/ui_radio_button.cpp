@@ -106,12 +106,13 @@ bool UiRadioButton::has_style_overrides() const noexcept { return _style_state.h
 void UiRadioButton::clear_style_overrides() noexcept { _style_state.clear_style_overrides(); }
 void UiRadioButton::set_padding(int padding) noexcept { _padding = std::max(0,padding); }
 int UiRadioButton::padding() const noexcept { return _padding; }
-bool UiRadioButton::select_internal(bool notify) noexcept
+bool UiRadioButton::select_internal(bool notify)
 {
     if (_selected) return true;
     _selected = true;
     if (_sounds) play_sound_if_set(_sounds->select);
-    if (notify && _on_selected) _on_selected();
+    const UiRadioButtonSelectedCallback callback = notify ? _on_selected : nullptr;
+    if (callback) callback();
     return true;
 }
 bool UiRadioButton::contains_pointer(int x,int y) const noexcept { return presentation_screen_rect().contains({ static_cast<float>(x),static_cast<float>(y) }); }

@@ -846,7 +846,7 @@ bool UiSlider::is_primary_pointer_event(const UiInputEvent& event) const noexcep
     return event.device == elysia::input::InputDevice::Mouse && event.control == elysia::input::RawInputControl::MouseLeft;
 }
 
-bool UiSlider::set_value_internal(float value,bool notify) noexcept
+bool UiSlider::set_value_internal(float value,bool notify)
 {
     float next_value = std::isfinite(value) ? value : _min_value;
     next_value = snapped_value(next_value);
@@ -854,12 +854,14 @@ bool UiSlider::set_value_internal(float value,bool notify) noexcept
         return false;
 
     _value = next_value;
-    if (notify && _on_value_changed)
-        _on_value_changed(_value);
+    const UiSliderValueChangedCallback callback = notify ? _on_value_changed : nullptr;
+    const float callback_value = _value;
+    if (callback)
+        callback(callback_value);
     return true;
 }
 
-bool UiSlider::update_value_from_point(const SliderLayout& layout,const elysia::core::Vector2& point,bool notify) noexcept
+bool UiSlider::update_value_from_point(const SliderLayout& layout,const elysia::core::Vector2& point,bool notify)
 {
     if (_max_value <= _min_value)
         return set_value_internal(_min_value,notify);

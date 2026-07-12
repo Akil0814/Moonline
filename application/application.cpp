@@ -1,4 +1,6 @@
 #include "application.h"
+#include "application_event_boundary.h"
+#include "application_exit_policy.h"
 #include "scene/scene_keys.h"
 #include "scene/scene_registry.h"
 
@@ -8,6 +10,7 @@
 #include "../engine/core/time.h"
 #include "../engine/localization/localization_manager.h"
 #include "../engine/resources/resource_manager.h"
+#include "../engine/tools/logger.h"
 
 #include <cstdlib>
 #include <ctime>
@@ -36,6 +39,8 @@ Application:: ~Application()
 
 bool Application::init(int argc, char** argv)
 {
+	elysia::tools::TerminationManager::instance()->initialize_lifecycle();
+
 	const elysia::bootstrap::StartupParseResult parse_result =
 		elysia::bootstrap::Bootstrapper::instance()->parse_runtime_settings();
 
@@ -66,6 +71,8 @@ bool Application::init(int argc, char** argv)
 		startup_fail("Localization initialization failed.");
 		return false;
 	}
+
+	elysia::tools::Logger::instance()->initialize();
 
 	elysia::config::ConfigService::instance()->register_settings_change_handler(*this);
 	_settings_handler_registered = true;
@@ -129,7 +136,8 @@ bool Application::init_runtime(const elysia::bootstrap::RuntimeSettings& setting
 	if (settings.fullscreen
 		&& SDL_SetWindowFullscreen(_window, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)
 	{
-		SDL_Log("Failed to enter fullscreen: %s", SDL_GetError());
+		elysia::tools::Logger::instance()->warn("application","Failed to enter fullscreen");
+		elysia::tools::Logger::instance()->warn("application",SDL_GetError());
 		SDL_ClearError();
 
 		SDL_SetWindowSize(_window, settings.window_width, settings.window_height);
@@ -175,6 +183,34 @@ int  Application::run(int argc, char** argv)
 
 	_counter_freq = SDL_GetPerformanceFrequency();
 	_last_counter = SDL_GetPerformanceCounter();
+	int exit_code = EXIT_SUCCESS;
+	auto resolve_exit = [this,&exit_code]()
+	{
+		auto* termination_manager = elysia::tools::TerminationManager::instance();
+		const moonline::application::ApplicationExitDecision decision =
+			moonline::application::resolve_application_exit(_normal_exit_requested,*termination_manager);
+		if (decision == moonline::application::ApplicationExitDecision::Continue)
+			return false;
+
+		_active = false;
+		if (decision == moonline::application::ApplicationExitDecision::FaultExit)
+		{
+			exit_code = EXIT_FAILURE;
+			if (const auto info = termination_manager->termination_info())
+			{
+				const char* reason = info->reason == elysia::tools::TerminationReason::UnhandledException
+					? "Application termination requested after an unhandled exception"
+					: "Application termination requested after a fatal runtime failure";
+				elysia::tools::Logger::instance()->error("termination",reason,info->location);
+				elysia::tools::Logger::instance()->error(info->category,info->message,info->location);
+			}
+			else
+			{
+				elysia::tools::Logger::instance()->error("termination","Application termination requested without diagnostic information");
+			}
+		}
+		return true;
+	};
 
 
 	while (_active)
@@ -184,12 +220,27 @@ int  Application::run(int argc, char** argv)
 		{
 			_input_system.process_event(_event);
 			if (_event.type == SDL_QUIT)
-				_active = false;
+				_normal_exit_requested = true;
 		}
 
 		_input_system.end_frame();
+		if (resolve_exit())
+			break;
 
-		_scene_manager.on_input(_input_system.frame(), _input_system.events());
+		if (!moonline::application::run_event_boundary("input",[this]()
+		{
+			_scene_manager.on_input(_input_system.frame(), _input_system.events());
+		}))
+		{
+			if (!resolve_exit())
+			{
+				_active = false;
+				exit_code = EXIT_FAILURE;
+			}
+			break;
+		}
+		if (resolve_exit())
+			break;
 
 		Uint64 current_counter = SDL_GetPerformanceCounter();
 		double delta = (double)(current_counter - last_counter) / counter_freq;
@@ -200,19 +251,47 @@ int  Application::run(int argc, char** argv)
 			SDL_Delay((Uint32)(1000.0 / FPS - delta * 1000));
 		
 
-		_scene_manager.on_update(elysia::core::Time::instance()->delta());
+		if (!moonline::application::run_event_boundary("update",[this]()
+		{
+			_scene_manager.on_update(elysia::core::Time::instance()->delta());
+		}))
+		{
+			if (!resolve_exit())
+			{
+				_active = false;
+				exit_code = EXIT_FAILURE;
+			}
+			break;
+		}
+		if (resolve_exit())
+			break;
 
 		SDL_SetRenderDrawColor(_renderer, 0,0,0,255);
 		SDL_RenderClear(_renderer);
 
-		_scene_manager.on_render(_renderer);
+		if (!moonline::application::run_event_boundary("render",[this]()
+		{
+			_scene_manager.on_render(_renderer);
+		}))
+		{
+			if (!resolve_exit())
+			{
+				_active = false;
+				exit_code = EXIT_FAILURE;
+			}
+			break;
+		}
+		if (resolve_exit())
+			break;
 
 		SDL_RenderPresent(_renderer);
+		if (resolve_exit())
+			break;
 	}
 
 	shutdown();
 
-    return 0;
+	return exit_code;
 }
 
 void Application::shutdown()
@@ -234,11 +313,13 @@ void Application::shutdown()
 	elysia::config::ConfigService::instance()->shutdown();
 	elysia::audio::AudioService::instance()->shutdown();
 	elysia::resources::ResourceManager::instance()->clear();
+	elysia::tools::Logger::instance()->info("application","Application shutdown complete");
+	elysia::tools::Logger::instance()->shutdown();
 }
 
 void Application::on_scene_manager_quit_requested()
 {
-	_active = false;
+	_normal_exit_requested = true;
 }
 
 namespace
