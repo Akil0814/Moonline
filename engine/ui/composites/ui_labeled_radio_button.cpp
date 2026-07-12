@@ -50,7 +50,7 @@ void UiLabeledRadioButton::submit_ui_render_commands(std::vector<elysia::core::U
 { if (!is_visible()) return; sync_children(); _radio.submit_ui_render_commands(out); _label.submit_ui_render_commands(out); }
 void UiLabeledRadioButton::set_selected(bool selected) noexcept { _radio.set_selected(selected); }
 bool UiLabeledRadioButton::is_selected() const noexcept { return _radio.is_selected(); }
-void UiLabeledRadioButton::set_on_selected(UiRadioButtonSelectedCallback callback) { _radio.set_on_selected(std::move(callback)); }
+void UiLabeledRadioButton::set_on_selection_changed(UiRadioButtonSelectedCallback callback) { _radio.set_on_selection_changed(std::move(callback)); }
 void UiLabeledRadioButton::set_text_content(UiTextContent content) { _text_content = std::move(content); }
 elysia::core::Color UiLabeledRadioButton::resolved_text_color() const noexcept
 {

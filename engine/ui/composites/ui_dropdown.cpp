@@ -36,12 +36,12 @@ UiDropdown::UiDropdown(
 
 UiDropdown::~UiDropdown()
 {
-    unregister_as_transient_popup();
+    unregister_from_window();
 }
 
 void UiDropdown::reset() noexcept
 {
-    unregister_as_transient_popup();
+    unregister_from_window();
     UiControl::reset();
 
     _trigger.reset();
@@ -86,7 +86,7 @@ bool UiDropdown::on_ui_input_event(const UiInputEvent& event)
 {
     sync_visual_state();
     if (_expanded)
-        return on_transient_popup_input_event(event);
+        return on_popup_input_event(event);
     return _trigger.on_ui_input_event(event);
 }
 
@@ -194,12 +194,12 @@ void UiDropdown::toggle()
         open();
 }
 
-bool UiDropdown::is_expanded() const noexcept
+bool UiDropdown::is_open() const noexcept
 {
     return _expanded;
 }
 
-void UiDropdown::register_as_transient_popup(UiWindow& window)
+void UiDropdown::register_with_window(UiWindow& window)
 {
     if (_window && _window != &window)
         _window->unregister_transient_popup(*this);
@@ -207,7 +207,7 @@ void UiDropdown::register_as_transient_popup(UiWindow& window)
     _window->register_transient_popup(*this);
 }
 
-void UiDropdown::unregister_as_transient_popup() noexcept
+void UiDropdown::unregister_from_window() noexcept
 {
     if (_window)
         _window->unregister_transient_popup(*this);
@@ -263,22 +263,17 @@ UiDropdownVisualRole UiDropdown::visual_role() const noexcept
     return _visual_role;
 }
 
-UiElement& UiDropdown::transient_popup_owner() noexcept
+UiElement& UiDropdown::popup_owner() noexcept
 {
     return *this;
 }
 
-const UiElement& UiDropdown::transient_popup_owner() const noexcept
+const UiElement& UiDropdown::popup_owner() const noexcept
 {
     return *this;
 }
 
-bool UiDropdown::is_transient_popup_open() const noexcept
-{
-    return _expanded;
-}
-
-bool UiDropdown::contains_transient_popup_point(int mouse_x,int mouse_y) const noexcept
+bool UiDropdown::contains_popup_point(int mouse_x,int mouse_y) const noexcept
 {
     elysia::core::Vector2 popup_point(static_cast<float>(mouse_x),static_cast<float>(mouse_y));
     if (_window)
@@ -287,12 +282,7 @@ bool UiDropdown::contains_transient_popup_point(int mouse_x,int mouse_y) const n
         || (_expanded && _popup_panel.screen_rect().contains(popup_point));
 }
 
-void UiDropdown::close_transient_popup() noexcept
-{
-    close();
-}
-
-void UiDropdown::on_transient_popup_window_detached(UiWindow& window) noexcept
+void UiDropdown::on_window_detached(UiWindow& window) noexcept
 {
     if (_window != &window)
         return;
@@ -300,7 +290,7 @@ void UiDropdown::on_transient_popup_window_detached(UiWindow& window) noexcept
     close();
 }
 
-bool UiDropdown::on_transient_popup_input_event(const UiInputEvent& event)
+bool UiDropdown::on_popup_input_event(const UiInputEvent& event)
 {
     if (!_expanded)
         return false;
@@ -359,7 +349,7 @@ bool UiDropdown::on_transient_popup_input_event(const UiInputEvent& event)
     return false;
 }
 
-void UiDropdown::submit_transient_popup_render_commands(
+void UiDropdown::submit_popup_render_commands(
     std::vector<elysia::core::UiRenderCommand>& out_commands) const
 {
     if (!_expanded || !is_visible())

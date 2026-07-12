@@ -91,7 +91,7 @@ void UiRadioButton::set_radio_button_config(const UiRadioButtonConfig& config)
 void UiRadioButton::set_selected(bool selected) noexcept { _selected = selected; }
 bool UiRadioButton::is_selected() const noexcept { return _selected; }
 void UiRadioButton::select() { (void)select_internal(true); }
-void UiRadioButton::set_on_selected(UiRadioButtonSelectedCallback callback) { _on_selected = std::move(callback); }
+void UiRadioButton::set_on_selection_changed(UiRadioButtonSelectedCallback callback) { _on_selected = std::move(callback); }
 void UiRadioButton::set_sounds(const UiRadioButtonSounds& sounds) { _sounds = sounds; }
 void UiRadioButton::clear_sounds() noexcept { _sounds.reset(); }
 void UiRadioButton::set_base_style(const UiRadioButtonStyle& style) noexcept

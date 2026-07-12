@@ -53,7 +53,7 @@ public:
     void set_selected(bool selected) noexcept override;
     [[nodiscard]] bool is_selected() const noexcept override;
     void select();
-    void set_on_selected(UiRadioButtonSelectedCallback callback);
+    void set_on_selection_changed(UiRadioButtonSelectedCallback callback);
     void set_sounds(const UiRadioButtonSounds& sounds);
     void clear_sounds() noexcept;
     void set_base_style(const UiRadioButtonStyle& style) noexcept;

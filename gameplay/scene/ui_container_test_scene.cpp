@@ -1,203 +1,109 @@
 #include "ui_container_test_scene.h"
 
-
 #include "../../application/scene/scene_keys.h"
-
-
-#include "../../engine/ui/window/ui_window.h"
+#include "../../engine/resources/resource_manager.h"
+#include "../../engine/ui/composites/ui_confirmation_dialog.h"
+#include "../../engine/ui/composites/ui_dialog.h"
+#include "../../engine/ui/composites/ui_dropdown.h"
+#include "../../engine/ui/composites/ui_labeled_checkbox.h"
+#include "../../engine/ui/composites/ui_labeled_radio_button.h"
+#include "../../engine/ui/composites/ui_tab_container.h"
+#include "../../engine/ui/composites/ui_tooltip.h"
+#include "../../engine/ui/containers/ui_button_group.h"
+#include "../../engine/ui/containers/ui_chrome_container.h"
 #include "../../engine/ui/containers/ui_grid_container.h"
 #include "../../engine/ui/containers/ui_list_container.h"
 #include "../../engine/ui/containers/ui_panel.h"
 #include "../../engine/ui/containers/ui_radio_group.h"
 #include "../../engine/ui/containers/ui_scroll_container.h"
-#include "../../engine/ui/composites/ui_dialog.h"
-#include "../../engine/ui/composites/ui_tab_container.h"
+#include "../../engine/ui/widgets/image/ui_animation.h"
+#include "../../engine/ui/widgets/image/ui_blink_image.h"
+#include "../../engine/ui/widgets/image/ui_fade_image.h"
+#include "../../engine/ui/widgets/image/ui_image.h"
+#include "../../engine/ui/widgets/image/ui_pulse_image.h"
+#include "../../engine/ui/widgets/label/ui_blink_label.h"
+#include "../../engine/ui/widgets/label/ui_fade_label.h"
+#include "../../engine/ui/widgets/label/ui_label.h"
+#include "../../engine/ui/widgets/label/ui_pulse_label.h"
+#include "../../engine/ui/widgets/number/ui_number.h"
+#include "../../engine/ui/widgets/text/ui_text_block.h"
+#include "../../engine/ui/widgets/ui_bar.h"
 #include "../../engine/ui/widgets/ui_button.h"
-#include "../../engine/ui/composites/ui_dropdown.h"
 #include "../../engine/ui/widgets/ui_checkbox.h"
-#include "../../engine/ui/composites/ui_labeled_checkbox.h"
-#include "../../engine/ui/composites/ui_labeled_radio_button.h"
+#include "../../engine/ui/widgets/ui_drag_handle.h"
 #include "../../engine/ui/widgets/ui_radio_button.h"
 #include "../../engine/ui/widgets/ui_slider.h"
 #include "../../engine/ui/widgets/ui_text_input.h"
-#include "../../engine/ui/composites/ui_tooltip.h"
-#include "../../engine/ui/widgets/text/ui_text_block.h"
-#include "../../engine/ui/widgets/label/ui_label.h"
-#include "../../engine/ui/layout/ui_layout_types.h"
+#include "../../engine/ui/window/ui_window.h"
 
 #include <array>
-#include <iostream>
 #include <memory>
+#include <optional>
+#include <string>
 #include <utility>
 
 namespace arcneco::scene
 {
 namespace
 {
-template<class Widget,class Mutator>
-void update_style_overrides(Widget& widget,Mutator&& mutator)
-{
-    auto overrides = widget.style_overrides();
-    mutator(overrides);
-    widget.set_style_overrides(overrides);
-}
+using namespace elysia::ui;
 
-[[nodiscard]] elysia::ui::UiButtonConfig make_button_config(const char* text_key)
+UiLayoutChildOptions at(float x,float y,float width,float height)
 {
-    return elysia::ui::UiButtonConfig{ .content = elysia::ui::ui_text_key(text_key) };
-}
-
-[[nodiscard]] const char* button_text_key_for_index(int index) noexcept
-{
-    static constexpr std::array<const char*,4> kButtonTextKeys{
-        "menu_scene.start",
-        "menu_scene.settings",
-        "menu_scene.about",
-        "menu_scene.exit"
-    };
-    return kButtonTextKeys[static_cast<std::size_t>(index) % kButtonTextKeys.size()];
-}
-
-[[nodiscard]] elysia::ui::UiLayoutChildOptions make_window_child_options(float left,float top)
-{
-    return elysia::ui::UiLayoutChildOptions{
-        ._anchor = elysia::ui::UiLayoutAnchor::TopLeft,
-        ._margin = elysia::ui::UiLayoutMargin{ left,top,0.0f,0.0f },
-        ._cross_align = elysia::ui::UiLayoutAlign::Start,
-        ._size_override = elysia::core::Vector2(0.0f,0.0f),
-        ._use_custom_cross_align = false,
-        ._fill_cross_axis = false,
-        ._use_size_override = false
-    };
-}
-
-[[nodiscard]] elysia::ui::UiLayoutChildOptions make_theme_button_options(float left,float top)
-{
-    return elysia::ui::UiLayoutChildOptions{
-        ._anchor = elysia::ui::UiLayoutAnchor::TopLeft,
-        ._margin = elysia::ui::UiLayoutMargin{ left,top,0.0f,0.0f },
-        ._cross_align = elysia::ui::UiLayoutAlign::Start,
-        ._size_override = elysia::core::Vector2(140.0f,36.0f),
+    return UiLayoutChildOptions{
+        ._anchor = UiLayoutAnchor::TopLeft,
+        ._margin = UiLayoutMargin{ x,y,0.0f,0.0f },
+        ._cross_align = UiLayoutAlign::Start,
+        ._size_override = elysia::core::Vector2(width,height),
         ._use_custom_cross_align = false,
         ._fill_cross_axis = false,
         ._use_size_override = true
     };
 }
 
-std::unique_ptr<elysia::ui::UiButton> make_button(int index,const char* scope)
+std::unique_ptr<UiButton> button(const char* key)
 {
-    auto button = std::make_unique<elysia::ui::UiButton>(
-        elysia::core::Rect{ 0,0,180,44 },
-        make_button_config(button_text_key_for_index(index)),
-        0);
-    button->set_on_click([index,scope]()
-    {
-        std::cout << scope << " button " << index << std::endl;
-    });
-    return button;
+    return std::make_unique<UiButton>(elysia::core::Rect{ 0,0,240,40 },UiButtonConfig{ .content = ui_text_key(key) },0);
 }
 
-std::unique_ptr<elysia::ui::UiCheckbox> make_checkbox(
-    const elysia::core::Rect& rect,
-    bool checked,
-    elysia::ui::UiCheckboxMarkStyle mark_style,
-    const char* scope
-)
+std::unique_ptr<UiScrollContainer> page_scroll(UiListContainer*& content)
 {
-    auto checkbox = std::make_unique<elysia::ui::UiCheckbox>(rect,0);
-    checkbox->set_checked(checked);
-    checkbox->set_mark_style(mark_style);
-    checkbox->set_on_toggled([scope](elysia::ui::UiCheckboxState state)
-    {
-        std::cout << scope << " checkbox state " << static_cast<int>(state) << std::endl;
-    });
-    return checkbox;
+    auto page = std::make_unique<UiScrollContainer>(elysia::core::Rect{ 0,0,900,390 });
+    page->set_scroll_axis(UiScrollAxis::Vertical);
+    page->set_scrollbar_visibility(UiScrollBarVisibility::Auto);
+    page->set_scroll_step(elysia::core::Vector2(0.0f,36.0f));
+    auto list = std::make_unique<UiListContainer>(elysia::core::Rect{ 0,0,870,1800 });
+    list->set_padding(UiLayoutPadding{ 12,12,12,12 });
+    list->set_item_spacing(12.0f);
+    content = list.get();
+    page->set_content(std::move(list));
+    return page;
 }
 
-std::unique_ptr<elysia::ui::UiLabeledCheckbox> make_labeled_checkbox(
-    const elysia::core::Rect& rect,
-    const char* text_key,
-    bool checked,
-    elysia::ui::UiLabeledCheckboxLabelPlacement label_placement,
-    elysia::ui::UiLabeledCheckboxTextPlacement text_placement,
-    const char* scope
-)
+UiListContainer* add_section(UiListContainer& page,const char* title,const char* description,float height = 220.0f)
 {
-    elysia::ui::UiLabeledCheckboxConfig config{};
-    config.text_content = elysia::ui::ui_text_key(text_key);
-    config.label_placement = label_placement;
-    config.text_placement = text_placement;
-
-    auto checkbox = std::make_unique<elysia::ui::UiLabeledCheckbox>(rect,config,0);
-    checkbox->set_checked(checked);
-    checkbox->set_on_toggled([scope](elysia::ui::UiCheckboxState state)
-    {
-        std::cout << scope << " labeled checkbox state " << static_cast<int>(state) << std::endl;
-    });
-    return checkbox;
+    auto chrome = std::make_unique<UiChromeContainer>(elysia::core::Rect{ 0,0,840,height });
+    chrome->set_header_height(42.0f);
+    auto heading = std::make_unique<UiLabel>(elysia::core::Rect{ 0,0,420,32 },0,ui_text_key(title));
+    heading->set_visual_role(UiLabelVisualRole::Title);
+    chrome->add_title_child(std::move(heading));
+    auto body = std::make_unique<UiListContainer>(elysia::core::Rect{ 0,0,820,height - 48.0f });
+    body->set_padding(UiLayoutPadding{ 12,8,12,8 });
+    body->set_item_spacing(8.0f);
+    auto note = std::make_unique<UiLabel>(elysia::core::Rect{ 0,0,760,28 },0,ui_text_key(description));
+    note->set_visual_role(UiLabelVisualRole::Muted);
+    body->add_back(std::move(note));
+    UiListContainer* body_ptr = body.get();
+    chrome->set_body(std::move(body));
+    page.add_back(std::move(chrome));
+    return body_ptr;
 }
 
-std::unique_ptr<elysia::ui::UiTextInput> make_text_input(
-    const elysia::core::Rect& rect,
-    std::string placeholder_text,
-    std::optional<std::size_t> max_length,
-    const char* scope
-)
+std::unique_ptr<UiLabel> status_label()
 {
-    auto input = std::make_unique<elysia::ui::UiTextInput>(rect,0);
-    input->set_placeholder_content(elysia::ui::ui_raw_text(std::move(placeholder_text)));
-    input->set_max_length(max_length);
-    input->set_on_text_changed([scope](std::string_view text)
-    {
-        std::cout << scope << " text changed: " << text << std::endl;
-    });
-    input->set_on_submit([scope](std::string_view text)
-    {
-        std::cout << scope << " submit: " << text << std::endl;
-    });
-    return input;
-}
-
-std::unique_ptr<elysia::ui::UiSlider> make_slider(
-    const elysia::core::Rect& rect,
-    float value,
-    const char* scope,
-    elysia::ui::UiSliderValueDisplay value_display,
-    elysia::ui::UiSliderOrientation orientation = elysia::ui::UiSliderOrientation::Horizontal
-)
-{
-    auto slider = std::make_unique<elysia::ui::UiSlider>(rect,0);
-    slider->set_value_display(value_display);
-    slider->set_orientation(orientation);
-    slider->set_range(0.0f,1.0f);
-    slider->set_value(value);
-    slider->set_on_value_changed([scope](float changed_value)
-    {
-        std::cout << scope << " slider value " << changed_value << std::endl;
-    });
-    return slider;
-}
-
-std::unique_ptr<elysia::ui::UiLabeledRadioButton> make_radio_button(
-    const elysia::core::Rect& rect,
-    const char* text_key,
-    bool selected,
-    const char* scope,
-    elysia::ui::UiLabeledRadioLabelPlacement label_placement = elysia::ui::UiLabeledRadioLabelPlacement::Right,
-    elysia::ui::UiLabeledRadioTextPlacement text_placement = elysia::ui::UiLabeledRadioTextPlacement::NearIndicator
-)
-{
-    elysia::ui::UiLabeledRadioButtonConfig config{};
-    config.text_content = elysia::ui::ui_text_key(text_key);
-    config.label_placement = label_placement;
-    config.text_placement = text_placement;
-    auto radio_button = std::make_unique<elysia::ui::UiLabeledRadioButton>(rect,config,0);
-    radio_button->set_selected(selected);
-    radio_button->set_on_selected([scope]()
-    {
-        std::cout << scope << " radio selected" << std::endl;
-    });
-    return radio_button;
+    auto label = std::make_unique<UiLabel>(elysia::core::Rect{ 0,0,780,30 },0,ui_text_key("ui_test_scene.status.ready"));
+    label->set_visual_role(UiLabelVisualRole::Subtitle);
+    return label;
 }
 }
 
@@ -208,41 +114,28 @@ void UiContainerTestScene::on_enter(const elysia::scene::ScenePayload& payload)
     rebuild_ui();
 }
 
-void UiContainerTestScene::on_input(
-    const elysia::input::RawInputFrame& input,
-    const std::vector<elysia::input::RawInputEvent>& events)
+void UiContainerTestScene::on_input(const elysia::input::RawInputFrame& input,const std::vector<elysia::input::RawInputEvent>& events)
 {
     ApplicationScene::on_input(input,events);
 }
 
-void UiContainerTestScene::on_exit()
-{
-    _paused = false;
-    clear_ui();
-}
-
-void UiContainerTestScene::reset()
-{
-    _paused = false;
-    clear_ui();
-}
-
-void UiContainerTestScene::register_theme_element(elysia::ui::UiElement& element)
-{
-    auto* root = dynamic_cast<elysia::ui::UiChildHost*>(&element);
-    if (root == _root_window)
-        _theme_registrations.push_back(_theme_manager.register_root(*root));
-}
+void UiContainerTestScene::on_exit() { _paused = false; clear_ui(); }
+void UiContainerTestScene::reset() { _paused = false; clear_ui(); }
 
 void UiContainerTestScene::refresh_theme_preview_styles()
 {
     if (!_root_window)
         return;
-
     auto overrides = _root_window->style_overrides();
     overrides.draw_background = true;
     overrides.draw_border = true;
     _root_window->set_style_overrides(overrides);
+}
+
+void UiContainerTestScene::set_status(std::string text)
+{
+    if (_status_label)
+        _status_label->set_text_content(elysia::ui::ui_raw_text(std::move(text)));
 }
 
 void UiContainerTestScene::set_active_theme(elysia::ui::UiBuiltinTheme theme)
@@ -250,714 +143,216 @@ void UiContainerTestScene::set_active_theme(elysia::ui::UiBuiltinTheme theme)
     _theme_manager.set_theme(theme);
     refresh_theme_preview_styles();
     sync_theme_switch_button_roles();
-
-    switch (theme)
-    {
-    case elysia::ui::UiBuiltinTheme::BlueGlassMoon:
-        std::cout << "ui test theme switched: BlueGlassMoon" << std::endl;
-        break;
-    case elysia::ui::UiBuiltinTheme::ElysiaLight:
-        std::cout << "ui test theme switched: ElysiaLight" << std::endl;
-        break;
-    case elysia::ui::UiBuiltinTheme::ElysiaDark:
-        std::cout << "ui test theme switched: ElysiaDark" << std::endl;
-        break;
-    case elysia::ui::UiBuiltinTheme::EvangelionUnit00:
-        std::cout << "ui test theme switched: EvangelionUnit00" << std::endl;
-        break;
-    case elysia::ui::UiBuiltinTheme::EvangelionUnit01:
-        std::cout << "ui test theme switched: EvangelionUnit01" << std::endl;
-        break;
-    case elysia::ui::UiBuiltinTheme::EvangelionUnit02:
-        std::cout << "ui test theme switched: EvangelionUnit02" << std::endl;
-        break;
-    case elysia::ui::UiBuiltinTheme::QuietSlate:
-        std::cout << "ui test theme switched: QuietSlate" << std::endl;
-        break;
-    }
+    set_status("Theme changed");
 }
 
 void UiContainerTestScene::sync_theme_switch_button_roles() noexcept
 {
-    const elysia::ui::UiBuiltinTheme current_theme = _theme_manager.current_builtin_theme();
-    const auto sync_role = [current_theme](elysia::ui::UiButton* button,elysia::ui::UiBuiltinTheme theme)
-    {
-        if (!button)
-            return;
-
-        button->set_visual_role(
-            current_theme == theme
-            ? elysia::ui::UiButtonVisualRole::Primary
-            : elysia::ui::UiButtonVisualRole::Default);
-    };
-
-    sync_role(_blue_glass_moon_theme_button,elysia::ui::UiBuiltinTheme::BlueGlassMoon);
-    sync_role(_elysia_light_theme_button,elysia::ui::UiBuiltinTheme::ElysiaLight);
-    sync_role(_elysia_dark_theme_button,elysia::ui::UiBuiltinTheme::ElysiaDark);
-    sync_role(_evangelion_unit_00_theme_button,elysia::ui::UiBuiltinTheme::EvangelionUnit00);
-    sync_role(_evangelion_unit_01_theme_button,elysia::ui::UiBuiltinTheme::EvangelionUnit01);
-    sync_role(_evangelion_unit_02_theme_button,elysia::ui::UiBuiltinTheme::EvangelionUnit02);
-    sync_role(_quiet_slate_theme_button,elysia::ui::UiBuiltinTheme::QuietSlate);
+    static constexpr std::array<elysia::ui::UiBuiltinTheme,7> themes{
+        elysia::ui::UiBuiltinTheme::BlueGlassMoon, elysia::ui::UiBuiltinTheme::ElysiaLight,
+        elysia::ui::UiBuiltinTheme::ElysiaDark, elysia::ui::UiBuiltinTheme::EvangelionUnit00,
+        elysia::ui::UiBuiltinTheme::EvangelionUnit01, elysia::ui::UiBuiltinTheme::EvangelionUnit02,
+        elysia::ui::UiBuiltinTheme::QuietSlate };
+    for (std::size_t index = 0; index < themes.size(); ++index)
+        if (_theme_buttons[index])
+            _theme_buttons[index]->set_visual_role(_theme_manager.current_builtin_theme() == themes[index]
+                ? elysia::ui::UiButtonVisualRole::Primary : elysia::ui::UiButtonVisualRole::Default);
 }
 
 void UiContainerTestScene::rebuild_ui()
 {
     clear_ui();
-
-    const auto register_themed = [this](elysia::ui::UiElement* element)
-    {
-        if (element)
-            register_theme_element(*element);
-    };
-
-    _root_window = Scene::create_and_add_object<elysia::ui::UiWindow>(elysia::core::Rect{ 120,80,1040,560 },100);
-    _root_window->set_padding(elysia::ui::UiLayoutPadding{ 24.0f,24.0f,24.0f,24.0f });
-    _root_window->set_on_cancel([this]()
-    {
-        request_back_to_menu();
-    });
-    register_themed(_root_window);
-    update_style_overrides(*_root_window,[](elysia::ui::UiWindowStyleOverrides& style) { style.corner_radius = 22.0f; });
+    _root_window = Scene::create_and_add_object<UiWindow>(elysia::core::Rect{ 80,52,1120,616 },100);
+    _root_window->set_padding(UiLayoutPadding{ 16,16,16,16 });
+    _root_window->set_on_cancel([this]() { request_back_to_menu(); });
+    _theme_registrations.push_back(_theme_manager.register_root(*_root_window));
     refresh_theme_preview_styles();
 
-    auto* vertical_scroll = _root_window->create_child<elysia::ui::UiScrollContainer>(elysia::core::Rect{ 0,0,260,420 });
-    vertical_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Auto);
-    vertical_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
-    vertical_scroll->set_scroll_step(elysia::core::Vector2(32.0f,32.0f));
-    register_themed(vertical_scroll);
+    auto status = status_label();
+    _status_label = status.get();
+    _root_window->add_child(std::move(status),at(16,12,850,30));
 
-    auto vertical_list = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,260,760 });
-    vertical_list->set_padding(elysia::ui::UiLayoutPadding{ 20.0f,20.0f,20.0f,20.0f });
-    vertical_list->set_item_spacing(18.0f);
-    for (int index = 0; index < 4; ++index)
-        register_themed(vertical_list->add_back(make_button(index,"vertical")));
+    auto workbench = std::make_unique<UiTabContainer>(elysia::core::Rect{ 0,0,1080,530 });
+    UiTabContainer* tabs = workbench.get();
 
-    auto nested_radio_group = std::make_unique<elysia::ui::UiRadioGroup>(elysia::core::Rect{ 0,0,220,54 });
-    nested_radio_group->set_direction(elysia::ui::UiListDirection::Horizontal);
-    nested_radio_group->set_item_spacing(14.0f);
-    nested_radio_group->set_padding(elysia::ui::UiLayoutPadding{ 10.0f,8.0f,10.0f,8.0f });
-    nested_radio_group->set_on_selection_changed([](std::optional<std::size_t> selected_index)
+    // Overview: a concise health dashboard and representative themed roles.
+    UiListContainer* overview_list = nullptr;
+    auto overview = page_scroll(overview_list);
+    auto* overview_section = add_section(*overview_list,"ui_test_scene.pages.overview","ui_test_scene.sections.overview",190);
+    auto primary = button("ui_test_scene.actions.replay");
+    primary->set_visual_role(UiButtonVisualRole::Primary);
+    primary->set_on_click([this]() { set_status("Overview action invoked"); });
+    overview_section->add_back(std::move(primary));
+    auto danger = button("ui_test_scene.actions.reset");
+    danger->set_visual_role(UiButtonVisualRole::Danger);
+    danger->set_on_click([this]() { rebuild_ui(); });
+    overview_section->add_back(std::move(danger));
+    auto disabled = button("menu_scene.exit");
+    disabled->set_enabled(false);
+    overview_section->add_back(std::move(disabled));
+    auto progress = std::make_unique<UiBar>(elysia::core::Rect{ 0,0,420,22 });
+    progress->set_visual_role(UiBarVisualRole::Progress);
+    progress->set_ratio(0.68f);
+    overview_section->add_back(std::move(progress));
+    (void)tabs->add_tab(ui_text_key("ui_test_scene.pages.overview"),std::move(overview));
+
+    // Controls: each interactive control has an observable callback or state change.
+    UiListContainer* controls_list = nullptr;
+    auto controls = page_scroll(controls_list);
+    auto* controls_section = add_section(*controls_list,"ui_test_scene.pages.controls","ui_test_scene.sections.controls",620);
+    auto group = std::make_unique<UiButtonGroup>(elysia::core::Rect{ 0,0,320,120 });
+    group->set_on_selection_changed([this](std::optional<std::size_t> index) { set_status(index ? "ButtonGroup selection changed" : "ButtonGroup cleared"); });
+    group->add_button(button("menu_scene.start"));
+    group->add_button(button("menu_scene.settings"));
+    group->add_button(button("menu_scene.about"));
+    controls_section->add_back(std::move(group));
+    auto check = std::make_unique<UiCheckbox>(elysia::core::Rect{ 0,0,44,44 });
+    check->set_mark_style(UiCheckboxMarkStyle::Checkmark);
+    check->set_on_toggled([this](UiCheckboxState) { set_status("Checkbox toggled"); });
+    controls_section->add_back(std::move(check));
+    UiLabeledCheckboxConfig check_config{}; check_config.text_content = ui_text_key("ui_test_scene.controls.labeled_check");
+    auto labeled_check = std::make_unique<UiLabeledCheckbox>(elysia::core::Rect{ 0,0,360,42 },check_config);
+    controls_section->add_back(std::move(labeled_check));
+    auto radios = std::make_unique<UiRadioGroup>(elysia::core::Rect{ 0,0,360,130 });
+    radios->set_on_selection_changed([this](std::optional<std::size_t>) { set_status("Radio selection changed"); });
+    radios->add_back(std::make_unique<UiRadioButton>(elysia::core::Rect{ 0,0,42,42 }));
+    UiLabeledRadioButtonConfig radio_config{}; radio_config.text_content = ui_text_key("ui_test_scene.controls.labeled_radio");
+    radios->add_back(std::make_unique<UiLabeledRadioButton>(elysia::core::Rect{ 0,0,300,42 },radio_config));
+    controls_section->add_back(std::move(radios));
+    auto slider = std::make_unique<UiSlider>(elysia::core::Rect{ 0,0,360,48 });
+    slider->set_value_display(UiSliderValueDisplay::Percent); slider->set_value(0.5f);
+    slider->set_on_value_changed([this](float) { set_status("Horizontal slider changed"); });
+    controls_section->add_back(std::move(slider));
+    auto vertical_slider = std::make_unique<UiSlider>(elysia::core::Rect{ 0,0,64,130 });
+    vertical_slider->set_orientation(UiSliderOrientation::Vertical); vertical_slider->set_value_display(UiSliderValueDisplay::Value); vertical_slider->set_value(0.72f);
+    controls_section->add_back(std::move(vertical_slider));
+    auto input = std::make_unique<UiTextInput>(elysia::core::Rect{ 0,0,360,44 });
+    input->set_placeholder_content(ui_text_key("ui_test_scene.controls.placeholder")); input->set_max_length(16);
+    input->set_on_submit([this](std::string_view) { set_status("Text input submitted"); });
+    controls_section->add_back(std::move(input));
+    UiDragHandleConfig drag_config{}; drag_config.axis = UiDragAxis::Horizontal; drag_config.drag_bounds = elysia::core::Rect{ 0,0,400,50 };
+    auto drag = std::make_unique<UiDragHandle>(elysia::core::Rect{ 0,0,28,28 },drag_config);
+    drag->set_on_dragged([this](const elysia::core::Vector2&) { set_status("Drag handle moved"); });
+    controls_section->add_back(std::move(drag));
+    (void)tabs->add_tab(ui_text_key("ui_test_scene.pages.controls"),std::move(controls));
+
+    // Content and media: safely hide resource-dependent samples when data is unavailable.
+    UiListContainer* media_list = nullptr;
+    auto media = page_scroll(media_list);
+    auto* media_section = add_section(*media_list,"ui_test_scene.pages.media","ui_test_scene.sections.media",640);
+    auto fade_label = std::make_unique<UiFadeLabel>(elysia::core::Rect{ 0,0,360,34 },0,ui_text_key("ui_test_scene.actions.replay"));
+    fade_label->configure_playback(effects::UiOpacityFadeMode::FadeInOut,0.0,0.25,0.25); fade_label->play(); media_section->add_back(std::move(fade_label));
+    auto blink_label = std::make_unique<UiBlinkLabel>(elysia::core::Rect{ 0,0,360,34 },0,ui_text_key("ui_test_scene.pages.media"));
+    blink_label->configure_playback(effects::UiOpacityBlinkMode::VisibleFirst,0.0,0.2,0.2,2); blink_label->play(); media_section->add_back(std::move(blink_label));
+    auto pulse_label = std::make_unique<UiPulseLabel>(elysia::core::Rect{ 0,0,360,34 },0,ui_text_key("ui_test_scene.sections.media"));
+    pulse_label->configure_playback(effects::UiOpacityPulseMode::MinToMax,0.0,0.25,0.25,2); pulse_label->play(); media_section->add_back(std::move(pulse_label));
+    auto text = std::make_unique<UiTextBlock>(elysia::core::Rect{ 0,0,700,84 });
+    text->set_text_content(ui_text_key("ui_test_scene.media.long_text")); text->set_padding(6);
+    media_section->add_back(std::move(text));
+    auto number = std::make_unique<UiNumber>(elysia::core::Rect{ 0,0,240,42 });
+    number->set_value(73.25); number->set_decimal_places(2); number->set_suffix(UiNumberSuffix::Percent);
+    media_section->add_back(std::move(number));
+    for (const auto direction : { BarFillDirection::LeftToRight,BarFillDirection::RightToLeft,BarFillDirection::TopToBottom,BarFillDirection::BottomToTop })
     {
-        if (selected_index)
-            std::cout << "vertical nested radio group " << *selected_index << std::endl;
-        else
-            std::cout << "vertical nested radio group none" << std::endl;
-    });
-    register_themed(nested_radio_group->add_back(make_radio_button(
-        elysia::core::Rect{ 0,0,60,36 },
-        "menu_scene.start",
-        true,
-        "vertical-nested")));
-    register_themed(nested_radio_group->add_back(make_radio_button(
-        elysia::core::Rect{ 0,0,60,36 },
-        "menu_scene.settings",
-        false,
-        "vertical-nested")));
-    register_themed(nested_radio_group->add_back(make_radio_button(
-        elysia::core::Rect{ 0,0,60,36 },
-        "menu_scene.about",
-        false,
-        "vertical-nested")));
-    vertical_list->add_back(std::move(nested_radio_group));
-
-    for (int index = 4; index < 10; ++index)
-        register_themed(vertical_list->add_back(make_button(index,"vertical")));
-    vertical_scroll->set_content(std::move(vertical_list));
-
-    auto* horizontal_scroll = _root_window->create_child<elysia::ui::UiScrollContainer>(elysia::core::Rect{ 0,0,320,180 });
-    horizontal_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Auto);
-    horizontal_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
-    horizontal_scroll->set_scroll_step(elysia::core::Vector2(36.0f,36.0f));
-    register_themed(horizontal_scroll);
-
-    auto horizontal_panel = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,760,180 });
-    horizontal_panel->set_visual_role(elysia::ui::UiPanelVisualRole::Dialog);
-
-    auto horizontal_button_0 = std::make_unique<elysia::ui::UiButton>(
-        elysia::core::Rect{ 70,68,120,44 },
-        make_button_config(button_text_key_for_index(0)),
-        0);
-    horizontal_button_0->set_on_click([]()
-    {
-        std::cout << "horizontal button 0" << std::endl;
-    });
-    register_themed(horizontal_button_0.get());
-    horizontal_panel->add_child(std::move(horizontal_button_0),elysia::ui::UiPanelInsertDirection::Down);
-
-    for (int index = 1; index < 5; ++index)
-    {
-        auto button = std::make_unique<elysia::ui::UiButton>(
-            elysia::core::Rect{ 70.0f + 140.0f * static_cast<float>(index),68.0f,120.0f,44.0f },
-            make_button_config(button_text_key_for_index(index)),
-            0);
-        button->set_on_click([index]()
-        {
-            std::cout << "horizontal button " << index << std::endl;
-        });
-        register_themed(button.get());
-        horizontal_panel->add_child(std::move(button),elysia::ui::UiPanelInsertDirection::Right);
+        auto bar = std::make_unique<UiBar>(elysia::core::Rect{ 0,0,300,20 }); bar->set_ratio(0.58f); bar->set_fill_direction(direction);
+        media_section->add_back(std::move(bar));
     }
-    register_themed(horizontal_panel.get());
-    horizontal_scroll->set_content(std::move(horizontal_panel));
-
-    auto* grid_scroll = _root_window->create_child<elysia::ui::UiScrollContainer>(elysia::core::Rect{ 0,0,340,260 });
-    grid_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Auto);
-    grid_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
-    grid_scroll->set_scroll_step(elysia::core::Vector2(28.0f,28.0f));
-    register_themed(grid_scroll);
-
-    auto grid_content = std::make_unique<elysia::ui::UiGridContainer>(elysia::core::Rect{ 0,0,520,360 });
-    grid_content->set_padding(elysia::ui::UiLayoutPadding{ 18.0f,18.0f,18.0f,18.0f });
-    grid_content->set_column_count(4);
-    grid_content->set_cell_spacing(elysia::core::Vector2(16.0f,16.0f));
-    for (int index = 0; index < 20; ++index)
+    SDL_Texture* moon = elysia::resources::ResourceManager::instance()->find_texture("ui.moon");
+    if (moon)
     {
-        auto button = std::make_unique<elysia::ui::UiButton>(
-            elysia::core::Rect{ 0,0,96,48 },
-            make_button_config(button_text_key_for_index(index)),
-            0);
-        button->set_on_click([index]()
-        {
-            std::cout << "grid button " << index << std::endl;
-        });
-        register_themed(button.get());
-        grid_content->add_child(std::move(button));
+        auto image = std::make_unique<UiImage>(moon,elysia::core::Rect{ 0,0,120,80 });
+        media_section->add_back(std::move(image));
+        auto fade = std::make_unique<UiFadeImage>(moon,elysia::core::Rect{ 0,0,120,80 });
+        fade->configure_playback(effects::UiOpacityFadeMode::FadeInOut,0.1,0.35,0.35); fade->play(); media_section->add_back(std::move(fade));
+        auto blink = std::make_unique<UiBlinkImage>(moon,elysia::core::Rect{ 0,0,120,80 });
+        blink->configure_playback(effects::UiOpacityBlinkMode::VisibleFirst,0.0,0.25,0.25,2); blink->play(); media_section->add_back(std::move(blink));
+        auto pulse = std::make_unique<UiPulseImage>(moon,elysia::core::Rect{ 0,0,120,80 });
+        pulse->configure_playback(effects::UiOpacityPulseMode::MinToMax,0.0,0.3,0.3,2); pulse->play(); media_section->add_back(std::move(pulse));
     }
-    grid_scroll->set_content(std::move(grid_content));
+    else media_section->add_back(std::make_unique<UiLabel>(elysia::core::Rect{ 0,0,500,32 },0,ui_text_key("ui_test_scene.media.texture_unavailable")));
+    auto animation = std::make_unique<UiAnimation>("aozaki_aoko.idle",elysia::core::Rect{ 0,0,120,120 });
+    const bool animation_loaded = animation->set_animation_key("aozaki_aoko.idle"); animation->set_visible(animation_loaded);
+    if (animation_loaded) { animation->play(); media_section->add_back(std::move(animation)); }
+    else media_section->add_back(std::make_unique<UiLabel>(elysia::core::Rect{ 0,0,500,32 },0,ui_text_key("ui_test_scene.media.animation_unavailable")));
+    (void)tabs->add_tab(ui_text_key("ui_test_scene.pages.media"),std::move(media));
 
-    auto* hidden_scroll = _root_window->create_child<elysia::ui::UiScrollContainer>(elysia::core::Rect{ 0,0,320,180 });
-    hidden_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Auto);
-    hidden_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Hidden);
-    hidden_scroll->set_scroll_step(elysia::core::Vector2(30.0f,30.0f));
-    register_themed(hidden_scroll);
+    // Containers and layout.
+    UiListContainer* containers_list = nullptr;
+    auto containers = page_scroll(containers_list);
+    auto* container_section = add_section(*containers_list,"ui_test_scene.pages.containers","ui_test_scene.sections.containers",620);
+    auto grid = std::make_unique<UiGridContainer>(elysia::core::Rect{ 0,0,560,170 }); grid->set_column_count(3); grid->set_cell_spacing(elysia::core::Vector2(8,8));
+    for (int index = 0; index < 6; ++index) grid->add_child(button(index % 2 ? "menu_scene.settings" : "menu_scene.start"));
+    container_section->add_back(std::move(grid));
+    auto chrome = std::make_unique<UiChromeContainer>(elysia::core::Rect{ 0,0,620,170 });
+    chrome->add_left_action(button("common.back")); chrome->add_title_child(std::make_unique<UiLabel>(elysia::core::Rect{ 0,0,240,30 },0,ui_text_key("ui_test_scene.containers.chrome")));
+    chrome->add_right_action(button("common.close"));
+    auto chrome_body = std::make_unique<UiPanel>(elysia::core::Rect{ 0,0,580,100 }); chrome_body->add_child(button("ui_test_scene.actions.replay")); chrome->set_body(std::move(chrome_body));
+    container_section->add_back(std::move(chrome));
+    auto nested_tabs = std::make_unique<UiTabContainer>(elysia::core::Rect{ 0,0,620,200 });
+    auto nested_page = std::make_unique<UiPanel>(elysia::core::Rect{ 0,0,580,140 }); nested_page->add_child(button("menu_scene.about"));
+    (void)nested_tabs->add_tab(ui_text_key("ui_test_scene.containers.nested_tab"),std::move(nested_page));
+    container_section->add_back(std::move(nested_tabs));
+    auto hidden_scroll = std::make_unique<UiScrollContainer>(elysia::core::Rect{ 0,0,500,110 });
+    hidden_scroll->set_scroll_axis(UiScrollAxis::Horizontal); hidden_scroll->set_scrollbar_visibility(UiScrollBarVisibility::Hidden);
+    auto hidden_content = std::make_unique<UiListContainer>(elysia::core::Rect{ 0,0,900,90 }); hidden_content->set_direction(UiListDirection::Horizontal);
+    for (int index = 0; index < 5; ++index) hidden_content->add_back(button("menu_scene.about"));
+    hidden_scroll->set_content(std::move(hidden_content)); container_section->add_back(std::move(hidden_scroll));
+    (void)tabs->add_tab(ui_text_key("ui_test_scene.pages.containers"),std::move(containers));
 
-    auto first_hidden_content = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,320,360 });
-    first_hidden_content->set_padding(elysia::ui::UiLayoutPadding{ 18.0f,18.0f,18.0f,18.0f });
-    first_hidden_content->set_item_spacing(14.0f);
-    for (int index = 0; index < 4; ++index)
-        register_themed(first_hidden_content->add_back(make_button(index,"hidden-initial")));
-    hidden_scroll->set_content(std::move(first_hidden_content));
+    // Overlays, transient popups and focus recovery.
+    UiListContainer* overlays_list = nullptr;
+    auto overlays = page_scroll(overlays_list);
+    auto* overlay_section = add_section(*overlays_list,"ui_test_scene.pages.overlays","ui_test_scene.sections.overlays",470);
+    auto overlay = std::make_unique<UiPanel>(elysia::core::Rect{ 0,0,320,140 }); UiPanel* overlay_ptr = overlay.get();
+    overlay->add_child(button("common.close")); _root_window->add_child(std::move(overlay),at(760,76,320,140));
+    _root_window->register_overlay(*overlay_ptr,UiOverlayOptions{ .open=false,.modal=false,.close_on_cancel=true,.close_on_outside_click=true,.placement=UiOverlayPlacement::Center,.transition=UiOverlayTransition::Slide,.fallback_size=elysia::core::Vector2(320,140),.order=900 });
+    auto open_overlay = button("ui_test_scene.overlays.open_overlay"); open_overlay->set_on_click([this,overlay_ptr]() { _root_window->open_overlay(*overlay_ptr); set_status("Non-modal overlay opened"); }); overlay_section->add_back(std::move(open_overlay));
+    auto dialog = std::make_unique<UiDialog>(elysia::core::Rect{ 0,0,480,300 }); UiDialog* dialog_ptr = dialog.get();
+    dialog->set_title_content(ui_text_key("ui_test_scene.dialog.title")); dialog->set_body_content(ui_text_key("ui_test_scene.dialog.body")); dialog->set_action_content(ui_text_key("common.close"));
+    _root_window->add_child(std::move(dialog),at(760,230,480,300)); dialog_ptr->register_with_window(*_root_window);
+    auto open_dialog = button("ui_test_scene.overlays.open_dialog"); open_dialog->set_on_click([dialog_ptr]() { dialog_ptr->open(); }); overlay_section->add_back(std::move(open_dialog));
+    auto confirm = std::make_unique<UiConfirmationDialog>(elysia::core::Rect{ 0,0,440,220 }); UiConfirmationDialog* confirm_ptr = confirm.get();
+    confirm->set_config(UiConfirmationDialogConfig{ .title=ui_text_key("ui_test_scene.confirm.title"),.message=ui_text_key("ui_test_scene.confirm.message"),.confirm=ui_text_key("common.confirm"),.cancel=ui_text_key("common.cancel"),.close=ui_text_key("common.close") });
+    _root_window->add_child(std::move(confirm),at(760,230,440,220)); confirm_ptr->register_with_window(*_root_window);
+    auto open_confirm = button("ui_test_scene.overlays.open_confirm"); open_confirm->set_on_click([confirm_ptr]() { confirm_ptr->open(); }); overlay_section->add_back(std::move(open_confirm));
+    auto dropdown = std::make_unique<UiDropdown>(elysia::core::Rect{ 0,0,320,42 });
+    dropdown->set_options({ UiDropdownOption{ui_text_key("menu_scene.start")},UiDropdownOption{ui_text_key("menu_scene.settings")},UiDropdownOption{ui_text_key("menu_scene.about")},UiDropdownOption{ui_text_key("menu_scene.exit")} });
+    dropdown->register_with_window(*_root_window); overlay_section->add_back(std::move(dropdown));
+    auto tooltip_trigger = button("ui_test_scene.overlays.tooltip");
+    UiButton* tooltip_trigger_ptr = tooltip_trigger.get();
+    overlay_section->add_back(std::move(tooltip_trigger));
+    auto* tooltip = _root_window->create_child<UiTooltip>(0);
+    auto tooltip_content = std::make_unique<UiTextBlock>(elysia::core::Rect{ 0,0,280,72 });
+    tooltip_content->set_text_content(ui_text_key("ui_test_scene.overlays.tooltip_text")); tooltip_content->set_padding(8);
+    tooltip->bind_trigger(*tooltip_trigger_ptr); tooltip->set_content(std::move(tooltip_content)); tooltip->register_with_window(*_root_window);
+    (void)tabs->add_tab(ui_text_key("ui_test_scene.pages.overlays"),std::move(overlays));
 
-    auto replacement_hidden_content = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,320,520 });
-    replacement_hidden_content->set_padding(elysia::ui::UiLayoutPadding{ 18.0f,18.0f,18.0f,18.0f });
-    replacement_hidden_content->set_item_spacing(14.0f);
-    for (int index = 0; index < 8; ++index)
-        register_themed(replacement_hidden_content->add_back(make_button(index,"hidden")));
-    hidden_scroll->set_content(std::move(replacement_hidden_content));
+    // Theme and localization page.
+    UiListContainer* theme_list = nullptr;
+    auto themes_page = page_scroll(theme_list);
+    auto* theme_section = add_section(*theme_list,"ui_test_scene.pages.theme","ui_test_scene.sections.theme",520);
+    static constexpr std::array<const char*,7> theme_keys{ "ui_test_scene.theme_blue_glass_moon","ui_test_scene.theme_elysia_light","ui_test_scene.theme_elysia_dark","ui_test_scene.theme_evangelion_unit_00","ui_test_scene.theme_evangelion_unit_01","ui_test_scene.theme_evangelion_unit_02","ui_test_scene.theme_quiet_slate" };
+    static constexpr std::array<UiBuiltinTheme,7> themes{ UiBuiltinTheme::BlueGlassMoon,UiBuiltinTheme::ElysiaLight,UiBuiltinTheme::ElysiaDark,UiBuiltinTheme::EvangelionUnit00,UiBuiltinTheme::EvangelionUnit01,UiBuiltinTheme::EvangelionUnit02,UiBuiltinTheme::QuietSlate };
+    for (std::size_t index = 0; index < themes.size(); ++index) { auto theme_button = button(theme_keys[index]); _theme_buttons[index] = theme_button.get(); theme_button->set_on_click([this,theme=themes[index]]() { set_active_theme(theme); }); theme_section->add_back(std::move(theme_button)); }
+    auto raw = std::make_unique<UiLabel>(elysia::core::Rect{ 0,0,680,32 },0,ui_raw_text("Raw text: localization bypass comparison")); raw->set_visual_role(UiLabelVisualRole::Muted); theme_section->add_back(std::move(raw));
+    (void)tabs->add_tab(ui_text_key("ui_test_scene.pages.theme"),std::move(themes_page));
 
-    auto* widget_scroll = _root_window->create_child<elysia::ui::UiScrollContainer>(elysia::core::Rect{ 0,0,340,220 });
-    widget_scroll->set_scroll_axis(elysia::ui::UiScrollAxis::Auto);
-    widget_scroll->set_scrollbar_visibility(elysia::ui::UiScrollBarVisibility::Auto);
-    widget_scroll->set_scroll_step(elysia::core::Vector2(24.0f,24.0f));
-    register_themed(widget_scroll);
-
-    auto widget_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,340,1620 });
-    widget_content->set_visual_role(elysia::ui::UiPanelVisualRole::Dialog);
-    register_themed(widget_content.get());
-    update_style_overrides(*widget_content,[](elysia::ui::UiPanelStyleOverrides& style) { style.corner_radius = 18.0f; });
-
-    auto* non_modal_overlay = _root_window->create_child<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,260,128 });
-    non_modal_overlay->set_visual_role(elysia::ui::UiPanelVisualRole::Dialog);
-    register_themed(non_modal_overlay);
-    auto overlay_close_button = std::make_unique<elysia::ui::UiButton>(
-        elysia::core::Rect{ 40,42,180,44 },
-        make_button_config("menu_scene.exit"),
-        0);
-    overlay_close_button->set_on_click([this,non_modal_overlay]()
-    {
-        if (_root_window)
-            _root_window->set_overlay_open(*non_modal_overlay,false);
-    });
-    register_themed(overlay_close_button.get());
-    non_modal_overlay->add_child(std::move(overlay_close_button),elysia::ui::UiPanelInsertDirection::Down);
-    _root_window->register_overlay(
-        *non_modal_overlay,
-        elysia::ui::UiOverlayOptions{
-            .open = false,
-            .modal = false,
-            .close_on_cancel = true,
-            .close_on_outside_click = true,
-            .placement = elysia::ui::UiOverlayPlacement::Center,
-            .transition = elysia::ui::UiOverlayTransition::None,
-            .fallback_size = elysia::core::Vector2(260.0f,128.0f),
-            .order = 900
-        });
-
-    auto* localized_dialog = _root_window->create_child<elysia::ui::UiDialog>(elysia::core::Rect{ 0,0,520,360 });
-    localized_dialog->set_title_content(elysia::ui::ui_text_key("ui_test_scene.reading_dialog.title"));
-    localized_dialog->set_body_content(elysia::ui::ui_text_key("ui_test_scene.reading_dialog.body"));
-    localized_dialog->set_action_content(elysia::ui::ui_text_key("ui_test_scene.reading_dialog.close"));
-    localized_dialog->register_as_overlay(*_root_window);
-    register_themed(localized_dialog);
-    update_style_overrides(*localized_dialog,[](elysia::ui::UiDialogStyleOverrides& style) { style.corner_radius = 18.0f; });
-
-    auto* raw_text_dialog = _root_window->create_child<elysia::ui::UiDialog>(elysia::core::Rect{ 0,0,500,340 });
-    raw_text_dialog->set_title_content(elysia::ui::ui_raw_text("Raw Text Preview"));
-    raw_text_dialog->set_body_content(elysia::ui::ui_raw_text(
-        "This dialog bypasses the localization dictionary on purpose.\n\n"
-        "It is useful for debug notes, generated copy, or temporary editor strings.\n\n"
-        "The body text still wraps and scrolls like the i18n-backed reading dialog."));
-    raw_text_dialog->set_action_content(elysia::ui::ui_raw_text("Close"));
-    raw_text_dialog->register_as_overlay(*_root_window);
-    register_themed(raw_text_dialog);
-    update_style_overrides(*raw_text_dialog,[](elysia::ui::UiDialogStyleOverrides& style) { style.corner_radius = 10.0f; });
-
-    auto checkbox_0 = make_checkbox(
-        elysia::core::Rect{ 18,18,36,36 },
-        false,
-        elysia::ui::UiCheckboxMarkStyle::Checkmark,
-        "widget");
-    register_themed(checkbox_0.get());
-    update_style_overrides(*checkbox_0,[](elysia::ui::UiCheckboxStyleOverrides& style) { style.chrome.corner_radius = 6.0f; });
-    widget_content->add_child(std::move(checkbox_0),elysia::ui::UiPanelInsertDirection::Down);
-
-    auto checkbox_1 = make_checkbox(
-        elysia::core::Rect{ 74,18,36,36 },
-        true,
-        elysia::ui::UiCheckboxMarkStyle::FilledBox,
-        "widget");
-    register_themed(checkbox_1.get());
-    widget_content->add_child(std::move(checkbox_1),elysia::ui::UiPanelInsertDirection::Right);
-
-    auto labeled_checkbox_0 = make_labeled_checkbox(
-        elysia::core::Rect{ 18,74,220,40 },
-        "menu_scene.settings",
-        false,
-        elysia::ui::UiLabeledCheckboxLabelPlacement::Right,
-        elysia::ui::UiLabeledCheckboxTextPlacement::NearBox,
-        "widget");
-    register_themed(labeled_checkbox_0.get());
-    widget_content->add_child(std::move(labeled_checkbox_0),elysia::ui::UiPanelInsertDirection::Down);
-
-    auto labeled_checkbox_1 = make_labeled_checkbox(
-        elysia::core::Rect{ 18,124,220,40 },
-        "menu_scene.about",
-        true,
-        elysia::ui::UiLabeledCheckboxLabelPlacement::Right,
-        elysia::ui::UiLabeledCheckboxTextPlacement::FarEdge,
-        "widget");
-    register_themed(labeled_checkbox_1.get());
-    widget_content->add_child(std::move(labeled_checkbox_1),elysia::ui::UiPanelInsertDirection::Down);
-
-    auto labeled_checkbox_2 = make_labeled_checkbox(
-        elysia::core::Rect{ 18,174,220,40 },
-        "menu_scene.start",
-        false,
-        elysia::ui::UiLabeledCheckboxLabelPlacement::Left,
-        elysia::ui::UiLabeledCheckboxTextPlacement::NearBox,
-        "widget");
-    register_themed(labeled_checkbox_2.get());
-    widget_content->add_child(std::move(labeled_checkbox_2),elysia::ui::UiPanelInsertDirection::Down);
-
-    auto labeled_checkbox_3 = make_labeled_checkbox(
-        elysia::core::Rect{ 18,224,220,40 },
-        "menu_scene.exit",
-        true,
-        elysia::ui::UiLabeledCheckboxLabelPlacement::Left,
-        elysia::ui::UiLabeledCheckboxTextPlacement::FarEdge,
-        "widget");
-    register_themed(labeled_checkbox_3.get());
-    widget_content->add_child(std::move(labeled_checkbox_3),elysia::ui::UiPanelInsertDirection::Down);
-
-    auto vertical_radio_group = std::make_unique<elysia::ui::UiRadioGroup>(elysia::core::Rect{ 18,282,280,154 });
-    vertical_radio_group->set_padding(elysia::ui::UiLayoutPadding{ 10.0f,10.0f,10.0f,10.0f });
-    vertical_radio_group->set_item_spacing(10.0f);
-    vertical_radio_group->set_on_selection_changed([](std::optional<std::size_t> selected_index)
-    {
-        if (selected_index)
-            std::cout << "widget vertical radio group " << *selected_index << std::endl;
-        else
-            std::cout << "widget vertical radio group none" << std::endl;
-    });
-    register_themed(vertical_radio_group->add_back(make_radio_button(
-        elysia::core::Rect{ 0,0,240,38 },
-        "menu_scene.start",
-        true,
-        "widget-vertical")));
-    register_themed(vertical_radio_group->add_back(make_radio_button(
-        elysia::core::Rect{ 0,0,240,38 },
-        "menu_scene.settings",
-        true,
-        "widget-vertical",
-        elysia::ui::UiLabeledRadioLabelPlacement::Left,
-        elysia::ui::UiLabeledRadioTextPlacement::NearIndicator)));
-    register_themed(vertical_radio_group->add_back(make_radio_button(
-        elysia::core::Rect{ 0,0,240,38 },
-        "menu_scene.about",
-        false,
-        "widget-vertical",
-        elysia::ui::UiLabeledRadioLabelPlacement::Right,
-        elysia::ui::UiLabeledRadioTextPlacement::FarEdge)));
-    widget_content->add_child(std::move(vertical_radio_group),elysia::ui::UiPanelInsertDirection::Down);
-
-    auto horizontal_radio_group = std::make_unique<elysia::ui::UiRadioGroup>(elysia::core::Rect{ 18,452,280,54 });
-    horizontal_radio_group->set_direction(elysia::ui::UiListDirection::Horizontal);
-    horizontal_radio_group->set_item_spacing(16.0f);
-    horizontal_radio_group->set_padding(elysia::ui::UiLayoutPadding{ 10.0f,8.0f,10.0f,8.0f });
-    horizontal_radio_group->set_on_selection_changed([](std::optional<std::size_t> selected_index)
-    {
-        if (selected_index)
-            std::cout << "widget horizontal radio group " << *selected_index << std::endl;
-        else
-            std::cout << "widget horizontal radio group none" << std::endl;
-    });
-    register_themed(horizontal_radio_group->add_back(make_radio_button(
-        elysia::core::Rect{ 0,0,84,36 },
-        "menu_scene.start",
-        false,
-        "widget-horizontal")));
-    register_themed(horizontal_radio_group->add_back(make_radio_button(
-        elysia::core::Rect{ 0,0,84,36 },
-        "menu_scene.settings",
-        false,
-        "widget-horizontal")));
-    auto atomic_radio = std::make_unique<elysia::ui::UiRadioButton>(elysia::core::Rect{ 0,0,36,36 },0);
-    register_themed(horizontal_radio_group->add_back(std::move(atomic_radio)));
-    widget_content->add_child(std::move(horizontal_radio_group),elysia::ui::UiPanelInsertDirection::Down);
-
-    auto text_input_main = make_text_input(
-        elysia::core::Rect{ 18,526,280,44 },
-        "Type here",
-        std::nullopt,
-        "widget-main");
-    register_themed(text_input_main.get());
-    update_style_overrides(*text_input_main,[](elysia::ui::UiTextInputStyleOverrides& style) { style.chrome.corner_radius = 10.0f; });
-    widget_content->add_child(std::move(text_input_main),elysia::ui::UiPanelInsertDirection::Down);
-
-    auto text_input_limited = make_text_input(
-        elysia::core::Rect{ 18,580,280,44 },
-        "Max 8 chars",
-        std::optional<std::size_t>(8),
-        "widget-limited");
-    register_themed(text_input_limited.get());
-    widget_content->add_child(std::move(text_input_limited),elysia::ui::UiPanelInsertDirection::Down);
-
-    auto slider_label = std::make_unique<elysia::ui::UiLabel>(
-        elysia::core::Rect{ 18,638,280,32 },0,elysia::ui::ui_raw_text("External slider label"));
-    register_themed(slider_label.get());
-    widget_content->add_child(std::move(slider_label),elysia::ui::UiPanelInsertDirection::Down);
-
-    auto slider_none = make_slider(
-        elysia::core::Rect{ 18,676,280,48 },0.25f,"widget-none",elysia::ui::UiSliderValueDisplay::None);
-    register_themed(slider_none.get());
-    update_style_overrides(*slider_none,[](elysia::ui::UiSliderStyleOverrides& style) { style.chrome.corner_radius = 12.0f; });
-    widget_content->add_child(std::move(slider_none),elysia::ui::UiPanelInsertDirection::Down);
-
-    auto slider_value = make_slider(
-        elysia::core::Rect{ 18,730,280,48 },0.42f,"widget-value",elysia::ui::UiSliderValueDisplay::Value);
-    slider_value->set_value_decimal_places(2);
-    register_themed(slider_value.get());
-    update_style_overrides(*slider_value,[](elysia::ui::UiSliderStyleOverrides& style) { style.chrome.corner_radius = 18.0f; });
-    widget_content->add_child(std::move(slider_value),elysia::ui::UiPanelInsertDirection::Down);
-
-    auto slider_percent_vertical = make_slider(
-        elysia::core::Rect{ 18,784,90,150 },0.68f,"widget-percent-vertical",
-        elysia::ui::UiSliderValueDisplay::Percent,elysia::ui::UiSliderOrientation::Vertical);
-    register_themed(slider_percent_vertical.get());
-    widget_content->add_child(std::move(slider_percent_vertical),elysia::ui::UiPanelInsertDirection::Down);
-
-    auto open_overlay_button = std::make_unique<elysia::ui::UiButton>(
-        elysia::core::Rect{ 18,732,150,40 },
-        make_button_config("menu_scene.about"),
-        0);
-    open_overlay_button->set_on_click([this,non_modal_overlay]()
-    {
-        if (_root_window)
-            _root_window->set_overlay_open(*non_modal_overlay,true);
-    });
-    register_themed(open_overlay_button.get());
-    widget_content->add_child(std::move(open_overlay_button),elysia::ui::UiPanelInsertDirection::Down);
-
-    auto open_localized_dialog_button = std::make_unique<elysia::ui::UiButton>(
-        elysia::core::Rect{ 18,780,150,40 },
-        make_button_config("ui_test_scene.reading_dialog.open"),
-        0);
-    open_localized_dialog_button->set_on_click([this,localized_dialog]()
-    {
-        if (_root_window && localized_dialog)
-            localized_dialog->open(*_root_window);
-    });
-    register_themed(open_localized_dialog_button.get());
-    widget_content->add_child(std::move(open_localized_dialog_button),elysia::ui::UiPanelInsertDirection::Down);
-
-    auto open_raw_dialog_button = std::make_unique<elysia::ui::UiButton>(
-        elysia::core::Rect{ 18,830,150,40 },
-        make_button_config("ui_test_scene.reading_dialog.open_raw"),
-        0);
-    open_raw_dialog_button->set_on_click([this,raw_text_dialog]()
-    {
-        if (_root_window && raw_text_dialog)
-            raw_text_dialog->open(*_root_window);
-    });
-    register_themed(open_raw_dialog_button.get());
-    widget_content->add_child(std::move(open_raw_dialog_button),elysia::ui::UiPanelInsertDirection::Down);
-
-    auto dropdown = std::make_unique<elysia::ui::UiDropdown>(elysia::core::Rect{ 18,882,280,42 });
-    dropdown->set_options({
-        elysia::ui::UiDropdownOption{ elysia::ui::ui_text_key("menu_scene.start") },
-        elysia::ui::UiDropdownOption{ elysia::ui::ui_text_key("menu_scene.settings") },
-        elysia::ui::UiDropdownOption{ elysia::ui::ui_text_key("menu_scene.about") },
-        elysia::ui::UiDropdownOption{ elysia::ui::ui_text_key("menu_scene.exit") },
-        elysia::ui::UiDropdownOption{ elysia::ui::ui_raw_text("Raw option A") },
-        elysia::ui::UiDropdownOption{ elysia::ui::ui_raw_text("Raw option B") },
-        elysia::ui::UiDropdownOption{ elysia::ui::ui_raw_text("Raw option C") },
-        elysia::ui::UiDropdownOption{ elysia::ui::ui_raw_text("Raw option D") }
-    });
-    update_style_overrides(*dropdown,[](elysia::ui::UiDropdownStyleOverrides& style)
-    {
-        style.popup_max_height = 126.0f;
-    });
-    dropdown->set_on_selection_changed([](std::size_t selected_index)
-    {
-        std::cout << "widget dropdown selected " << selected_index << std::endl;
-    });
-    dropdown->register_as_transient_popup(*_root_window);
-    register_themed(dropdown.get());
-    widget_content->add_child(std::move(dropdown),elysia::ui::UiPanelInsertDirection::Down);
-
-    auto text_tooltip_button = std::make_unique<elysia::ui::UiButton>(
-        elysia::core::Rect{ 18,934,220,40 },
-        make_button_config("menu_scene.about"),
-        0);
-    elysia::ui::UiButton* text_tooltip_trigger = text_tooltip_button.get();
-    register_themed(text_tooltip_button.get());
-    widget_content->add_child(std::move(text_tooltip_button),elysia::ui::UiPanelInsertDirection::Down);
-
-    auto panel_tooltip_button = std::make_unique<elysia::ui::UiButton>(
-        elysia::core::Rect{ 18,982,220,40 },
-        make_button_config("menu_scene.settings"),
-        0);
-    elysia::ui::UiButton* panel_tooltip_trigger = panel_tooltip_button.get();
-    register_themed(panel_tooltip_button.get());
-    widget_content->add_child(std::move(panel_tooltip_button),elysia::ui::UiPanelInsertDirection::Down);
-
-    auto* text_tooltip = _root_window->create_child<elysia::ui::UiTooltip>(0);
-    auto text_tooltip_content = std::make_unique<elysia::ui::UiTextBlock>(elysia::core::Rect{ 0,0,260,82 });
-    text_tooltip_content->set_text_content(elysia::ui::ui_raw_text(
-        "Tooltip: hover this button or focus it with keyboard/gamepad."));
-    text_tooltip_content->set_padding(10);
-    register_themed(text_tooltip_content.get());
-    text_tooltip->bind_trigger(*text_tooltip_trigger);
-    text_tooltip->set_content(std::move(text_tooltip_content));
-    text_tooltip->register_with_window(*_root_window);
-
-    auto* panel_tooltip = _root_window->create_child<elysia::ui::UiTooltip>(0);
-    auto panel_tooltip_content = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,250,104 });
-    panel_tooltip_content->set_padding(elysia::ui::UiLayoutPadding{ 10.0f,10.0f,10.0f,10.0f });
-    panel_tooltip_content->set_visual_role(elysia::ui::UiPanelVisualRole::Dialog);
-    auto panel_tooltip_label = std::make_unique<elysia::ui::UiLabel>(
-        elysia::core::Rect{ 0,0,220,36 },0,elysia::ui::ui_raw_text("Moved composite UiPanel"));
-    register_themed(panel_tooltip_label.get());
-    panel_tooltip_content->add_child(std::move(panel_tooltip_label),elysia::ui::UiPanelInsertDirection::Down);
-    register_themed(panel_tooltip_content.get());
-    panel_tooltip->bind_trigger(*panel_tooltip_trigger);
-    panel_tooltip->set_content(std::move(panel_tooltip_content));
-    panel_tooltip->register_with_window(*_root_window);
-
-    auto tabs = std::make_unique<elysia::ui::UiTabContainer>(elysia::core::Rect{ 18,1040,304,300 });
-    elysia::ui::UiTabContainer* tabs_ptr = tabs.get();
-    const auto add_test_tabs = [this,tabs_ptr]()
-    {
-        auto buttons_page = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,304,250 });
-        auto page_button = std::make_unique<elysia::ui::UiButton>(
-            elysia::core::Rect{ 12,12,180,40 },make_button_config("menu_scene.start"),0);
-        register_theme_element(*page_button);
-        buttons_page->add_child(std::move(page_button),elysia::ui::UiPanelInsertDirection::Down);
-        register_theme_element(*buttons_page);
-        (void)tabs_ptr->add_tab(elysia::ui::ui_raw_text("Buttons"),std::move(buttons_page));
-
-        auto form_page = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,304,250 });
-        auto page_input = make_text_input(elysia::core::Rect{ 12,12,220,42 },"Tab input",std::nullopt,"tab-form");
-        register_theme_element(*page_input);
-        form_page->add_child(std::move(page_input),elysia::ui::UiPanelInsertDirection::Down);
-        register_theme_element(*form_page);
-        (void)tabs_ptr->add_tab(elysia::ui::ui_raw_text("Form"),std::move(form_page));
-
-        auto composite_page = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,304,250 });
-        auto page_label = std::make_unique<elysia::ui::UiLabel>(
-            elysia::core::Rect{ 12,12,220,40 },0,elysia::ui::ui_raw_text("Composite tab page"));
-        register_theme_element(*page_label);
-        composite_page->add_child(std::move(page_label),elysia::ui::UiPanelInsertDirection::Down);
-        register_theme_element(*composite_page);
-        (void)tabs_ptr->add_tab(elysia::ui::ui_raw_text("Panel"),std::move(composite_page));
-    };
-    add_test_tabs();
-    tabs_ptr->set_on_focused_changed([](std::optional<std::size_t> index)
-    {
-        std::cout << "tab focused " << (index ? std::to_string(*index) : "none") << std::endl;
-    });
-    tabs_ptr->set_on_selected_changed([](std::optional<std::size_t> index)
-    {
-        std::cout << "tab selected " << (index ? std::to_string(*index) : "none") << std::endl;
-    });
-    widget_content->add_child(std::move(tabs),elysia::ui::UiPanelInsertDirection::Down);
-
-    auto remove_tab_button = std::make_unique<elysia::ui::UiButton>(
-        elysia::core::Rect{ 18,1350,220,40 },make_button_config("menu_scene.exit"),0);
-    remove_tab_button->set_on_click([tabs_ptr]()
-    {
-        if (auto selected = tabs_ptr->selected_index())
-            (void)tabs_ptr->remove_tab(*selected);
-    });
-    register_themed(remove_tab_button.get());
-    widget_content->add_child(std::move(remove_tab_button),elysia::ui::UiPanelInsertDirection::Down);
-
-    auto rebuild_tabs_button = std::make_unique<elysia::ui::UiButton>(
-        elysia::core::Rect{ 18,1400,220,40 },make_button_config("menu_scene.settings"),0);
-    rebuild_tabs_button->set_on_click([tabs_ptr,add_test_tabs]()
-    {
-        tabs_ptr->clear_tabs();
-        add_test_tabs();
-    });
-    register_themed(rebuild_tabs_button.get());
-    widget_content->add_child(std::move(rebuild_tabs_button),elysia::ui::UiPanelInsertDirection::Down);
-
-    // The hidden-scroll sample is a container with interactive descendants, so replaying this
-    // animation verifies that one presentation translation moves and hit-tests the full subtree.
-    hidden_scroll->bind_translation_animation("slide_in",elysia::ui::UiTranslationAnimation{
-        .from = elysia::core::Vector2(-96.0f,0.0f),
-        .to = elysia::core::Vector2::zero(),
-        .duration_seconds = 0.45,
-        .easing = elysia::ui::UiTranslationAnimationEasing::EaseInOut
-    });
-    auto replay_slide_animation_button = std::make_unique<elysia::ui::UiButton>(
-        elysia::core::Rect{ 18,1450,280,40 },
-        elysia::ui::UiButtonConfig{ .content = elysia::ui::ui_raw_text("Replay nested slide animation") },
-        0);
-    replay_slide_animation_button->set_on_click([hidden_scroll]()
-    {
-        (void)hidden_scroll->play_translation_animation("slide_in");
-    });
-    register_themed(replay_slide_animation_button.get());
-    widget_content->add_child(std::move(replay_slide_animation_button),elysia::ui::UiPanelInsertDirection::Down);
-
-    auto anchored_options_button = std::make_unique<elysia::ui::UiButton>(
-        elysia::core::Rect{ 0,0,132,36 },
-        make_button_config("menu_scene.settings"),
-        0);
-    anchored_options_button->set_on_click([]()
-    {
-        std::cout << "widget anchored options button" << std::endl;
-    });
-    register_themed(anchored_options_button.get());
-    widget_content->add_child(
-        std::move(anchored_options_button),
-        elysia::ui::UiLayoutChildOptions{
-            ._anchor = elysia::ui::UiLayoutAnchor::BottomRight,
-            ._margin = elysia::ui::UiLayoutMargin{ 0.0f,0.0f,18.0f,18.0f },
-            ._cross_align = elysia::ui::UiLayoutAlign::Start,
-            ._size_override = elysia::core::Vector2(132.0f,36.0f),
-            ._use_custom_cross_align = false,
-            ._fill_cross_axis = false,
-            ._use_size_override = true
-        });
-    widget_scroll->set_content(std::move(widget_content));
-
-    const auto configure_theme_button =
-        [this,&register_themed](
-            elysia::ui::UiButton*& button_slot,
-            float left,
-            float top,
-            const char* text_key,
-            elysia::ui::UiBuiltinTheme theme)
-    {
-        button_slot = _root_window->create_child<elysia::ui::UiButton>(
-            make_theme_button_options(left,top),
-            elysia::core::Rect{ 0,0,140,36 },
-            make_button_config(text_key),
-            0);
-        if (!button_slot)
-            return;
-
-        button_slot->set_typography_role(elysia::ui::UiTypographyRole::ButtonCompact);
-        button_slot->set_on_click([this,theme]()
-        {
-            set_active_theme(theme);
-        });
-        register_themed(button_slot);
-    };
-
-    configure_theme_button(
-        _blue_glass_moon_theme_button,
-        0.0f,
-        428.0f,
-        "ui_test_scene.theme_blue_glass_moon",
-        elysia::ui::UiBuiltinTheme::BlueGlassMoon);
-    configure_theme_button(
-        _elysia_light_theme_button,
-        152.0f,
-        428.0f,
-        "ui_test_scene.theme_elysia_light",
-        elysia::ui::UiBuiltinTheme::ElysiaLight);
-    configure_theme_button(
-        _elysia_dark_theme_button,
-        304.0f,
-        428.0f,
-        "ui_test_scene.theme_elysia_dark",
-        elysia::ui::UiBuiltinTheme::ElysiaDark);
-    configure_theme_button(
-        _evangelion_unit_00_theme_button,
-        456.0f,
-        428.0f,
-        "ui_test_scene.theme_evangelion_unit_00",
-        elysia::ui::UiBuiltinTheme::EvangelionUnit00);
-    configure_theme_button(
-        _evangelion_unit_01_theme_button,
-        76.0f,
-        472.0f,
-        "ui_test_scene.theme_evangelion_unit_01",
-        elysia::ui::UiBuiltinTheme::EvangelionUnit01);
-    configure_theme_button(
-        _evangelion_unit_02_theme_button,
-        228.0f,
-        472.0f,
-        "ui_test_scene.theme_evangelion_unit_02",
-        elysia::ui::UiBuiltinTheme::EvangelionUnit02);
-    configure_theme_button(
-        _quiet_slate_theme_button,
-        380.0f,
-        472.0f,
-        "ui_test_scene.theme_quiet_slate",
-        elysia::ui::UiBuiltinTheme::QuietSlate);
-
-    _root_window->set_child_layout_options(0,make_window_child_options(0.0f,0.0f));
-    _root_window->set_child_layout_options(1,make_window_child_options(288.0f,0.0f));
-    _root_window->set_child_layout_options(2,make_window_child_options(624.0f,0.0f));
-    _root_window->set_child_layout_options(3,make_window_child_options(288.0f,220.0f));
-    _root_window->set_child_layout_options(4,make_window_child_options(624.0f,300.0f));
-
-    (void)hidden_scroll->play_translation_animation("slide_in");
-
-    _root_window->register_focus_scope(*vertical_scroll,elysia::ui::UiFocusScopeNeighbors{ nullptr,hidden_scroll,nullptr,horizontal_scroll });
-    _root_window->register_focus_scope(*horizontal_scroll,elysia::ui::UiFocusScopeNeighbors{ nullptr,hidden_scroll,vertical_scroll,grid_scroll });
-    _root_window->register_focus_scope(*grid_scroll,elysia::ui::UiFocusScopeNeighbors{ nullptr,widget_scroll,horizontal_scroll,nullptr });
-    _root_window->register_focus_scope(*hidden_scroll,elysia::ui::UiFocusScopeNeighbors{ vertical_scroll,nullptr,nullptr,nullptr });
-    _root_window->register_focus_scope(*widget_scroll,elysia::ui::UiFocusScopeNeighbors{ grid_scroll,nullptr,hidden_scroll,nullptr });
-    sync_theme_switch_button_roles();
+    _root_window->add_child(std::move(workbench),at(16,48,1080,530));
+    _root_window->register_focus_scope(*tabs);
     _root_window->focus_first_available_scope();
+    sync_theme_switch_button_roles();
 }
 
 void UiContainerTestScene::clear_ui()
 {
     _theme_registrations.clear();
-    _blue_glass_moon_theme_button = nullptr;
-    _elysia_light_theme_button = nullptr;
-    _elysia_dark_theme_button = nullptr;
-    _evangelion_unit_00_theme_button = nullptr;
-    _evangelion_unit_01_theme_button = nullptr;
-    _evangelion_unit_02_theme_button = nullptr;
-    _quiet_slate_theme_button = nullptr;
-
-    if (_root_window)
-    {
-        _root_window->destroy();
-        _root_window = nullptr;
-    }
+    _theme_buttons.fill(nullptr);
+    _status_label = nullptr;
+    if (_root_window) { _root_window->destroy(); _root_window = nullptr; }
 }
 
 void UiContainerTestScene::request_back_to_menu()
 {
-    std::cout << "ui container test back" << std::endl;
     request_scene_switch(AppSceneKeys::MainMenu);
 }
 }

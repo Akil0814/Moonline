@@ -33,8 +33,8 @@ public:
 
     void set_show_delay(double seconds) noexcept;
     [[nodiscard]] double show_delay() const noexcept { return _show_delay; }
-    void show() noexcept;
-    void hide() noexcept;
+    void open() noexcept;
+    void close() noexcept;
     [[nodiscard]] bool is_open() const noexcept { return _open; }
 
     void register_with_window(UiWindow& window);

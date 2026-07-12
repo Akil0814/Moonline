@@ -37,7 +37,7 @@ public:
     [[nodiscard]] elysia::core::Vector2 content_extent() const noexcept override;
 
     // Inserts a child relative to the last panel insertion point and updates focus links.
-    void add_child(std::unique_ptr<UiElement> child,UiPanelInsertDirection direction = UiPanelInsertDirection::Down);
+    UiElement* add_child(std::unique_ptr<UiElement> child,UiPanelInsertDirection direction = UiPanelInsertDirection::Down);
     UiElement* add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options) override;
 
     void set_base_style(const UiPanelStyle& style) noexcept;

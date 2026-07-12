@@ -37,9 +37,9 @@ void UiGridContainer::reset() noexcept
     _layout = layout::UiGridLayoutConfig{};
 }
 
-void UiGridContainer::add_child(std::unique_ptr<UiElement> child)
+UiElement* UiGridContainer::add_child(std::unique_ptr<UiElement> child)
 {
-    (void)insert_child(std::move(child),child_count(),UiLayoutChildOptions{});
+    return insert_child(std::move(child),child_count(),UiLayoutChildOptions{});
 }
 
 UiElement* UiGridContainer::add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options)

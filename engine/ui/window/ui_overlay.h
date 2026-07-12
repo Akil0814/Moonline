@@ -13,7 +13,7 @@ class UiOverlayWindowClient
 {
 public:
     virtual ~UiOverlayWindowClient() = default;
-    virtual void on_overlay_window_detached(UiWindow& window) noexcept = 0;
+    virtual void on_window_detached(UiWindow& window) noexcept = 0;
 };
 
 enum class UiOverlayPlacement

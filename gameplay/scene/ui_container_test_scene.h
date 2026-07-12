@@ -3,6 +3,8 @@
 #include "../../application/scene/application_scene.h"
 #include "../../engine/ui/style/ui_theme_manager.h"
 
+#include <array>
+#include <string>
 #include <vector>
 
 namespace elysia::ui
@@ -10,6 +12,7 @@ namespace elysia::ui
 class UiWindow;
 class UiButton;
 class UiElement;
+class UiLabel;
 }
 
 namespace arcneco::scene
@@ -28,22 +31,17 @@ public:
 private:
     void rebuild_ui();
     void clear_ui();
-    void register_theme_element(elysia::ui::UiElement& element);
     void refresh_theme_preview_styles();
     void request_back_to_menu();
     void set_active_theme(elysia::ui::UiBuiltinTheme theme);
     void sync_theme_switch_button_roles() noexcept;
+    void set_status(std::string text);
 
 private:
     elysia::ui::UiWindow* _root_window = nullptr;
     elysia::ui::UiThemeManager _theme_manager;
     std::vector<elysia::ui::UiThemeRegistration> _theme_registrations;
-    elysia::ui::UiButton* _blue_glass_moon_theme_button = nullptr;
-    elysia::ui::UiButton* _elysia_light_theme_button = nullptr;
-    elysia::ui::UiButton* _elysia_dark_theme_button = nullptr;
-    elysia::ui::UiButton* _evangelion_unit_00_theme_button = nullptr;
-    elysia::ui::UiButton* _evangelion_unit_01_theme_button = nullptr;
-    elysia::ui::UiButton* _evangelion_unit_02_theme_button = nullptr;
-    elysia::ui::UiButton* _quiet_slate_theme_button = nullptr;
+    std::array<elysia::ui::UiButton*,7> _theme_buttons{};
+    elysia::ui::UiLabel* _status_label = nullptr;
 };
 }

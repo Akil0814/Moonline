@@ -121,8 +121,8 @@ void UiTabBar::clear_selection() noexcept
     refresh_styles();
 }
 
-void UiTabBar::set_on_focused_changed(IndexChangedCallback callback) { _on_focused_changed = std::move(callback); }
-void UiTabBar::set_on_selected_changed(IndexChangedCallback callback) { _on_selected_changed = std::move(callback); }
+void UiTabBar::set_on_focus_changed(IndexChangedCallback callback) { _on_focused_changed = std::move(callback); }
+void UiTabBar::set_on_selection_changed(IndexChangedCallback callback) { _on_selected_changed = std::move(callback); }
 
 UiButton* UiTabBar::button_at(std::size_t index) const noexcept
 {

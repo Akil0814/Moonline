@@ -16,7 +16,7 @@ public:
     void reset() noexcept override;
 
     // Adds a child using the container's current grid layout defaults.
-    void add_child(std::unique_ptr<UiElement> child);
+    UiElement* add_child(std::unique_ptr<UiElement> child);
     UiElement* add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options) override;
     [[nodiscard]] elysia::core::Vector2 content_extent() const noexcept override;
 

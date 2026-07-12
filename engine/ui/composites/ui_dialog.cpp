@@ -28,12 +28,12 @@ UiDialog::UiDialog(const elysia::core::Vector2& center,const elysia::core::Vecto
 
 UiDialog::~UiDialog()
 {
-    unregister_as_overlay();
+    unregister_from_window();
 }
 
 void UiDialog::reset() noexcept
 {
-    unregister_as_overlay();
+    unregister_from_window();
     UiControlFocusScopeHost::reset();
     reset_delegated_focus_state();
     _chrome = nullptr;
@@ -224,7 +224,7 @@ UiDialogVisualRole UiDialog::visual_role() const noexcept
     return _visual_role;
 }
 
-void UiDialog::register_as_overlay(UiWindow& window,UiOverlayOptions options)
+void UiDialog::register_with_window(UiWindow& window,UiOverlayOptions options)
 {
     if (_registered_window && _registered_window != &window)
         _registered_window->unregister_overlay(*this);
@@ -240,7 +240,7 @@ void UiDialog::register_as_overlay(UiWindow& window,UiOverlayOptions options)
     window.register_overlay(*this,options);
 }
 
-void UiDialog::unregister_as_overlay() noexcept
+void UiDialog::unregister_from_window() noexcept
 {
     UiWindow* window = _registered_window;
     _registered_window = nullptr;
@@ -248,22 +248,22 @@ void UiDialog::unregister_as_overlay() noexcept
         window->unregister_overlay(*this);
 }
 
-void UiDialog::on_overlay_window_detached(UiWindow& window) noexcept
+void UiDialog::on_window_detached(UiWindow& window) noexcept
 {
     if (_registered_window == &window)
         _registered_window = nullptr;
 }
 
-void UiDialog::open(UiWindow& window)
+void UiDialog::open()
 {
-    _registered_window = &window;
-    window.set_overlay_open(*this,true);
+    if (_registered_window && !_registered_window->is_destroyed())
+        _registered_window->open_overlay(*this);
 }
 
-void UiDialog::close(UiWindow& window)
+void UiDialog::close()
 {
-    _registered_window = &window;
-    window.set_overlay_open(*this,false);
+    if (_registered_window && !_registered_window->is_destroyed())
+        _registered_window->close_overlay(*this);
 }
 
 void UiDialog::rebuild_layout()
@@ -361,7 +361,7 @@ void UiDialog::create_internal_children()
     close_button->set_on_click([this]()
     {
         if (_registered_window)
-            _registered_window->set_overlay_open(*this,false);
+            _registered_window->close_overlay(*this);
     });
     _close_button = close_button.get();
 

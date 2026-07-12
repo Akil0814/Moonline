@@ -50,12 +50,12 @@ UiConfirmationDialog::UiConfirmationDialog(
 
 UiConfirmationDialog::~UiConfirmationDialog()
 {
-    unregister_as_overlay();
+    unregister_from_window();
 }
 
 void UiConfirmationDialog::reset() noexcept
 {
-    unregister_as_overlay();
+    unregister_from_window();
     UiControlFocusScopeHost::reset();
     reset_delegated_focus_state();
     _chrome = nullptr;
@@ -173,7 +173,7 @@ void UiConfirmationDialog::set_on_confirm(UiConfirmationDialogCallback on_confir
     _on_confirm = std::move(on_confirm);
 }
 
-void UiConfirmationDialog::register_as_overlay(UiWindow& window,UiOverlayOptions options)
+void UiConfirmationDialog::register_with_window(UiWindow& window,UiOverlayOptions options)
 {
     if (_registered_window && _registered_window != &window)
         _registered_window->unregister_overlay(*this);
@@ -193,7 +193,7 @@ void UiConfirmationDialog::register_as_overlay(UiWindow& window,UiOverlayOptions
     window.register_overlay(*this,options);
 }
 
-void UiConfirmationDialog::unregister_as_overlay() noexcept
+void UiConfirmationDialog::unregister_from_window() noexcept
 {
     UiWindow* window = _registered_window;
     _registered_window = nullptr;
@@ -201,7 +201,7 @@ void UiConfirmationDialog::unregister_as_overlay() noexcept
         window->unregister_overlay(*this);
 }
 
-void UiConfirmationDialog::on_overlay_window_detached(UiWindow& window) noexcept
+void UiConfirmationDialog::on_window_detached(UiWindow& window) noexcept
 {
     if (_registered_window == &window)
         _registered_window = nullptr;
@@ -210,13 +210,13 @@ void UiConfirmationDialog::on_overlay_window_detached(UiWindow& window) noexcept
 void UiConfirmationDialog::open()
 {
     if (_registered_window && !_registered_window->is_destroyed())
-        _registered_window->set_overlay_open(*this,true);
+        _registered_window->open_overlay(*this);
 }
 
 void UiConfirmationDialog::close()
 {
     if (_registered_window && !_registered_window->is_destroyed())
-        _registered_window->set_overlay_open(*this,false);
+        _registered_window->close_overlay(*this);
 }
 
 void UiConfirmationDialog::rebuild_layout()

@@ -155,7 +155,7 @@ void test_overlay_lifetime()
     elysia::ui::UiConfirmationDialog dialog(elysia::core::Rect{ 0,0,320,180 });
     {
         elysia::ui::UiWindow window(elysia::core::Rect{ 0,0,640,480 });
-        dialog.register_as_overlay(window);
+        dialog.register_with_window(window);
         dialog.open();
         require(window.is_overlay_open(dialog),"external dialog should open");
     }
@@ -163,16 +163,16 @@ void test_overlay_lifetime()
 
     elysia::ui::UiWindow first_window(elysia::core::Rect{ 0,0,640,480 });
     elysia::ui::UiWindow second_window(elysia::core::Rect{ 0,0,640,480 });
-    dialog.register_as_overlay(first_window);
-    dialog.register_as_overlay(second_window);
+    dialog.register_with_window(first_window);
+    dialog.register_with_window(second_window);
     require(!first_window.is_overlay_open(dialog),"moving an overlay must unregister the old window");
-    dialog.unregister_as_overlay();
+    dialog.unregister_from_window();
     dialog.open();
 
     {
         auto short_lived = std::make_unique<elysia::ui::UiConfirmationDialog>(
             elysia::core::Rect{ 0,0,320,180 });
-        short_lived->register_as_overlay(first_window);
+        short_lived->register_with_window(first_window);
     }
     first_window.update(0.0);
 
@@ -180,7 +180,7 @@ void test_overlay_lifetime()
     auto* owned = window.create_child<elysia::ui::UiConfirmationDialog>(
         elysia::core::Rect{ 0,0,320,180 });
     require(owned != nullptr,"owned dialog should be created");
-    owned->register_as_overlay(window);
+    owned->register_with_window(window);
     owned->destroy();
     window.update(0.0);
 }
@@ -191,35 +191,35 @@ void test_transient_popup_lifetime()
     dropdown.set_options({ { elysia::ui::ui_raw_text("one") } });
     {
         elysia::ui::UiWindow window(elysia::core::Rect{ 0,0,640,480 });
-        dropdown.register_as_transient_popup(window);
+        dropdown.register_with_window(window);
         dropdown.open();
-        require(dropdown.is_expanded(),"registered dropdown should open");
+        require(dropdown.is_open(),"registered dropdown should open");
     }
-    require(!dropdown.is_expanded(),"window detach should close dropdown");
+    require(!dropdown.is_open(),"window detach should close dropdown");
     dropdown.open();
-    require(!dropdown.is_expanded(),"detached dropdown must not reopen");
+    require(!dropdown.is_open(),"detached dropdown must not reopen");
 
     elysia::ui::UiWindow first_window(elysia::core::Rect{ 0,0,640,480 });
     elysia::ui::UiWindow second_window(elysia::core::Rect{ 0,0,640,480 });
-    dropdown.register_as_transient_popup(first_window);
-    dropdown.register_as_transient_popup(first_window);
-    dropdown.register_as_transient_popup(second_window);
-    dropdown.unregister_as_transient_popup();
+    dropdown.register_with_window(first_window);
+    dropdown.register_with_window(first_window);
+    dropdown.register_with_window(second_window);
+    dropdown.unregister_from_window();
     dropdown.open();
-    require(!dropdown.is_expanded(),"explicitly unregistered dropdown must remain closed");
+    require(!dropdown.is_open(),"explicitly unregistered dropdown must remain closed");
 
     {
         auto short_lived = std::make_unique<elysia::ui::UiDropdown>(
             elysia::core::Rect{ 0,0,200,40 });
         short_lived->set_options({ { elysia::ui::ui_raw_text("one") } });
-        short_lived->register_as_transient_popup(first_window);
+        short_lived->register_with_window(first_window);
     }
     first_window.update(0.0);
 
     auto owned = std::make_unique<elysia::ui::UiDropdown>(elysia::core::Rect{ 0,0,200,40 });
     auto* owned_raw = owned.get();
     owned_raw->set_options({ { elysia::ui::ui_raw_text("one") } });
-    owned_raw->register_as_transient_popup(first_window);
+    owned_raw->register_with_window(first_window);
     first_window.add_child(std::move(owned));
     owned_raw->destroy();
     first_window.update(0.0);
@@ -232,7 +232,7 @@ void test_tooltip_lifetime()
         elysia::ui::UiWindow window(elysia::core::Rect{ 0,0,640,480 });
         tooltip.register_with_window(window);
     }
-    tooltip.show();
+    tooltip.open();
     require(!tooltip.is_open(),"tooltip without content remains closed after window detach");
 
     elysia::ui::UiWindow window(elysia::core::Rect{ 0,0,640,480 });
@@ -333,10 +333,10 @@ void test_nested_focus_and_dropdown_navigation()
         { elysia::ui::ui_raw_text("one") },
         { elysia::ui::ui_raw_text("two") }
     });
-    raw_dropdown->register_as_transient_popup(window);
+    raw_dropdown->register_with_window(window);
     window.add_child(std::move(dropdown));
     raw_dropdown->open();
-    require(raw_dropdown->is_expanded(),"owned dropdown should open");
+    require(raw_dropdown->is_open(),"owned dropdown should open");
     window.on_ui_input_event(elysia::ui::UiInputEvent{
         .action = elysia::ui::UiAction::NavigateDown,
         .type = elysia::ui::UiInputEventType::ActionPressed
@@ -350,7 +350,7 @@ void test_nested_focus_and_dropdown_navigation()
         .type = elysia::ui::UiInputEventType::ActionReleased
     });
     require(raw_dropdown->selected_index() == 1,"dropdown navigation should select focused option");
-    require(!raw_dropdown->is_expanded(),"dropdown should close after confirmation");
+    require(!raw_dropdown->is_open(),"dropdown should close after confirmation");
 }
 
 elysia::ui::UiInputEvent navigation_event(elysia::ui::UiAction action)
@@ -378,9 +378,10 @@ void test_deep_nested_focus_propagation()
     auto second = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,100,40 });
     auto* first_raw = first.get();
     auto* second_raw = second.get();
-    grid->add_child(std::move(first));
-    grid->add_child(std::move(second));
-    panel->add_child(std::move(grid),elysia::ui::UiPanelInsertDirection::Down);
+    require(grid->add_child(std::move(first)) == first_raw,"grid add_child should return the adopted child");
+    require(grid->add_child(std::move(second)) == second_raw,"grid add_child should return the adopted child");
+    require(panel->add_child(std::move(grid),elysia::ui::UiPanelInsertDirection::Down) == grid_raw,
+        "panel add_child should return the adopted child");
     list->add_back(std::move(panel));
     scroll->set_content(std::move(list));
     window.add_child(std::move(scroll));

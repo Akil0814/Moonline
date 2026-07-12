@@ -29,8 +29,8 @@ public:
     bool set_focused_index(std::size_t index);
     bool set_selected_index(std::size_t index);
     void clear_selection() noexcept;
-    void set_on_focused_changed(IndexChangedCallback callback);
-    void set_on_selected_changed(IndexChangedCallback callback);
+    void set_on_focus_changed(IndexChangedCallback callback);
+    void set_on_selection_changed(IndexChangedCallback callback);
 
 private:
     [[nodiscard]] UiButton* button_at(std::size_t index) const noexcept;

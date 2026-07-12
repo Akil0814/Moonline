@@ -168,8 +168,8 @@ bool UiTabContainer::set_selected_index(std::size_t index)
         _on_selected_changed(selected_index());
     return bar_ok && view_ok;
 }
-void UiTabContainer::set_on_focused_changed(IndexChangedCallback callback) { _on_focused_changed = std::move(callback); }
-void UiTabContainer::set_on_selected_changed(IndexChangedCallback callback) { _on_selected_changed = std::move(callback); }
+void UiTabContainer::set_on_focus_changed(IndexChangedCallback callback) { _on_focused_changed = std::move(callback); }
+void UiTabContainer::set_on_selection_changed(IndexChangedCallback callback) { _on_selected_changed = std::move(callback); }
 
 void UiTabContainer::rebuild_layout()
 {
@@ -205,8 +205,8 @@ void UiTabContainer::create_internal_children()
     auto view = std::make_unique<UiTabView>();
     _tab_view = view.get();
     UiControlFocusScopeHost::add_child(std::move(view));
-    _tab_bar->set_on_selected_changed([this](auto index) { handle_selected_changed(index); });
-    _tab_bar->set_on_focused_changed([this](auto index) { handle_focused_changed(index); });
+    _tab_bar->set_on_selection_changed([this](auto index) { handle_selected_changed(index); });
+    _tab_bar->set_on_focus_changed([this](auto index) { handle_focused_changed(index); });
 }
 
 void UiTabContainer::assert_invariant() const noexcept { assert(tab_count() == page_count()); }

@@ -65,11 +65,11 @@ public:
     void open();
     void close() noexcept;
     void toggle();
-    [[nodiscard]] bool is_expanded() const noexcept;
+    [[nodiscard]] bool is_open() const noexcept override;
 
     // Registration lets the window prioritize popup rendering and input without taking ownership.
-    void register_as_transient_popup(UiWindow& window);
-    void unregister_as_transient_popup() noexcept;
+    void register_with_window(UiWindow& window);
+    void unregister_from_window() noexcept;
 
     void set_base_style(const UiDropdownBaseStyle& style) noexcept;
     void set_style_overrides(const UiDropdownStyleOverrides& overrides) noexcept;
@@ -80,14 +80,12 @@ public:
     void set_visual_role(UiDropdownVisualRole role) noexcept;
     [[nodiscard]] UiDropdownVisualRole visual_role() const noexcept;
 
-    [[nodiscard]] UiElement& transient_popup_owner() noexcept override;
-    [[nodiscard]] const UiElement& transient_popup_owner() const noexcept override;
-    [[nodiscard]] bool is_transient_popup_open() const noexcept override;
-    [[nodiscard]] bool contains_transient_popup_point(int mouse_x,int mouse_y) const noexcept override;
-    void close_transient_popup() noexcept override;
-    void on_transient_popup_window_detached(UiWindow& window) noexcept override;
-    bool on_transient_popup_input_event(const UiInputEvent& event) override;
-    void submit_transient_popup_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
+    [[nodiscard]] UiElement& popup_owner() noexcept override;
+    [[nodiscard]] const UiElement& popup_owner() const noexcept override;
+    [[nodiscard]] bool contains_popup_point(int mouse_x,int mouse_y) const noexcept override;
+    void on_window_detached(UiWindow& window) noexcept override;
+    bool on_popup_input_event(const UiInputEvent& event) override;
+    void submit_popup_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const override;
 
 private:
     // Structural option changes rebuild rows; selection changes reuse the existing buttons.

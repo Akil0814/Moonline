@@ -248,9 +248,9 @@ elysia::core::Vector2 UiPanel::content_extent() const noexcept
     return size();
 }
 
-void UiPanel::add_child(std::unique_ptr<UiElement> child,UiPanelInsertDirection direction)
+UiElement* UiPanel::add_child(std::unique_ptr<UiElement> child,UiPanelInsertDirection direction)
 {
-    (void)insert_panel_child(std::move(child),direction);
+    return insert_panel_child(std::move(child),direction);
 }
 
 UiElement* UiPanel::add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options)

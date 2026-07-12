@@ -264,11 +264,21 @@ void UiWindow::unregister_overlay(UiElement& element)
     if (registered)
     {
         if (client)
-            client->on_overlay_window_detached(*this);
+            client->on_window_detached(*this);
     }
 }
 
-void UiWindow::set_overlay_open(UiElement& element,bool open)
+void UiWindow::open_overlay(UiElement& element)
+{
+    set_overlay_open_state(element,true);
+}
+
+void UiWindow::close_overlay(UiElement& element)
+{
+    set_overlay_open_state(element,false);
+}
+
+void UiWindow::set_overlay_open_state(UiElement& element,bool open)
 {
     OverlayEntry* entry = find_overlay(element);
     if (!entry)
@@ -317,7 +327,7 @@ void UiWindow::register_transient_popup(UiTransientPopup& popup)
         return entry.popup == &popup;
     });
     if (found == _transient_popups.end())
-        _transient_popups.push_back(TransientPopupEntry{ &popup,&popup.transient_popup_owner() });
+        _transient_popups.push_back(TransientPopupEntry{ &popup,&popup.popup_owner() });
 }
 
 void UiWindow::unregister_transient_popup(UiTransientPopup& popup)
@@ -336,14 +346,14 @@ void UiWindow::unregister_transient_popup(UiTransientPopup& popup)
         _transient_popup_pointer_active = false;
     }
     if (registered)
-        popup.on_transient_popup_window_detached(*this);
+        popup.on_window_detached(*this);
 }
 
 void UiWindow::activate_transient_popup(UiTransientPopup& popup)
 {
     register_transient_popup(popup);
     if (_active_transient_popup && _active_transient_popup != &popup)
-        _active_transient_popup->close_transient_popup();
+        _active_transient_popup->close();
     _active_transient_popup = &popup;
     _transient_popup_pointer_active = false;
 }
@@ -379,14 +389,14 @@ bool UiWindow::is_tooltip_pointer_blocked(int mouse_x,int mouse_y) const noexcep
 {
     const UiTransientPopup* popup = active_transient_popup();
     return popup
-        && popup->is_transient_popup_open()
-        && popup->contains_transient_popup_point(mouse_x,mouse_y);
+        && popup->is_open()
+        && popup->contains_popup_point(mouse_x,mouse_y);
 }
 
 bool UiWindow::blocks_background_tooltips() const noexcept
 {
     const UiTransientPopup* popup = active_transient_popup();
-    return popup && popup->is_transient_popup_open();
+    return popup && popup->is_open();
 }
 
 elysia::core::Rect UiWindow::content_bounds() const noexcept
@@ -479,7 +489,7 @@ bool UiWindow::on_ui_input_event(const UiInputEvent& event)
         const bool blocks_background_input = overlay->options.modal;
         if (should_close_overlay_from_event(*overlay,event))
         {
-            set_overlay_open(*overlay->element,false);
+            close_overlay(*overlay->element);
             return true;
         }
 
@@ -502,11 +512,11 @@ bool UiWindow::on_ui_input_event(const UiInputEvent& event)
             || event.type == UiInputEventType::PointerReleased
             || event.type == UiInputEventType::MouseWheel;
         const bool contains_pointer = pointer_event
-            && popup->contains_transient_popup_point(event.mouse_x,event.mouse_y);
+            && popup->contains_popup_point(event.mouse_x,event.mouse_y);
 
         if (is_primary_mouse_press(event) && !contains_pointer)
         {
-            popup->close_transient_popup();
+            popup->close();
             _active_transient_popup = nullptr;
             _transient_popup_pointer_active = false;
         }
@@ -530,7 +540,7 @@ bool UiWindow::on_ui_input_event(const UiInputEvent& event)
 
         if (should_close_overlay_from_event(*overlay,event))
         {
-            set_overlay_open(*overlay->element,false);
+            close_overlay(*overlay->element);
             return true;
         }
 
@@ -670,13 +680,13 @@ void UiWindow::prune_overlays()
         if (!entry.element || !is_live_child_element(entry.element))
         {
             if (entry.client)
-                entry.client->on_overlay_window_detached(*this);
+                entry.client->on_window_detached(*this);
             return true;
         }
         if (!entry.element->is_destroyed())
             return false;
         if (entry.client)
-            entry.client->on_overlay_window_detached(*this);
+            entry.client->on_window_detached(*this);
         return true;
     }),_overlay_entries.end());
 }
@@ -689,12 +699,12 @@ void UiWindow::prune_transient_popups()
             return true;
         if (!entry.owner || !is_live_child_element(entry.owner))
         {
-            entry.popup->on_transient_popup_window_detached(*this);
+            entry.popup->on_window_detached(*this);
             return true;
         }
         if (!entry.owner->is_destroyed())
             return false;
-        entry.popup->on_transient_popup_window_detached(*this);
+        entry.popup->on_window_detached(*this);
         return true;
     }),_transient_popups.end());
 
@@ -738,14 +748,14 @@ void UiWindow::detach_window_registrations() noexcept
     for (OverlayEntry& entry : _overlay_entries)
     {
         if (entry.client)
-            entry.client->on_overlay_window_detached(*this);
+            entry.client->on_window_detached(*this);
     }
     _overlay_entries.clear();
 
     for (TransientPopupEntry& entry : _transient_popups)
     {
         if (entry.popup)
-            entry.popup->on_transient_popup_window_detached(*this);
+            entry.popup->on_window_detached(*this);
     }
     _transient_popups.clear();
     _active_transient_popup = nullptr;
@@ -1116,21 +1126,21 @@ bool UiWindow::contains_overlay_point(const OverlayEntry& entry,int mouse_x,int 
 
 UiTransientPopup* UiWindow::active_transient_popup() noexcept
 {
-    return _active_transient_popup && _active_transient_popup->is_transient_popup_open()
+    return _active_transient_popup && _active_transient_popup->is_open()
         ? _active_transient_popup
         : nullptr;
 }
 
 const UiTransientPopup* UiWindow::active_transient_popup() const noexcept
 {
-    return _active_transient_popup && _active_transient_popup->is_transient_popup_open()
+    return _active_transient_popup && _active_transient_popup->is_open()
         ? _active_transient_popup
         : nullptr;
 }
 
 bool UiWindow::dispatch_to_transient_popup(UiTransientPopup& popup,const UiInputEvent& event)
 {
-    return popup.is_transient_popup_open() && popup.on_transient_popup_input_event(event);
+    return popup.is_open() && popup.on_popup_input_event(event);
 }
 
 bool UiWindow::dispatch_gamepad_scroll_to_focused_containers(UiElement& root,const UiInputEvent& event)
@@ -1156,7 +1166,7 @@ void UiWindow::submit_active_transient_popup_render_commands(
         return;
 
     const std::size_t begin = out_commands.size();
-    popup->submit_transient_popup_render_commands(out_commands);
+    popup->submit_popup_render_commands(out_commands);
     apply_clip_to_range(out_commands,begin,content_rect());
 }
 

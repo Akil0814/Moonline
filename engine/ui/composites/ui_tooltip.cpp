@@ -42,20 +42,20 @@ void UiTooltip::update(double delta)
         || !_trigger->is_visible() || !_trigger->is_active())
     {
         _hover_time = 0.0;
-        hide();
+        close();
         return;
     }
 
     if (!trigger_is_active())
     {
         _hover_time = 0.0;
-        hide();
+        close();
         return;
     }
 
     _hover_time += std::max(0.0,delta);
     if (_hover_time >= _show_delay)
-        show();
+        open();
 
     if (_open)
     {
@@ -76,14 +76,14 @@ void UiTooltip::bind_trigger(UiElement& trigger) noexcept
         return;
     _trigger = &trigger;
     _hover_time = 0.0;
-    hide();
+    close();
 }
 
 void UiTooltip::clear_trigger() noexcept
 {
     _trigger = nullptr;
     _hover_time = 0.0;
-    hide();
+    close();
 }
 
 UiElement* UiTooltip::set_content(std::unique_ptr<UiElement> content)
@@ -93,7 +93,7 @@ UiElement* UiTooltip::set_content(std::unique_ptr<UiElement> content)
         clear_content();
         return nullptr;
     }
-    hide();
+    close();
     if (_window && _content)
         _window->detach_tooltip_content(*_content);
     _content = std::move(content);
@@ -104,7 +104,7 @@ UiElement* UiTooltip::set_content(std::unique_ptr<UiElement> content)
 
 std::unique_ptr<UiElement> UiTooltip::release_content() noexcept
 {
-    hide();
+    close();
     if (_window && _content)
         _window->detach_tooltip_content(*_content);
     return std::move(_content);
@@ -112,7 +112,7 @@ std::unique_ptr<UiElement> UiTooltip::release_content() noexcept
 
 void UiTooltip::clear_content() noexcept
 {
-    hide();
+    close();
     if (_window && _content)
         _window->detach_tooltip_content(*_content);
     _content.reset();
@@ -123,7 +123,7 @@ void UiTooltip::set_show_delay(double seconds) noexcept
     _show_delay = std::max(0.0,seconds);
 }
 
-void UiTooltip::show() noexcept
+void UiTooltip::open() noexcept
 {
     if (!_trigger || !_content)
         return;
@@ -131,7 +131,7 @@ void UiTooltip::show() noexcept
     sync_content_position();
 }
 
-void UiTooltip::hide() noexcept
+void UiTooltip::close() noexcept
 {
     _open = false;
 }
@@ -151,7 +151,7 @@ void UiTooltip::unregister_from_window() noexcept
     _window = nullptr;
     if (window)
         window->unregister_tooltip(*this);
-    hide();
+    close();
 }
 
 void UiTooltip::observe_pointer(int mouse_x,int mouse_y) noexcept

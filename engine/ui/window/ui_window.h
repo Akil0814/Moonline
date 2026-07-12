@@ -52,7 +52,8 @@ public:
     void register_overlay(UiElement& element,UiOverlayOptions options = {});
     void unregister_overlay(UiElement& element);
     // Opens or closes a registered overlay and updates focus restoration state.
-    void set_overlay_open(UiElement& element,bool open);
+    void open_overlay(UiElement& element);
+    void close_overlay(UiElement& element);
     [[nodiscard]] bool is_overlay_open(const UiElement& element) const noexcept;
     [[nodiscard]] UiOverlayOptions* overlay_options(UiElement& element) noexcept;
 
@@ -130,6 +131,8 @@ private:
     [[nodiscard]] const OverlayEntry* active_modal_overlay() const noexcept;
     [[nodiscard]] OverlayEntry* find_overlay(UiElement& element) noexcept;
     [[nodiscard]] const OverlayEntry* find_overlay(const UiElement& element) const noexcept;
+
+    void set_overlay_open_state(UiElement& element,bool open);
     // Treats an overlay element as a focus scope when it can directly own focus.
     [[nodiscard]] UiFocusScope* overlay_focus_scope(OverlayEntry& entry) noexcept;
     [[nodiscard]] const UiFocusScope* overlay_focus_scope(const OverlayEntry& entry) const noexcept;

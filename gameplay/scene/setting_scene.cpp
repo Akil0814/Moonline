@@ -123,7 +123,7 @@ void SettingScene::build_ui()
         { elysia::ui::ui_raw_text("1600 x 900") },
         { elysia::ui::ui_raw_text("1920 x 1080") }
     });
-    resolution->register_as_transient_popup(*_main_setting_window);
+    resolution->register_with_window(*_main_setting_window);
     page->add_back(make_field_row("Resolution",std::move(resolution)));
 
     auto fullscreen = std::make_unique<elysia::ui::UiCheckbox>(
@@ -144,7 +144,7 @@ void SettingScene::build_ui()
         { elysia::ui::ui_raw_text("English") },
         { elysia::ui::ui_raw_text("简体中文") }
     });
-    language->register_as_transient_popup(*_main_setting_window);
+    language->register_with_window(*_main_setting_window);
     page->add_back(make_field_row("Language",std::move(language)));
 
     auto actions = std::make_unique<elysia::ui::UiListContainer>(

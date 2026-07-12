@@ -35,7 +35,7 @@ public:
     void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>& out) const override;
     void set_selected(bool selected) noexcept override;
     [[nodiscard]] bool is_selected() const noexcept override;
-    void set_on_selected(UiRadioButtonSelectedCallback callback);
+    void set_on_selection_changed(UiRadioButtonSelectedCallback callback);
     void set_text_content(UiTextContent content);
     [[nodiscard]] elysia::core::Color resolved_text_color() const noexcept;
     void set_label_placement(UiLabeledRadioLabelPlacement placement) noexcept;
