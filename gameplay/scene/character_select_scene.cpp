@@ -110,7 +110,7 @@ namespace arcneco::scene
         character_select_text->set_vertical_align(elysia::ui::TextVerticalAlign::Center);
         character_select_text->set_horizontal_align(elysia::ui::TextHorizontalAlign::Center);
         character_select_text->set_typography_role(elysia::ui::UiTypographyRole::Title);
-        //character_select_text->set_target_height(50.0f);
+        character_select_text->set_text_fit_mode(elysia::ui::UiLabelTextFitMode::ScaleToFit);
 
         auto* horizontal_scroll = _main_window->create_child<elysia::ui::UiScrollContainer>(
             scroll_layout,

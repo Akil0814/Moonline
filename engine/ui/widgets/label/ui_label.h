@@ -8,14 +8,19 @@
 #include "../../text/ui_text_content.h"
 #include "../../text/ui_typography.h"
 
-#include <optional>
 #include <string>
 
 struct SDL_Texture;
 
 namespace elysia::ui
 {
-// Single-line text widget. Typography chooses the source font while target height only scales output.
+enum class UiLabelTextFitMode
+{
+    ShrinkToFit,
+    ScaleToFit
+};
+
+// Single-line text widget. Typography chooses the source font and fit mode adapts it to the available area.
 class UiLabel : public UiElement
 {
 public:
@@ -55,10 +60,8 @@ public:
     void set_typography_role(UiTypographyRole role) noexcept;
     [[nodiscard]] UiTypographyRole typography_role() const noexcept;
 
-    // Optional display height preserves aspect ratio and remains bounded by the label's content rect.
-    void set_target_height(float height);
-    [[nodiscard]] std::optional<float> target_height() const noexcept;
-    void clear_target_height();
+    void set_text_fit_mode(UiLabelTextFitMode mode) noexcept;
+    [[nodiscard]] UiLabelTextFitMode text_fit_mode() const noexcept;
 
     void set_padding(int padding);
     [[nodiscard]] int padding() const noexcept;
@@ -66,7 +69,7 @@ public:
 private:
     // Returns the padded interior used to position rendered text.
     [[nodiscard]] elysia::core::Rect content_rect() const noexcept;
-    // Fits rendered text into the content rect using the active alignment and padding.
+    // Fits rendered text into the content rect with the configured uniform scaling and alignment.
     [[nodiscard]] elysia::core::Rect text_render_rect(SDL_Texture* text_texture) const noexcept;
 
 private:
@@ -74,7 +77,7 @@ private:
     UiStyleState<UiLabelStyle> _style_state;
     UiLabelVisualRole _visual_role = UiLabelVisualRole::Default;
     UiTypographyRole _typography_role = UiTypographyRole::Label;
-    std::optional<float> _target_height;
+    UiLabelTextFitMode _text_fit_mode = UiLabelTextFitMode::ShrinkToFit;
     TextHorizontalAlign _horizontal_align = TextHorizontalAlign::Left;
     TextVerticalAlign _vertical_align = TextVerticalAlign::Top;
     int _padding = 0;

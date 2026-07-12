@@ -40,7 +40,7 @@ void UiLabel::reset() noexcept
     _style_state.reset(UiStyleDefaults::label());
     _visual_role = UiLabelVisualRole::Default;
     _typography_role = UiTypographyRole::Label;
-    _target_height.reset();
+    _text_fit_mode = UiLabelTextFitMode::ShrinkToFit;
     _horizontal_align = resolve_ui_typography(_typography_role).horizontal_align_default;
     _vertical_align = TextVerticalAlign::Top;
     _padding = 0;
@@ -112,19 +112,15 @@ UiTypographyRole UiLabel::typography_role() const noexcept
     return _typography_role;
 }
 
-void UiLabel::set_target_height(float height)
+void UiLabel::set_text_fit_mode(UiLabelTextFitMode mode) noexcept
 {
-    _target_height = std::max(0.0f,height);
+    _text_fit_mode = mode;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
 }
 
-std::optional<float> UiLabel::target_height() const noexcept
+UiLabelTextFitMode UiLabel::text_fit_mode() const noexcept
 {
-    return _target_height;
-}
-
-void UiLabel::clear_target_height()
-{
-    _target_height.reset();
+    return _text_fit_mode;
 }
 
 void UiLabel::set_base_style(const UiLabelStyle& style) noexcept
@@ -235,10 +231,10 @@ elysia::core::Rect UiLabel::text_render_rect(SDL_Texture* text_texture) const no
     const float available_height = available_rect.height();
     const float width_scale = available_width / static_cast<float>(texture_width);
     const float height_scale = available_height / static_cast<float>(texture_height);
-    const float target_scale = _target_height.has_value() && *_target_height > 0.0f
-        ? *_target_height / static_cast<float>(texture_height)
-        : 1.0f;
-    const float scale = std::min(target_scale,std::min(width_scale,height_scale));
+    const float fit_scale = std::min(width_scale,height_scale);
+    const float scale = _text_fit_mode == UiLabelTextFitMode::ScaleToFit
+        ? fit_scale
+        : std::min(1.0f,fit_scale);
     const elysia::core::Vector2 render_size(
         static_cast<float>(texture_width) * scale,
         static_cast<float>(texture_height) * scale
