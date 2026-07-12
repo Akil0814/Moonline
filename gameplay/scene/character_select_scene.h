@@ -41,7 +41,6 @@ namespace arcneco::scene
         void build_action_buttons();
         void build_right_panel();
         void build_left_panel();
-        void build_popup();
 
         void on_character_change();
         void refresh_character_visuals();
@@ -72,7 +71,6 @@ namespace arcneco::scene
         };
     
         elysia::ui::UiWindow* _main_window = nullptr;
-        elysia::ui::UiConfirmationDialog* _exit_confirmation = nullptr;
 
         CharacterVisualRefs _character_visuals{};
         CharacterDetailRefs _character_details{};

@@ -31,11 +31,11 @@ struct FontManifestEntry
 {
 	std::string key;
 	std::filesystem::path file_path;
-	int point_size = 0;
 };
 
 struct FontManifest
 {
+	std::vector<int> point_sizes;
 	std::vector<FontManifestEntry> fonts;
 };
 

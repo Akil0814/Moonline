@@ -84,9 +84,6 @@ namespace arcneco::scene
         auto ui_background = std::make_unique<elysia::ui::UiImage>(tex, elysia::core::Rect{ 0,0,1280,720 }, -10);
         _main_window->add_child(std::move(ui_background), { elysia::ui::UiLayoutAnchor::Center });
 
-        //popup
-        _exit_confirmation = nullptr;
-        build_popup();
         build_left_panel();
         build_right_panel();
         build_character_detailed();
@@ -94,32 +91,9 @@ namespace arcneco::scene
         set_character_visuals_visible(false);
         set_character_details_visible(false);
         _main_window->set_on_cancel([this]{
-            if (_exit_confirmation)
-                _exit_confirmation->open();});
-
-    }
-
-    void CharacterSelectScene::build_popup()
-    {
-        if (!_main_window)
-            return;
-
-        _exit_confirmation = _main_window->create_child<elysia::ui::UiConfirmationDialog>(
-            elysia::core::Rect{ 0,0,420,240 });
-        if (!_exit_confirmation)
-            return;
-
-        _exit_confirmation->set_config(elysia::ui::UiConfirmationDialogConfig{
-            .title = elysia::ui::ui_text_key("menu_scene.exit_confirm.title"),
-            .message = elysia::ui::ui_text_key("menu_scene.exit_confirm.message"),
-            .confirm = elysia::ui::ui_text_key("menu_scene.exit"),
-            .cancel = elysia::ui::ui_text_key("menu_scene.exit_confirm.cancel"),
-            .close = elysia::ui::ui_text_key("menu_scene.exit_confirm.close")
-        });
-        _exit_confirmation->set_on_confirm([this]() {
             Scene::request_scene_switch(AppSceneKeys::MainMenu, MainMeunEnterPayload{ .replay_theme_music = true });
-        });
-        _exit_confirmation->register_as_overlay(*_main_window);
+               });
+
     }
 
     void CharacterSelectScene::build_character_list()
@@ -130,11 +104,13 @@ namespace arcneco::scene
         };
 
         auto* character_select_text = _main_window->create_child<elysia::ui::UiLabel>(
-        elysia::core::Rect{0,0,100,50},0, elysia::ui::ui_text_key("character_select_scene.title")
+        elysia::core::Rect{10,5,1000,75},0, elysia::ui::ui_text_key("character_select_scene.title")
         );
 
-        character_select_text->set_typography_role(elysia::ui::UiTypographyRole::Subtitle);
-        character_select_text->set_target_height(50.0f);
+        character_select_text->set_vertical_align(elysia::ui::TextVerticalAlign::Center);
+        character_select_text->set_horizontal_align(elysia::ui::TextHorizontalAlign::Center);
+        character_select_text->set_typography_role(elysia::ui::UiTypographyRole::Title);
+        //character_select_text->set_target_height(50.0f);
 
         auto* horizontal_scroll = _main_window->create_child<elysia::ui::UiScrollContainer>(
             scroll_layout,
@@ -194,32 +170,32 @@ namespace arcneco::scene
         _main_window->register_focus_scope(*horizontal_scroll);
     }
 
-    void CharacterSelectScene::build_right_panel()
+    void CharacterSelectScene::build_left_panel()
     {
-        auto ui_character_selected_background = std::make_unique<elysia::ui::UiAnimation>("ryougi_shiki.idle", elysia::core::Rect{ 0,0,512,512 }, 0);
+        auto ui_character_selected_background = std::make_unique<elysia::ui::UiAnimation>("ryougi_shiki.idle", elysia::core::Rect{ 0,0,700,700 }, 0);
         _character_visuals.idle_preview = ui_character_selected_background.get();
         _main_window->add_child(std::move(ui_character_selected_background), {
             ._anchor = elysia::ui::UiLayoutAnchor::BottomLeft,
-            ._margin = elysia::ui::UiLayoutMargin{ .left = -64.0f, .bottom = -24.0f }
+            ._margin = elysia::ui::UiLayoutMargin{ .left = -204.0f, .bottom = -24.0f }
         });
     }
 
-    void CharacterSelectScene::build_left_panel()
+    void CharacterSelectScene::build_right_panel()
     {
         SDL_Texture* tex =
             elysia::resources::ResourceManager::instance()->find_texture("ryougi_shiki.full");
         SDL_Texture* name_texture =
             elysia::resources::ResourceManager::instance()->find_texture("ryougi_shiki.name");
 
-        auto ui_character_stand = std::make_unique<elysia::ui::UiImage>(tex, elysia::core::Rect{0,0,384,384}, 10);
-        auto ui_character_name = std::make_unique<elysia::ui::UiImage>(name_texture, elysia::core::Rect{0,0,256,32}, 20);
-        auto ui_character_selected_background = std::make_unique<elysia::ui::UiAnimation>("ryougi_shiki.selected_background", elysia::core::Rect{ 0,0,512,512 },0);
+        auto ui_character_stand = std::make_unique<elysia::ui::UiImage>(tex, elysia::core::Rect{0,0,512,512}, 0);
+        auto ui_character_name = std::make_unique<elysia::ui::UiImage>(name_texture, elysia::core::Rect{0,0,512,64}, 1);
+        auto ui_character_selected_background = std::make_unique<elysia::ui::UiAnimation>("ryougi_shiki.selected_background", elysia::core::Rect{ 0,0,600,600 },-10);
         _character_visuals.full_portrait = ui_character_stand.get();
         _character_visuals.name_image = ui_character_name.get();
         _character_visuals.selected_background = ui_character_selected_background.get();
         _main_window->add_child(std::move(ui_character_stand), { elysia::ui::UiLayoutAnchor::BottomRight });
         _main_window->add_child(std::move(ui_character_name), {
-            ._anchor = elysia::ui::UiLayoutAnchor::BottomLeft,
+            ._anchor = elysia::ui::UiLayoutAnchor::BottomRight,
         });
         _main_window->add_child(std::move(ui_character_selected_background), { elysia::ui::UiLayoutAnchor::BottomRight });
     }
@@ -262,13 +238,13 @@ namespace arcneco::scene
 
     void CharacterSelectScene::build_action_buttons()
     {
-        auto action_row = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,336,52 });
+        auto action_row = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,400,52 });
         action_row->set_direction(elysia::ui::UiListDirection::Horizontal);
         action_row->set_item_spacing(16.0f);
 
         auto confirm = std::make_unique<elysia::ui::UiButton>(
-            elysia::core::Rect{ 0,0,160,52 },
-            elysia::ui::UiButtonConfig{ .content = elysia::ui::ui_raw_text("CONFIRM") });
+            elysia::core::Rect{ 0,0,180,50 },
+            elysia::ui::UiButtonConfig{ .content = elysia::ui::ui_text_key("character_select_scene.actions.confirm") });
         confirm->set_visual_role(elysia::ui::UiButtonVisualRole::Primary);
         confirm->set_on_click([this]()
         {
@@ -278,12 +254,11 @@ namespace arcneco::scene
         action_row->add_back(std::move(confirm));
 
         auto back = std::make_unique<elysia::ui::UiButton>(
-            elysia::core::Rect{ 0,0,160,52 },
-            elysia::ui::UiButtonConfig{ .content = elysia::ui::ui_raw_text("BACK") });
+            elysia::core::Rect{ 0,0,180,50 },
+            elysia::ui::UiButtonConfig{ .content = elysia::ui::ui_text_key("character_select_scene.actions.back") });
         back->set_on_click([this]()
         {
-            if (_exit_confirmation)
-                _exit_confirmation->open();
+                Scene::request_scene_switch(AppSceneKeys::MainMenu, MainMeunEnterPayload{ .replay_theme_music = true });
         });
         _character_details.back_button = back.get();
         action_row->add_back(std::move(back));

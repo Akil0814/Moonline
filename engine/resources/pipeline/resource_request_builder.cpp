@@ -129,13 +129,6 @@ bool ResourceRequestBuilder::append_font_requests(
 			return false;
 		}
 
-		if (entry.point_size <= 0)
-		{
-			std::cout << "Build font requests failed: point size is invalid: "
-				<< entry.key << std::endl;
-			return false;
-		}
-
 		std::filesystem::path file_path = (font_root / entry.file_path).lexically_normal();
 		if (file_path.empty())
 		{
@@ -144,11 +137,21 @@ bool ResourceRequestBuilder::append_font_requests(
 			return false;
 		}
 
-		FontLoadRequest request;
-		request.key = entry.key;
-		request.file_path = std::move(file_path);
-		request.point_size = entry.point_size;
-		font_load_requests.push_back(std::move(request));
+		for (const int point_size : font_manifest.point_sizes)
+		{
+			if (point_size <= 0)
+			{
+				std::cout << "Build font requests failed: point size is invalid: "
+					<< point_size << std::endl;
+				return false;
+			}
+
+			FontLoadRequest request;
+			request.key = entry.key + "." + std::to_string(point_size);
+			request.file_path = file_path;
+			request.point_size = point_size;
+			font_load_requests.push_back(std::move(request));
+		}
 	}
 
 	return true;
