@@ -9,7 +9,7 @@ std::optional<UiInputEvent> UiGamepadScrollSynthesizer::synthesize(const elysia:
 {
     if (input.active_device != elysia::input::InputDevice::Gamepad || input.device_switched_this_frame)
     {
-        _scroll_accumulator = 0.0f;
+        reset();
         return std::nullopt;
     }
 
@@ -20,44 +20,48 @@ std::optional<UiInputEvent> UiGamepadScrollSynthesizer::synthesize(const elysia:
         input.state.axis_value(elysia::input::RawInputAxis::GamepadLeftY)
     );
 
+    if (normalized_x == 0.0f)
+        _scroll_accumulator_x = 0.0f;
+    else
+        _scroll_accumulator_x += (-normalized_x) * 0.75f;
+
     if (normalized_y == 0.0f)
-    {
-        _scroll_accumulator = 0.0f;
-        return std::nullopt;
-    }
+        _scroll_accumulator_y = 0.0f;
+    else
+        _scroll_accumulator_y += (-normalized_y) * 0.75f;
 
-    const float vertical_weight = std::max(0.0f, 1.0f - std::fabs(normalized_x));
-    const float scroll_strength = (-normalized_y) * vertical_weight * 0.75f;
-    _scroll_accumulator += scroll_strength;
-
-    int wheel_steps = 0;
-    if (_scroll_accumulator >= 1.0f)
-    {
-        wheel_steps = static_cast<int>(std::floor(_scroll_accumulator));
-    }
-    else if (_scroll_accumulator <= -1.0f)
-    {
-        wheel_steps = static_cast<int>(std::ceil(_scroll_accumulator));
-    }
-
-    if (wheel_steps == 0)
+    const int wheel_x = take_wheel_steps(_scroll_accumulator_x);
+    const int wheel_y = take_wheel_steps(_scroll_accumulator_y);
+    if (wheel_x == 0 && wheel_y == 0)
     {
         return std::nullopt;
     }
-
-    wheel_steps = std::clamp(wheel_steps, -3, 3);
-    _scroll_accumulator -= static_cast<float>(wheel_steps);
 
     UiInputEvent scroll_event;
     scroll_event.type = UiInputEventType::MouseWheel;
     scroll_event.device = elysia::input::InputDevice::Gamepad;
-    scroll_event.wheel_y = wheel_steps;
+    scroll_event.wheel_x = wheel_x;
+    scroll_event.wheel_y = wheel_y;
     return scroll_event;
 }
 
 void UiGamepadScrollSynthesizer::reset()
 {
-    _scroll_accumulator = 0.0f;
+    _scroll_accumulator_x = 0.0f;
+    _scroll_accumulator_y = 0.0f;
+}
+
+int UiGamepadScrollSynthesizer::take_wheel_steps(float& accumulator) noexcept
+{
+    int steps = 0;
+    if (accumulator >= 1.0f)
+        steps = static_cast<int>(std::floor(accumulator));
+    else if (accumulator <= -1.0f)
+        steps = static_cast<int>(std::ceil(accumulator));
+
+    steps = std::clamp(steps,-3,3);
+    accumulator -= static_cast<float>(steps);
+    return steps;
 }
 
 float UiGamepadScrollSynthesizer::normalize_axis(float axis_value) const

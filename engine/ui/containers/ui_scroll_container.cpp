@@ -630,6 +630,11 @@ bool UiScrollContainer::handle_mouse_wheel(const UiInputEvent& event)
         return false;
     }
 
+    return apply_wheel_delta(event);
+}
+
+bool UiScrollContainer::apply_wheel_delta(const UiInputEvent& event)
+{
     const bool can_scroll_x = can_scroll_axis(UiScrollAxis::Horizontal);
     const bool can_scroll_y = can_scroll_axis(UiScrollAxis::Vertical);
     const elysia::core::Vector2 before = _scroll_state.offset();
@@ -649,6 +654,52 @@ bool UiScrollContainer::handle_mouse_wheel(const UiInputEvent& event)
 
     mark_layout_dirty_if_offset_changed(before);
     return true;
+}
+
+bool UiScrollContainer::handle_passive_scroll_input(const UiInputEvent& event)
+{
+    cleanup_destroyed_children();
+    update_layout_if_dirty();
+    if (!is_passive_scroll_target_usable())
+        return false;
+
+    if (event.type == UiInputEventType::MouseWheel && event.device == elysia::input::InputDevice::Gamepad)
+        return apply_wheel_delta(event);
+
+    if (event.type != UiInputEventType::ActionPressed)
+        return false;
+
+    const elysia::core::Vector2 viewport_size = viewport_rect().size();
+    switch (event.action)
+    {
+    case UiAction::PageUp:
+        if (can_scroll_axis(UiScrollAxis::Vertical))
+            scroll_by({ 0.0f,-viewport_size.y });
+        else
+            scroll_by({ -viewport_size.x,0.0f });
+        return true;
+    case UiAction::PageDown:
+        if (can_scroll_axis(UiScrollAxis::Vertical))
+            scroll_by({ 0.0f,viewport_size.y });
+        else
+            scroll_by({ viewport_size.x,0.0f });
+        return true;
+    case UiAction::Home:
+        set_scroll_offset({ 0.0f,0.0f });
+        return true;
+    case UiAction::End:
+        set_scroll_offset(max_scroll_offset());
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool UiScrollContainer::is_passive_scroll_target_usable() const noexcept
+{
+    if (is_destroyed() || !is_active() || !is_visible())
+        return false;
+    return can_scroll_axis(UiScrollAxis::Horizontal) || can_scroll_axis(UiScrollAxis::Vertical);
 }
 
 bool UiScrollContainer::dispatch_to_scrollbars(const UiInputEvent& event)

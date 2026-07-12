@@ -18,9 +18,11 @@ public:
 
 private:
     [[nodiscard]] float normalize_axis(float axis_value) const;
+    static int take_wheel_steps(float& accumulator) noexcept;
 
 private:
-    float _scroll_accumulator = 0.0f;
+    float _scroll_accumulator_x = 0.0f;
+    float _scroll_accumulator_y = 0.0f;
 };
 
 }

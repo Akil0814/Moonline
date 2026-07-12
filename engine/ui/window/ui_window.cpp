@@ -57,6 +57,38 @@ void collect_focused_scroll_containers(UiElement& element,std::vector<UiScrollCo
     if (auto* scroll = dynamic_cast<UiScrollContainer*>(&element); scroll && scroll->is_scope_focused())
         out_containers.push_back(scroll);
 }
+
+void collect_scroll_containers(UiElement& element,std::vector<UiScrollContainer*>& out_containers)
+{
+    if (element.is_destroyed() || !element.is_active() || !element.is_visible())
+        return;
+
+    if (auto* child_host = dynamic_cast<UiChildHost*>(&element))
+    {
+        for (std::size_t index = 0; index < child_host->child_count(); ++index)
+        {
+            if (UiElement* child = child_host->child_at(index))
+                collect_scroll_containers(*child,out_containers);
+        }
+    }
+
+    if (auto* scroll = dynamic_cast<UiScrollContainer*>(&element))
+        out_containers.push_back(scroll);
+}
+
+[[nodiscard]] bool is_pointer_scroll_target_event(const UiInputEvent& event) noexcept
+{
+    return event.device == elysia::input::InputDevice::Mouse
+        && (event.type == UiInputEventType::PointerPressed || event.type == UiInputEventType::MouseWheel);
+}
+
+[[nodiscard]] bool is_passive_scroll_action(const UiInputEvent& event) noexcept
+{
+    if (event.type != UiInputEventType::ActionPressed)
+        return false;
+    return event.action == UiAction::PageUp || event.action == UiAction::PageDown
+        || event.action == UiAction::Home || event.action == UiAction::End;
+}
 }
 
 UiWindow::UiWindow(const elysia::core::Rect& rect,int order) noexcept : UiChildHost(rect,order)
@@ -87,6 +119,7 @@ void UiWindow::reset() noexcept
     _active_transient_popup = nullptr;
     _focused_scope = nullptr;
     _last_focused_scope = nullptr;
+    _gamepad_scroll_target = nullptr;
     _style_state.reset(UiStyleDefaults::window());
     _hover_focus_enabled = true;
     _transient_popup_pointer_active = false;
@@ -187,6 +220,13 @@ void UiWindow::set_focused_scope(UiFocusScope* scope)
 UiFocusScope* UiWindow::focused_scope() const noexcept
 {
     return _focused_scope;
+}
+
+const UiScrollContainer* UiWindow::gamepad_scroll_target() const noexcept
+{
+    if (!_gamepad_scroll_target || !is_live_child_element(_gamepad_scroll_target))
+        return nullptr;
+    return _gamepad_scroll_target->is_passive_scroll_target_usable() ? _gamepad_scroll_target : nullptr;
 }
 
 bool UiWindow::focus_first_available_scope()
@@ -410,6 +450,7 @@ void UiWindow::update(double delta)
     prune_overlays();
     prune_transient_popups();
     prune_tooltips();
+    prune_gamepad_scroll_target();
     sync_overlay_visibility_all();
     update_layout_if_dirty();
     prune_focus_scopes();
@@ -420,6 +461,7 @@ void UiWindow::update(double delta)
     prune_overlays();
     prune_transient_popups();
     prune_tooltips();
+    prune_gamepad_scroll_target();
     sync_overlay_visibility_all();
     prune_focus_scopes();
     ensure_valid_scope_focus();
@@ -432,6 +474,7 @@ void UiWindow::on_ui_input_frame(const UiInputFrame& input)
     prune_overlays();
     prune_transient_popups();
     prune_tooltips();
+    prune_gamepad_scroll_target();
     sync_overlay_visibility_all();
     update_layout_if_dirty();
     prune_focus_scopes();
@@ -483,6 +526,8 @@ bool UiWindow::on_ui_input_event(const UiInputEvent& event)
 
     if (OverlayEntry* overlay = active_modal_overlay())
     {
+        if (is_pointer_scroll_target_event(event))
+            promote_scroll_target_at(*overlay->element,event.mouse_x,event.mouse_y);
         (void)focus_overlay(*overlay);
         apply_scope_focus();
 
@@ -494,6 +539,9 @@ bool UiWindow::on_ui_input_event(const UiInputEvent& event)
         }
 
         if (dispatch_gamepad_scroll_to_focused_containers(*overlay->element,event))
+            return true;
+
+        if (dispatch_passive_scroll_input(*overlay->element,event))
             return true;
 
         const bool handled = dispatch_to_overlay(*overlay,event);
@@ -535,7 +583,12 @@ bool UiWindow::on_ui_input_event(const UiInputEvent& event)
 
     if (OverlayEntry* overlay = active_overlay())
     {
+        if (is_pointer_scroll_target_event(event))
+            promote_scroll_target_at(*overlay->element,event.mouse_x,event.mouse_y);
         if (dispatch_gamepad_scroll_to_focused_containers(*overlay->element,event))
+            return true;
+
+        if (dispatch_passive_scroll_input(*overlay->element,event))
             return true;
 
         if (should_close_overlay_from_event(*overlay,event))
@@ -557,8 +610,18 @@ bool UiWindow::on_ui_input_event(const UiInputEvent& event)
 
     bool handled = false;
 
+    if (is_pointer_scroll_target_event(event))
+        promote_scroll_target_at(*this,event.mouse_x,event.mouse_y);
+
     if (_focused_scope
         && dispatch_gamepad_scroll_to_focused_containers(_focused_scope->focus_scope_element(),event))
+    {
+        return true;
+    }
+
+    if (event.type == UiInputEventType::MouseWheel
+        && event.device == elysia::input::InputDevice::Gamepad
+        && dispatch_passive_scroll_input(*this,event))
     {
         return true;
     }
@@ -613,6 +676,8 @@ bool UiWindow::on_ui_input_event(const UiInputEvent& event)
             UiFocusScope* event_scope = pointer_scope ? pointer_scope : _focused_scope;
             if (event_scope)
                 handled = dispatch_to_scope(event_scope,event);
+            if (!handled && is_passive_scroll_action(event))
+                handled = dispatch_passive_scroll_input(*this,event);
             if (!handled)
                 handled = dispatch_input_to_children(event);
         }
@@ -635,6 +700,7 @@ void UiWindow::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
     self->prune_overlays();
     self->prune_transient_popups();
     self->prune_tooltips();
+    self->prune_gamepad_scroll_target();
     self->sync_overlay_visibility_all();
     self->update_layout_if_dirty();
     self->prune_focus_scopes();
@@ -743,6 +809,17 @@ void UiWindow::prune_tooltips()
     }),_tooltips.end());
 }
 
+void UiWindow::prune_gamepad_scroll_target() noexcept
+{
+    if (!_gamepad_scroll_target)
+        return;
+    if (!is_live_child_element(_gamepad_scroll_target)
+        || !_gamepad_scroll_target->is_passive_scroll_target_usable())
+    {
+        _gamepad_scroll_target = nullptr;
+    }
+}
+
 void UiWindow::detach_window_registrations() noexcept
 {
     for (OverlayEntry& entry : _overlay_entries)
@@ -760,6 +837,7 @@ void UiWindow::detach_window_registrations() noexcept
     _transient_popups.clear();
     _active_transient_popup = nullptr;
     _transient_popup_pointer_active = false;
+    _gamepad_scroll_target = nullptr;
 
     for (UiTooltip* tooltip : _tooltips)
     {
@@ -1152,10 +1230,80 @@ bool UiWindow::dispatch_gamepad_scroll_to_focused_containers(UiElement& root,con
     collect_focused_scroll_containers(root,containers);
     for (UiScrollContainer* container : containers)
     {
-        if (container && container->on_ui_input_event(event))
+        if (container && container->is_passive_scroll_target_usable())
+        {
+            (void)container->on_ui_input_event(event);
             return true;
+        }
     }
     return false;
+}
+
+bool UiWindow::dispatch_passive_scroll_input(UiElement& root,const UiInputEvent& event)
+{
+    const bool gamepad_wheel = event.type == UiInputEventType::MouseWheel
+        && event.device == elysia::input::InputDevice::Gamepad;
+    if (!gamepad_wheel && !is_passive_scroll_action(event))
+        return false;
+
+    if (is_passive_scroll_action(event))
+    {
+        std::vector<UiScrollContainer*> focused_containers;
+        collect_focused_scroll_containers(root,focused_containers);
+        for (UiScrollContainer* container : focused_containers)
+        {
+            if (container && container->is_passive_scroll_target_usable())
+            {
+                (void)container->handle_passive_scroll_input(event);
+                return true;
+            }
+        }
+    }
+
+    UiScrollContainer* target = resolve_passive_scroll_target(root);
+    if (!target)
+        return false;
+
+    (void)target->handle_passive_scroll_input(event);
+    return true;
+}
+
+void UiWindow::promote_scroll_target_at(UiElement& root,int mouse_x,int mouse_y) noexcept
+{
+    std::vector<UiScrollContainer*> containers;
+    collect_scroll_containers(root,containers);
+    for (UiScrollContainer* container : containers)
+    {
+        if (container && container->is_passive_scroll_target_usable()
+            && container->screen_rect().contains({ static_cast<float>(mouse_x),static_cast<float>(mouse_y) }))
+        {
+            _gamepad_scroll_target = container;
+            return;
+        }
+    }
+}
+
+UiScrollContainer* UiWindow::resolve_passive_scroll_target(UiElement& root) noexcept
+{
+    prune_gamepad_scroll_target();
+    if (_gamepad_scroll_target
+        && contains_child_element(root,_gamepad_scroll_target)
+        && _gamepad_scroll_target->is_passive_scroll_target_usable())
+    {
+        return _gamepad_scroll_target;
+    }
+
+    std::vector<UiScrollContainer*> containers;
+    collect_scroll_containers(root,containers);
+    for (UiScrollContainer* container : containers)
+    {
+        if (container && container->is_passive_scroll_target_usable())
+        {
+            _gamepad_scroll_target = container;
+            return container;
+        }
+    }
+    return nullptr;
 }
 
 void UiWindow::submit_active_transient_popup_render_commands(

@@ -44,6 +44,28 @@ ui::UiInputEvent confirm_event(ui::UiInputEventType type,input::InputDevice devi
     };
 }
 
+ui::UiInputEvent wheel_event(int wheel_x,int wheel_y,input::InputDevice device)
+{
+    return {
+        .type = ui::UiInputEventType::MouseWheel,
+        .device = device,
+        .wheel_x = wheel_x,
+        .wheel_y = wheel_y
+    };
+}
+
+class DisplayOnlyElement final : public ui::UiElement
+{
+public:
+    explicit DisplayOnlyElement(const core::Vector2& desired_size)
+        : UiElement(core::Rect{ 0,0,desired_size.x,desired_size.y }),_desired_size(desired_size) {}
+
+    [[nodiscard]] core::Vector2 content_extent() const noexcept override { return _desired_size; }
+
+private:
+    core::Vector2 _desired_size;
+};
+
 struct TabFixture
 {
     ui::UiTabContainer tabs{ core::Rect{ 0,0,540,300 } };
@@ -253,6 +275,101 @@ void run_slider_focus_matrix(input::InputDevice device)
         "secondary navigation must leave nested slider and clear adjustment mode");
 }
 
+void test_passive_scroll_target_routing()
+{
+    ui::UiWindow window{ core::Rect{ 0,0,640,480 } };
+    auto tabs_owned = std::make_unique<ui::UiTabContainer>(core::Rect{ 0,0,600,420 });
+    ui::UiTabContainer* tabs = tabs_owned.get();
+    auto page = std::make_unique<ui::UiScrollContainer>(core::Rect{ 0,0,560,330 });
+    ui::UiScrollContainer* page_scroll = page.get();
+    page->set_scroll_axis(ui::UiScrollAxis::Vertical);
+    page->set_content(std::make_unique<DisplayOnlyElement>(core::Vector2{ 540,960 }));
+    require(tabs->add_tab(ui::ui_raw_text("Display"),std::move(page)).added,
+        "display-only tab page should be added");
+    auto alternate_page = std::make_unique<ui::UiScrollContainer>(core::Rect{ 0,0,560,330 });
+    ui::UiScrollContainer* alternate_scroll = alternate_page.get();
+    alternate_page->set_scroll_axis(ui::UiScrollAxis::Vertical);
+    alternate_page->set_content(std::make_unique<DisplayOnlyElement>(core::Vector2{ 540,960 }));
+    require(tabs->add_tab(ui::ui_raw_text("Alternate"),std::move(alternate_page)).added,
+        "alternate display-only tab page should be added");
+    window.add_child(std::move(tabs_owned));
+    window.register_focus_scope(*tabs);
+    require(window.focus_first_available_scope(),"display-only tab should receive window focus");
+    window.update(1.0 / 60.0);
+
+    const float initial_y = page_scroll->scroll_offset_y();
+    require(window.on_ui_input_event(wheel_event(0,-1,input::InputDevice::Gamepad)),
+        "gamepad wheel should resolve a passive scroll target without a focused page leaf");
+    require(page_scroll->scroll_offset_y() > initial_y,"passive gamepad scrolling should move the display-only page");
+    require(window.gamepad_scroll_target() == page_scroll,"window should retain the resolved passive scroll target");
+    require(tabs->selected_index() == 0,"passive scrolling must not change tab selection");
+
+    const float after_wheel = page_scroll->scroll_offset_y();
+    require(window.on_ui_input_event(navigation_event(ui::UiAction::PageDown,input::InputDevice::Keyboard)),
+        "PageDown should route to the passive scroll target after focused scope declines it");
+    require(page_scroll->scroll_offset_y() > after_wheel,"PageDown should advance the display-only scroll page");
+    require(window.on_ui_input_event(navigation_event(ui::UiAction::Home,input::InputDevice::Keyboard)),
+        "Home should route to the passive scroll target when no leaf consumes it");
+    require(page_scroll->scroll_offset_y() == 0.0f,"Home should return passive scrolling to the beginning");
+    tabs->set_selected_index(1);
+    window.update(1.0 / 60.0);
+    require(window.gamepad_scroll_target() == nullptr,"switching tabs should invalidate a hidden page scroll target");
+    window.on_ui_input_event(wheel_event(0,-1,input::InputDevice::Gamepad));
+    require(alternate_scroll->scroll_offset_y() > 0.0f && window.gamepad_scroll_target() == alternate_scroll,
+        "passive scrolling after a tab switch should resolve the newly visible page");
+
+    ui::UiWindow horizontal_window{ core::Rect{ 0,0,500,260 } };
+    auto horizontal_owned = std::make_unique<ui::UiScrollContainer>(core::Rect{ 0,0,440,180 });
+    ui::UiScrollContainer* horizontal = horizontal_owned.get();
+    horizontal_owned->set_scroll_axis(ui::UiScrollAxis::Horizontal);
+    horizontal_owned->set_content(std::make_unique<DisplayOnlyElement>(core::Vector2{ 960,140 }));
+    horizontal_window.add_child(std::move(horizontal_owned));
+    horizontal_window.update(1.0 / 60.0);
+    require(horizontal_window.on_ui_input_event(wheel_event(-1,0,input::InputDevice::Gamepad)),
+        "horizontal gamepad wheel should resolve a passive horizontal scroll target");
+    require(horizontal->scroll_offset_x() > 0.0f,"horizontal wheel input should move the horizontal scroll container");
+    require(horizontal_window.on_ui_input_event(navigation_event(ui::UiAction::End,input::InputDevice::Keyboard)),
+        "End should route to an unfocused horizontal passive target");
+    require(horizontal->scroll_offset_x() == horizontal->max_scroll_offset().x,
+        "End should move passive horizontal scrolling to its far edge");
+
+    ui::UiWindow pointer_window{ core::Rect{ 0,0,760,280 } };
+    auto first_owned = std::make_unique<ui::UiScrollContainer>(core::Rect{ 0,0,320,220 });
+    ui::UiScrollContainer* first = first_owned.get();
+    first_owned->set_scroll_axis(ui::UiScrollAxis::Vertical);
+    first_owned->set_content(std::make_unique<DisplayOnlyElement>(core::Vector2{ 300,720 }));
+    ui::UiLayoutChildOptions first_options{};
+    first_options._margin.left = 10.0f;
+    first_options._margin.top = 10.0f;
+    pointer_window.add_child(std::move(first_owned),first_options);
+
+    auto second_owned = std::make_unique<ui::UiScrollContainer>(core::Rect{ 0,0,320,220 });
+    ui::UiScrollContainer* second = second_owned.get();
+    second_owned->set_scroll_axis(ui::UiScrollAxis::Vertical);
+    second_owned->set_content(std::make_unique<DisplayOnlyElement>(core::Vector2{ 300,720 }));
+    ui::UiLayoutChildOptions second_options{};
+    second_options._margin.left = 400.0f;
+    second_options._margin.top = 10.0f;
+    pointer_window.add_child(std::move(second_owned),second_options);
+    pointer_window.update(1.0 / 60.0);
+    pointer_window.on_ui_input_event({
+        .type = ui::UiInputEventType::PointerPressed,
+        .device = input::InputDevice::Mouse,
+        .control = input::RawInputControl::MouseLeft,
+        .mouse_x = 450,
+        .mouse_y = 50
+    });
+    require(pointer_window.gamepad_scroll_target() == second,"pointer-used scroll should win over deepest fallback selection");
+    pointer_window.on_ui_input_event(wheel_event(0,-1,input::InputDevice::Gamepad));
+    require(second->scroll_offset_y() > 0.0f && first->scroll_offset_y() == 0.0f,
+        "passive wheel input should use the pointer-promoted scroll target");
+    second->set_visible(false);
+    pointer_window.update(1.0 / 60.0);
+    require(pointer_window.gamepad_scroll_target() == nullptr,"hidden passive targets must be pruned before later input");
+    pointer_window.on_ui_input_event(wheel_event(0,-1,input::InputDevice::Gamepad));
+    require(first->scroll_offset_y() > 0.0f,"next passive scroll should fall back to another visible container after target invalidation");
+}
+
 }
 
 int main()
@@ -263,6 +380,7 @@ int main()
     run_real_nested_page_matrix(input::InputDevice::Gamepad);
     run_slider_focus_matrix(input::InputDevice::Keyboard);
     run_slider_focus_matrix(input::InputDevice::Gamepad);
+    test_passive_scroll_target_routing();
     std::cout << "ui focus routing tests passed\n";
     return EXIT_SUCCESS;
 }

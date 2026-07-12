@@ -23,6 +23,8 @@ constexpr UiBinding k_ui_bindings[] = {
     { elysia::ui::UiAction::DeleteKey, elysia::input::RawInputControl::KeyDelete },
     { elysia::ui::UiAction::Home, elysia::input::RawInputControl::KeyHome },
     { elysia::ui::UiAction::End, elysia::input::RawInputControl::KeyEnd },
+    { elysia::ui::UiAction::PageUp, elysia::input::RawInputControl::KeyPageUp },
+    { elysia::ui::UiAction::PageDown, elysia::input::RawInputControl::KeyPageDown },
     { elysia::ui::UiAction::NavigateLeft, elysia::input::RawInputControl::GamepadDPadLeft },
     { elysia::ui::UiAction::NavigateRight, elysia::input::RawInputControl::GamepadDPadRight },
     { elysia::ui::UiAction::NavigateUp, elysia::input::RawInputControl::GamepadDPadUp },

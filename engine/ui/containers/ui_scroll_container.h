@@ -8,6 +8,7 @@
 
 namespace elysia::ui
 {
+class UiWindow;
 enum class UiScrollBarVisibility
 {
     Hidden,
@@ -65,6 +66,7 @@ static void apply(UiScrollContainerStyle& s,const Overrides& o) noexcept { apply
 
 class UiScrollContainer : public UiChildHost, public UiFocusScope
 {
+    friend class UiWindow;
 public:
     explicit UiScrollContainer(const elysia::core::Rect& rect = elysia::core::Rect::zero(),int order = 0) noexcept;
     UiScrollContainer(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order = 0) noexcept;
@@ -162,6 +164,10 @@ private:
     [[nodiscard]] bool should_dispatch_content_mouse_wheel(const UiInputEvent& event) const noexcept;
     // Consumes mouse-wheel input by translating it into scroll-state movement.
     [[nodiscard]] bool handle_mouse_wheel(const UiInputEvent& event);
+    [[nodiscard]] bool apply_wheel_delta(const UiInputEvent& event);
+    // Window-only path for a passive scroll target; never alters focus state.
+    [[nodiscard]] bool handle_passive_scroll_input(const UiInputEvent& event);
+    [[nodiscard]] bool is_passive_scroll_target_usable() const noexcept;
     // Gives scrollbar thumbs first chance to consume pointer drag interactions.
     [[nodiscard]] bool dispatch_to_scrollbars(const UiInputEvent& event);
     [[nodiscard]] bool supports_scroll_axis(UiScrollAxis axis) const noexcept;

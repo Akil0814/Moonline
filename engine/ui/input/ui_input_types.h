@@ -21,6 +21,8 @@ enum class UiAction
     DeleteKey,
     Home,
     End,
+    PageUp,
+    PageDown,
     Count
 };
 

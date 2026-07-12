@@ -14,6 +14,7 @@
 
 namespace elysia::ui
 {
+class UiScrollContainer;
 using UiWindowCancelCallback = std::function<void()>;
 
 class UiWindow : public UiChildHost
@@ -47,6 +48,8 @@ public:
     // Chooses the first usable registered scope when the window gains focus.
     bool focus_first_available_scope();
     [[nodiscard]] elysia::input::InputDevice focus_input_device() const noexcept { return _focus_input_device; }
+    // Passive target used only when gamepad or page-scroll input has no focused scroll scope.
+    [[nodiscard]] const UiScrollContainer* gamepad_scroll_target() const noexcept;
 
     // Registers an owned child element as a window-managed overlay surface.
     void register_overlay(UiElement& element,UiOverlayOptions options = {});
@@ -113,6 +116,7 @@ private:
     void prune_overlays();
     void prune_transient_popups();
     void prune_tooltips();
+    void prune_gamepad_scroll_target() noexcept;
     // Breaks every reverse registration before reset/destruction releases children.
     void detach_window_registrations() noexcept;
     // Repairs scope focus after scope removal, disablement, or overlay changes.
@@ -162,6 +166,9 @@ private:
     void submit_tooltip_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const;
     // Routes gamepad wheel events through logically focused nested scroll containers, deepest first.
     [[nodiscard]] bool dispatch_gamepad_scroll_to_focused_containers(UiElement& root,const UiInputEvent& event);
+    [[nodiscard]] bool dispatch_passive_scroll_input(UiElement& root,const UiInputEvent& event);
+    void promote_scroll_target_at(UiElement& root,int mouse_x,int mouse_y) noexcept;
+    [[nodiscard]] UiScrollContainer* resolve_passive_scroll_target(UiElement& root) noexcept;
     // Verifies that an element is still an owned child before window bookkeeping uses it.
     [[nodiscard]] bool is_live_child_element(const UiElement* element) const noexcept;
     // Finds the registered focus scope under a pointer position for hover focus.
@@ -184,6 +191,7 @@ private:
     UiTransientPopup* _active_transient_popup = nullptr;
     UiFocusScope* _focused_scope = nullptr;
     UiFocusScope* _last_focused_scope = nullptr;
+    UiScrollContainer* _gamepad_scroll_target = nullptr;
     UiStyleState<UiWindowStyle> _style_state;
     bool _hover_focus_enabled = true;
     bool _transient_popup_pointer_active = false;

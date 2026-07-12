@@ -24,6 +24,7 @@
 #include "../engine/ui/composites/ui_tooltip.h"
 #include "../engine/ui/window/ui_window.h"
 #include "../engine/ui/core/ui_render_command_range_utils.h"
+#include "../engine/ui/input/ui_gamepad_scroll_synthesizer.h"
 
 #include <cstdlib>
 #include <cstdint>
@@ -995,6 +996,34 @@ void test_render_command_range_translation()
         "range translation should move lines");
     require(commands[2].circle_center.nearly_equals({ 15,4 }),"range translation should move circles");
 }
+
+void test_gamepad_scroll_synthesizer_axes()
+{
+    elysia::ui::UiGamepadScrollSynthesizer synthesizer;
+    elysia::input::RawInputFrame frame{};
+    frame.active_device = elysia::input::InputDevice::Gamepad;
+    frame.state.set_axis(elysia::input::RawInputAxis::GamepadLeftX,1.0f);
+    frame.state.set_axis(elysia::input::RawInputAxis::GamepadLeftY,1.0f);
+    require(!synthesizer.synthesize(frame).has_value(),"first diagonal stick sample should accumulate independently");
+    const auto diagonal = synthesizer.synthesize(frame);
+    require(diagonal && diagonal->wheel_x == -1 && diagonal->wheel_y == -1,
+        "diagonal stick input should synthesize independent horizontal and vertical wheel steps");
+
+    frame.state.set_axis(elysia::input::RawInputAxis::GamepadLeftX,0.1f);
+    frame.state.set_axis(elysia::input::RawInputAxis::GamepadLeftY,0.0f);
+    require(!synthesizer.synthesize(frame).has_value(),"deadzone input should reset both idle axis accumulators");
+
+    frame.state.set_axis(elysia::input::RawInputAxis::GamepadLeftX,-1.0f);
+    require(!synthesizer.synthesize(frame).has_value(),"fresh horizontal input should not inherit pre-deadzone accumulation");
+    const auto horizontal = synthesizer.synthesize(frame);
+    require(horizontal && horizontal->wheel_x == 1 && horizontal->wheel_y == 0,
+        "horizontal stick input should emit only horizontal wheel steps");
+
+    frame.device_switched_this_frame = true;
+    require(!synthesizer.synthesize(frame).has_value(),"device switches should clear pending scroll accumulation");
+    frame.device_switched_this_frame = false;
+    require(!synthesizer.synthesize(frame).has_value(),"post-switch input should restart accumulation from zero");
+}
 }
 
 int main()
@@ -1025,6 +1054,7 @@ int main()
     test_presentation_translation_animation();
     test_presentation_translation_subtree_render_and_hit_test();
     test_render_command_range_translation();
+    test_gamepad_scroll_synthesizer_axes();
     std::cout << "ui lifecycle tests passed\n";
     return EXIT_SUCCESS;
 }
