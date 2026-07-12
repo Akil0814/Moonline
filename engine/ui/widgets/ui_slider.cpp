@@ -830,7 +830,6 @@ bool UiSlider::set_value_internal(float value,bool notify) noexcept
     _value = next_value;
     if (notify && _on_value_changed)
         _on_value_changed(_value);
-    notify_layout_parent_of_intrinsic_layout_invalidation();
     return true;
 }
 

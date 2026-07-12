@@ -32,6 +32,7 @@ void UiTabContainer::update(double delta)
 {
     assert_invariant();
     UiControlFocusScopeHost::update(delta);
+    sync_host_delegated_focus_target(*this);
     sync_delegated_scope_focus(focused_target(),is_scope_focused(),delegated_focus_regions(*this));
     assert_invariant();
 }
@@ -39,12 +40,34 @@ void UiTabContainer::update(double delta)
 void UiTabContainer::on_ui_input_frame(const UiInputFrame& input)
 {
     UiControlFocusScopeHost::on_ui_input_frame(input);
+    sync_host_delegated_focus_target(*this);
     sync_delegated_scope_focus(focused_target(),is_scope_focused(),delegated_focus_regions(*this));
 }
 
 bool UiTabContainer::on_ui_input_event(const UiInputEvent& event)
 {
+    const bool is_confirm = event.action == UiAction::Confirm
+        && (event.type == UiInputEventType::ActionPressed || event.type == UiInputEventType::ActionReleased);
+    const bool is_navigation = event.type == UiInputEventType::ActionPressed && is_navigation_action(event.action);
+
+    if (is_confirm || is_navigation)
+    {
+        if (UiFocusScope* scope = delegated_owner_scope_of(focused_target()))
+        {
+            if (auto* receiver = dynamic_cast<UiInputEventReceiver*>(&scope->focus_scope_element()))
+            {
+                if (receiver->on_ui_input_event(event))
+                {
+                    sync_host_delegated_focus_target(*this);
+                    sync_delegated_scope_focus(focused_target(),is_scope_focused(),delegated_focus_regions(*this));
+                    return true;
+                }
+            }
+        }
+    }
+
     const bool handled = UiControlFocusScopeHost::on_ui_input_event(event);
+    sync_host_delegated_focus_target(*this);
     sync_delegated_scope_focus(focused_target(),is_scope_focused(),delegated_focus_regions(*this));
     return handled;
 }
