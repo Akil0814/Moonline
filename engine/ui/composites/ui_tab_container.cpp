@@ -67,21 +67,21 @@ bool UiTabContainer::on_ui_input_event(const UiInputEvent& event)
                     }
                 }
             }
+            if (auto* receiver = dynamic_cast<UiInputEventReceiver*>(&scope->focus_scope_element()))
+            {
+                if (receiver->on_ui_input_event(event))
+                {
+                    sync_host_delegated_focus_target(*this);
+                    sync_delegated_scope_focus(focused_target(),is_scope_focused(),delegated_focus_regions(*this));
+                    return true;
+                }
+            }
             if (is_navigation && scope == _tab_view && event.action == UiAction::NavigateUp)
             {
                 UiControl* target = _tab_bar->focused_target();
                 set_focused_target(target);
                 if (focused_target() == target)
                 {
-                    sync_delegated_scope_focus(focused_target(),is_scope_focused(),delegated_focus_regions(*this));
-                    return true;
-                }
-            }
-            if (auto* receiver = dynamic_cast<UiInputEventReceiver*>(&scope->focus_scope_element()))
-            {
-                if (receiver->on_ui_input_event(event))
-                {
-                    sync_host_delegated_focus_target(*this);
                     sync_delegated_scope_focus(focused_target(),is_scope_focused(),delegated_focus_regions(*this));
                     return true;
                 }
@@ -93,6 +93,17 @@ bool UiTabContainer::on_ui_input_event(const UiInputEvent& event)
     sync_host_delegated_focus_target(*this);
     sync_delegated_scope_focus(focused_target(),is_scope_focused(),delegated_focus_regions(*this));
     return handled;
+}
+
+bool UiTabContainer::focus_first_available()
+{
+    if (!_tab_bar || !_tab_bar->focus_first_available())
+        return false;
+
+    UiControl* target = _tab_bar->focused_target();
+    set_focused_target(target);
+    sync_delegated_scope_focus(focused_target(),is_scope_focused(),delegated_focus_regions(*this));
+    return focused_target() == target;
 }
 
 UiTabAddResult UiTabContainer::add_tab(UiTextContent label,std::unique_ptr<UiElement> page)

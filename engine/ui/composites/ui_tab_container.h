@@ -29,6 +29,7 @@ public:
     void update(double delta) override;
     void on_ui_input_frame(const UiInputFrame& input) override;
     bool on_ui_input_event(const UiInputEvent& event) override;
+    bool focus_first_available() override;
 
     UiTabAddResult add_tab(UiTextContent label,std::unique_ptr<UiElement> page);
     [[nodiscard]] std::unique_ptr<UiElement> remove_tab(std::size_t index);

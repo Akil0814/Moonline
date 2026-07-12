@@ -15,6 +15,7 @@ public:
     void update(double delta) override;
     void on_ui_input_frame(const UiInputFrame& input) override;
     bool on_ui_input_event(const UiInputEvent& event) override;
+    bool focus_first_available() override;
 
     UiElement* add_page(std::unique_ptr<UiElement> page);
     [[nodiscard]] std::unique_ptr<UiElement> extract_page(std::size_t index);

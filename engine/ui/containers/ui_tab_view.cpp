@@ -17,20 +17,57 @@ void UiTabView::reset() noexcept
 void UiTabView::update(double delta)
 {
     UiControlFocusScopeHost::update(delta);
+    sync_host_delegated_focus_target(*this);
     sync_delegated_scope_focus(focused_target(),is_scope_focused(),delegated_focus_regions(*this));
 }
 
 void UiTabView::on_ui_input_frame(const UiInputFrame& input)
 {
     UiControlFocusScopeHost::on_ui_input_frame(input);
+    sync_host_delegated_focus_target(*this);
     sync_delegated_scope_focus(focused_target(),is_scope_focused(),delegated_focus_regions(*this));
 }
 
 bool UiTabView::on_ui_input_event(const UiInputEvent& event)
 {
+    const bool routes_to_page = (event.action == UiAction::Confirm
+            && (event.type == UiInputEventType::ActionPressed || event.type == UiInputEventType::ActionReleased))
+        || (event.type == UiInputEventType::ActionPressed && is_navigation_action(event.action));
+
+    if (routes_to_page)
+    {
+        if (UiFocusScope* page_scope = delegated_owner_scope_of(focused_target()))
+        {
+            if (auto* receiver = dynamic_cast<UiInputEventReceiver*>(&page_scope->focus_scope_element()))
+            {
+                if (receiver->on_ui_input_event(event))
+                {
+                    sync_host_delegated_focus_target(*this);
+                    sync_delegated_scope_focus(focused_target(),is_scope_focused(),delegated_focus_regions(*this));
+                    return true;
+                }
+            }
+        }
+    }
+
     const bool handled = UiControlFocusScopeHost::on_ui_input_event(event);
+    sync_host_delegated_focus_target(*this);
     sync_delegated_scope_focus(focused_target(),is_scope_focused(),delegated_focus_regions(*this));
     return handled;
+}
+
+bool UiTabView::focus_first_available()
+{
+    UiElement* page = _selected_index && *_selected_index < child_count()
+        ? child_at(*_selected_index)
+        : nullptr;
+    if (!page || !focus_delegated_region(page,true))
+        return false;
+
+    UiControl* target = first_focusable_control_in_delegated_region(page);
+    set_focused_target(target);
+    sync_delegated_scope_focus(focused_target(),is_scope_focused(),delegated_focus_regions(*this));
+    return focused_target() == target;
 }
 
 UiElement* UiTabView::add_page(std::unique_ptr<UiElement> page)
