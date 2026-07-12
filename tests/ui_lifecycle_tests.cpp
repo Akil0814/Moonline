@@ -84,6 +84,38 @@ public:
     }
 };
 
+class AllocationSensitiveContent final : public elysia::ui::UiElement
+{
+public:
+    explicit AllocationSensitiveContent(const elysia::core::Rect& rect)
+        : UiElement(rect) {}
+
+    [[nodiscard]] elysia::core::Vector2 content_extent() const noexcept override
+    {
+        return { size().x,std::max(400.0f,size().y + 36.0f) };
+    }
+};
+
+void test_scroll_offset_does_not_remeasure_allocated_content_as_growth()
+{
+    using namespace elysia;
+    ui::UiScrollContainer scroll(core::Rect{ 0,0,200,100 });
+    scroll.set_scroll_axis(ui::UiScrollAxis::Vertical);
+    scroll.set_content(std::make_unique<AllocationSensitiveContent>(core::Rect{ 0,0,200,0 }));
+
+    const float initial_height = scroll.content_size().y;
+    require(initial_height == 400.0f,"scroll container should measure the initial intrinsic content height");
+
+    for (int offset = 20; offset <= 200; offset += 20)
+    {
+        scroll.set_scroll_offset_y(static_cast<float>(offset));
+        scroll.update_layout_if_dirty();
+    }
+
+    require(scroll.content_size().y == initial_height,
+        "scrolling must only reposition content, not repeatedly expand its measured height");
+}
+
 void test_list_consumes_desired_extent_and_cross_alignment()
 {
     using namespace elysia;
@@ -1029,6 +1061,7 @@ void test_gamepad_scroll_synthesizer_axes()
 int main()
 {
     test_list_consumes_desired_extent_and_cross_alignment();
+    test_scroll_offset_does_not_remeasure_allocated_content_as_growth();
     test_corner_radius_normalization();
     test_chrome_uses_single_rounded_outer_frame();
     test_field_level_style_cascade();

@@ -139,6 +139,8 @@ public:
 protected:
     // Rebuilds the viewport, content rect, and scrollbar geometry from current state.
     void rebuild_layout() override;
+    // Keeps content measurement separate from viewport-only repositioning.
+    void on_child_intrinsic_layout_invalidated(UiElement& child) noexcept override;
 
 private:
     // Captures which scrollbars should currently be visible after Auto resolution.
@@ -235,6 +237,8 @@ private:
     UiDragHandle _vertical_thumb;
     bool _scope_focused = false;
     bool _content_pointer_active = false;
+    bool _content_size_dirty = true;
+    bool _placing_content = false;
     bool _content_focus_suppressed = false;
     bool _gamepad_scroll_focus_restore_pending = false;
 };

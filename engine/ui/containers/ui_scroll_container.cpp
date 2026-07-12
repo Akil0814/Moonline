@@ -64,6 +64,8 @@ void UiScrollContainer::reset() noexcept
     _content_layout = UiLayoutChildOptions{};
     _scope_focused = false;
     _content_pointer_active = false;
+    _content_size_dirty = true;
+    _placing_content = false;
     _content_focus_suppressed = false;
     _gamepad_scroll_focus_restore_pending = false;
     initialize_scrollbar_handles();
@@ -435,6 +437,7 @@ void UiScrollContainer::reset_content_state() noexcept
     clear_content_pointer_state();
     set_content_focus_suppressed(false);
     _gamepad_scroll_focus_restore_pending = false;
+    _content_size_dirty = true;
     reset_scroll_offset();
 }
 
@@ -526,10 +529,12 @@ void UiScrollContainer::rebuild_layout()
     UiChildHost::set_clip_children(true);
     // Auto scrollbars reduce the viewport, which can change overflow on the other axis.
     // Resolve content and viewport twice so both axes converge before child placement.
-    sync_scroll_state_to_content();
+    if (_content_size_dirty)
+        sync_scroll_state_to_content();
     _scroll_state.set_viewport_size(UiChildHost::content_rect().size());
     sync_scroll_state_to_viewport();
-    sync_scroll_state_to_content();
+    if (_content_size_dirty)
+        sync_scroll_state_to_content();
     sync_scroll_state_to_viewport();
 
     std::vector<ChildEntry>& child_entries = children();
@@ -544,12 +549,14 @@ void UiScrollContainer::rebuild_layout()
         // A scroll container owns exactly one payload; stale extra children are collapsed defensively.
         if (index == 0)
         {
+            _placing_content = true;
             entry.element->set_screen_rect(elysia::core::Rect(
                 viewport.x() - _scroll_state.offset().x,
                 viewport.y() - _scroll_state.offset().y,
                 size.x,
                 size.y
             ));
+            _placing_content = false;
         }
         else
         {
@@ -557,7 +564,15 @@ void UiScrollContainer::rebuild_layout()
         }
     }
 
+    _content_size_dirty = false;
     sync_scrollbar_handles();
+}
+
+void UiScrollContainer::on_child_intrinsic_layout_invalidated(UiElement& child) noexcept
+{
+    if (!_placing_content)
+        _content_size_dirty = true;
+    UiChildHost::on_child_intrinsic_layout_invalidated(child);
 }
 
 UiFocusScope* UiScrollContainer::content_scope() noexcept
