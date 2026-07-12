@@ -100,6 +100,8 @@ namespace elysia::ui
         [[nodiscard]] UiSliderOrientation orientation() const noexcept;
         void set_value_display(UiSliderValueDisplay display) noexcept;
         [[nodiscard]] UiSliderValueDisplay value_display() const noexcept;
+        // Reports whether keyboard/gamepad input currently owns the slider's primary axis.
+        [[nodiscard]] bool is_adjusting() const noexcept;
 
         void set_sounds(const UiSliderSounds& sounds);
         void clear_sounds() noexcept;
@@ -170,7 +172,7 @@ namespace elysia::ui
         [[nodiscard]] elysia::core::Color current_text_color() const noexcept;
         // Wires thumb dragging callbacks back into slider value updates.
         void bind_handle_callbacks();
-        // Clears drag-only state after pointer release, cancellation, or focus loss.
+        // Clears pointer dragging and keyboard/gamepad adjustment after interaction becomes invalid.
         void clear_drag_state() noexcept;
         // Plays a configured sound only when the corresponding key is present.
         void play_sound_if_set(std::string_view sound_key) const;
@@ -186,6 +188,7 @@ namespace elysia::ui
         UiSliderValueChangedCallback _on_value_changed;
         UiSliderOrientation _orientation = UiSliderOrientation::Horizontal;
         UiSliderValueDisplay _value_display = UiSliderValueDisplay::None;
+        bool _is_adjusting = false;
         bool _drag_value_changed = false;
         float _bar_thickness = 6.0f;
         float _min_value = 0.0f;

@@ -316,9 +316,6 @@ elysia::core::Vector2 UiChromeContainer::content_extent() const noexcept
 
 void UiChromeContainer::set_scope_focused(bool focused) noexcept
 {
-    if (!focused)
-        _body_scope_active = false;
-
     _scope_focused = focused;
     sync_body_scope_focus();
 }
@@ -342,6 +339,15 @@ bool UiChromeContainer::has_focusable_target() const noexcept
 bool UiChromeContainer::focus_first_available()
 {
     sync_body_scope_focus();
+
+    if (_body_scope_active)
+    {
+        if (const UiFocusScope* body_scope = delegated_body_scope();
+            body_scope && is_control_usable(body_scope->focused_target()))
+        {
+            return true;
+        }
+    }
 
     // Normal chrome entry favors header actions; specialized composites may explicitly enter body.
     if (header_has_focusable_target())

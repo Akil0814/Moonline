@@ -1,8 +1,13 @@
 #define SDL_MAIN_HANDLED
 
 #include "../engine/ui/composites/ui_tab_container.h"
+#include "../engine/ui/containers/ui_chrome_container.h"
+#include "../engine/ui/containers/ui_grid_container.h"
 #include "../engine/ui/containers/ui_list_container.h"
+#include "../engine/ui/containers/ui_scroll_container.h"
 #include "../engine/ui/widgets/ui_button.h"
+#include "../engine/ui/widgets/ui_slider.h"
+#include "../engine/ui/window/ui_window.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -67,6 +72,41 @@ struct TabFixture
     }
 };
 
+std::unique_ptr<ui::UiScrollContainer> scrolled_section_page(
+    std::unique_ptr<ui::UiElement> first_content,
+    ui::UiButton*& trailing_button)
+{
+    auto page = std::make_unique<ui::UiScrollContainer>(core::Rect{ 0,0,900,390 });
+    page->set_scroll_axis(ui::UiScrollAxis::Vertical);
+    auto page_list = std::make_unique<ui::UiListContainer>(core::Rect{ 0,0,870,500 });
+    auto section = std::make_unique<ui::UiChromeContainer>(core::Rect{ 0,0,840,420 });
+    auto section_body = std::make_unique<ui::UiListContainer>(core::Rect{ 0,0,820,360 });
+    section_body->add_back(std::move(first_content));
+    auto trailing = std::make_unique<ui::UiButton>(core::Rect{ 0,0,240,40 });
+    trailing_button = trailing.get();
+    section_body->add_back(std::move(trailing));
+    section->set_body(std::move(section_body));
+    page_list->add_back(std::move(section));
+    page->set_content(std::move(page_list));
+    return page;
+}
+
+struct WindowTabFixture
+{
+    ui::UiWindow window{ core::Rect{ 0,0,1120,616 } };
+    ui::UiTabContainer* tabs = nullptr;
+
+    explicit WindowTabFixture(std::unique_ptr<ui::UiElement> page)
+    {
+        auto owned_tabs = std::make_unique<ui::UiTabContainer>(core::Rect{ 0,0,1080,530 });
+        tabs = owned_tabs.get();
+        require(tabs->add_tab(ui::ui_raw_text("Page"),std::move(page)).added,"window fixture page should be added");
+        window.add_child(std::move(owned_tabs));
+        window.register_focus_scope(*tabs);
+        require(window.focus_first_available_scope(),"window should focus the tab scope");
+    }
+};
+
 void run_keyboard_gamepad_matrix(input::InputDevice device)
 {
     TabFixture fixture;
@@ -115,12 +155,114 @@ void run_keyboard_gamepad_matrix(input::InputDevice device)
     require(fixture.tabs.focused_index() == 1,"returning to the tab bar should restore its focused tab");
 }
 
+void run_real_nested_page_matrix(input::InputDevice device)
+{
+    auto first_button = std::make_unique<ui::UiButton>(core::Rect{ 0,0,240,40 });
+    ui::UiButton* first = first_button.get();
+    ui::UiButton* second = nullptr;
+    WindowTabFixture overlays(scrolled_section_page(std::move(first_button),second));
+
+    require(overlays.window.on_ui_input_event(navigation_event(ui::UiAction::NavigateDown,device)),
+        "window should route down through tab, scroll and chrome into the section body");
+    require(overlays.tabs->focused_target() == first,"nested overlay-style page should focus its first button");
+    overlays.window.update(1.0 / 60.0);
+    require(overlays.tabs->focused_target() == first,"frame synchronization must preserve the nested focused leaf");
+    require(overlays.window.on_ui_input_event(navigation_event(ui::UiAction::NavigateDown,device)),
+        "nested section body should consume its second down");
+    require(overlays.tabs->focused_target() == second,"nested overlay-style page should reach its second button");
+    overlays.window.update(1.0 / 60.0);
+    require(overlays.tabs->focused_target() == second,"chrome update must not reset body focus to its first control");
+
+    auto grid = std::make_unique<ui::UiGridContainer>(core::Rect{ 0,0,560,170 });
+    grid->set_column_count(3);
+    ui::UiButton* grid_buttons[6]{};
+    for (std::size_t index = 0; index < 6; ++index)
+    {
+        auto button = std::make_unique<ui::UiButton>(core::Rect{ 0,0,160,40 });
+        grid_buttons[index] = button.get();
+        grid->add_child(std::move(button));
+    }
+    ui::UiButton* after_grid = nullptr;
+    WindowTabFixture containers(scrolled_section_page(std::move(grid),after_grid));
+
+    require(containers.window.on_ui_input_event(navigation_event(ui::UiAction::NavigateDown,device)),
+        "window should route down into a grid nested below scroll and chrome");
+    require(containers.tabs->focused_target() == grid_buttons[0],"container-style page should enter the first grid cell");
+    require(containers.window.on_ui_input_event(navigation_event(ui::UiAction::NavigateDown,device)),
+        "grid should consume vertical navigation inside the page");
+    require(containers.tabs->focused_target() == grid_buttons[3],"grid down should reach the next row");
+    containers.window.update(1.0 / 60.0);
+    require(containers.tabs->focused_target() == grid_buttons[3],"frame synchronization must preserve nested grid focus");
+    require(containers.window.on_ui_input_event(navigation_event(ui::UiAction::NavigateDown,device)),
+        "grid boundary should propagate to the next section-body item");
+    require(containers.tabs->focused_target() == after_grid,"grid boundary should enter the following control");
+}
+
+void run_slider_focus_matrix(input::InputDevice device)
+{
+    ui::UiWindow window{ core::Rect{ 0,0,640,480 } };
+    auto list = std::make_unique<ui::UiListContainer>(core::Rect{ 0,0,400,300 });
+    ui::UiListContainer* list_raw = list.get();
+    auto before = std::make_unique<ui::UiButton>(core::Rect{ 0,0,200,40 });
+    ui::UiButton* before_raw = before.get();
+    auto slider = std::make_unique<ui::UiSlider>(core::Rect{ 0,0,240,40 });
+    ui::UiSlider* slider_raw = slider.get();
+    slider->set_step(0.1f);
+    slider->set_value(0.5f);
+    auto after = std::make_unique<ui::UiButton>(core::Rect{ 0,0,200,40 });
+    ui::UiButton* after_raw = after.get();
+    list->add_back(std::move(before));
+    list->add_back(std::move(slider));
+    list->add_back(std::move(after));
+    window.add_child(std::move(list));
+    window.register_focus_scope(*list_raw);
+    require(window.focus_first_available_scope() && list_raw->focused_target() == before_raw,
+        "slider focus fixture should start on the preceding button");
+
+    window.on_ui_input_event(navigation_event(ui::UiAction::NavigateDown,device));
+    require(list_raw->focused_target() == slider_raw && !slider_raw->is_adjusting(),
+        "normal navigation should enter the focused slider without beginning adjustment");
+    window.on_ui_input_event(navigation_event(ui::UiAction::NavigateDown,device));
+    require(list_raw->focused_target() == after_raw,
+        "unconfirmed slider must yield its primary container direction");
+
+    window.on_ui_input_event(navigation_event(ui::UiAction::NavigateUp,device));
+    require(list_raw->focused_target() == slider_raw,"up should return focus to the slider");
+    window.on_ui_input_event(confirm_event(ui::UiInputEventType::ActionPressed,device));
+    require(slider_raw->is_adjusting(),"confirm should begin slider adjustment inside a list");
+    const float before_adjustment = slider_raw->value();
+    window.on_ui_input_event(navigation_event(ui::UiAction::NavigateRight,device));
+    require(slider_raw->value() > before_adjustment,"adjusting slider should consume and apply its horizontal axis");
+    window.on_ui_input_event(confirm_event(ui::UiInputEventType::ActionPressed,device));
+    require(!slider_raw->is_adjusting(),"second confirm should exit slider adjustment");
+    window.on_ui_input_event(navigation_event(ui::UiAction::NavigateDown,device));
+    require(list_raw->focused_target() == after_raw,"exited slider adjustment must restore container navigation");
+
+    auto nested_slider = std::make_unique<ui::UiSlider>(core::Rect{ 0,0,240,40 });
+    ui::UiSlider* nested_slider_raw = nested_slider.get();
+    nested_slider->set_step(0.1f);
+    nested_slider->set_value(0.5f);
+    ui::UiButton* nested_after = nullptr;
+    WindowTabFixture nested(scrolled_section_page(std::move(nested_slider),nested_after));
+    nested.window.on_ui_input_event(navigation_event(ui::UiAction::NavigateDown,device));
+    require(nested.tabs->focused_target() == nested_slider_raw,"nested scroll/chrome page should enter its slider");
+    nested.window.on_ui_input_event(confirm_event(ui::UiInputEventType::ActionPressed,device));
+    require(nested_slider_raw->is_adjusting(),"nested slider should enter adjustment mode");
+    nested.window.on_ui_input_event(navigation_event(ui::UiAction::NavigateDown,device));
+    require(nested.tabs->focused_target() == nested_after && !nested_slider_raw->is_adjusting(),
+        "secondary navigation must leave nested slider and clear adjustment mode");
+}
+
 }
 
 int main()
 {
     run_keyboard_gamepad_matrix(input::InputDevice::Keyboard);
     run_keyboard_gamepad_matrix(input::InputDevice::Gamepad);
+    run_real_nested_page_matrix(input::InputDevice::Keyboard);
+    run_real_nested_page_matrix(input::InputDevice::Gamepad);
+    run_slider_focus_matrix(input::InputDevice::Keyboard);
+    run_slider_focus_matrix(input::InputDevice::Gamepad);
     std::cout << "ui focus routing tests passed\n";
     return EXIT_SUCCESS;
 }

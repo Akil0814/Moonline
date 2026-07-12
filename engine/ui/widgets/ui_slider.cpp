@@ -141,6 +141,7 @@ void UiSlider::reset() noexcept
     _on_value_changed = nullptr;
     _orientation = UiSliderOrientation::Horizontal;
     _value_display = UiSliderValueDisplay::None;
+    _is_adjusting = false;
     _drag_value_changed = false;
     _bar_thickness = 6.0f;
     _min_value = 0.0f;
@@ -209,6 +210,7 @@ bool UiSlider::on_ui_input_event(const UiInputEvent& event)
         sync_child_visuals();
         set_focused(true);
         _handle.set_focused(true);
+        _is_adjusting = false;
         _drag_value_changed = false;
         _has_last_slide_sound_tick = false;
         if (!layout.handle_rect.contains(pointer))
@@ -226,6 +228,7 @@ bool UiSlider::on_ui_input_event(const UiInputEvent& event)
             return false;
 
         const bool handle_handled = _handle.on_ui_input_event(event);
+        _is_adjusting = false;
         sync_child_rects(compute_layout());
         sync_child_visuals();
         const bool is_inside = can_receive_pointer() && contains_pointer(event.mouse_x,event.mouse_y);
@@ -234,13 +237,24 @@ bool UiSlider::on_ui_input_event(const UiInputEvent& event)
         return handle_handled;
     }
 
-    if (event.type != UiInputEventType::ActionPressed)
-        return false;
     if (!can_interact())
     {
         clear_drag_state();
         return false;
     }
+
+    if (event.action == UiAction::Confirm)
+    {
+        if (event.type == UiInputEventType::ActionPressed)
+        {
+            _is_adjusting = !_is_adjusting;
+            return true;
+        }
+        return event.type == UiInputEventType::ActionReleased;
+    }
+
+    if (event.type != UiInputEventType::ActionPressed || !_is_adjusting)
+        return false;
 
     const float delta = action_step();
     float target_value = _value;
@@ -409,6 +423,11 @@ void UiSlider::set_value_display(UiSliderValueDisplay display) noexcept
 UiSliderValueDisplay UiSlider::value_display() const noexcept
 {
     return _value_display;
+}
+
+bool UiSlider::is_adjusting() const noexcept
+{
+    return _is_adjusting;
 }
 
 void UiSlider::set_sounds(const UiSliderSounds& sounds)
@@ -644,6 +663,13 @@ void UiSlider::sync_child_visuals() const
     _handle.set_enabled(is_enabled());
     _handle.set_opacity(opacity());
     _handle.set_focused(is_focused());
+    UiDragHandleStyle handle_style = style().handle;
+    if (_is_adjusting)
+    {
+        handle_style.chrome.background.focused = handle_style.chrome.background.active;
+        handle_style.chrome.border.focused = handle_style.chrome.border.active;
+    }
+    _handle.set_base_style(handle_style);
 
     _value_number.set_visible(_value_display != UiSliderValueDisplay::None && !_value_number.screen_rect().is_empty());
     _value_number.set_opacity(opacity());
@@ -853,7 +879,7 @@ elysia::core::Color UiSlider::current_background_color() const noexcept
 elysia::core::Color UiSlider::current_border_color() const noexcept
 {
     return resolve_interactive_color(
-        style().chrome.border,is_enabled(),is_focused(),_handle.is_dragging());
+        style().chrome.border,is_enabled(),is_focused(),_is_adjusting || _handle.is_dragging());
 }
 
 elysia::core::Color UiSlider::current_fill_color() const noexcept
@@ -887,6 +913,7 @@ void UiSlider::bind_handle_callbacks()
 void UiSlider::clear_drag_state() noexcept
 {
     _handle.cancel_drag();
+    _is_adjusting = false;
     _drag_value_changed = false;
 }
 

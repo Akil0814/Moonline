@@ -527,6 +527,79 @@ void test_nested_focus_repair_after_visibility_and_removal()
         "clearing the focused subtree should clear every cached target");
 }
 
+void test_slider_adjustment_mode()
+{
+    const auto action = [](elysia::ui::UiAction action,elysia::ui::UiInputEventType type,elysia::input::InputDevice device)
+    {
+        return elysia::ui::UiInputEvent{ .action=action,.type=type,.device=device };
+    };
+
+    for (const auto device : { elysia::input::InputDevice::Keyboard,elysia::input::InputDevice::Gamepad })
+    {
+        elysia::ui::UiSlider horizontal(elysia::core::Rect{ 0,0,180,40 });
+        horizontal.set_range(0.0f,10.0f);
+        horizontal.set_step(1.0f);
+        horizontal.set_value(5.0f);
+        horizontal.set_focused(true);
+        require(!horizontal.is_adjusting(),"focused slider should begin in navigation mode");
+        require(!horizontal.on_ui_input_event(action(elysia::ui::UiAction::NavigateRight,elysia::ui::UiInputEventType::ActionPressed,device)),
+            "focused horizontal slider must yield navigation before confirmation");
+        require(horizontal.value() == 5.0f,"navigation mode must not change slider value");
+
+        require(horizontal.on_ui_input_event(action(elysia::ui::UiAction::Confirm,elysia::ui::UiInputEventType::ActionPressed,device)),
+            "confirm press should enter slider adjustment mode");
+        require(horizontal.is_adjusting(),"confirm should mark slider as adjusting");
+        elysia::ui::UiSliderStyleOverrides slider_style{};
+        slider_style.chrome.draw_background = false;
+        slider_style.chrome.draw_border = true;
+        slider_style.chrome.border = test_border_color_overrides();
+        horizontal.set_style_overrides(slider_style);
+        std::vector<elysia::core::UiRenderCommand> commands;
+        horizontal.submit_ui_render_commands(commands);
+        require(!commands.empty() && commands.back().type == elysia::core::UiRenderCommandType::DrawRect
+                && commands.back().color == test_border_colors().active,
+            "adjusting slider should render its active border color");
+        require(horizontal.on_ui_input_event(action(elysia::ui::UiAction::NavigateRight,elysia::ui::UiInputEventType::ActionPressed,device)),
+            "adjusting horizontal slider should consume its primary axis");
+        require(horizontal.value() == 6.0f,"adjusting primary axis should change value");
+        require(horizontal.on_ui_input_event(action(elysia::ui::UiAction::End,elysia::ui::UiInputEventType::ActionPressed,device))
+                && horizontal.value() == 10.0f,
+            "adjusting slider should consume End and reach its maximum");
+        require(horizontal.on_ui_input_event(action(elysia::ui::UiAction::NavigateRight,elysia::ui::UiInputEventType::ActionPressed,device))
+                && horizontal.value() == 10.0f,
+            "adjusting slider must retain its primary axis at the maximum value");
+        require(horizontal.on_ui_input_event(action(elysia::ui::UiAction::Home,elysia::ui::UiInputEventType::ActionPressed,device))
+                && horizontal.value() == 0.0f,
+            "adjusting slider should consume Home and reach its minimum");
+        require(!horizontal.on_ui_input_event(action(elysia::ui::UiAction::NavigateDown,elysia::ui::UiInputEventType::ActionPressed,device)),
+            "adjusting slider must yield its secondary axis to the parent scope");
+        require(horizontal.on_ui_input_event(action(elysia::ui::UiAction::Confirm,elysia::ui::UiInputEventType::ActionReleased,device)),
+            "confirm release should be consumed without changing adjustment state");
+        require(horizontal.is_adjusting(),"confirm release must not toggle adjustment mode");
+        horizontal.on_ui_input_event(action(elysia::ui::UiAction::Confirm,elysia::ui::UiInputEventType::ActionPressed,device));
+        require(!horizontal.is_adjusting(),"second confirm press should leave adjustment mode");
+        require(!horizontal.on_ui_input_event(action(elysia::ui::UiAction::NavigateRight,elysia::ui::UiInputEventType::ActionPressed,device)),
+            "after leaving adjustment mode the primary axis must return to navigation");
+        horizontal.set_focused(false);
+        require(!horizontal.is_adjusting(),"focus loss must clear adjustment mode");
+
+        elysia::ui::UiSlider vertical(elysia::core::Rect{ 0,0,40,180 });
+        vertical.set_orientation(elysia::ui::UiSliderOrientation::Vertical);
+        vertical.set_range(0.0f,10.0f);
+        vertical.set_step(1.0f);
+        vertical.set_value(5.0f);
+        vertical.set_focused(true);
+        vertical.on_ui_input_event(action(elysia::ui::UiAction::Confirm,elysia::ui::UiInputEventType::ActionPressed,device));
+        require(vertical.on_ui_input_event(action(elysia::ui::UiAction::NavigateUp,elysia::ui::UiInputEventType::ActionPressed,device)),
+            "adjusting vertical slider should consume up");
+        require(vertical.value() == 6.0f,"vertical primary axis should increase value");
+        require(!vertical.on_ui_input_event(action(elysia::ui::UiAction::NavigateRight,elysia::ui::UiInputEventType::ActionPressed,device)),
+            "vertical slider must yield horizontal navigation even while adjusting");
+        vertical.set_enabled(false);
+        require(!vertical.is_adjusting(),"disabling a slider must clear adjustment mode");
+    }
+}
+
 void require_command_color(
     const std::vector<elysia::core::UiRenderCommand>& commands,
     elysia::core::UiRenderCommandType type,
@@ -941,6 +1014,7 @@ int main()
     test_deep_nested_focus_propagation();
     test_nested_focus_boundary_navigation();
     test_nested_focus_repair_after_visibility_and_removal();
+    test_slider_adjustment_mode();
     test_button_interactive_border_colors();
     test_textured_button_border();
     test_other_chrome_active_borders();
