@@ -62,27 +62,27 @@ bool LocalizationManager::init(
 
 	if (!renderer)
 	{
-		ELYSIA_LOG_ERROR("localization","Localization init failed: renderer is null.");
+		ELYSIA_LOG_WARN("localization","Localization init failed: renderer is null.");
 		return false;
 	}
 
 	elysia::io::I18nManifestLoader manifest_loader;
 	if (!manifest_loader.load(manifest_path, _manifest))
 	{
-		ELYSIA_LOG_ERROR("localization","Localization init failed: i18n manifest load failed: "
+		ELYSIA_LOG_WARN("localization","Localization init failed: i18n manifest load failed: "
 			<< manifest_path);
 		return false;
 	}
 
 	if (_manifest.default_language.empty())
 	{
-		ELYSIA_LOG_ERROR("localization","Localization init failed: default language is empty.");
+		ELYSIA_LOG_WARN("localization","Localization init failed: default language is empty.");
 		return false;
 	}
 
 	if (_manifest.languages.empty())
 	{
-		ELYSIA_LOG_ERROR("localization","Localization init failed: supported language list is empty.");
+		ELYSIA_LOG_WARN("localization","Localization init failed: supported language list is empty.");
 		return false;
 	}
 
@@ -92,7 +92,7 @@ bool LocalizationManager::init(
 	elysia::io::PathManager* path_manager = elysia::io::PathManager::instance();
 	if (!path_manager->is_initialized())
 	{
-		ELYSIA_LOG_ERROR("localization","Localization init failed: path manager is not initialized.");
+		ELYSIA_LOG_WARN("localization","Localization init failed: path manager is not initialized.");
 		return false;
 	}
 
@@ -227,7 +227,7 @@ bool LocalizationManager::measure_raw_text(
 			style.wrap_width);
 		if (!surface)
 		{
-			ELYSIA_LOG_ERROR("localization","Measure wrapped raw text failed, error: " << TTF_GetError());
+			ELYSIA_LOG_WARN("localization","Measure wrapped raw text failed, error: " << TTF_GetError());
 			return false;
 		}
 
@@ -239,7 +239,7 @@ bool LocalizationManager::measure_raw_text(
 
 	if (TTF_SizeUTF8(font,raw_text.c_str(),&out_width,&out_height) != 0)
 	{
-		ELYSIA_LOG_ERROR("localization","Measure raw text failed, error: " << TTF_GetError());
+		ELYSIA_LOG_WARN("localization","Measure raw text failed, error: " << TTF_GetError());
 		return false;
 	}
 
@@ -255,13 +255,13 @@ bool LocalizationManager::set_language(std::string language)
 {
 	if (!_initialized)
 	{
-		ELYSIA_LOG_ERROR("localization","Set language failed: localization manager is not initialized.");
+		ELYSIA_LOG_WARN("localization","Set language failed: localization manager is not initialized.");
 		return false;
 	}
 
 	if (!is_supported_language(language))
 	{
-		ELYSIA_LOG_ERROR("localization","Set language failed: unsupported language: "
+		ELYSIA_LOG_WARN("localization","Set language failed: unsupported language: "
 			<< language);
 		return false;
 	}
@@ -318,7 +318,7 @@ bool LocalizationManager::load_language_table(
 	const std::filesystem::path locale_directory = resolve_locale_directory(language);
 	if (locale_directory.empty())
 	{
-		ELYSIA_LOG_ERROR("localization","Load language table failed: locale directory not found for "
+		ELYSIA_LOG_WARN("localization","Load language table failed: locale directory not found for "
 			<< language);
 		return false;
 	}
@@ -331,13 +331,13 @@ bool LocalizationManager::load_language_table(
 		const elysia::io::JsonReadResult open_result = loader.open_file(full_file_path);
 		if (!open_result.success)
 		{
-			ELYSIA_LOG_ERROR("localization","Load language table failed: " << open_result.error);
+			ELYSIA_LOG_WARN("localization","Load language table failed: " << open_result.error);
 			return false;
 		}
 
 		if (!flatten_locale_json(loader.root(), "", merged_table))
 		{
-			ELYSIA_LOG_ERROR("localization","Load language table failed: unsupported locale JSON shape: "
+			ELYSIA_LOG_WARN("localization","Load language table failed: unsupported locale JSON shape: "
 				<< full_file_path);
 			return false;
 		}
@@ -399,7 +399,7 @@ TTF_Font* LocalizationManager::resolve_font(int point_size) const
 	const std::string font_key = map_font_key(_current_language, point_size);
 	if (font_key.empty())
 	{
-		ELYSIA_LOG_ERROR("localization","Resolve font failed: font mapping is missing for language "
+		ELYSIA_LOG_WARN("localization","Resolve font failed: font mapping is missing for language "
 			<< _current_language << ", size " << point_size);
 		return nullptr;
 	}
@@ -407,7 +407,7 @@ TTF_Font* LocalizationManager::resolve_font(int point_size) const
 	TTF_Font* font = elysia::resources::ResourceManager::instance()->find_font(font_key);
 	if (!font)
 	{
-		ELYSIA_LOG_ERROR("localization","Resolve font failed: font is not loaded: "
+		ELYSIA_LOG_WARN("localization","Resolve font failed: font is not loaded: "
 			<< font_key);
 		return nullptr;
 	}
@@ -425,7 +425,7 @@ CachedTexturePtr LocalizationManager::create_text_texture(
 
 	if (style.point_size <= 0)
 	{
-		ELYSIA_LOG_ERROR("localization","Create text texture failed: invalid point size for key "
+		ELYSIA_LOG_WARN("localization","Create text texture failed: invalid point size for key "
 			<< key);
 		return {};
 	}
@@ -437,7 +437,7 @@ CachedTexturePtr LocalizationManager::create_text_texture(
 	const std::string translated_text(tr(key));
 	if (translated_text.empty())
 	{
-		ELYSIA_LOG_ERROR("localization","Create text texture failed: translated text is empty: "
+		ELYSIA_LOG_WARN("localization","Create text texture failed: translated text is empty: "
 			<< key);
 		return {};
 	}
@@ -462,7 +462,7 @@ CachedTexturePtr LocalizationManager::create_text_texture(
 
 	if (!surface)
 	{
-		ELYSIA_LOG_ERROR("localization","Create text texture failed: TTF render failed for key "
+		ELYSIA_LOG_WARN("localization","Create text texture failed: TTF render failed for key "
 			<< key << ", error: " << TTF_GetError());
 		return {};
 	}
@@ -471,7 +471,7 @@ CachedTexturePtr LocalizationManager::create_text_texture(
 	SDL_FreeSurface(surface);
 	if (!texture)
 	{
-		ELYSIA_LOG_ERROR("localization","Create text texture failed: SDL_CreateTextureFromSurface failed for key "
+		ELYSIA_LOG_WARN("localization","Create text texture failed: SDL_CreateTextureFromSurface failed for key "
 			<< key << ", error: " << SDL_GetError());
 		return {};
 	}
@@ -489,7 +489,7 @@ CachedTexturePtr LocalizationManager::create_raw_text_texture(
 
 	if (style.point_size <= 0)
 	{
-		ELYSIA_LOG_ERROR("localization","Create raw text texture failed: invalid point size.");
+		ELYSIA_LOG_WARN("localization","Create raw text texture failed: invalid point size.");
 		return {};
 	}
 
@@ -521,7 +521,7 @@ CachedTexturePtr LocalizationManager::create_raw_text_texture(
 
 	if (!surface)
 	{
-		ELYSIA_LOG_ERROR("localization","Create raw text texture failed, error: "
+		ELYSIA_LOG_WARN("localization","Create raw text texture failed, error: "
 			<< TTF_GetError());
 		return {};
 	}
@@ -530,7 +530,7 @@ CachedTexturePtr LocalizationManager::create_raw_text_texture(
 	SDL_FreeSurface(surface);
 	if (!texture)
 	{
-		ELYSIA_LOG_ERROR("localization","Create raw text texture failed: SDL_CreateTextureFromSurface failed, error: "
+		ELYSIA_LOG_WARN("localization","Create raw text texture failed: SDL_CreateTextureFromSurface failed, error: "
 			<< SDL_GetError());
 		return {};
 	}

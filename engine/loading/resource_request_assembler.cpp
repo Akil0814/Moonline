@@ -30,7 +30,7 @@ bool ResourceRequestAssembler::assemble(
 			return false;
 		}
 
-		ELYSIA_LOG_ERROR("resource","Character animation requests built: atlases="
+		ELYSIA_LOG("resource","Character animation requests built: atlases="
 			<< (out_plan.atlas_build_requests().size() - animation_atlas_count_before)
 			<< ", animations="
 			<< (out_plan.animation_build_requests().size() - animation_count_before));
@@ -51,7 +51,7 @@ bool ResourceRequestAssembler::assemble(
 			return false;
 		}
 
-		ELYSIA_LOG_ERROR("resource","Effect requests built: atlases="
+		ELYSIA_LOG("resource","Effect requests built: atlases="
 			<< (out_plan.atlas_build_requests().size() - effect_atlas_count_before)
 			<< ", animations="
 			<< (out_plan.animation_build_requests().size() - effect_animation_count_before)
@@ -93,7 +93,7 @@ bool ResourceRequestAssembler::assemble(
 		}
 	}
 
-	ELYSIA_LOG_ERROR("resource","Texture requests built: "
+	ELYSIA_LOG("resource","Texture requests built: "
 		<< (out_plan.texture_requests().size() - texture_count_before));
 
 	if (!request_builder.append_font_requests(
@@ -104,7 +104,7 @@ bool ResourceRequestAssembler::assemble(
 		return false;
 	}
 
-	ELYSIA_LOG_ERROR("resource","Font requests built: "
+	ELYSIA_LOG("resource","Font requests built: "
 		<< out_plan.font_requests().size());
 
 	if (!request_builder.append_audio_requests(
@@ -128,7 +128,7 @@ bool ResourceRequestAssembler::assemble(
 		}
 	}
 
-	ELYSIA_LOG_ERROR("resource","Audio requests built: sounds=" << out_plan.sound_requests().size()
+	ELYSIA_LOG("resource","Audio requests built: sounds=" << out_plan.sound_requests().size()
 		<< ", music=" << out_plan.music_requests().size());
 
 	return true;

@@ -27,6 +27,8 @@
 #include "../engine/ui/input/ui_gamepad_scroll_synthesizer.h"
 #include "../engine/scene/scene.h"
 #include "../engine/io/path/path_manager.h"
+#include "../engine/loading/config_load_pipeline.h"
+#include "../engine/resources/pipeline/resource_request_builder.h"
 #include "../engine/tools/logger.h"
 #include "../application/application_event_boundary.h"
 
@@ -1268,13 +1270,39 @@ void test_logger_console_sink()
     require(logger->configure(console_config),"logger must accept console configuration");
     logger->initialize();
     const unsigned int console_call_line = __LINE__ + 1;
-    logger->info("console-test","console marker");
+    ELYSIA_LOG("console-test","console marker");
     require(captured.messages.size() == 1,"enabled console sink must emit exactly once");
     require(captured.messages.front().find("[INFO]") != std::string::npos
             && captured.messages.front().find("[console-test]") != std::string::npos
             && captured.messages.front().find("console marker") != std::string::npos
             && captured.messages.front().find("ui_lifecycle_tests.cpp:" + std::to_string(console_call_line)) != std::string::npos,
         "console sink must emit the formatted file-log line with the original call site");
+
+    captured.messages.clear();
+    resources::ResourceRequestBuilder request_builder;
+    io::TextureManifest texture_manifest;
+    std::vector<resources::TextureLoadRequest> texture_requests;
+    require(!request_builder.append_texture_manifest_requests(
+            texture_manifest,"",path_manager->assets(),texture_requests),
+        "invalid resource request input must remain a recoverable failure");
+    require(captured.messages.size() == 1
+            && captured.messages.front().find("[WARN]") != std::string::npos,
+        "recoverable resource request failures must log at Warn level");
+
+    captured.messages.clear();
+    loading::ConfigLoadPipeline config_pipeline;
+    loading::ConfigLoadResult config_result;
+    require(!config_pipeline.load(path_manager->assets() / "missing-assets-structure.json",config_result),
+        "missing top-level config input must fail the load pipeline");
+    bool saw_loader_warning = false;
+    bool saw_pipeline_error = false;
+    for (const std::string& message : captured.messages)
+    {
+        saw_loader_warning = saw_loader_warning || message.find("[WARN]") != std::string::npos;
+        saw_pipeline_error = saw_pipeline_error || message.find("[ERROR]") != std::string::npos;
+    }
+    require(saw_loader_warning && saw_pipeline_error,
+        "top-level load failure must preserve its Warn-to-Error escalation");
     logger->shutdown();
 
     captured.messages.clear();

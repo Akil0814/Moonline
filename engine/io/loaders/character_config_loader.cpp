@@ -46,13 +46,13 @@ bool CharacterConfigLoader::load(
 	JsonReadResult result = loader.open_file(config_path);
 	if (!result)
 	{
-		ELYSIA_LOG_ERROR("io","Load character config failed: " << result.error);
+		ELYSIA_LOG_WARN("io","Load character config failed: " << result.error);
 		return false;
 	}
 
 	if (!loader.root().is_object())
 	{
-		ELYSIA_LOG_ERROR("io","Load character config failed: root is not an object: "
+		ELYSIA_LOG_WARN("io","Load character config failed: root is not an object: "
 			<< config_path);
 		return false;
 	}
@@ -67,7 +67,7 @@ bool CharacterConfigLoader::load(
 
 	if (character_id.empty() || asset_key.empty())
 	{
-		ELYSIA_LOG_ERROR("io","Load character config failed: character id or asset key is empty: "
+		ELYSIA_LOG_WARN("io","Load character config failed: character id or asset key is empty: "
 			<< config_path);
 		return false;
 	}
@@ -79,7 +79,7 @@ bool CharacterConfigLoader::load(
 	{
 		if (!loader.root().at("resources").is_object())
 		{
-			ELYSIA_LOG_ERROR("io","Load character config failed: resources is not an object: "
+			ELYSIA_LOG_WARN("io","Load character config failed: resources is not an object: "
 				<< config_path);
 			return false;
 		}
@@ -87,14 +87,14 @@ bool CharacterConfigLoader::load(
 		const json& resources = loader.root().at("resources");
 		if (!resources.contains("texture_root") || !resources.at("texture_root").is_string())
 		{
-			ELYSIA_LOG_ERROR("io","Load character config failed: texture_root is missing or not a string: "
+			ELYSIA_LOG_WARN("io","Load character config failed: texture_root is missing or not a string: "
 				<< config_path);
 			return false;
 		}
 
 		if (!resources.contains("animation_config") || !resources.at("animation_config").is_string())
 		{
-			ELYSIA_LOG_ERROR("io","Load character config failed: animation_config is missing or not a string: "
+			ELYSIA_LOG_WARN("io","Load character config failed: animation_config is missing or not a string: "
 				<< config_path);
 			return false;
 		}
@@ -112,14 +112,14 @@ bool CharacterConfigLoader::load(
 
 	if (!std::filesystem::is_directory(texture_root))
 	{
-		ELYSIA_LOG_ERROR("io","Load character config failed: texture root does not exist: "
+		ELYSIA_LOG_WARN("io","Load character config failed: texture root does not exist: "
 			<< texture_root);
 		return false;
 	}
 
 	if (!std::filesystem::is_regular_file(animation_config_path))
 	{
-		ELYSIA_LOG_ERROR("io","Load character config failed: animation config does not exist: "
+		ELYSIA_LOG_WARN("io","Load character config failed: animation config does not exist: "
 			<< animation_config_path);
 		return false;
 	}

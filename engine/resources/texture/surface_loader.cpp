@@ -19,13 +19,13 @@ SurfaceLoadResult SurfaceLoader::load_surface(const SurfaceLoadRequest& request)
 
 	if (request._asset_key.empty())
 	{
-		ELYSIA_LOG_ERROR("resource","Load surface failed: asset key is empty.");
+		ELYSIA_LOG_WARN("resource","Load surface failed: asset key is empty.");
 		return result;
 	}
 
 	if (request._frame_path.empty())
 	{
-		ELYSIA_LOG_ERROR("resource","Load surface failed: frame path is empty: "
+		ELYSIA_LOG_WARN("resource","Load surface failed: frame path is empty: "
 			<< request._asset_key);
 		return result;
 	}
@@ -33,7 +33,7 @@ SurfaceLoadResult SurfaceLoader::load_surface(const SurfaceLoadRequest& request)
 	SDL_Surface* surface = IMG_Load(request._frame_path.string().c_str());
 	if (!surface)
 	{
-		ELYSIA_LOG_ERROR("resource","Load surface failed: " << request._frame_path
+		ELYSIA_LOG_WARN("resource","Load surface failed: " << request._frame_path
 			<< ", reason: " << IMG_GetError());
 		return result;
 	}

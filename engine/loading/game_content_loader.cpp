@@ -97,7 +97,7 @@ bool GameContentLoader::start(SDL_Renderer* renderer)
 	_state = GameContentLoaderState::StreamingTextureAndAtlasWork;
 	_progress = 0.0f;
 
-	ELYSIA_LOG_INFO("resource","Total requests built: " << _load_plan.total_request_count()
+	ELYSIA_LOG("resource","Total requests built: " << _load_plan.total_request_count()
 		<< ", total work units: " << _total_work_units);
 	return true;
 }

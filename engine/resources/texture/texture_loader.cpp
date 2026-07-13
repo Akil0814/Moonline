@@ -20,14 +20,14 @@ TextureLoadResult TextureLoader::load_texture(
 
 	if (!renderer)
 	{
-		ELYSIA_LOG_ERROR("resource","Load texture failed: renderer is null: "
+		ELYSIA_LOG_WARN("resource","Load texture failed: renderer is null: "
 			<< surface_result._asset_key);
 		return result;
 	}
 
 	if (!surface_result._success || !surface_result._surface)
 	{
-		ELYSIA_LOG_ERROR("resource","Load texture failed: surface is invalid: "
+		ELYSIA_LOG_WARN("resource","Load texture failed: surface is invalid: "
 			<< surface_result._frame_path);
 		return result;
 	}
@@ -39,7 +39,7 @@ TextureLoadResult TextureLoader::load_texture(
 
 	if (!texture)
 	{
-		ELYSIA_LOG_ERROR("resource","Load texture failed: " << surface_result._frame_path
+		ELYSIA_LOG_WARN("resource","Load texture failed: " << surface_result._frame_path
 			<< ", reason: " << SDL_GetError());
 		return result;
 	}

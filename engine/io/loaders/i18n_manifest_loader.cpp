@@ -17,13 +17,13 @@ bool I18nManifestLoader::load(
 	const JsonReadResult open_result = loader.open_file(manifest_path);
 	if (!open_result.success)
 	{
-		ELYSIA_LOG_ERROR("io","Load i18n manifest failed: " << open_result.error);
+		ELYSIA_LOG_WARN("io","Load i18n manifest failed: " << open_result.error);
 		return false;
 	}
 
 	if (!loader.root().is_object())
 	{
-		ELYSIA_LOG_ERROR("io","Load i18n manifest failed: root is not an object: "
+		ELYSIA_LOG_WARN("io","Load i18n manifest failed: root is not an object: "
 			<< manifest_path);
 		return false;
 	}
@@ -32,7 +32,7 @@ bool I18nManifestLoader::load(
 	if (!loader.get("default_language", parsed_manifest.default_language)
 		|| parsed_manifest.default_language.empty())
 	{
-		ELYSIA_LOG_ERROR("io","Load i18n manifest failed: default_language is missing or invalid: "
+		ELYSIA_LOG_WARN("io","Load i18n manifest failed: default_language is missing or invalid: "
 			<< manifest_path);
 		return false;
 	}
@@ -40,14 +40,14 @@ bool I18nManifestLoader::load(
 	if (!loader.get_array("languages", parsed_manifest.languages)
 		|| parsed_manifest.languages.empty())
 	{
-		ELYSIA_LOG_ERROR("io","Load i18n manifest failed: languages is missing or invalid: "
+		ELYSIA_LOG_WARN("io","Load i18n manifest failed: languages is missing or invalid: "
 			<< manifest_path);
 		return false;
 	}
 
 	if (!loader.root().contains("file") || !loader.root().at("file").is_array())
 	{
-		ELYSIA_LOG_ERROR("io","Load i18n manifest failed: file is missing or not an array: "
+		ELYSIA_LOG_WARN("io","Load i18n manifest failed: file is missing or not an array: "
 			<< manifest_path);
 		return false;
 	}
@@ -56,14 +56,14 @@ bool I18nManifestLoader::load(
 	{
 		if (!file_node.is_string())
 		{
-			ELYSIA_LOG_ERROR("io","Load i18n manifest failed: file entry is not a string.");
+			ELYSIA_LOG_WARN("io","Load i18n manifest failed: file entry is not a string.");
 			return false;
 		}
 
 		const std::string file_path = file_node.get<std::string>();
 		if (file_path.empty())
 		{
-			ELYSIA_LOG_ERROR("io","Load i18n manifest failed: file entry is empty.");
+			ELYSIA_LOG_WARN("io","Load i18n manifest failed: file entry is empty.");
 			return false;
 		}
 
@@ -72,7 +72,7 @@ bool I18nManifestLoader::load(
 
 	if (parsed_manifest.files.empty())
 	{
-		ELYSIA_LOG_ERROR("io","Load i18n manifest failed: file list is empty: "
+		ELYSIA_LOG_WARN("io","Load i18n manifest failed: file list is empty: "
 			<< manifest_path);
 		return false;
 	}

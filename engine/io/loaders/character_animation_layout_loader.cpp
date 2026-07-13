@@ -17,20 +17,20 @@ bool CharacterAnimationLayoutLoader::load(
 	JsonReadResult result = loader.open_file(layout_path);
 	if (!result)
 	{
-		ELYSIA_LOG_ERROR("io","Load character animation layout failed: " << result.error);
+		ELYSIA_LOG_WARN("io","Load character animation layout failed: " << result.error);
 		return false;
 	}
 
 	if (!loader.root().is_object())
 	{
-		ELYSIA_LOG_ERROR("io","Load character animation layout failed: root is not an object: "
+		ELYSIA_LOG_WARN("io","Load character animation layout failed: root is not an object: "
 			<< layout_path);
 		return false;
 	}
 
 	if (!loader.root().contains("animations") || !loader.root().at("animations").is_object())
 	{
-		ELYSIA_LOG_ERROR("io","Load character animation layout failed: animations is missing or not an object: "
+		ELYSIA_LOG_WARN("io","Load character animation layout failed: animations is missing or not an object: "
 			<< layout_path);
 		return false;
 	}
@@ -43,7 +43,7 @@ bool CharacterAnimationLayoutLoader::load(
 	{
 		if (!animation.value().is_object())
 		{
-			ELYSIA_LOG_ERROR("io","Load character animation layout failed: animation entry is not an object: "
+			ELYSIA_LOG_WARN("io","Load character animation layout failed: animation entry is not an object: "
 				<< animation.key());
 			return false;
 		}
@@ -55,7 +55,7 @@ bool CharacterAnimationLayoutLoader::load(
 		{
 			if (!animation_node.at("path").is_string())
 			{
-				ELYSIA_LOG_ERROR("io","Load character animation layout failed: path is not a string: "
+				ELYSIA_LOG_WARN("io","Load character animation layout failed: path is not a string: "
 					<< animation.key());
 				return false;
 			}
@@ -68,7 +68,7 @@ bool CharacterAnimationLayoutLoader::load(
 		{
 			if (!animation_node.at("segment_path").is_string())
 			{
-				ELYSIA_LOG_ERROR("io","Load character animation layout failed: segment_path is not a string: "
+				ELYSIA_LOG_WARN("io","Load character animation layout failed: segment_path is not a string: "
 					<< animation.key());
 				return false;
 			}
@@ -79,7 +79,7 @@ bool CharacterAnimationLayoutLoader::load(
 
 		if (!entry.has_path && !entry.has_segment_path)
 		{
-			ELYSIA_LOG_ERROR("io","Load character animation layout failed: path or segment_path is missing: "
+			ELYSIA_LOG_WARN("io","Load character animation layout failed: path or segment_path is missing: "
 				<< animation.key());
 			return false;
 		}

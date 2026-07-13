@@ -34,7 +34,7 @@ namespace arcneco::scene
         (void)payload;
 
         if (!elysia::audio::AudioService::instance()->play_music("scene.character_select_scene_main"))
-            ELYSIA_LOG_ERROR("gameplay","play character_select music error");
+            ELYSIA_LOG_WARN("gameplay","play character_select music error");
 
         const bool should_build_ui = !_main_window || _main_window->is_destroyed();
 
@@ -51,7 +51,7 @@ namespace arcneco::scene
             for (const arcneco::character::CharacterPrototype& iter : character_list)
             {
                 _character_keys.emplace_back(iter.id);
-                ELYSIA_LOG_INFO("gameplay",iter.id);
+                ELYSIA_LOG("gameplay",iter.id);
             }
         }
 
@@ -244,7 +244,7 @@ namespace arcneco::scene
         confirm->set_visual_role(elysia::ui::UiButtonVisualRole::Primary);
         confirm->set_on_click([this]()
         {
-            ELYSIA_LOG_INFO("gameplay","Character selection confirmed: " << _current_character_key);
+            ELYSIA_LOG("gameplay","Character selection confirmed: " << _current_character_key);
         });
         _character_details.confirm_button = confirm.get();
         action_row->add_back(std::move(confirm));

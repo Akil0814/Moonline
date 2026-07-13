@@ -32,14 +32,14 @@ bool AtlasBuildPreparer::expand_build_request(
 
 	if (!request.is_valid())
 	{
-		ELYSIA_LOG_ERROR("resource","Expand atlas build request failed: request is invalid: "
+		ELYSIA_LOG_WARN("resource","Expand atlas build request failed: request is invalid: "
 			<< request.atlas_key);
 		return false;
 	}
 
 	if (!std::filesystem::is_directory(request.directory_path))
 	{
-		ELYSIA_LOG_ERROR("resource","Expand atlas build request failed: directory does not exist: "
+		ELYSIA_LOG_WARN("resource","Expand atlas build request failed: directory does not exist: "
 			<< request.directory_path);
 		return false;
 	}
@@ -68,7 +68,7 @@ bool AtlasBuildPreparer::expand_build_request(
 
 	if (frame_paths.size() != request.frame_count)
 	{
-		ELYSIA_LOG_ERROR("resource","Expand atlas build request failed: frame count mismatch: "
+		ELYSIA_LOG_WARN("resource","Expand atlas build request failed: frame count mismatch: "
 			<< request.atlas_key << ", expected " << request.frame_count
 			<< ", actual " << frame_paths.size());
 		return false;
@@ -97,20 +97,20 @@ AtlasFramePreparedResult AtlasBuildPreparer::prepare_frame(
 
 	if (task.atlas_key.empty())
 	{
-		ELYSIA_LOG_ERROR("resource","Prepare atlas frame failed: atlas key is empty.");
+		ELYSIA_LOG_WARN("resource","Prepare atlas frame failed: atlas key is empty.");
 		return result;
 	}
 
 	if (task.frame_path.empty())
 	{
-		ELYSIA_LOG_ERROR("resource","Prepare atlas frame failed: frame path is empty: "
+		ELYSIA_LOG_WARN("resource","Prepare atlas frame failed: frame path is empty: "
 			<< task.atlas_key);
 		return result;
 	}
 
 	if (task.expected_frame_count == 0)
 	{
-		ELYSIA_LOG_ERROR("resource","Prepare atlas frame failed: expected frame count is zero: "
+		ELYSIA_LOG_WARN("resource","Prepare atlas frame failed: expected frame count is zero: "
 			<< task.atlas_key);
 		return result;
 	}

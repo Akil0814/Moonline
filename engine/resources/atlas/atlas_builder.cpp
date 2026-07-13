@@ -10,20 +10,20 @@ bool AtlasBuilder::build_atlas(
 {
 	if (request.atlas_key.empty())
 	{
-		ELYSIA_LOG_ERROR("resource","Build atlas failed: atlas key is empty.");
+		ELYSIA_LOG_WARN("resource","Build atlas failed: atlas key is empty.");
 		return false;
 	}
 
 	if (request.frame_count == 0)
 	{
-		ELYSIA_LOG_ERROR("resource","Build atlas failed: frame count is zero: "
+		ELYSIA_LOG_WARN("resource","Build atlas failed: frame count is zero: "
 			<< request.atlas_key);
 		return false;
 	}
 
 	if (committed_frames.size() != request.frame_count)
 	{
-		ELYSIA_LOG_ERROR("resource","Build atlas failed: texture count mismatch: "
+		ELYSIA_LOG_WARN("resource","Build atlas failed: texture count mismatch: "
 			<< request.atlas_key << ", expected " << request.frame_count
 			<< ", actual " << committed_frames.size());
 		return false;
@@ -37,14 +37,14 @@ bool AtlasBuilder::build_atlas(
 		const AtlasCommittedFrame& committed_frame = committed_frames[index];
 		if (!committed_frame.texture)
 		{
-			ELYSIA_LOG_ERROR("resource","Build atlas failed: texture is invalid: "
+			ELYSIA_LOG_WARN("resource","Build atlas failed: texture is invalid: "
 				<< request.atlas_key << ", frame " << index);
 			return false;
 		}
 
 		if (committed_frame.frame_index != index)
 		{
-			ELYSIA_LOG_ERROR("resource","Build atlas failed: frame index mismatch: "
+			ELYSIA_LOG_WARN("resource","Build atlas failed: frame index mismatch: "
 				<< request.atlas_key << ", expected " << index
 				<< ", actual " << committed_frame.frame_index);
 			return false;
@@ -52,7 +52,7 @@ bool AtlasBuilder::build_atlas(
 
 		if (!atlas.add_frame(committed_frame.frame_path, committed_frame.texture))
 		{
-			ELYSIA_LOG_ERROR("resource","Build atlas failed: add frame failed: "
+			ELYSIA_LOG_WARN("resource","Build atlas failed: add frame failed: "
 				<< committed_frame.frame_path);
 			return false;
 		}

@@ -29,20 +29,20 @@ bool CharacterManifestLoader::load(
 	JsonReadResult result = loader.open_file(manifest_path);
 	if (!result)
 	{
-		ELYSIA_LOG_ERROR("io","Load character manifest failed: " << result.error);
+		ELYSIA_LOG_WARN("io","Load character manifest failed: " << result.error);
 		return false;
 	}
 
 	if (!loader.root().is_object())
 	{
-		ELYSIA_LOG_ERROR("io","Load character manifest failed: root is not an object: "
+		ELYSIA_LOG_WARN("io","Load character manifest failed: root is not an object: "
 			<< manifest_path);
 		return false;
 	}
 
 	if (!loader.root().contains("characters") || !loader.root().at("characters").is_array())
 	{
-		ELYSIA_LOG_ERROR("io","Load character manifest failed: characters is missing or not an array: "
+		ELYSIA_LOG_WARN("io","Load character manifest failed: characters is missing or not an array: "
 			<< manifest_path);
 		return false;
 	}
@@ -53,7 +53,7 @@ bool CharacterManifestLoader::load(
 	{
 		if (!character.is_object())
 		{
-			ELYSIA_LOG_ERROR("io","Load character manifest failed: character entry is not an object.");
+			ELYSIA_LOG_WARN("io","Load character manifest failed: character entry is not an object.");
 			return false;
 		}
 
@@ -62,7 +62,7 @@ bool CharacterManifestLoader::load(
 		{
 			if (!character.at("enabled").is_boolean())
 			{
-				ELYSIA_LOG_ERROR("io","Load character manifest failed: enabled is not a bool.");
+				ELYSIA_LOG_WARN("io","Load character manifest failed: enabled is not a bool.");
 				return false;
 			}
 			enabled = character.at("enabled").get<bool>();
@@ -73,13 +73,13 @@ bool CharacterManifestLoader::load(
 
 		if (!character.contains("id") || !character.at("id").is_string())
 		{
-			ELYSIA_LOG_ERROR("io","Load character manifest failed: id is missing or not a string.");
+			ELYSIA_LOG_WARN("io","Load character manifest failed: id is missing or not a string.");
 			return false;
 		}
 
 		if (!character.contains("asset_key") || !character.at("asset_key").is_string())
 		{
-			ELYSIA_LOG_ERROR("io","Load character manifest failed: asset_key is missing or not a string.");
+			ELYSIA_LOG_WARN("io","Load character manifest failed: asset_key is missing or not a string.");
 			return false;
 		}
 
@@ -88,7 +88,7 @@ bool CharacterManifestLoader::load(
 		{
 			if (!character.at("config").is_string())
 			{
-				ELYSIA_LOG_ERROR("io","Load character manifest failed: config is not a string.");
+				ELYSIA_LOG_WARN("io","Load character manifest failed: config is not a string.");
 				return false;
 			}
 
@@ -102,7 +102,7 @@ bool CharacterManifestLoader::load(
 
 		if (!std::filesystem::is_regular_file(config_path))
 		{
-			ELYSIA_LOG_ERROR("io","Load character manifest failed: config file does not exist: "
+			ELYSIA_LOG_WARN("io","Load character manifest failed: config file does not exist: "
 				<< config_path);
 			return false;
 		}

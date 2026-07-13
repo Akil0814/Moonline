@@ -8,13 +8,13 @@ bool TextureManager::store_texture(const std::string& key, TexturePtr texture)
 {
 	if (key.empty())
 	{
-		ELYSIA_LOG_ERROR("resource","Store texture failed: key is empty.");
+		ELYSIA_LOG_WARN("resource","Store texture failed: key is empty.");
 		return false;
 	}
 
 	if (!texture)
 	{
-		ELYSIA_LOG_ERROR("resource","Store texture failed: texture is null: "
+		ELYSIA_LOG_WARN("resource","Store texture failed: texture is null: "
 			<< key);
 		return false;
 	}

@@ -17,13 +17,13 @@ bool CharacterTextureLayoutLoader::load(
 	JsonReadResult result = loader.open_file(layout_path);
 	if (!result)
 	{
-		ELYSIA_LOG_ERROR("io","Load character texture layout failed: " << result.error);
+		ELYSIA_LOG_WARN("io","Load character texture layout failed: " << result.error);
 		return false;
 	}
 
 	if (!loader.root().is_object())
 	{
-		ELYSIA_LOG_ERROR("io","Load character texture layout failed: root is not an object: "
+		ELYSIA_LOG_WARN("io","Load character texture layout failed: root is not an object: "
 			<< layout_path);
 		return false;
 	}
@@ -35,7 +35,7 @@ bool CharacterTextureLayoutLoader::load(
 	{
 		if (!texture.value().is_string())
 		{
-			ELYSIA_LOG_ERROR("io","Load character texture layout failed: texture entry is not a string: "
+			ELYSIA_LOG_WARN("io","Load character texture layout failed: texture entry is not a string: "
 				<< texture.key());
 			return false;
 		}

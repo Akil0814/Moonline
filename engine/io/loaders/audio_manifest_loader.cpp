@@ -17,7 +17,7 @@ bool append_audio_entries(
 {
 	if (!node.is_object())
 	{
-		ELYSIA_LOG_ERROR("io","Load audio manifest failed: " << group_name
+		ELYSIA_LOG_WARN("io","Load audio manifest failed: " << group_name
 			<< " is not an object.");
 		return false;
 	}
@@ -26,7 +26,7 @@ bool append_audio_entries(
 	{
 		if (!item.value().is_object())
 		{
-			ELYSIA_LOG_ERROR("io","Load audio manifest failed: entry is not an object: "
+			ELYSIA_LOG_WARN("io","Load audio manifest failed: entry is not an object: "
 				<< item.key());
 			return false;
 		}
@@ -34,7 +34,7 @@ bool append_audio_entries(
 		const json& entry_node = item.value();
 		if (!entry_node.contains("path") || !entry_node.at("path").is_string())
 		{
-			ELYSIA_LOG_ERROR("io","Load audio manifest failed: path is missing or not a string: "
+			ELYSIA_LOG_WARN("io","Load audio manifest failed: path is missing or not a string: "
 				<< item.key());
 			return false;
 		}
@@ -60,27 +60,27 @@ bool AudioManifestLoader::load(
 	JsonReadResult result = loader.open_file(manifest_path);
 	if (!result)
 	{
-		ELYSIA_LOG_ERROR("io","Load audio manifest failed: " << result.error);
+		ELYSIA_LOG_WARN("io","Load audio manifest failed: " << result.error);
 		return false;
 	}
 
 	if (!loader.root().is_object())
 	{
-		ELYSIA_LOG_ERROR("io","Load audio manifest failed: root is not an object: "
+		ELYSIA_LOG_WARN("io","Load audio manifest failed: root is not an object: "
 			<< manifest_path);
 		return false;
 	}
 
 	if (!loader.root().contains("sounds"))
 	{
-		ELYSIA_LOG_ERROR("io","Load audio manifest failed: sounds is missing: "
+		ELYSIA_LOG_WARN("io","Load audio manifest failed: sounds is missing: "
 			<< manifest_path);
 		return false;
 	}
 
 	if (!loader.root().contains("music"))
 	{
-		ELYSIA_LOG_ERROR("io","Load audio manifest failed: music is missing: "
+		ELYSIA_LOG_WARN("io","Load audio manifest failed: music is missing: "
 			<< manifest_path);
 		return false;
 	}

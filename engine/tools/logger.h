@@ -102,6 +102,7 @@ private:
         [&](std::ostream& elysia_log_stream) { elysia_log_stream << __VA_ARGS__; }, \
         std::source_location::current()))
 
+#define ELYSIA_LOG(category,...) ELYSIA_LOG_STREAM(::elysia::tools::LogLevel::Info,(category),__VA_ARGS__)
 #define ELYSIA_LOG_DEBUG(category,...) ELYSIA_LOG_STREAM(::elysia::tools::LogLevel::Debug,(category),__VA_ARGS__)
 #define ELYSIA_LOG_INFO(category,...) ELYSIA_LOG_STREAM(::elysia::tools::LogLevel::Info,(category),__VA_ARGS__)
 #define ELYSIA_LOG_WARN(category,...) ELYSIA_LOG_STREAM(::elysia::tools::LogLevel::Warn,(category),__VA_ARGS__)

@@ -17,20 +17,20 @@ bool TextureManifestLoader::load(
 	JsonReadResult result = loader.open_file(manifest_path);
 	if (!result)
 	{
-		ELYSIA_LOG_ERROR("io","Load texture manifest failed: " << result.error);
+		ELYSIA_LOG_WARN("io","Load texture manifest failed: " << result.error);
 		return false;
 	}
 
 	if (!loader.root().is_object())
 	{
-		ELYSIA_LOG_ERROR("io","Load texture manifest failed: root is not an object: "
+		ELYSIA_LOG_WARN("io","Load texture manifest failed: root is not an object: "
 			<< manifest_path);
 		return false;
 	}
 
 	if (!loader.root().contains("textures") || !loader.root().at("textures").is_object())
 	{
-		ELYSIA_LOG_ERROR("io","Load texture manifest failed: textures is missing or not an object: "
+		ELYSIA_LOG_WARN("io","Load texture manifest failed: textures is missing or not an object: "
 			<< manifest_path);
 		return false;
 	}
@@ -43,7 +43,7 @@ bool TextureManifestLoader::load(
 	{
 		if (!texture.value().is_object())
 		{
-			ELYSIA_LOG_ERROR("io","Load texture manifest failed: texture entry is not an object: "
+			ELYSIA_LOG_WARN("io","Load texture manifest failed: texture entry is not an object: "
 				<< texture.key());
 			return false;
 		}
@@ -51,7 +51,7 @@ bool TextureManifestLoader::load(
 		const json& texture_node = texture.value();
 		if (!texture_node.contains("path") || !texture_node.at("path").is_string())
 		{
-			ELYSIA_LOG_ERROR("io","Load texture manifest failed: path is missing or not a string: "
+			ELYSIA_LOG_WARN("io","Load texture manifest failed: path is missing or not a string: "
 				<< texture.key());
 			return false;
 		}

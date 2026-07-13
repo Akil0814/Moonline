@@ -15,26 +15,26 @@ bool FontManager::load_font(
 {
 	if (key.empty())
 	{
-		ELYSIA_LOG_ERROR("resource","Load font failed: key is empty.");
+		ELYSIA_LOG_WARN("resource","Load font failed: key is empty.");
 		return false;
 	}
 
 	if (file_path.empty())
 	{
-		ELYSIA_LOG_ERROR("resource","Load font failed: file path is empty: " << key);
+		ELYSIA_LOG_WARN("resource","Load font failed: file path is empty: " << key);
 		return false;
 	}
 
 	if (point_size <= 0)
 	{
-		ELYSIA_LOG_ERROR("resource","Load font failed: point size is invalid: " << key);
+		ELYSIA_LOG_WARN("resource","Load font failed: point size is invalid: " << key);
 		return false;
 	}
 
 	TTF_Font* font = TTF_OpenFont(file_path.string().c_str(), point_size);
 	if (!font)
 	{
-		ELYSIA_LOG_ERROR("resource","Load font failed: " << file_path
+		ELYSIA_LOG_WARN("resource","Load font failed: " << file_path
 			<< " error: " << TTF_GetError());
 		return false;
 	}
@@ -46,7 +46,7 @@ bool FontManager::store_font(const std::string& key, TTF_Font* font)
 {
 	if (key.empty())
 	{
-		ELYSIA_LOG_ERROR("resource","Store font failed: key is empty.");
+		ELYSIA_LOG_WARN("resource","Store font failed: key is empty.");
 		if (font)
 		{
 			TTF_CloseFont(font);
@@ -56,7 +56,7 @@ bool FontManager::store_font(const std::string& key, TTF_Font* font)
 
 	if (!font)
 	{
-		ELYSIA_LOG_ERROR("resource","Store font failed: font is null: " << key);
+		ELYSIA_LOG_WARN("resource","Store font failed: font is null: " << key);
 		return false;
 	}
 

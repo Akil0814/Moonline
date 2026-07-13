@@ -18,13 +18,13 @@ bool AnimationConfigLoader::load(
 	JsonReadResult result = loader.open_file(animation_config_path);
 	if (!result)
 	{
-		ELYSIA_LOG_ERROR("io","Load animation config failed: " << result.error);
+		ELYSIA_LOG_WARN("io","Load animation config failed: " << result.error);
 		return false;
 	}
 
 	if (!loader.root().is_object())
 	{
-		ELYSIA_LOG_ERROR("io","Load animation config failed: root is not an object: "
+		ELYSIA_LOG_WARN("io","Load animation config failed: root is not an object: "
 			<< animation_config_path);
 		return false;
 	}
@@ -36,7 +36,7 @@ bool AnimationConfigLoader::load(
 	{
 		if (!animation.value().is_object())
 		{
-			ELYSIA_LOG_ERROR("io","Load animation config failed: animation entry is not an object: "
+			ELYSIA_LOG_WARN("io","Load animation config failed: animation entry is not an object: "
 				<< animation.key());
 			return false;
 		}
@@ -46,7 +46,7 @@ bool AnimationConfigLoader::load(
 		{
 			if (!animation_node.at("segments").is_array())
 			{
-				ELYSIA_LOG_ERROR("io","Load animation config failed: segments is not an array: "
+				ELYSIA_LOG_WARN("io","Load animation config failed: segments is not an array: "
 					<< animation.key());
 				return false;
 			}
@@ -54,7 +54,7 @@ bool AnimationConfigLoader::load(
 			const json& segments = animation_node.at("segments");
 			if (segments.empty())
 			{
-				ELYSIA_LOG_ERROR("io","Load animation config failed: segments is empty: "
+				ELYSIA_LOG_WARN("io","Load animation config failed: segments is empty: "
 					<< animation.key());
 				return false;
 			}
@@ -63,7 +63,7 @@ bool AnimationConfigLoader::load(
 			{
 				if (!segments[segment_index].is_object())
 				{
-					ELYSIA_LOG_ERROR("io","Load animation config failed: segment is not an object: "
+					ELYSIA_LOG_WARN("io","Load animation config failed: segment is not an object: "
 						<< animation.key());
 					return false;
 				}
@@ -103,7 +103,7 @@ std::filesystem::path AnimationConfigLoader::resolve_clip_path(
 	{
 		if (!clip_node.at("override_path").is_string())
 		{
-			ELYSIA_LOG_ERROR("io","Load animation clip failed: override_path is not a string: "
+			ELYSIA_LOG_WARN("io","Load animation clip failed: override_path is not a string: "
 				<< animation_name);
 			return {};
 		}
@@ -115,7 +115,7 @@ std::filesystem::path AnimationConfigLoader::resolve_clip_path(
 		layout.animations.find(animation_name);
 	if (iterator == layout.animations.end())
 	{
-		ELYSIA_LOG_ERROR("io","Load animation clip failed: layout entry does not exist: "
+		ELYSIA_LOG_WARN("io","Load animation clip failed: layout entry does not exist: "
 			<< animation_name);
 		return {};
 	}
@@ -125,7 +125,7 @@ std::filesystem::path AnimationConfigLoader::resolve_clip_path(
 	{
 		if (!entry.has_segment_path)
 		{
-			ELYSIA_LOG_ERROR("io","Load animation clip failed: segment_path is missing in layout: "
+			ELYSIA_LOG_WARN("io","Load animation clip failed: segment_path is missing in layout: "
 				<< animation_name);
 			return {};
 		}
@@ -135,7 +135,7 @@ std::filesystem::path AnimationConfigLoader::resolve_clip_path(
 
 	if (!entry.has_path)
 	{
-		ELYSIA_LOG_ERROR("io","Load animation clip failed: path is missing in layout: "
+		ELYSIA_LOG_WARN("io","Load animation clip failed: path is missing in layout: "
 			<< animation_name);
 		return {};
 	}
@@ -172,21 +172,21 @@ bool AnimationConfigLoader::append_clip(
 {
 	if (!clip_node.contains("frame_count") || !clip_node.at("frame_count").is_number_integer())
 	{
-		ELYSIA_LOG_ERROR("io","Load animation clip failed: frame_count is missing or invalid: "
+		ELYSIA_LOG_WARN("io","Load animation clip failed: frame_count is missing or invalid: "
 			<< animation_name);
 		return false;
 	}
 
 	if (!clip_node.contains("fps") || !clip_node.at("fps").is_number())
 	{
-		ELYSIA_LOG_ERROR("io","Load animation clip failed: fps is missing or invalid: "
+		ELYSIA_LOG_WARN("io","Load animation clip failed: fps is missing or invalid: "
 			<< animation_name);
 		return false;
 	}
 
 	if (!clip_node.contains("loop") || !clip_node.at("loop").is_boolean())
 	{
-		ELYSIA_LOG_ERROR("io","Load animation clip failed: loop is missing or invalid: "
+		ELYSIA_LOG_WARN("io","Load animation clip failed: loop is missing or invalid: "
 			<< animation_name);
 		return false;
 	}
@@ -195,7 +195,7 @@ bool AnimationConfigLoader::append_clip(
 	const double fps = clip_node.at("fps").get<double>();
 	if (frame_count_value <= 0 || fps <= 0.0)
 	{
-		ELYSIA_LOG_ERROR("io","Load animation clip failed: frame_count or fps is invalid: "
+		ELYSIA_LOG_WARN("io","Load animation clip failed: frame_count or fps is invalid: "
 			<< animation_name);
 		return false;
 	}

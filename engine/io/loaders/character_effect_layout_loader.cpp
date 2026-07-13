@@ -17,7 +17,7 @@ bool parse_playback_config(
 {
 	if (!playback_node.is_object())
 	{
-		ELYSIA_LOG_ERROR("io",error_prefix << ": playback entry is not an object: "
+		ELYSIA_LOG_WARN("io",error_prefix << ": playback entry is not an object: "
 			<< effect_key);
 		return false;
 	}
@@ -25,7 +25,7 @@ bool parse_playback_config(
 	if (!playback_node.contains("frame_count")
 		|| !playback_node.at("frame_count").is_number_unsigned())
 	{
-		ELYSIA_LOG_ERROR("io",error_prefix << ": frame_count is missing or invalid: "
+		ELYSIA_LOG_WARN("io",error_prefix << ": frame_count is missing or invalid: "
 			<< effect_key);
 		return false;
 	}
@@ -33,7 +33,7 @@ bool parse_playback_config(
 	if (!playback_node.contains("fps")
 		|| !playback_node.at("fps").is_number())
 	{
-		ELYSIA_LOG_ERROR("io",error_prefix << ": fps is missing or invalid: "
+		ELYSIA_LOG_WARN("io",error_prefix << ": fps is missing or invalid: "
 			<< effect_key);
 		return false;
 	}
@@ -41,7 +41,7 @@ bool parse_playback_config(
 	if (!playback_node.contains("loop")
 		|| !playback_node.at("loop").is_boolean())
 	{
-		ELYSIA_LOG_ERROR("io",error_prefix << ": loop is missing or invalid: "
+		ELYSIA_LOG_WARN("io",error_prefix << ": loop is missing or invalid: "
 			<< effect_key);
 		return false;
 	}
@@ -52,14 +52,14 @@ bool parse_playback_config(
 
 	if (out_config.frame_count == 0)
 	{
-		ELYSIA_LOG_ERROR("io",error_prefix << ": frame_count must be positive: "
+		ELYSIA_LOG_WARN("io",error_prefix << ": frame_count must be positive: "
 			<< effect_key);
 		return false;
 	}
 
 	if (out_config.fps <= 0.0)
 	{
-		ELYSIA_LOG_ERROR("io",error_prefix << ": fps must be positive: "
+		ELYSIA_LOG_WARN("io",error_prefix << ": fps must be positive: "
 			<< effect_key);
 		return false;
 	}
@@ -79,20 +79,20 @@ bool CharacterEffectLayoutLoader::load(
 	JsonReadResult result = loader.open_file(layout_path);
 	if (!result)
 	{
-		ELYSIA_LOG_ERROR("io","Load character effect layout failed: " << result.error);
+		ELYSIA_LOG_WARN("io","Load character effect layout failed: " << result.error);
 		return false;
 	}
 
 	if (!loader.root().is_object())
 	{
-		ELYSIA_LOG_ERROR("io","Load character effect layout failed: root is not an object: "
+		ELYSIA_LOG_WARN("io","Load character effect layout failed: root is not an object: "
 			<< layout_path);
 		return false;
 	}
 
 	if (!loader.root().contains("effects") || !loader.root().at("effects").is_object())
 	{
-		ELYSIA_LOG_ERROR("io","Load character effect layout failed: effects is missing or not an object: "
+		ELYSIA_LOG_WARN("io","Load character effect layout failed: effects is missing or not an object: "
 			<< layout_path);
 		return false;
 	}
@@ -105,7 +105,7 @@ bool CharacterEffectLayoutLoader::load(
 	{
 		if (!effect.value().is_object())
 		{
-			ELYSIA_LOG_ERROR("io","Load character effect layout failed: effect entry is not an object: "
+			ELYSIA_LOG_WARN("io","Load character effect layout failed: effect entry is not an object: "
 				<< effect.key());
 			return false;
 		}
@@ -120,14 +120,14 @@ bool CharacterEffectLayoutLoader::load(
 		{
 			if (has_segment_path || has_segments)
 			{
-				ELYSIA_LOG_ERROR("io","Load character effect layout failed: mixed fixed and segmented effect schema: "
+				ELYSIA_LOG_WARN("io","Load character effect layout failed: mixed fixed and segmented effect schema: "
 					<< effect.key());
 				return false;
 			}
 
 			if (!effect_node.at("path").is_string())
 			{
-				ELYSIA_LOG_ERROR("io","Load character effect layout failed: path is not a string: "
+				ELYSIA_LOG_WARN("io","Load character effect layout failed: path is not a string: "
 					<< effect.key());
 				return false;
 			}
@@ -147,14 +147,14 @@ bool CharacterEffectLayoutLoader::load(
 		{
 			if (!effect_node.at("segment_path").is_string())
 			{
-				ELYSIA_LOG_ERROR("io","Load character effect layout failed: segment_path is not a string: "
+				ELYSIA_LOG_WARN("io","Load character effect layout failed: segment_path is not a string: "
 					<< effect.key());
 				return false;
 			}
 
 			if (!has_segments || !effect_node.at("segments").is_array())
 			{
-				ELYSIA_LOG_ERROR("io","Load character effect layout failed: segments is missing or not an array: "
+				ELYSIA_LOG_WARN("io","Load character effect layout failed: segments is missing or not an array: "
 					<< effect.key());
 				return false;
 			}
@@ -164,7 +164,7 @@ bool CharacterEffectLayoutLoader::load(
 				|| effect_node.contains("loop")
 				|| effect_node.contains("path"))
 			{
-				ELYSIA_LOG_ERROR("io","Load character effect layout failed: segmented entry contains fixed playback fields: "
+				ELYSIA_LOG_WARN("io","Load character effect layout failed: segmented entry contains fixed playback fields: "
 					<< effect.key());
 				return false;
 			}
@@ -175,7 +175,7 @@ bool CharacterEffectLayoutLoader::load(
 			const json& segments = effect_node.at("segments");
 			if (segments.empty())
 			{
-				ELYSIA_LOG_ERROR("io","Load character effect layout failed: segments is empty: "
+				ELYSIA_LOG_WARN("io","Load character effect layout failed: segments is empty: "
 					<< effect.key());
 				return false;
 			}
@@ -199,7 +199,7 @@ bool CharacterEffectLayoutLoader::load(
 		}
 		else
 		{
-			ELYSIA_LOG_ERROR("io","Load character effect layout failed: path or segment_path is missing: "
+			ELYSIA_LOG_WARN("io","Load character effect layout failed: path or segment_path is missing: "
 				<< effect.key());
 			return false;
 		}

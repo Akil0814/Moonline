@@ -33,20 +33,20 @@ bool AudioService::play_sound(const std::string_view& key, int loops)
 {
     if (!_initialized)
     {
-        ELYSIA_LOG_ERROR("audio","Play sound failed: audio service is not initialized.");
+        ELYSIA_LOG_WARN("audio","Play sound failed: audio service is not initialized.");
         return false;
     }
 
     Mix_Chunk* sound = elysia::resources::ResourceManager::instance()->find_sound(key);
     if (!sound)
     {
-        ELYSIA_LOG_ERROR("audio","Play sound failed: sound does not exist: " << key);
+        ELYSIA_LOG_WARN("audio","Play sound failed: sound does not exist: " << key);
         return false;
     }
 
     if (Mix_PlayChannel(-1, sound, loops) < 0)
     {
-        ELYSIA_LOG_ERROR("audio","Play sound failed: " << key
+        ELYSIA_LOG_WARN("audio","Play sound failed: " << key
             << " error: " << Mix_GetError());
         return false;
     }
@@ -58,14 +58,14 @@ bool AudioService::play_music(const std::string_view& key, int loops)
 {
     if (!_initialized)
     {
-        ELYSIA_LOG_ERROR("audio","Play music failed: audio service is not initialized.");
+        ELYSIA_LOG_WARN("audio","Play music failed: audio service is not initialized.");
         return false;
     }
 
     Mix_Music* music = elysia::resources::ResourceManager::instance()->find_music(key);
     if (!music)
     {
-        ELYSIA_LOG_ERROR("audio","Play music failed: music does not exist: " << key);
+        ELYSIA_LOG_WARN("audio","Play music failed: music does not exist: " << key);
         return false;
     }
 
@@ -73,7 +73,7 @@ bool AudioService::play_music(const std::string_view& key, int loops)
 
     if (Mix_PlayMusic(music, loops) != 0)
     {
-        ELYSIA_LOG_ERROR("audio","Play music failed: " << key
+        ELYSIA_LOG_WARN("audio","Play music failed: " << key
             << " error: " << Mix_GetError());
         return false;
     }

@@ -11,27 +11,27 @@ bool AnimationManager::register_animation(
 {
 	if (request.animation_key.empty())
 	{
-		ELYSIA_LOG_ERROR("animation","Register animation failed: animation key is empty.");
+		ELYSIA_LOG_WARN("animation","Register animation failed: animation key is empty.");
 		return false;
 	}
 
 	if (request.atlas_key.empty())
 	{
-		ELYSIA_LOG_ERROR("animation","Register animation failed: atlas key is empty: "
+		ELYSIA_LOG_WARN("animation","Register animation failed: atlas key is empty: "
 			<< request.animation_key);
 		return false;
 	}
 
 	if (!atlas)
 	{
-		ELYSIA_LOG_ERROR("animation","Register animation failed: atlas is null: "
+		ELYSIA_LOG_WARN("animation","Register animation failed: atlas is null: "
 			<< request.animation_key);
 		return false;
 	}
 
 	if (request.fps <= 0.0)
 	{
-		ELYSIA_LOG_ERROR("animation","Register animation failed: fps is invalid: "
+		ELYSIA_LOG_WARN("animation","Register animation failed: fps is invalid: "
 			<< request.animation_key);
 		return false;
 	}
@@ -78,7 +78,7 @@ std::unique_ptr<Animation> AnimationManager::create_animation(const std::string_
 	const AnimationDefinition* definition = find_definition(key);
 	if (!definition)
 	{
-		ELYSIA_LOG_ERROR("animation","Create animation failed: definition does not exist: "
+		ELYSIA_LOG_WARN("animation","Create animation failed: definition does not exist: "
 			<< key);
 		return nullptr;
 	}
