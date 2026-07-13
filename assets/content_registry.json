@@ -7,7 +7,7 @@
       "textures": "configs/manifests/textures_manifest.json",
       "animations": "configs/manifests/animations_manifest.json",
       "effects": "configs/manifests/effects_manifest.json",
-      "config_documents": "configs/manifests/config_documents.json"
+      "configs": "configs/manifests/config_manifest.json"
     },
     "additional": {
       "characters": {

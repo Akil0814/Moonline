@@ -15,7 +15,7 @@ constexpr std::string_view manifests_key = "manifests";
 constexpr std::string_view required_key = "required";
 constexpr std::string_view additional_key = "additional";
 constexpr std::array<std::string_view, 7> required_manifest_keys{
-	"fonts", "audio", "i18n", "textures", "animations", "effects", "config_documents"
+	"fonts", "audio", "i18n", "textures", "animations", "effects", "configs"
 };
 
 bool read_required_manifest_path(
@@ -116,7 +116,7 @@ bool ContentRegistryLoader::load(
 		|| !read_required_manifest_path(required, "textures", *path_manager, paths.textures)
 		|| !read_required_manifest_path(required, "animations", *path_manager, paths.animations)
 		|| !read_required_manifest_path(required, "effects", *path_manager, paths.effects)
-		|| !read_required_manifest_path(required, "config_documents", *path_manager, paths.config_documents))
+		|| !read_required_manifest_path(required, "configs", *path_manager, paths.configs))
 	{
 		return false;
 	}

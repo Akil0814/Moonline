@@ -21,7 +21,7 @@ struct CoreManifestPaths
 	std::filesystem::path textures;
 	std::filesystem::path animations;
 	std::filesystem::path effects;
-	std::filesystem::path config_documents;
+	std::filesystem::path configs;
 
 };
 

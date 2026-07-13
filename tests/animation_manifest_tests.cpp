@@ -3,6 +3,7 @@
 #include "../engine/animation/animation_manager.h"
 #include "../engine/effects/effect_manager.h"
 #include "../engine/io/loaders/content_registry_loader.h"
+#include "../engine/io/json/json_loader.h"
 #include "../engine/io/path/path_manager.h"
 #include "../engine/loading/config_load_pipeline.h"
 #include "../engine/loading/resource_load_plan.h"
@@ -81,10 +82,24 @@ int main()
 		file << "{\"manifests\":" << manifests << "}";
 		return path;
 	};
-	const std::string required_manifests = R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","config_documents":"configs/manifests/config_documents.json"}})";
+	const std::string required_manifests = R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","config_manifest":"configs/manifests/config_manifest.json"}})";
 
 	elysia::io::ContentRegistryLoader content_registry_loader;
 	elysia::io::ContentRegistry content_registry;
+	elysia::io::JsonLoader config_manifest_loader;
+	require(static_cast<bool>(config_manifest_loader.open_file(
+		path_manager->to_config_path("manifests/config_manifest.json"))),
+		"config manifest must be valid JSON");
+	require(config_manifest_loader.root().contains("configs"),
+		"config manifest must declare runtime config paths");
+	elysia::io::JsonLoader input_config_loader;
+	require(static_cast<bool>(input_config_loader.open_file(
+		path_manager->to_config_path("global/input_config.json"))),
+		"input config placeholder must be valid JSON");
+	elysia::io::JsonLoader game_config_loader;
+	require(static_cast<bool>(game_config_loader.open_file(
+		path_manager->to_config_path("global/game_config.json"))),
+		"game config placeholder must be valid JSON");
 	require(content_registry_loader.load(
 		write_registry("without_characters.json", required_manifests), content_registry),
 		"content registry must allow no additional modules");
@@ -96,6 +111,9 @@ int main()
 	require(!content_registry_loader.load(
 		write_registry("unknown_required.json", R"({"required":{"unknown":"x"}})"), content_registry),
 		"content registry must reject unknown required keys");
+	require(!content_registry_loader.load(
+		write_registry("legacy_config_documents.json", R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","config_documents":"configs/manifests/config_documents.json"}})"), content_registry),
+		"content registry must reject the legacy config_documents key");
 
 	elysia::loading::ConfigLoadResult config_result;
 	elysia::loading::ConfigLoadPipeline config_load_pipeline;
@@ -126,10 +144,10 @@ int main()
 
 	elysia::loading::ConfigLoadResult invalid_module_config_result;
 	require(!config_load_pipeline.load(
-		write_registry("unknown_module.json", R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","config_documents":"configs/manifests/config_documents.json"},"additional":{"unknown":{}}})"), invalid_module_config_result),
+		write_registry("unknown_module.json", R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","config_manifest":"configs/manifests/config_manifest.json"},"additional":{"unknown":{}}})"), invalid_module_config_result),
 		"config pipeline must reject unknown additional modules");
 	require(!config_load_pipeline.load(
-		write_registry("incomplete_characters.json", R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","config_documents":"configs/manifests/config_documents.json"},"additional":{"characters":{}}})"), invalid_module_config_result),
+		write_registry("incomplete_characters.json", R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","config_manifest":"configs/manifests/config_manifest.json"},"additional":{"characters":{}}})"), invalid_module_config_result),
 		"config pipeline must reject incomplete characters module config");
 	std::filesystem::remove_all(registry_test_root);
 

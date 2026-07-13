@@ -1,7 +1,0 @@
-{
-  "documents": {
-    "characters": "configs/character/characters_manifest.json",
-    "enemies": "configs/enemy/enemy_manifest.json",
-    "maps": "configs/maps.json"
-  }
-}

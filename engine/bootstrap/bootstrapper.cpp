@@ -60,8 +60,7 @@ StartupParseResult Bootstrapper::parse_runtime_settings()
     const auto config_result =
         elysia::config::ConfigService::instance()->initialize(
             app_config_result.runtime_settings,
-            user_config_path,
-            content_registry.required.config_documents
+            user_config_path
         );
     if (!config_result)
     {
