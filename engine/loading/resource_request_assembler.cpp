@@ -34,8 +34,11 @@ bool ResourceRequestAssembler::assemble(
 		return false;
 	}
 
-	for (const elysia::io::CharacterAnimationContentEntry& entry : config_result.character_animation_entries)
+	if (config_result.characters)
 	{
+		const ConfigLoadResult::CharactersContent& characters = *config_result.characters;
+		for (const elysia::io::CharacterAnimationContentEntry& entry : characters.animation_entries)
+		{
 		const size_t animation_atlas_count_before = out_plan.atlas_build_requests().size();
 		const size_t animation_count_before = out_plan.animation_build_requests().size();
 
@@ -61,7 +64,7 @@ bool ResourceRequestAssembler::assemble(
 		if (!request_builder.append_character_effect_requests(
 			entry.character_config,
 			entry.animation_config,
-			config_result.character_effect_layout,
+			characters.effect_layout,
 			out_plan.atlas_build_requests(),
 			out_plan.animation_build_requests(),
 			out_plan.effect_build_requests()))
@@ -76,6 +79,7 @@ bool ResourceRequestAssembler::assemble(
 			<< (out_plan.animation_build_requests().size() - effect_animation_count_before)
 			<< ", effects="
 			<< (out_plan.effect_build_requests().size() - effect_count_before));
+		}
 	}
 
 	const size_t texture_count_before = out_plan.texture_requests().size();
@@ -88,15 +92,19 @@ bool ResourceRequestAssembler::assemble(
 		return false;
 	}
 
-	for (const elysia::io::CharacterAnimationContentEntry& entry : config_result.character_animation_entries)
+	if (config_result.characters)
 	{
-		if (!request_builder.append_character_texture_requests(
-			entry.character_config,
-			config_result.character_texture_layout,
-			out_plan.texture_requests()))
+		const ConfigLoadResult::CharactersContent& characters = *config_result.characters;
+		for (const elysia::io::CharacterAnimationContentEntry& entry : characters.animation_entries)
 		{
-			out_plan.clear();
-			return false;
+			if (!request_builder.append_character_texture_requests(
+			entry.character_config,
+			characters.texture_layout,
+			out_plan.texture_requests()))
+			{
+				out_plan.clear();
+				return false;
+			}
 		}
 	}
 
@@ -123,15 +131,19 @@ bool ResourceRequestAssembler::assemble(
 		return false;
 	}
 
-	for (const elysia::io::CharacterAnimationContentEntry& entry : config_result.character_animation_entries)
+	if (config_result.characters)
 	{
-		if (!request_builder.append_character_audio_requests(
-			entry.character_config,
-			config_result.character_audio_layout,
-			out_plan.sound_requests()))
+		const ConfigLoadResult::CharactersContent& characters = *config_result.characters;
+		for (const elysia::io::CharacterAnimationContentEntry& entry : characters.animation_entries)
 		{
-			out_plan.clear();
-			return false;
+			if (!request_builder.append_character_audio_requests(
+			entry.character_config,
+			characters.audio_layout,
+			out_plan.sound_requests()))
+			{
+				out_plan.clear();
+				return false;
+			}
 		}
 	}
 

@@ -113,9 +113,9 @@ std::filesystem::path PathManager::logs() const
     return _root / "logs";
 }
 
-std::filesystem::path PathManager::assets_structure() const
+std::filesystem::path PathManager::content_registry() const
 {
-    return assets() / "assets_structure.json";
+    return assets() / "content_registry.json";
 }
 
 std::filesystem::path PathManager::to_project_path(const std::filesystem::path& path) const
@@ -178,14 +178,14 @@ std::optional<std::filesystem::path> PathManager::find_project_root(const std::f
         {
             const std::filesystem::path assets_dir_path = current / "assets";
             const std::filesystem::path assets_magic_file_path = assets_dir_path / ".elysia_root";
-            const std::filesystem::path assets_structure_path = assets_dir_path / "assets_structure.json";
+            const std::filesystem::path content_registry_path = assets_dir_path / "content_registry.json";
 
             const bool assets_is_dir = std::filesystem::is_directory(assets_dir_path);
             const bool has_assets_magic_file = std::filesystem::exists(assets_magic_file_path);
-            const bool has_assets_structure = std::filesystem::exists(assets_structure_path);
+            const bool has_content_registry = std::filesystem::exists(content_registry_path);
 
-            // Prefer a directory that contains a real assets_structure.json (source project root).
-            if (assets_is_dir && has_assets_structure)
+            // Prefer a directory that contains a real content registry (source project root).
+            if (assets_is_dir && has_content_registry)
                 return current;
 
             // Remember a candidate root identified by the magic file, but keep looking upward

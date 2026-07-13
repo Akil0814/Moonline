@@ -2,6 +2,7 @@
 
 #include "../engine/animation/animation_manager.h"
 #include "../engine/effects/effect_manager.h"
+#include "../engine/io/loaders/content_registry_loader.h"
 #include "../engine/io/path/path_manager.h"
 #include "../engine/loading/config_load_pipeline.h"
 #include "../engine/loading/resource_load_plan.h"
@@ -69,11 +70,68 @@ int main()
 
 	elysia::io::PathManager* path_manager = elysia::io::PathManager::instance();
 	require(path_manager->init(), "path manager must initialize from the project root");
+	const std::filesystem::path registry_test_root =
+		std::filesystem::temp_directory_path() / "moonline_content_registry_tests";
+	std::filesystem::remove_all(registry_test_root);
+	std::filesystem::create_directories(registry_test_root);
+	const auto write_registry = [&registry_test_root](const char* file_name, const std::string& manifests)
+	{
+		const std::filesystem::path path = registry_test_root / file_name;
+		std::ofstream file(path);
+		file << "{\"manifests\":" << manifests << "}";
+		return path;
+	};
+	const std::string required_manifests = R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","config_documents":"configs/manifests/config_documents.json"}})";
+
+	elysia::io::ContentRegistryLoader content_registry_loader;
+	elysia::io::ContentRegistry content_registry;
+	require(content_registry_loader.load(
+		write_registry("without_characters.json", required_manifests), content_registry),
+		"content registry must allow no additional modules");
+	require(content_registry.additional_modules.empty(),
+		"content registry without additional modules must remain empty");
+	require(!content_registry_loader.load(
+		write_registry("missing_required.json", R"({"additional":{}})"), content_registry),
+		"content registry must reject a missing required section");
+	require(!content_registry_loader.load(
+		write_registry("unknown_required.json", R"({"required":{"unknown":"x"}})"), content_registry),
+		"content registry must reject unknown required keys");
 
 	elysia::loading::ConfigLoadResult config_result;
 	elysia::loading::ConfigLoadPipeline config_load_pipeline;
-	require(config_load_pipeline.load(path_manager->assets_structure(), config_result),
+	require(config_load_pipeline.load(path_manager->content_registry(), config_result),
 		"config pipeline must load the generic animation manifest");
+	require(config_result.characters.has_value(),
+		"configured characters module must be loaded");
+
+	elysia::loading::ConfigLoadResult core_only_config_result;
+	require(config_load_pipeline.load(
+		write_registry("core_only.json", required_manifests), core_only_config_result),
+		"config pipeline must load without the characters module");
+	require(!core_only_config_result.characters.has_value(),
+		"omitted characters module must not produce character content");
+	elysia::loading::ResourceLoadPlan core_only_load_plan;
+	elysia::loading::ResourceRequestAssembler core_only_request_assembler;
+	require(core_only_request_assembler.assemble(core_only_config_result, core_only_load_plan),
+		"request assembler must support core-only content");
+	const auto core_only_character_request = std::find_if(
+		core_only_load_plan.atlas_build_requests().begin(),
+		core_only_load_plan.atlas_build_requests().end(),
+		[](const elysia::resources::AtlasBuildRequest& request)
+		{
+			return request.atlas_key.starts_with("ryougi_shiki.");
+		});
+	require(core_only_character_request == core_only_load_plan.atlas_build_requests().end(),
+		"core-only content must not request character atlases");
+
+	elysia::loading::ConfigLoadResult invalid_module_config_result;
+	require(!config_load_pipeline.load(
+		write_registry("unknown_module.json", R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","config_documents":"configs/manifests/config_documents.json"},"additional":{"unknown":{}}})"), invalid_module_config_result),
+		"config pipeline must reject unknown additional modules");
+	require(!config_load_pipeline.load(
+		write_registry("incomplete_characters.json", R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","config_documents":"configs/manifests/config_documents.json"},"additional":{"characters":{}}})"), invalid_module_config_result),
+		"config pipeline must reject incomplete characters module config");
+	std::filesystem::remove_all(registry_test_root);
 
 	elysia::loading::ResourceLoadPlan load_plan;
 	elysia::loading::ResourceRequestAssembler request_assembler;

@@ -1,0 +1,22 @@
+{
+  "manifests": {
+    "required": {
+      "fonts": "configs/manifests/fonts_manifest.json",
+      "audio": "configs/manifests/audio_manifest.json",
+      "i18n": "configs/manifests/i18n_manifest.json",
+      "textures": "configs/manifests/textures_manifest.json",
+      "animations": "configs/manifests/animations_manifest.json",
+      "effects": "configs/manifests/effects_manifest.json",
+      "config_documents": "configs/manifests/config_documents.json"
+    },
+    "additional": {
+      "characters": {
+        "manifest": "configs/character/characters_manifest.json",
+        "animations": "configs/character/layouts/character_animation_layout.json",
+        "audio": "configs/character/layouts/character_audio_layout.json",
+        "effects": "configs/character/layouts/character_effect_layout.json",
+        "textures": "configs/character/layouts/character_texture_layout.json"
+      }
+    }
+  }
+}

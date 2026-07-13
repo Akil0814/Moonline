@@ -3,6 +3,7 @@
 #include "../io/loaders/asset_config_types.h"
 
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -15,10 +16,16 @@ struct ConfigLoadResult
 	elysia::io::TextureManifest texture_manifest;
 	elysia::io::AnimationManifest animation_manifest;
 	elysia::io::EffectManifest effect_manifest;
-	elysia::io::CharacterEffectLayout character_effect_layout;
-	elysia::io::CharacterTextureLayout character_texture_layout;
-	elysia::io::CharacterAudioLayout character_audio_layout;
-	std::vector<elysia::io::CharacterAnimationContentEntry> character_animation_entries;
+
+	struct CharactersContent
+	{
+		elysia::io::CharacterEffectLayout effect_layout;
+		elysia::io::CharacterTextureLayout texture_layout;
+		elysia::io::CharacterAudioLayout audio_layout;
+		std::vector<elysia::io::CharacterAnimationContentEntry> animation_entries;
+	};
+
+	std::optional<CharactersContent> characters;
 };
 
 class ConfigLoadPipeline

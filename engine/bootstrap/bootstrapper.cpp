@@ -2,7 +2,7 @@
 
 #include "bootstrap_error_utils.h"
 #include "../config/config_service.h"
-#include "../io/loaders/assets_structure_loader.h"
+#include "../io/loaders/content_registry_loader.h"
 #include "../io/path/path_manager.h"
 
 namespace elysia::bootstrap
@@ -43,13 +43,13 @@ StartupParseResult Bootstrapper::parse_runtime_settings()
         return result;
     }
 
-    elysia::io::AssetManifestPaths manifest_paths;
-    elysia::io::AssetsStructureLoader assets_structure_loader;
-    if (!assets_structure_loader.load(path_manager->assets_structure(), manifest_paths))
+    elysia::io::ContentRegistry content_registry;
+    elysia::io::ContentRegistryLoader content_registry_loader;
+    if (!content_registry_loader.load(path_manager->content_registry(), content_registry))
     {
         append_bootstrap_error(
             result.error,
-            "Bootstrapper phase1 failed: assets structure load failed."
+            "Bootstrapper phase1 failed: content registry load failed."
         );
         return result;
     }
@@ -61,7 +61,7 @@ StartupParseResult Bootstrapper::parse_runtime_settings()
         elysia::config::ConfigService::instance()->initialize(
             app_config_result.runtime_settings,
             user_config_path,
-            manifest_paths.config_documents
+            content_registry.required.config_documents
         );
     if (!config_result)
     {
@@ -75,7 +75,7 @@ StartupParseResult Bootstrapper::parse_runtime_settings()
     }
 
     result.runtime_settings = config_result->settings;
-    result.i18n_manifest_path = manifest_paths.i18n;
+    result.i18n_manifest_path = content_registry.required.i18n;
     result.rebuilt_user_config = config_result->rebuilt_user_config;
     _startup_preload_loader.set_manifest_path(app_config_result.preload_manifest_path);
     result.success = true;

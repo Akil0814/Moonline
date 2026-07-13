@@ -77,8 +77,8 @@ bool GameContentLoader::start(SDL_Renderer* renderer)
 
 	ConfigLoadPipeline config_load_pipeline;
 	ConfigLoadResult config_result;
-	const std::filesystem::path assets_structure_path = path_manager->assets_structure();
-	if (!config_load_pipeline.load(assets_structure_path, config_result))
+	const std::filesystem::path content_registry_path = path_manager->content_registry();
+	if (!config_load_pipeline.load(content_registry_path, config_result))
 	{
 		fail(config_load_pipeline.error_message());
 		return false;

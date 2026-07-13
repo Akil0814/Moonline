@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../json/json_loader.h"
+
 #include <cstddef>
 #include <filesystem>
 #include <string>
@@ -8,7 +10,7 @@
 
 namespace elysia::io
 {
-struct AssetManifestPaths
+struct CoreManifestPaths
 {
 	std::filesystem::path audio;
 
@@ -21,11 +23,12 @@ struct AssetManifestPaths
 	std::filesystem::path effects;
 	std::filesystem::path config_documents;
 
-	std::filesystem::path characters;
-	std::filesystem::path character_animations;
-	std::filesystem::path character_audio;
-	std::filesystem::path character_effects;
-	std::filesystem::path character_textures;
+};
+
+struct ContentRegistry
+{
+	CoreManifestPaths required;
+	std::unordered_map<std::string, json> additional_modules;
 };
 
 struct FontManifestEntry
