@@ -1,12 +1,225 @@
 {
-  "idle": {
-    "frame_count": 16,
-    "fps": 10,
-    "loop": true
-  },
-  "selected_background": {
-    "frame_count": 6,
-    "fps": 10,
-    "loop": true
-  }
+    "idle":  {
+                 "frame_count":  16,
+                 "fps":  10,
+                 "loop":  true
+             },
+    "select":  {
+                   "frame_count":  8,
+                   "fps":  10,
+                   "loop":  false
+               },
+    "start":  {
+                  "frame_count":  13,
+                  "fps":  10,
+                  "loop":  false
+              },
+    "strengthen":  {
+                       "frame_count":  10,
+                       "fps":  10,
+                       "loop":  false
+                   },
+    "victory_pose":  {
+                         "frame_count":  17,
+                         "fps":  10,
+                         "loop":  false
+                     },
+    "walk_enter":  {
+                       "frame_count":  3,
+                       "fps":  10,
+                       "loop":  false
+                   },
+    "walk_loop":  {
+                      "frame_count":  7,
+                      "fps":  10,
+                      "loop":  true
+                  },
+    "run_enter":  {
+                      "frame_count":  3,
+                      "fps":  10,
+                      "loop":  false
+                  },
+    "run_loop":  {
+                     "frame_count":  12,
+                     "fps":  10,
+                     "loop":  true
+                 },
+    "run_exit":  {
+                     "frame_count":  5,
+                     "fps":  10,
+                     "loop":  false
+                 },
+    "dash_back":  {
+                      "frame_count":  12,
+                      "fps":  10,
+                      "loop":  false
+                  },
+    "dash_forward":  {
+                         "frame_count":  12,
+                         "fps":  10,
+                         "loop":  false
+                     },
+    "air_dash_back":  {
+                          "frame_count":  7,
+                          "fps":  10,
+                          "loop":  false
+                      },
+    "air_dash_forward":  {
+                             "frame_count":  3,
+                             "fps":  10,
+                             "loop":  false
+                         },
+    "jump_start":  {
+                       "frame_count":  5,
+                       "fps":  10,
+                       "loop":  false
+                   },
+    "jump_up":  {
+                    "frame_count":  3,
+                    "fps":  10,
+                    "loop":  false
+                },
+    "jump_apex":  {
+                      "frame_count":  3,
+                      "fps":  10,
+                      "loop":  false
+                  },
+    "jump_fall":  {
+                      "frame_count":  3,
+                      "fps":  10,
+                      "loop":  false
+                  },
+    "jump_land":  {
+                      "frame_count":  6,
+                      "fps":  10,
+                      "loop":  false
+                  },
+    "attack_normal":  {
+                          "segments":  [
+                                           {
+                                               "frame_count":  6,
+                                               "fps":  10,
+                                               "loop":  false
+                                           },
+                                           {
+                                               "frame_count":  5,
+                                               "fps":  10,
+                                               "loop":  false
+                                           },
+                                           {
+                                               "frame_count":  10,
+                                               "fps":  10,
+                                               "loop":  false
+                                           },
+                                           {
+                                               "frame_count":  7,
+                                               "fps":  10,
+                                               "loop":  false
+                                           },
+                                           {
+                                               "frame_count":  11,
+                                               "fps":  10,
+                                               "loop":  false
+                                           },
+                                           {
+                                               "frame_count":  11,
+                                               "fps":  10,
+                                               "loop":  false
+                                           },
+                                           {
+                                               "frame_count":  9,
+                                               "fps":  10,
+                                               "loop":  false
+                                           }
+                                       ]
+                      },
+    "attack_air":  {
+                       "segments":  [
+                                        {
+                                            "frame_count":  6,
+                                            "fps":  10,
+                                            "loop":  false
+                                        },
+                                        {
+                                            "frame_count":  8,
+                                            "fps":  10,
+                                            "loop":  false
+                                        },
+                                        {
+                                            "frame_count":  8,
+                                            "fps":  10,
+                                            "loop":  false
+                                        },
+                                        {
+                                            "frame_count":  8,
+                                            "fps":  10,
+                                            "loop":  false
+                                        },
+                                        {
+                                            "frame_count":  7,
+                                            "fps":  10,
+                                            "loop":  false
+                                        }
+                                    ]
+                   },
+    "attack_ranged_ground":  {
+                                 "frame_count":  13,
+                                 "fps":  10,
+                                 "loop":  false
+                             },
+    "attack_ranged_air":  {
+                              "frame_count":  9,
+                              "fps":  10,
+                              "loop":  false
+                          },
+    "guard_ground":  {
+                         "frame_count":  2,
+                         "fps":  10,
+                         "loop":  true
+                     },
+    "guard_air":  {
+                      "frame_count":  5,
+                      "fps":  10,
+                      "loop":  true
+                  },
+    "hurt":  {
+                 "frame_count":  7,
+                 "fps":  10,
+                 "loop":  false
+             },
+    "knockdown":  {
+                      "frame_count":  5,
+                      "fps":  10,
+                      "loop":  false
+                  },
+    "knockdown_air_enter":  {
+                                "frame_count":  6,
+                                "fps":  10,
+                                "loop":  false
+                            },
+    "knockdown_air_loop":  {
+                               "frame_count":  3,
+                               "fps":  10,
+                               "loop":  true
+                           },
+    "knockdown_air_land":  {
+                               "frame_count":  7,
+                               "fps":  10,
+                               "loop":  false
+                           },
+    "getup":  {
+                  "frame_count":  9,
+                  "fps":  10,
+                  "loop":  false
+              },
+    "getup_air":  {
+                      "frame_count":  7,
+                      "fps":  10,
+                      "loop":  false
+                  },
+    "selected_background":  {
+                                "frame_count":  6,
+                                "fps":  10,
+                                "loop":  true
+                            }
 }
