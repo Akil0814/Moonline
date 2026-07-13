@@ -612,6 +612,9 @@ bool ResourceRequestBuilder::append_character_effect_requests(
 			return false;
 		}
 
+		if (std::filesystem::is_regular_file(directory_path / ".no_effects"))
+			continue;
+
 		std::string effect_suffix = clip_config.animation_name;
 		if (clip_config.is_segment)
 			effect_suffix += "." + std::to_string(clip_config.segment_index);

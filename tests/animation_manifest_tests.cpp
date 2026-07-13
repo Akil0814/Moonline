@@ -138,15 +138,15 @@ int main()
 	require(ryougi_special_request == load_plan.atlas_build_requests().end(),
 		"RyougiShiki special attacks must not create runtime atlas requests");
 
-	const auto ryougi_ranged_effect_request = std::find_if(
+	const auto aoko_no_effect_request = std::find_if(
 		load_plan.effect_build_requests().begin(),
 		load_plan.effect_build_requests().end(),
 		[](const elysia::resources::EffectBuildRequest& request)
 		{
-			return request.effect_key == "ryougi_shiki.effect.attack_ranged_ground";
+			return request.effect_key == "aozaki_aoko.effect.attack_air.0";
 		});
-	require(ryougi_ranged_effect_request != load_plan.effect_build_requests().end(),
-		"RyougiShiki ranged ground effect must be configured");
+	require(aoko_no_effect_request == load_plan.effect_build_requests().end(),
+		"Aoko no_effects markers must suppress effect requests");
 
 	elysia::resources::Atlas atlas("test.animation");
 	elysia::animation::AnimationManager* animation_manager =
