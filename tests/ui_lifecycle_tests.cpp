@@ -1283,7 +1283,7 @@ void test_logger_console_sink()
     io::TextureManifest texture_manifest;
     std::vector<resources::TextureLoadRequest> texture_requests;
     require(!request_builder.append_texture_manifest_requests(
-            texture_manifest,"",path_manager->assets(),texture_requests),
+            texture_manifest,{},texture_requests),
         "invalid resource request input must remain a recoverable failure");
     require(captured.messages.size() == 1
             && captured.messages.front().find("[WARN]") != std::string::npos,

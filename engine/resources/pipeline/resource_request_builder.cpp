@@ -228,36 +228,100 @@ bool ResourceRequestBuilder::append_audio_requests(
 
 bool ResourceRequestBuilder::append_texture_manifest_requests(
 	const elysia::io::TextureManifest& texture_manifest,
-	const std::string& key_prefix,
 	const std::filesystem::path& texture_root,
 	std::vector<TextureLoadRequest>& texture_load_requests
 ) const
 {
-	if (key_prefix.empty())
-	{
-		ELYSIA_LOG_WARN("resource","Build texture requests failed: key prefix is empty.");
-		return false;
-	}
-
 	if (texture_root.empty())
 	{
-		ELYSIA_LOG_WARN("resource","Build texture requests failed: texture root is empty: "
-			<< key_prefix);
+		ELYSIA_LOG_WARN("resource","Build texture requests failed: texture root is empty.");
 		return false;
 	}
 
 	for (const elysia::io::TextureManifestEntry& entry : texture_manifest.textures)
 	{
-		const std::string key = key_prefix + "." + entry.key;
 		const std::filesystem::path file_path = (texture_root / entry.file_path).lexically_normal();
 		if (!append_texture_request(
-			key,
+			entry.key,
 			file_path,
 			texture_load_requests,
 			"Build texture requests failed"))
 		{
 			return false;
 		}
+	}
+
+	return true;
+}
+
+bool ResourceRequestBuilder::append_animation_manifest_requests(
+	const elysia::io::AnimationManifest& animation_manifest,
+	const std::filesystem::path& textures_root,
+	std::vector<AtlasBuildRequest>& atlas_build_requests,
+	std::vector<AnimationBuildRequest>& animation_build_requests
+) const
+{
+	if (textures_root.empty())
+	{
+		ELYSIA_LOG_WARN("resource","Build animation requests failed: textures root is empty.");
+		return false;
+	}
+
+	for (const elysia::io::AnimationManifestEntry& entry : animation_manifest.animations)
+	{
+		if (entry.key.empty() || entry.directory_path.empty()
+			|| entry.frame_count == 0 || entry.fps <= 0.0)
+		{
+			ELYSIA_LOG_WARN("resource","Build animation requests failed: invalid animation entry: "
+				<< entry.key);
+			return false;
+		}
+
+		const std::filesystem::path directory_path =
+			(textures_root / entry.directory_path).lexically_normal();
+		if (!std::filesystem::is_directory(directory_path))
+		{
+			ELYSIA_LOG_WARN("resource","Build animation requests failed: directory does not exist: "
+				<< directory_path);
+			return false;
+		}
+
+		AtlasBuildRequest atlas_request;
+		atlas_request.atlas_key = entry.key;
+		atlas_request.directory_path = directory_path;
+		atlas_request.frame_count = entry.frame_count;
+
+		AnimationBuildRequest animation_request;
+		animation_request.animation_key = entry.key;
+		animation_request.atlas_key = entry.key;
+		animation_request.fps = entry.fps;
+		animation_request.loop = entry.loop;
+
+		atlas_build_requests.push_back(std::move(atlas_request));
+		animation_build_requests.push_back(std::move(animation_request));
+	}
+
+	return true;
+}
+
+bool ResourceRequestBuilder::append_effect_manifest_requests(
+	const elysia::io::EffectManifest& effect_manifest,
+	std::vector<EffectBuildRequest>& effect_build_requests
+) const
+{
+	for (const elysia::io::EffectManifestEntry& entry : effect_manifest.effects)
+	{
+		if (entry.key.empty() || entry.animation_key.empty())
+		{
+			ELYSIA_LOG_WARN("resource","Build effect requests failed: invalid effect entry: "
+				<< entry.key);
+			return false;
+		}
+
+		EffectBuildRequest request;
+		request.effect_key = entry.key;
+		request.animation_key = entry.animation_key;
+		effect_build_requests.push_back(std::move(request));
 	}
 
 	return true;

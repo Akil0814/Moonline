@@ -16,8 +16,9 @@ struct AssetManifestPaths
 
 	std::filesystem::path i18n;
 
-	std::filesystem::path map_textures;
-	std::filesystem::path ui_textures;
+	std::filesystem::path textures;
+	std::filesystem::path animations;
+	std::filesystem::path effects;
 	std::filesystem::path config_documents;
 
 	std::filesystem::path characters;
@@ -67,6 +68,31 @@ struct TextureManifestEntry
 struct TextureManifest
 {
 	std::vector<TextureManifestEntry> textures;
+};
+
+struct AnimationManifestEntry
+{
+	std::string key;
+	std::filesystem::path directory_path;
+	size_t frame_count = 0;
+	double fps = 10.0;
+	bool loop = true;
+};
+
+struct AnimationManifest
+{
+	std::vector<AnimationManifestEntry> animations;
+};
+
+struct EffectManifestEntry
+{
+	std::string key;
+	std::string animation_key;
+};
+
+struct EffectManifest
+{
+	std::vector<EffectManifestEntry> effects;
 };
 
 struct CharacterManifestEntry

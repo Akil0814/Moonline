@@ -1,0 +1,11 @@
+{
+  "animations": [
+    {
+      "key": "test.animation",
+      "path": "test",
+      "frame_count": 13,
+      "fps": 10,
+      "loop": true
+    }
+  ]
+}

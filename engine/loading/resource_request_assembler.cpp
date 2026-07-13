@@ -15,6 +15,25 @@ bool ResourceRequestAssembler::assemble(
 	out_plan.clear();
 
 	elysia::resources::ResourceRequestBuilder request_builder;
+	const std::filesystem::path textures_root = elysia::io::PathManager::instance()->textures();
+	if (!request_builder.append_animation_manifest_requests(
+		config_result.animation_manifest,
+		textures_root,
+		out_plan.atlas_build_requests(),
+		out_plan.animation_build_requests()))
+	{
+		out_plan.clear();
+		return false;
+	}
+
+	if (!request_builder.append_effect_manifest_requests(
+		config_result.effect_manifest,
+		out_plan.effect_build_requests()))
+	{
+		out_plan.clear();
+		return false;
+	}
+
 	for (const elysia::io::CharacterAnimationContentEntry& entry : config_result.character_animation_entries)
 	{
 		const size_t animation_atlas_count_before = out_plan.atlas_build_requests().size();
@@ -60,21 +79,9 @@ bool ResourceRequestAssembler::assemble(
 	}
 
 	const size_t texture_count_before = out_plan.texture_requests().size();
-	const std::filesystem::path textures_root = elysia::io::PathManager::instance()->textures();
 	if (!request_builder.append_texture_manifest_requests(
-		config_result.ui_texture_manifest,
-		"ui",
-		textures_root / "ui",
-		out_plan.texture_requests()))
-	{
-		out_plan.clear();
-		return false;
-	}
-
-	if (!request_builder.append_texture_manifest_requests(
-		config_result.map_texture_manifest,
-		"map",
-		textures_root / "map",
+		config_result.texture_manifest,
+		textures_root,
 		out_plan.texture_requests()))
 	{
 		out_plan.clear();

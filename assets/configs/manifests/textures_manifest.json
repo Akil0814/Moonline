@@ -1,0 +1,37 @@
+{
+  "textures": {
+    "map.platform": {
+      "path": "map/platform.png"
+    },
+    "map.stage_000": {
+      "path": "map/stage_000.png"
+    },
+    "map.stage_001": {
+      "path": "map/stage_001.png"
+    },
+    "ui.cg_000": {
+      "path": "ui/cg/cg000.png"
+    },
+    "ui.cg_001": {
+      "path": "ui/cg/cg001.png"
+    },
+    "ui.cg_002": {
+      "path": "ui/cg/cg002.png"
+    },
+    "ui.cg_003": {
+      "path": "ui/cg/cg003.png"
+    },
+    "ui.cg_004": {
+      "path": "ui/cg/cg004.png"
+    },
+    "ui.millennium_moon": {
+      "path": "ui/millennium_moon.png"
+    },
+    "ui.moon": {
+      "path": "ui/moon.png"
+    },
+    "ui.moon2": {
+      "path": "ui/moon2.png"
+    }
+  }
+}

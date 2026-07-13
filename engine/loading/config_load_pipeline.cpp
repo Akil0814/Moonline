@@ -1,6 +1,7 @@
 #include "../tools/logger.h"
 #include "config_load_pipeline.h"
 
+#include "../io/loaders/animation_manifest_loader.h"
 #include "../io/loaders/animation_config_loader.h"
 #include "../io/loaders/audio_manifest_loader.h"
 #include "../io/loaders/assets_structure_loader.h"
@@ -8,6 +9,7 @@
 #include "../io/loaders/character_audio_layout_loader.h"
 #include "../io/loaders/character_config_loader.h"
 #include "../io/loaders/character_effect_layout_loader.h"
+#include "../io/loaders/effect_manifest_loader.h"
 #include "../io/loaders/character_texture_layout_loader.h"
 #include "../io/loaders/character_manifest_loader.h"
 #include "../io/loaders/fonts_manifest_loader.h"
@@ -47,15 +49,23 @@ bool ConfigLoadPipeline::load(
 	}
 
 	elysia::io::TextureManifestLoader texture_manifest_loader;
-	if (!texture_manifest_loader.load(manifest_paths.map_textures, result.map_texture_manifest))
+	if (!texture_manifest_loader.load(manifest_paths.textures, result.texture_manifest))
 	{
-		fail("Config load pipeline failed: map textures manifest load failed.");
+		fail("Config load pipeline failed: textures manifest load failed.");
 		return false;
 	}
 
-	if (!texture_manifest_loader.load(manifest_paths.ui_textures, result.ui_texture_manifest))
+	elysia::io::AnimationManifestLoader animation_manifest_loader;
+	if (!animation_manifest_loader.load(manifest_paths.animations, result.animation_manifest))
 	{
-		fail("Config load pipeline failed: ui textures manifest load failed.");
+		fail("Config load pipeline failed: animations manifest load failed.");
+		return false;
+	}
+
+	elysia::io::EffectManifestLoader effect_manifest_loader;
+	if (!effect_manifest_loader.load(manifest_paths.effects, result.effect_manifest))
+	{
+		fail("Config load pipeline failed: effects manifest load failed.");
 		return false;
 	}
 

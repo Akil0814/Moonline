@@ -1,13 +1,11 @@
 {
   "manifests": {
     "fonts": "configs/manifests/fonts_manifest.json",
-
     "audio": "configs/manifests/audio_manifest.json",
-
     "i18n": "configs/manifests/i18n_manifest.json",
-
-    "map_textures": "configs/manifests/map_textures_manifest.json",
-    "ui_textures": "configs/manifests/ui_textures_manifest.json",
+    "textures": "configs/manifests/textures_manifest.json",
+    "animations": "configs/manifests/animations_manifest.json",
+    "effects": "configs/manifests/effects_manifest.json",
     "config_documents": "configs/manifests/config_documents.json",
 
     "characters": "configs/character/characters_manifest.json",

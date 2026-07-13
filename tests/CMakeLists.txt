@@ -67,3 +67,23 @@ add_executable(termination_manager_tests
 target_link_libraries(termination_manager_tests PRIVATE engine_lib Threads::Threads)
 
 add_test(NAME termination_manager_tests COMMAND termination_manager_tests)
+
+add_executable(animation_manifest_tests
+    "animation_manifest_tests.cpp"
+)
+
+target_link_libraries(animation_manifest_tests PRIVATE engine_lib ${SDL2_LIBRARIES})
+
+if(WIN32)
+    foreach(SDL2_RUNTIME_FILE IN LISTS SDL2_RUNTIME_FILES)
+        if(EXISTS "${SDL2_RUNTIME_FILE}")
+            add_custom_command(TARGET animation_manifest_tests POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${SDL2_RUNTIME_FILE}"
+                    "$<TARGET_FILE_DIR:animation_manifest_tests>"
+            )
+        endif()
+    endforeach()
+endif()
+
+add_test(NAME animation_manifest_tests COMMAND animation_manifest_tests)

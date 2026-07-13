@@ -56,8 +56,9 @@ bool is_known_manifest_key(std::string_view key)
 		|| key == "audio"
 		|| key == "fonts"
 		|| key == "i18n"
-		|| key == "map_textures"
-		|| key == "ui_textures"
+		|| key == "textures"
+		|| key == "animations"
+		|| key == "effects"
 		|| key == "config_documents";
 }
 }
@@ -137,8 +138,9 @@ bool AssetsStructureLoader::load(
 		&& read_manifest_path(manifests, "audio", *path_manager, manifest_paths.audio)
 		&& read_manifest_path(manifests, "fonts", *path_manager, manifest_paths.fonts)
 		&& read_manifest_path(manifests, "i18n", *path_manager, manifest_paths.i18n)
-		&& read_manifest_path(manifests, "map_textures", *path_manager, manifest_paths.map_textures)
-		&& read_manifest_path(manifests, "ui_textures", *path_manager, manifest_paths.ui_textures)
+		&& read_manifest_path(manifests, "textures", *path_manager, manifest_paths.textures)
+		&& read_manifest_path(manifests, "animations", *path_manager, manifest_paths.animations)
+		&& read_manifest_path(manifests, "effects", *path_manager, manifest_paths.effects)
 		&& read_manifest_path(manifests, "config_documents", *path_manager, manifest_paths.config_documents);
 }
 

@@ -12,8 +12,9 @@ struct ConfigLoadResult
 {
 	elysia::io::FontManifest font_manifest;
 	elysia::io::AudioManifest audio_manifest;
-	elysia::io::TextureManifest map_texture_manifest;
-	elysia::io::TextureManifest ui_texture_manifest;
+	elysia::io::TextureManifest texture_manifest;
+	elysia::io::AnimationManifest animation_manifest;
+	elysia::io::EffectManifest effect_manifest;
 	elysia::io::CharacterEffectLayout character_effect_layout;
 	elysia::io::CharacterTextureLayout character_texture_layout;
 	elysia::io::CharacterAudioLayout character_audio_layout;

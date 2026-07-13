@@ -20,9 +20,18 @@ public:
 	) const;
 	bool append_texture_manifest_requests(
 		const elysia::io::TextureManifest& texture_manifest,
-		const std::string& key_prefix,
 		const std::filesystem::path& texture_root,
 		std::vector<TextureLoadRequest>& texture_load_requests
+	) const;
+	bool append_animation_manifest_requests(
+		const elysia::io::AnimationManifest& animation_manifest,
+		const std::filesystem::path& textures_root,
+		std::vector<AtlasBuildRequest>& atlas_build_requests,
+		std::vector<AnimationBuildRequest>& animation_build_requests
+	) const;
+	bool append_effect_manifest_requests(
+		const elysia::io::EffectManifest& effect_manifest,
+		std::vector<EffectBuildRequest>& effect_build_requests
 	) const;
 	bool append_character_texture_requests(
 		const elysia::io::CharacterConfig& character_config,
