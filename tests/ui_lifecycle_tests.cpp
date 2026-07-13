@@ -1275,8 +1275,11 @@ void test_logger_console_sink()
     require(captured.messages.front().find("[INFO]") != std::string::npos
             && captured.messages.front().find("[console-test]") != std::string::npos
             && captured.messages.front().find("console marker") != std::string::npos
-            && captured.messages.front().find("ui_lifecycle_tests.cpp:" + std::to_string(console_call_line)) != std::string::npos,
-        "console sink must emit the formatted file-log line with the original call site");
+            && captured.messages.front().find("ui_lifecycle_tests.cpp:" + std::to_string(console_call_line)) != std::string::npos
+            && captured.messages.front().find("tests/ui_lifecycle_tests.cpp") == std::string::npos
+            && captured.messages.front().find("test_logger_console_sink") == std::string::npos
+            && captured.messages.front().find("__cdecl") == std::string::npos,
+        "console sink must emit a compact file-and-line call site without a function signature");
 
     captured.messages.clear();
     resources::ResourceRequestBuilder request_builder;
@@ -1313,12 +1316,20 @@ void test_logger_console_sink()
     dual_sink_config.append_file_name = dual_sink_path.filename().string();
     require(logger->configure(dual_sink_config),"logger must accept dual-sink configuration");
     logger->initialize();
+    const unsigned int dual_sink_call_line = __LINE__ + 1;
     logger->warn("console-test","dual sink marker");
     logger->shutdown();
-    require(captured.messages.size() == 1 && captured.messages.front().find("dual sink marker") != std::string::npos,
+    require(captured.messages.size() == 1
+            && captured.messages.front().find("dual sink marker") != std::string::npos
+            && captured.messages.front().find("ui_lifecycle_tests.cpp:" + std::to_string(dual_sink_call_line)) != std::string::npos
+            && captured.messages.front().find("test_logger_console_sink") == std::string::npos,
         "enabled console sink must receive one entry when the file sink succeeds");
-    require(count_occurrences(read_text_file(dual_sink_path),"dual sink marker") == 1,
-        "enabled file sink must receive the same entry exactly once");
+    const std::string dual_sink_contents = read_text_file(dual_sink_path);
+    require(count_occurrences(dual_sink_contents,"dual sink marker") == 1
+            && dual_sink_contents.find("ui_lifecycle_tests.cpp:" + std::to_string(dual_sink_call_line)) != std::string::npos
+            && dual_sink_contents.find("test_logger_console_sink") == std::string::npos
+            && dual_sink_contents.find("__cdecl") == std::string::npos,
+        "enabled file sink must receive the same compact source location exactly once");
     remove_test_path(dual_sink_path);
 
     captured.messages.clear();
@@ -1350,10 +1361,14 @@ void test_logger_console_sink()
     fallback_config.console_enabled = true;
     require(logger->configure(fallback_config),"logger must accept file-fallback configuration");
     logger->initialize();
+    const unsigned int fallback_call_line = __LINE__ + 1;
     logger->error("console-test","file fallback marker");
     require(captured.messages.size() == 1
-            && captured.messages.front().find("file fallback marker") != std::string::npos,
-        "file failure must still emit once through the enabled console sink");
+            && captured.messages.front().find("file fallback marker") != std::string::npos
+            && captured.messages.front().find("ui_lifecycle_tests.cpp:" + std::to_string(fallback_call_line)) != std::string::npos
+            && captured.messages.front().find("test_logger_console_sink") == std::string::npos
+            && captured.messages.front().find("__cdecl") == std::string::npos,
+        "file failure must retain compact source context through the enabled console sink");
     logger->shutdown();
     remove_test_path(blocked_path);
 
