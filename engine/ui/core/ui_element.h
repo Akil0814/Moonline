@@ -129,7 +129,7 @@ public:
     [[nodiscard]] UiChildHost* layout_parent() noexcept { return _layout_parent; }
     [[nodiscard]] const UiChildHost* layout_parent() const noexcept { return _layout_parent; }
 
-    void set_order(int order) noexcept { _order = order; }
+    void set_order(int order) noexcept;
     [[nodiscard]] int order() const noexcept { return _order; }
 
     void set_opacity(std::uint8_t opacity) noexcept { _opacity = opacity; }

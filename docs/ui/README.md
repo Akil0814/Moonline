@@ -4,6 +4,7 @@
 
 ## 入口
 
+- [Engine/UI 学习型架构详解](engine_ui_learning_guide.md)（面向初学者：从一帧流程到容器、焦点、主题和真实场景）
 - [公开头文件覆盖清单](coverage.md)
 - [公开类与调用 API 覆盖矩阵](api_coverage.md)
 - [公共元素、生命周期与几何](concepts/element_lifecycle.md)

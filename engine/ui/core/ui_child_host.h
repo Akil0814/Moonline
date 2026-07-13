@@ -6,6 +6,7 @@
 #include "../input/contracts/ui_input_event_receiver.h"
 #include "../input/contracts/ui_input_frame_receiver.h"
 
+#include <cstdint>
 #include <memory>
 #include <tuple>
 #include <type_traits>
@@ -27,6 +28,13 @@ class UiChildHost : public UiElement, public elysia::core::Updatable, public UiI
     friend class UiElement;
 
 public:
+    // Stable record retained by cached traversal handles after a child is removed.
+    struct ChildLifetime
+    {
+        UiElement* element = nullptr;
+        std::uint64_t generation = 1;
+    };
+
     // Owns a child element together with the layout options used to place it.
     struct ChildEntry
     {
@@ -34,6 +42,40 @@ public:
         UiLayoutChildOptions layout;
         UiChildStyleRelation style_relation = UiChildStyleRelation::Independent;
         UiElement* style_owner = nullptr;
+        std::shared_ptr<ChildLifetime> lifetime;
+
+        ChildEntry() = default;
+        ChildEntry(const ChildEntry&) = delete;
+        ChildEntry& operator=(const ChildEntry&) = delete;
+        ChildEntry(ChildEntry&& other) noexcept
+            : element(std::move(other.element)),layout(std::move(other.layout)),
+              style_relation(other.style_relation),style_owner(other.style_owner),
+              lifetime(std::move(other.lifetime)) {}
+        ChildEntry& operator=(ChildEntry&& other) noexcept
+        {
+            if (this != &other)
+            {
+                invalidate_lifetime();
+                element = std::move(other.element);
+                layout = std::move(other.layout);
+                style_relation = other.style_relation;
+                style_owner = other.style_owner;
+                lifetime = std::move(other.lifetime);
+            }
+            return *this;
+        }
+        ~ChildEntry() { invalidate_lifetime(); }
+
+    private:
+        void invalidate_lifetime() noexcept
+        {
+            if (!element || !lifetime)
+                return;
+            lifetime->element = nullptr;
+            ++lifetime->generation;
+        }
+
+        friend class UiChildHost;
     };
 
 public:
@@ -144,10 +186,27 @@ protected:
     // Drops destroyed children from the host without disturbing surviving entries.
     void cleanup_destroyed_children();
     [[nodiscard]] bool needs_layout_rebuild() const noexcept;
-    [[nodiscard]] bool owns_live_child(const UiElement* child) const noexcept;
 
 private:
     friend class UiThemeManager;
+    struct UiChildHandle
+    {
+        std::shared_ptr<ChildLifetime> lifetime;
+        std::uint64_t generation = 0;
+
+        [[nodiscard]] UiElement* resolve() const noexcept
+        {
+            return lifetime && lifetime->generation == generation ? lifetime->element : nullptr;
+        }
+    };
+
+    // Invalidates cached visual order after a direct child changes its z order.
+    void on_child_order_changed(UiElement& child) noexcept;
+    // Rebuilds stable logical and visual traversal orders only after a structural/order mutation.
+    void ensure_child_order_cache() const;
+    void invalidate_child_order_cache() noexcept;
+    void invalidate_child_lifetime(ChildEntry& entry) noexcept;
+    [[nodiscard]] UiChildHandle make_child_handle(const ChildEntry& entry) const noexcept;
     // Wires a newly adopted child into the intrinsic-layout invalidation tree.
     void attach_child_to_layout_tree(UiElement& child) noexcept;
     // Removes one child from the invalidation tree without changing ownership elsewhere.
@@ -158,6 +217,9 @@ private:
     void detach_theme_manager(UiThemeManager& manager) noexcept;
 
     std::vector<ChildEntry> _children;
+    mutable std::vector<UiChildHandle> _logical_child_order;
+    mutable std::vector<UiChildHandle> _visual_child_order;
+    mutable bool _child_order_cache_dirty = true;
     std::vector<UiElement*> _external_style_children;
     UiThemeManager* _theme_manager = nullptr;
     UiLayoutPadding _padding{};
