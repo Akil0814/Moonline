@@ -43,8 +43,11 @@ void UiChildHost::reset() noexcept
             _external_style_children.pop_back();
     }
     detach_all_children_from_layout_tree();
+    for (ChildEntry& entry : _children)
+        invalidate_child_lifetime(entry);
     UiElement::reset();
     _children.clear();
+    invalidate_child_order_cache();
     _padding = UiLayoutPadding{};
     _clip_children = false;
     _layout_dirty = true;
@@ -65,10 +68,17 @@ UiElement* UiChildHost::insert_child(std::unique_ptr<UiElement> child,std::size_
 
     UiElement* child_ptr = child.get();
     const std::size_t target_index = std::min(index,_children.size());
-    _children.insert(_children.begin() + static_cast<std::ptrdiff_t>(target_index),ChildEntry{ std::move(child),options });
+    auto lifetime = std::make_shared<ChildLifetime>();
+    lifetime->element = child_ptr;
+    ChildEntry entry{};
+    entry.element = std::move(child);
+    entry.layout = options;
+    entry.lifetime = std::move(lifetime);
+    _children.insert(_children.begin() + static_cast<std::ptrdiff_t>(target_index),std::move(entry));
     attach_child_to_layout_tree(*child_ptr);
     if (_theme_manager)
         _theme_manager->attach_and_apply_subtree(*child_ptr);
+    invalidate_child_order_cache();
     invalidate_intrinsic_layout();
     return child_ptr;
 }
@@ -82,7 +92,10 @@ void UiChildHost::clear_children()
         for (ChildEntry& entry : _children)
             if (entry.element) _theme_manager->detach_subtree(*entry.element);
     detach_all_children_from_layout_tree();
+    for (ChildEntry& entry : _children)
+        invalidate_child_lifetime(entry);
     _children.clear();
+    invalidate_child_order_cache();
     invalidate_intrinsic_layout();
 }
 
@@ -94,8 +107,10 @@ std::unique_ptr<UiElement> UiChildHost::extract_child(std::size_t index)
     if (_theme_manager && entry.element)
         _theme_manager->detach_subtree(*entry.element);
     detach_child_from_layout_tree(entry.element.get());
+    invalidate_child_lifetime(entry);
     std::unique_ptr<UiElement> result = std::move(entry.element);
     _children.erase(_children.begin() + static_cast<std::ptrdiff_t>(index));
+    invalidate_child_order_cache();
     mark_layout_dirty();
     notify_layout_parent_of_intrinsic_layout_invalidation();
     return result;
@@ -136,6 +151,7 @@ bool UiChildHost::move_child(std::size_t from,std::size_t to)
     ChildEntry moved = std::move(_children[from]);
     _children.erase(_children.begin() + static_cast<std::ptrdiff_t>(from));
     _children.insert(_children.begin() + static_cast<std::ptrdiff_t>(to),std::move(moved));
+    invalidate_child_order_cache();
     invalidate_intrinsic_layout();
     return true;
 }
@@ -264,13 +280,11 @@ void UiChildHost::update(double delta)
 void UiChildHost::update_presentation_animations(double delta)
 {
     UiElement::update_presentation_animations(delta);
-    std::vector<UiElement*> child_snapshot;
-    child_snapshot.reserve(_children.size());
-    for (const ChildEntry& entry : _children)
-        if (entry.element) child_snapshot.push_back(entry.element.get());
-    for (UiElement* child : child_snapshot)
+    ensure_child_order_cache();
+    for (const UiChildHandle& handle : _logical_child_order)
     {
-        if (!owns_live_child(child) || child->is_destroyed() || !child->is_active())
+        UiElement* child = handle.resolve();
+        if (!child || child->is_destroyed() || !child->is_active())
             continue;
         child->update_presentation_animations(delta);
     }
@@ -310,6 +324,7 @@ elysia::core::Rect UiChildHost::content_rect() const noexcept
 
 std::vector<UiChildHost::ChildEntry>& UiChildHost::children() noexcept
 {
+    invalidate_child_order_cache();
     return _children;
 }
 
@@ -321,23 +336,11 @@ const std::vector<UiChildHost::ChildEntry>& UiChildHost::children() const noexce
 void UiChildHost::submit_child_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const
 {
     const elysia::core::Rect clip_rect = clips_children() ? content_rect() : elysia::core::Rect::zero();
-    std::vector<const UiElement*> render_children;
-    render_children.reserve(_children.size());
-    for (const ChildEntry& entry : _children)
+    ensure_child_order_cache();
+    for (const UiChildHandle& handle : _visual_child_order)
     {
-        if (!entry.element || entry.element->is_destroyed() || !entry.element->is_visible())
-            continue;
-        render_children.push_back(entry.element.get());
-    }
-
-    std::stable_sort(render_children.begin(),render_children.end(),[](const UiElement* left,const UiElement* right)
-    {
-        return left->order() < right->order();
-    });
-
-    for (const UiElement* child : render_children)
-    {
-        if (!owns_live_child(child) || !child->is_visible())
+        const UiElement* child = handle.resolve();
+        if (!child || child->is_destroyed() || !child->is_visible())
             continue;
         const elysia::core::Vector2 translation = child->presentation_translation();
         const std::size_t begin = out_commands.size();
@@ -381,13 +384,11 @@ void UiChildHost::finalize_child_command_range(
 
 void UiChildHost::update_child_objects(double delta)
 {
-    std::vector<UiElement*> child_snapshot;
-    child_snapshot.reserve(_children.size());
-    for (const ChildEntry& entry : _children)
-        if (entry.element) child_snapshot.push_back(entry.element.get());
-    for (UiElement* child : child_snapshot)
+    ensure_child_order_cache();
+    for (const UiChildHandle& handle : _logical_child_order)
     {
-        if (!owns_live_child(child) || child->is_destroyed() || !child->is_active())
+        UiElement* child = handle.resolve();
+        if (!child || child->is_destroyed() || !child->is_active())
             continue;
         if (elysia::core::Updatable* updatable = dynamic_cast<elysia::core::Updatable*>(child))
             updatable->update(delta);
@@ -396,13 +397,11 @@ void UiChildHost::update_child_objects(double delta)
 
 void UiChildHost::dispatch_frame_to_children(const UiInputFrame& input)
 {
-    std::vector<UiElement*> child_snapshot;
-    child_snapshot.reserve(_children.size());
-    for (const ChildEntry& entry : _children)
-        if (entry.element) child_snapshot.push_back(entry.element.get());
-    for (UiElement* child : child_snapshot)
+    ensure_child_order_cache();
+    for (const UiChildHandle& handle : _logical_child_order)
     {
-        if (!owns_live_child(child) || child->is_destroyed() || !child->is_active())
+        UiElement* child = handle.resolve();
+        if (!child || child->is_destroyed() || !child->is_active())
             continue;
         if (UiInputFrameReceiver* receiver = dynamic_cast<UiInputFrameReceiver*>(child))
             receiver->on_ui_input_frame(input);
@@ -411,24 +410,11 @@ void UiChildHost::dispatch_frame_to_children(const UiInputFrame& input)
 
 bool UiChildHost::dispatch_input_to_children(const UiInputEvent& event)
 {
-    std::vector<UiElement*> input_children;
-    input_children.reserve(_children.size());
-    for (std::size_t index = _children.size(); index > 0; --index)
+    ensure_child_order_cache();
+    for (auto iter = _visual_child_order.rbegin(); iter != _visual_child_order.rend(); ++iter)
     {
-        ChildEntry& entry = _children[index - 1];
-        if (!entry.element || entry.element->is_destroyed() || !entry.element->is_active())
-            continue;
-        input_children.push_back(entry.element.get());
-    }
-
-    std::stable_sort(input_children.begin(),input_children.end(),[](const UiElement* left,const UiElement* right)
-    {
-        return left->order() > right->order();
-    });
-
-    for (UiElement* child : input_children)
-    {
-        if (!owns_live_child(child) || child->is_destroyed() || !child->is_active())
+        UiElement* child = iter->resolve();
+        if (!child || child->is_destroyed() || !child->is_active())
             continue;
         if (UiInputEventReceiver* receiver = dynamic_cast<UiInputEventReceiver*>(child))
         {
@@ -443,7 +429,7 @@ bool UiChildHost::dispatch_input_to_children(const UiInputEvent& event)
 void UiChildHost::cleanup_destroyed_children()
 {
     const std::size_t previous_count = _children.size();
-    std::erase_if(_children,[this](const ChildEntry& entry)
+    std::erase_if(_children,[this](ChildEntry& entry)
     {
         if (entry.element && !entry.element->is_destroyed())
             return false;
@@ -451,10 +437,14 @@ void UiChildHost::cleanup_destroyed_children()
         detach_child_from_layout_tree(entry.element.get());
         if (_theme_manager && entry.element)
             _theme_manager->detach_subtree(*entry.element);
+        invalidate_child_lifetime(entry);
         return true;
     });
     if (_children.size() != previous_count)
+    {
+        invalidate_child_order_cache();
         invalidate_intrinsic_layout();
+    }
 }
 
 bool UiChildHost::needs_layout_rebuild() const noexcept
@@ -479,12 +469,49 @@ void UiChildHost::detach_all_children_from_layout_tree() noexcept
         detach_child_from_layout_tree(entry.element.get());
 }
 
-bool UiChildHost::owns_live_child(const UiElement* child) const noexcept
+void UiChildHost::on_child_order_changed(UiElement& child) noexcept
 {
-    return child && std::any_of(_children.begin(),_children.end(),[child](const ChildEntry& entry)
+    (void)child;
+    invalidate_child_order_cache();
+}
+
+void UiChildHost::ensure_child_order_cache() const
+{
+    if (!_child_order_cache_dirty)
+        return;
+
+    _logical_child_order.clear();
+    _visual_child_order.clear();
+    _logical_child_order.reserve(_children.size());
+    _visual_child_order.reserve(_children.size());
+    for (const ChildEntry& entry : _children)
     {
-        return entry.element.get() == child;
+        if (!entry.element)
+            continue;
+        UiChildHandle handle = make_child_handle(entry);
+        _logical_child_order.push_back(handle);
+        _visual_child_order.push_back(std::move(handle));
+    }
+    std::stable_sort(_visual_child_order.begin(),_visual_child_order.end(),[](const UiChildHandle& left,const UiChildHandle& right)
+    {
+        return left.resolve()->order() < right.resolve()->order();
     });
+    _child_order_cache_dirty = false;
+}
+
+void UiChildHost::invalidate_child_order_cache() noexcept
+{
+    _child_order_cache_dirty = true;
+}
+
+void UiChildHost::invalidate_child_lifetime(ChildEntry& entry) noexcept
+{
+    entry.invalidate_lifetime();
+}
+
+UiChildHost::UiChildHandle UiChildHost::make_child_handle(const ChildEntry& entry) const noexcept
+{
+    return UiChildHandle{ entry.lifetime,entry.lifetime ? entry.lifetime->generation : 0 };
 }
 
 void UiChildHost::attach_theme_manager(UiThemeManager& manager)

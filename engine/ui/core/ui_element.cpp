@@ -18,6 +18,16 @@ elysia::core::Rect UiElement::presentation_screen_rect() const noexcept
     return _screen_rect.translated(accumulated_presentation_translation());
 }
 
+void UiElement::set_order(int order) noexcept
+{
+    if (_order == order)
+        return;
+
+    _order = order;
+    if (_layout_parent)
+        _layout_parent->on_child_order_changed(*this);
+}
+
 void UiElement::bind_translation_animation(std::string name,UiTranslationAnimation animation)
 {
     _translation_animation_player.bind(std::move(name),animation);

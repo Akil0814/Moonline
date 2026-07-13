@@ -141,12 +141,14 @@ class ClearingChild final : public elysia::ui::UiElement,
     public elysia::ui::UiInputEventReceiver
 {
 public:
-    enum class Trigger { Update,Frame,Event };
+    enum class Trigger { Update,Presentation,Frame,Event,Render };
 
     ClearingChild(elysia::ui::UiChildHost& host,Trigger trigger,int& calls)
         : _host(host),_trigger(trigger),_calls(calls) {}
 
     void update(double) override { if (_trigger == Trigger::Update) { ++_calls; _host.clear_children(); } }
+    void update_presentation_animations(double) override
+    { if (_trigger == Trigger::Presentation) { ++_calls; _host.clear_children(); } }
     void on_ui_input_frame(const elysia::ui::UiInputFrame&) override
     { if (_trigger == Trigger::Frame) { ++_calls; _host.clear_children(); } }
     bool on_ui_input_event(const elysia::ui::UiInputEvent&) override
@@ -154,6 +156,8 @@ public:
         if (_trigger == Trigger::Event) { ++_calls; _host.clear_children(); }
         return false;
     }
+    void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>&) const override
+    { if (_trigger == Trigger::Render) { ++_calls; _host.clear_children(); } }
 
 private:
     elysia::ui::UiChildHost& _host;
@@ -169,11 +173,55 @@ class CountingChild final : public elysia::ui::UiElement,
 public:
     explicit CountingChild(int& calls) : _calls(calls) {}
     void update(double) override { ++_calls; }
+    void update_presentation_animations(double) override { ++_calls; }
     void on_ui_input_frame(const elysia::ui::UiInputFrame&) override { ++_calls; }
     bool on_ui_input_event(const elysia::ui::UiInputEvent&) override { ++_calls; return false; }
+    void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>&) const override { ++_calls; }
 
 private:
     int& _calls;
+};
+
+class OrderedChild final : public elysia::ui::UiElement, public elysia::ui::UiInputEventReceiver
+{
+public:
+    OrderedChild(int id,int order,std::vector<int>& rendered,std::vector<int>& received)
+        : UiElement(elysia::core::Rect{ 0,0,20,20 },order),_id(id),_rendered(rendered),_received(received) {}
+
+    void submit_ui_render_commands(std::vector<elysia::core::UiRenderCommand>&) const override
+    {
+        _rendered.push_back(_id);
+    }
+
+    bool on_ui_input_event(const elysia::ui::UiInputEvent&) override
+    {
+        _received.push_back(_id);
+        return false;
+    }
+
+private:
+    int _id;
+    std::vector<int>& _rendered;
+    std::vector<int>& _received;
+};
+
+class AddingChild final : public elysia::ui::UiElement, public elysia::core::Updatable
+{
+public:
+    AddingChild(elysia::ui::UiChildHost& host,int& added_calls) : _host(host),_added_calls(added_calls) {}
+
+    void update(double) override
+    {
+        if (_added)
+            return;
+        _added = true;
+        _host.add_child(std::make_unique<CountingChild>(_added_calls));
+    }
+
+private:
+    elysia::ui::UiChildHost& _host;
+    int& _added_calls;
+    bool _added = false;
 };
 
 void test_list_consumes_desired_extent_and_cross_alignment()
@@ -1154,7 +1202,12 @@ void test_callback_exceptions_reach_window_scene_and_boundary()
 void test_child_host_tolerates_callback_tree_mutation()
 {
     using namespace elysia;
-    for (const auto trigger : { ClearingChild::Trigger::Update,ClearingChild::Trigger::Frame,ClearingChild::Trigger::Event })
+    for (const auto trigger : {
+            ClearingChild::Trigger::Update,
+            ClearingChild::Trigger::Presentation,
+            ClearingChild::Trigger::Frame,
+            ClearingChild::Trigger::Event,
+            ClearingChild::Trigger::Render })
     {
         ui::UiChildHost host;
         int clear_calls = 0;
@@ -1171,13 +1224,90 @@ void test_child_host_tolerates_callback_tree_mutation()
         }
         if (trigger == ClearingChild::Trigger::Update)
             host.update(0.0);
+        else if (trigger == ClearingChild::Trigger::Presentation)
+            host.update_presentation_animations(0.0);
         else if (trigger == ClearingChild::Trigger::Frame)
             host.on_ui_input_frame({});
-        else
+        else if (trigger == ClearingChild::Trigger::Event)
             (void)host.on_ui_input_event({});
+        else
+        {
+            std::vector<core::UiRenderCommand> commands;
+            host.submit_ui_render_commands(commands);
+        }
         require(clear_calls == 1 && sibling_calls == 0 && host.child_count() == 0,
             "host traversal must tolerate a child clearing the tree");
     }
+}
+
+void test_child_host_cached_visual_order_and_lifetime_handles()
+{
+    using namespace elysia;
+    ui::UiChildHost host;
+    std::vector<int> rendered;
+    std::vector<int> received;
+
+    auto first = std::make_unique<OrderedChild>(1,10,rendered,received);
+    OrderedChild* first_raw = first.get();
+    host.add_child(std::move(first));
+    host.add_child(std::make_unique<OrderedChild>(2,0,rendered,received));
+    host.add_child(std::make_unique<OrderedChild>(3,10,rendered,received));
+
+    std::vector<core::UiRenderCommand> commands;
+    host.submit_ui_render_commands(commands);
+    require(rendered == std::vector<int>{ 2,1,3 },
+        "visual cache must sort by order while retaining logical order for ties");
+    (void)host.on_ui_input_event({});
+    require(received == std::vector<int>{ 3,1,2 },
+        "input must traverse the cached visual order in reverse");
+
+    rendered.clear();
+    received.clear();
+    first_raw->set_order(20);
+    host.submit_ui_render_commands(commands);
+    require(rendered == std::vector<int>{ 2,3,1 },
+        "set_order must invalidate and rebuild the visual cache");
+    (void)host.on_ui_input_event({});
+    require(received == std::vector<int>{ 1,3,2 },
+        "input cache must observe a changed child order on the next dispatch");
+
+    auto extracted = host.extract_child(1);
+    require(extracted != nullptr,"extract_child must return the selected logical child");
+    ui::UiChildHost second_host;
+    second_host.add_child(std::move(extracted));
+    rendered.clear();
+    host.submit_ui_render_commands(commands);
+    require(rendered == std::vector<int>{ 3,1 },
+        "removed child handles must not resolve in the original host cache");
+    rendered.clear();
+    second_host.submit_ui_render_commands(commands);
+    require(rendered == std::vector<int>{ 2 },
+        "re-added children must receive fresh lifetime handles in their new host");
+}
+
+void test_child_host_cached_logical_order_after_mutation()
+{
+    using namespace elysia;
+    ui::UiChildHost host;
+    int added_calls = 0;
+    host.add_child(std::make_unique<AddingChild>(host,added_calls));
+
+    host.update(0.0);
+    require(added_calls == 0,"children added during traversal must wait for the next traversal");
+    host.update(0.0);
+    require(added_calls == 1,"the rebuilt logical cache must include children added by a prior traversal");
+
+    std::vector<int> rendered;
+    std::vector<int> received;
+    ui::UiChildHost ties;
+    ties.add_child(std::make_unique<OrderedChild>(1,0,rendered,received));
+    ties.add_child(std::make_unique<OrderedChild>(2,0,rendered,received));
+    ties.add_child(std::make_unique<OrderedChild>(3,0,rendered,received));
+    require(ties.move_child(2,0),"move_child must accept valid logical indices");
+    std::vector<core::UiRenderCommand> commands;
+    ties.submit_ui_render_commands(commands);
+    require(rendered == std::vector<int>{ 3,1,2 },
+        "move_child must invalidate equal-order visual tie ordering");
 }
 
 void test_text_input_callback_can_remove_its_owner()
@@ -1512,6 +1642,8 @@ int main()
     test_gamepad_scroll_synthesizer_axes();
     test_callback_exceptions_reach_window_scene_and_boundary();
     test_child_host_tolerates_callback_tree_mutation();
+    test_child_host_cached_visual_order_and_lifetime_handles();
+    test_child_host_cached_logical_order_after_mutation();
     test_text_input_callback_can_remove_its_owner();
     test_button_group_preserves_button_callback_after_selection();
     test_logger_file_modes_and_noexcept();
