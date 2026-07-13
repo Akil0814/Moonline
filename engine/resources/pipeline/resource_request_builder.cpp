@@ -30,6 +30,30 @@ std::filesystem::path resolve_segment_path(
 	return (segment_path / segment_number).lexically_normal();
 }
 
+std::string make_character_frame_prefix(
+	const std::string& asset_key,
+	const std::string& animation_name,
+	bool is_segment,
+	size_t segment_index,
+	bool is_effect
+)
+{
+	std::string prefix = asset_key + (is_effect ? "_effects_" : "_") + animation_name;
+	if (is_segment)
+		prefix += "_" + std::to_string(segment_index + 1);
+	return prefix;
+}
+
+bool has_inferred_frame_sequence(
+	const std::filesystem::path& directory_path,
+	const std::string& filename_prefix
+)
+{
+	return std::filesystem::is_regular_file(
+		directory_path / (filename_prefix + "_000.png")
+	);
+}
+
 bool append_texture_request(
 	const std::string& key,
 	const std::filesystem::path& file_path,
@@ -446,9 +470,9 @@ bool ResourceRequestBuilder::append_character_animation_requests(
 	std::vector<AnimationBuildRequest>& animation_build_requests
 ) const
 {
-	if (character_config.id.empty())
+	if (character_config.id.empty() || character_config.asset_key.empty())
 	{
-		ELYSIA_LOG_WARN("resource","Build resource requests failed: character id is empty.");
+		ELYSIA_LOG_WARN("resource","Build resource requests failed: character id or asset key is empty.");
 		return false;
 	}
 
@@ -484,8 +508,17 @@ bool ResourceRequestBuilder::append_character_animation_requests(
 
 		AtlasBuildRequest atlas_request;
 		atlas_request.atlas_key = animation_key;
-		atlas_request.directory_path = std::move(directory_path);
+		atlas_request.directory_path = directory_path;
 		atlas_request.frame_count = clip_config.frame_count;
+		const std::string frame_filename_prefix = make_character_frame_prefix(
+			character_config.asset_key,
+			clip_config.animation_name,
+			clip_config.is_segment,
+			clip_config.segment_index,
+			false
+		);
+		if (has_inferred_frame_sequence(directory_path, frame_filename_prefix))
+			atlas_request.frame_filename_prefix = frame_filename_prefix;
 
 		AnimationBuildRequest animation_request;
 		animation_request.animation_key = animation_key;
@@ -510,9 +543,9 @@ bool ResourceRequestBuilder::append_character_effect_requests(
 	std::vector<EffectBuildRequest>& effect_build_requests
 ) const
 {
-	if (character_config.id.empty())
+	if (character_config.id.empty() || character_config.asset_key.empty())
 	{
-		ELYSIA_LOG_WARN("resource","Build effect requests failed: character id is empty.");
+		ELYSIA_LOG_WARN("resource","Build effect requests failed: character id or asset key is empty.");
 		return false;
 	}
 
@@ -590,8 +623,17 @@ bool ResourceRequestBuilder::append_character_effect_requests(
 
 		AtlasBuildRequest atlas_request;
 		atlas_request.atlas_key = animation_key;
-		atlas_request.directory_path = std::move(directory_path);
+		atlas_request.directory_path = directory_path;
 		atlas_request.frame_count = playback_config.frame_count;
+		const std::string frame_filename_prefix = make_character_frame_prefix(
+			character_config.asset_key,
+			clip_config.animation_name,
+			clip_config.is_segment,
+			clip_config.segment_index,
+			true
+		);
+		if (has_inferred_frame_sequence(directory_path, frame_filename_prefix))
+			atlas_request.frame_filename_prefix = frame_filename_prefix;
 
 		AnimationBuildRequest animation_request;
 		animation_request.animation_key = animation_key;

@@ -43,6 +43,7 @@ struct AtlasBuildRequest
 	std::string atlas_key;
 	std::filesystem::path directory_path;
 	size_t frame_count = 0;
+	std::string frame_filename_prefix;
 };
 
 struct AnimationBuildRequest

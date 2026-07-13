@@ -5,6 +5,8 @@
 
 #include <algorithm>
 #include <cctype>
+#include <iomanip>
+#include <sstream>
 namespace elysia::resources
 {
 namespace
@@ -20,6 +22,18 @@ bool is_png_file(const std::filesystem::path& file_path)
 	}
 
 	return extension == ".png";
+}
+
+std::filesystem::path make_frame_path(
+	const std::filesystem::path& directory_path,
+	const std::string& filename_prefix,
+	size_t frame_index
+)
+{
+	std::ostringstream filename;
+	filename << filename_prefix << '_' << std::setw(3) << std::setfill('0')
+		<< frame_index << ".png";
+	return directory_path / filename.str();
 }
 }
 
@@ -45,26 +59,46 @@ bool AtlasBuildPreparer::expand_build_request(
 	}
 
 	std::vector<std::filesystem::path> frame_paths;
-	for (const std::filesystem::directory_entry& entry :
-		std::filesystem::directory_iterator(request.directory_path))
+	if (!request.frame_filename_prefix.empty())
 	{
-		if (!entry.is_regular_file())
-			continue;
-
-		if (!is_png_file(entry.path()))
-			continue;
-
-		frame_paths.push_back(entry.path());
-	}
-
-	std::sort(
-		frame_paths.begin(),
-		frame_paths.end(),
-		[](const std::filesystem::path& lhs, const std::filesystem::path& rhs)
+		frame_paths.reserve(request.frame_count);
+		for (size_t index = 0; index < request.frame_count; ++index)
 		{
-			return lhs.filename().string() < rhs.filename().string();
+			std::filesystem::path frame_path = make_frame_path(
+				request.directory_path,
+				request.frame_filename_prefix,
+				index
+			);
+			if (!std::filesystem::is_regular_file(frame_path))
+			{
+				ELYSIA_LOG_WARN("resource","Expand atlas build request failed: expected frame is missing: "
+					<< frame_path);
+				return false;
+			}
+
+			frame_paths.push_back(std::move(frame_path));
 		}
-	);
+	}
+	else
+	{
+		for (const std::filesystem::directory_entry& entry :
+			std::filesystem::directory_iterator(request.directory_path))
+		{
+			if (!entry.is_regular_file() || !is_png_file(entry.path()))
+				continue;
+
+			frame_paths.push_back(entry.path());
+		}
+
+		std::sort(
+			frame_paths.begin(),
+			frame_paths.end(),
+			[](const std::filesystem::path& lhs, const std::filesystem::path& rhs)
+			{
+				return lhs.filename().string() < rhs.filename().string();
+			}
+		);
+	}
 
 	if (frame_paths.size() != request.frame_count)
 	{

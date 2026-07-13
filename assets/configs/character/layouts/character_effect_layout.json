@@ -17,11 +17,17 @@
         { "frame_count": 3, "fps": 10, "loop": false }
       ]
     },
-    "attack_special": {
-      "segment_path": "animation/effects/attack/special/ex{segment}",
-      "segments": [
-        { "frame_count": 31, "fps": 10, "loop": false }
-      ]
+    "attack_ranged_ground": {
+      "path": "animation/effects/attack/ranged/ground",
+      "frame_count": 1,
+      "fps": 10,
+      "loop": false
+    },
+    "attack_ranged_air": {
+      "path": "animation/effects/attack/ranged/air",
+      "frame_count": 1,
+      "fps": 10,
+      "loop": false
     }
   }
 }
