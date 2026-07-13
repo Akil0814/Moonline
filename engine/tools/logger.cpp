@@ -66,6 +66,21 @@ namespace
     return static_cast<int>(getpid());
 #endif
 }
+
+[[nodiscard]] std::string_view source_file_name(const std::source_location& location) noexcept
+{
+    const char* file_name = location.file_name();
+    if (!file_name)
+        return {};
+
+    const char* short_name = file_name;
+    for (const char* cursor = file_name; *cursor; ++cursor)
+    {
+        if (*cursor == '/' || *cursor == '\\')
+            short_name = cursor + 1;
+    }
+    return short_name;
+}
 }
 
 bool Logger::configure(const LoggerConfig& config) noexcept
@@ -252,22 +267,12 @@ std::string Logger::format_line(LogLevel level,std::string_view category,std::st
 {
     const auto now = std::chrono::system_clock::now();
     const std::time_t time = std::chrono::system_clock::to_time_t(now);
-    std::filesystem::path source_path(location.file_name());
-    if (const auto* path_manager = elysia::io::PathManager::instance(); path_manager && path_manager->is_initialized())
-    {
-        const std::filesystem::path relative = source_path.lexically_relative(path_manager->root());
-        if (!relative.empty())
-            source_path = relative;
-        else
-            source_path = source_path.filename();
-    }
     const std::tm timestamp = local_time(time);
     std::ostringstream output;
     output << std::put_time(&timestamp,"%Y-%m-%d %H:%M:%S")
         << " [" << level_name(level) << "]"
         << " [" << category << "]"
-        << " (" << source_path.generic_string() << ':' << location.line()
-        << " " << location.function_name() << ") " << message;
+        << " (" << source_file_name(location) << ':' << location.line() << ") " << message;
     return output.str();
 }
 
@@ -305,9 +310,10 @@ void Logger::write_sdl_fallback(LogLevel level,std::string_view category,std::st
     {
         const char* category_text = category.empty() ? "" : category.data();
         const char* message_text = message.empty() ? "" : message.data();
-        SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION,sdl_priority(level),"[%.*s] %s:%u %s: %.*s",
-            static_cast<int>(category.size()),category_text,location.file_name(),location.line(),
-            location.function_name(),static_cast<int>(message.size()),message_text);
+        const std::string_view source_file = source_file_name(location);
+        SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION,sdl_priority(level),"[%.*s] (%.*s:%u) %.*s",
+            static_cast<int>(category.size()),category_text,static_cast<int>(source_file.size()),source_file.data(),
+            location.line(),static_cast<int>(message.size()),message_text);
     }
     catch (...)
     {
