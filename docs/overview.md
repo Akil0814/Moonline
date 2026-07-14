@@ -29,6 +29,12 @@ The current `engine/ui` system has its own Chinese developer documentation in
 [`docs/ui/`](ui/README.md). It includes a component-by-component public API reference,
 shared API contracts, and a header coverage checklist.
 
+## Asset Configuration Documentation
+
+The current animation JSON loading chain, schema rules, path resolution, and frame-directory
+requirements are documented in Chinese in
+[`docs/animation-json-config.md`](animation-json-config.md).
+
 
 ## Planned Game Features
 
