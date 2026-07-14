@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <memory>
 #include <utility>
 
 namespace elysia::ui
@@ -96,6 +97,16 @@ struct UiTextInput::TextLayout
     float composition_highlight_end_x = 0.0f;
 };
 
+struct UiTextInput::EditingTextTexture
+{
+    elysia::localization::CachedTexturePtr texture;
+    std::string display_text;
+    std::string language;
+    SDL_Renderer* renderer = nullptr;
+    int point_size = 0;
+    elysia::core::Color color{};
+};
+
 UiTextInput::UiTextInput(const elysia::core::Rect& rect,int order) noexcept
     : UiControl(rect,order)
 {
@@ -123,6 +134,7 @@ void UiTextInput::reset() noexcept
     _text.clear();
     _placeholder_content = UiTextContent{};
     _composition_text.clear();
+    _editing_text_texture.reset();
     _caret_codepoint_index = 0;
     _composition_insert_codepoint_index = 0;
     _composition_start = 0;
@@ -266,30 +278,64 @@ void UiTextInput::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
     if (layout.content_rect.is_empty())
         return;
 
+    const bool show_placeholder = _text.empty() && _composition_text.empty();
+    if (show_placeholder)
+        _editing_text_texture.reset();
+
     elysia::localization::LocalizationManager* localization_manager = elysia::localization::LocalizationManager::instance();
     if (!localization_manager)
         return;
 
-    const bool show_placeholder = _text.empty() && _composition_text.empty();
     if (show_placeholder ? !_placeholder_content.empty() : !layout.display_text.empty())
     {
         const UiResolvedTextStyle typography = resolve_ui_typography(
             show_placeholder ? _placeholder_typography_role : _typography_role);
-        elysia::localization::LocalizedTextStyle style;
-        style.point_size = typography.point_size;
-        style.color = show_placeholder ? current_placeholder_color() : current_text_color();
-        style.wrap_width = 0;
+        elysia::localization::LocalizedTextStyle text_style;
+        text_style.point_size = typography.point_size;
+        text_style.color = show_placeholder ? current_placeholder_color() : current_text_color();
+        text_style.wrap_width = 0;
 
         SDL_Texture* text_texture = nullptr;
         if (show_placeholder)
         {
             if (_placeholder_content.kind == UiTextContentKind::TextKey)
-                text_texture = localization_manager->get_text_texture(_placeholder_content.value,style);
+                text_texture = localization_manager->get_text_texture(_placeholder_content.value,text_style);
             else if (_placeholder_content.kind == UiTextContentKind::RawText)
-                text_texture = localization_manager->get_raw_text_texture(_placeholder_content.value,style);
+                text_texture = localization_manager->get_raw_text_texture(_placeholder_content.value,text_style);
         }
         else
-            text_texture = localization_manager->get_raw_text_texture(layout.display_text,style);
+        {
+            const std::string& language = localization_manager->current_language();
+            SDL_Renderer* renderer = localization_manager->renderer();
+            const bool has_matching_texture = _editing_text_texture
+                && _editing_text_texture->display_text == layout.display_text
+                && _editing_text_texture->language == language
+                && _editing_text_texture->renderer == renderer
+                && _editing_text_texture->point_size == text_style.point_size
+                && _editing_text_texture->color == text_style.color;
+
+            if (!has_matching_texture)
+            {
+                elysia::localization::CachedTexturePtr texture =
+                    localization_manager->create_uncached_raw_text_texture(layout.display_text,text_style);
+                if (texture)
+                {
+                    auto next_texture = std::make_unique<EditingTextTexture>();
+                    next_texture->texture = std::move(texture);
+                    next_texture->display_text = layout.display_text;
+                    next_texture->language = language;
+                    next_texture->renderer = renderer;
+                    next_texture->point_size = text_style.point_size;
+                    next_texture->color = text_style.color;
+                    _editing_text_texture = std::move(next_texture);
+                }
+                else
+                    _editing_text_texture.reset();
+            }
+
+            if (_editing_text_texture)
+                text_texture = _editing_text_texture->texture.get();
+        }
         if (text_texture)
         {
             int texture_width = 0;

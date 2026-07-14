@@ -192,6 +192,17 @@ SDL_Texture* LocalizationManager::get_raw_text_texture(
 		});
 }
 
+CachedTexturePtr LocalizationManager::create_uncached_raw_text_texture(
+	std::string_view text,
+	const LocalizedTextStyle& style
+)
+{
+	if (!_initialized)
+		return {};
+
+	return create_raw_text_texture(text,style);
+}
+
 bool LocalizationManager::measure_raw_text(
 	std::string_view text,
 	const LocalizedTextStyle& style,
