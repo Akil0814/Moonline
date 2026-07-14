@@ -5,6 +5,7 @@
 #include "../engine/effects/effect_manager.h"
 #include "../engine/resources/atlas/atlas.h"
 #include "../engine/scene/scene.h"
+#include "../engine/scene/scene_manager.h"
 
 #include <SDL.h>
 
@@ -26,6 +27,14 @@ void require(bool condition, const char* message)
 }
 
 class TestScene final : public elysia::scene::Scene
+{
+public:
+    void on_enter(const elysia::scene::ScenePayload&) override {}
+    void on_exit() override {}
+    void reset() override {}
+};
+
+class SecondTestScene final : public elysia::scene::Scene
 {
 public:
     void on_enter(const elysia::scene::ScenePayload&) override {}
@@ -148,13 +157,58 @@ int main()
     loop_effect->update(1.0);
     require(cancelled_callbacks == 0, "destroyed effects must cancel pending callbacks");
 
-    TestScene scene;
     effects::AnimationEffectSpawnRequest scene_request;
     scene_request.effect_key = "animation_effect_test.effect.oneshot";
-    effects::AnimationEffect* scene_effect =
-        effects::EffectManager::instance()->spawn_animation_effect(scene, scene_request);
-    require(scene_effect != nullptr, "effect manager must create and attach effects to scenes");
-    scene.on_update(0.4);
+    scene_request.start_delay_seconds = 0.1;
+    int spawned_started = 0;
+    int spawned_finished = 0;
+    int spawned_callbacks = 0;
+    scene_request.on_started = [&spawned_started](effects::AnimationEffect&) { ++spawned_started; };
+    scene_request.on_finished = [&spawned_finished](effects::AnimationEffect&) { ++spawned_finished; };
+    scene_request.scheduled_callbacks.push_back({
+        .delay_seconds = 0.1,
+        .callback = [&spawned_callbacks](effects::AnimationEffect&) { ++spawned_callbacks; }
+    });
+
+    effects::EffectManager* effect_manager = effects::EffectManager::instance();
+    require(!effect_manager->spawn_animation_effect(scene_request),
+        "animation effect spawning must fail without an active scene");
+
+    scene::SceneManager scene_manager;
+    constexpr scene::SceneKey first_scene_key = 1001;
+    constexpr scene::SceneKey second_scene_key = 1002;
+    scene_manager.register_scene<TestScene>(first_scene_key);
+    scene_manager.register_scene<SecondTestScene>(second_scene_key);
+    scene_manager.start(first_scene_key);
+    effects::AnimationEffectSpawnRequest unknown_request;
+    unknown_request.effect_key = "animation_effect_test.effect.unknown";
+    require(!effect_manager->spawn_animation_effect(unknown_request),
+        "animation effect spawning must fail for an unknown effect key");
+    require(effect_manager->spawn_animation_effect(scene_request),
+        "effect manager must attach effects to the active scene");
+    scene_manager.on_update(0.1);
+    scene_manager.on_update(0.1);
+    scene_manager.on_update(0.2);
+    require(spawned_started == 1 && spawned_callbacks == 1 && spawned_finished == 1,
+        "spawn requests must configure lifecycle and scheduled callbacks");
+
+    scene::SceneRequest switch_request;
+    switch_request.type = scene::SceneRequestType::Switch;
+    switch_request.target = second_scene_key;
+    scene_manager.on_scene_request(switch_request);
+    scene_manager.on_update(0.0);
+    int second_scene_started = 0;
+    scene_request.start_delay_seconds = 0.0;
+    scene_request.on_started = [&second_scene_started](effects::AnimationEffect&) { ++second_scene_started; };
+    scene_request.on_finished = {};
+    scene_request.scheduled_callbacks.clear();
+    require(effect_manager->spawn_animation_effect(scene_request),
+        "effect manager must rebind to the scene selected by a switch");
+    scene_manager.on_update(0.0);
+    require(second_scene_started == 1, "effects spawned after a switch must update in the new scene");
+    scene_manager.shutdown();
+    require(!effect_manager->spawn_animation_effect(scene_request),
+        "animation effect spawning must fail after active scene shutdown");
 
     SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(renderer);

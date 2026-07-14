@@ -180,16 +180,44 @@ std::unique_ptr<AnimationEffect> EffectManager::create_animation_effect(const An
 		effect->set_flip(elysia::core::SpriteFlip::None);
 
 	effect->set_start_delay(std::max(0.0, request.start_delay_seconds));
+	effect->set_on_started(request.on_started);
+	effect->set_on_finished(request.on_finished);
+	for (const AnimationEffectSpawnRequest::ScheduledCallbackRequest& scheduled_callback : request.scheduled_callbacks)
+	{
+		effect->schedule_callback(scheduled_callback.delay_seconds, scheduled_callback.callback);
+	}
 
 	return effect;
 }
 
-AnimationEffect* EffectManager::spawn_animation_effect(
-	elysia::scene::Scene& scene,
-	const AnimationEffectSpawnRequest& request
-) const
+bool EffectManager::spawn_animation_effect(const AnimationEffectSpawnRequest& request) const
 {
-	return scene.add_object(create_animation_effect(request));
+	if (!_active_scene)
+	{
+		ELYSIA_LOG_WARN("effects", "Spawn animation effect failed: there is no active scene.");
+		return false;
+	}
+
+	std::unique_ptr<AnimationEffect> effect = create_animation_effect(request);
+	if (!effect)
+		return false;
+
+	if (_active_scene->add_object(std::move(effect)))
+		return true;
+
+	ELYSIA_LOG_WARN("effects", "Spawn animation effect failed: active scene rejected the effect.");
+	return false;
+}
+
+void EffectManager::set_active_scene(elysia::scene::Scene* scene) noexcept
+{
+	_active_scene = scene;
+}
+
+void EffectManager::clear_active_scene(const elysia::scene::Scene* scene) noexcept
+{
+	if (_active_scene == scene)
+		_active_scene = nullptr;
 }
 
 }

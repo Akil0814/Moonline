@@ -1,5 +1,7 @@
 #include "scene_manager.h"
 
+#include "../effects/effect_manager.h"
+
 #include <stdexcept>
 
 namespace elysia::scene
@@ -200,7 +202,8 @@ void SceneManager::attach_to_scene(Scene* scene)
     if (!scene)
         return;
 
-    scene->attach(this);
+	elysia::effects::EffectManager::instance()->set_active_scene(scene);
+	scene->attach(this);
 }
 
 void SceneManager::detach_from_scene(Scene* scene)
@@ -208,7 +211,8 @@ void SceneManager::detach_from_scene(Scene* scene)
     if (!scene)
         return;
 
-    scene->detach(this);
+	elysia::effects::EffectManager::instance()->clear_active_scene(scene);
+	scene->detach(this);
 }
 
 void SceneManager::shutdown()

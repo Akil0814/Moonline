@@ -14,6 +14,7 @@
 namespace elysia::scene
 {
 class Scene;
+class SceneManager;
 }
 
 namespace elysia::effects
@@ -41,6 +42,12 @@ struct AnimationEffectDefinition
 
 struct AnimationEffectSpawnRequest
 {
+	struct ScheduledCallbackRequest
+	{
+		double delay_seconds = 0.0;
+		AnimationEffect::Callback callback;
+	};
+
 	std::string effect_key;
 	// World-space position of the selected playback anchor.
 	elysia::core::Vector2 position;
@@ -49,6 +56,9 @@ struct AnimationEffectSpawnRequest
 	std::optional<double> angle_degrees;
 	std::optional<elysia::core::SpriteFlip> flip;
 	double start_delay_seconds = 0.0;
+	AnimationEffect::Callback on_started;
+	AnimationEffect::Callback on_finished;
+	std::vector<ScheduledCallbackRequest> scheduled_callbacks;
 };
 
 class EffectManager : public elysia::tools::Singleton<EffectManager>
@@ -61,13 +71,16 @@ public:
 
 	const AnimationEffectDefinition* find_animation_effect_definition(const std::string_view& key) const;
 	std::unique_ptr<AnimationEffect> create_animation_effect(const AnimationEffectSpawnRequest& request) const;
-	AnimationEffect* spawn_animation_effect(
-		elysia::scene::Scene& scene,
-		const AnimationEffectSpawnRequest& request
-	) const;
+	bool spawn_animation_effect(const AnimationEffectSpawnRequest& request) const;
 
 private:
+	friend class elysia::scene::SceneManager;
+
+	void set_active_scene(elysia::scene::Scene* scene) noexcept;
+	void clear_active_scene(const elysia::scene::Scene* scene) noexcept;
+
 	std::unordered_map<std::string, AnimationEffectDefinition> _animation_effect_definitions;
+	elysia::scene::Scene* _active_scene = nullptr;
 };
 
 }
