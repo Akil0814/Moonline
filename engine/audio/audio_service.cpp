@@ -21,6 +21,7 @@ bool AudioService::init(const AudioSettings& settings)
     }
 
     _sound_scheduler.reset();
+    _sound_group_volumes.fill(100);
     _initialized = true;
     apply_volumes();
     return true;
@@ -60,9 +61,9 @@ SoundRequestResult AudioService::request_sound(const std::string_view& key, cons
     }
 
     return _sound_scheduler.request_sound(key,options,
-        [this](std::string_view scheduled_key,int scheduled_loops)
+        [this](std::string_view scheduled_key,int scheduled_loops,SoundGroup group)
         {
-            return start_sound(scheduled_key,scheduled_loops);
+            return start_sound(scheduled_key,scheduled_loops,group);
         },
         [](int channel)
         {
@@ -80,9 +81,9 @@ void AudioService::update(double delta_seconds)
         return;
 
     _sound_scheduler.update(delta_seconds,
-        [this](std::string_view scheduled_key,int scheduled_loops)
+        [this](std::string_view scheduled_key,int scheduled_loops,SoundGroup group)
         {
-            return start_sound(scheduled_key,scheduled_loops);
+            return start_sound(scheduled_key,scheduled_loops,group);
         },
         [](int channel)
         {
@@ -94,9 +95,20 @@ void AudioService::update(double delta_seconds)
         });
 }
 
-bool AudioService::cancel_scheduled_sound(ScheduledSoundId id)
+bool AudioService::stop_sound(SoundHandle handle)
 {
-    return _sound_scheduler.cancel_scheduled_sound(id);
+    if (!_initialized)
+        return false;
+
+    return _sound_scheduler.stop_sound(handle,
+        [](int channel)
+        {
+            return Mix_Playing(channel) != 0;
+        },
+        [](int channel)
+        {
+            Mix_HaltChannel(channel);
+        });
 }
 
 void AudioService::cancel_all_scheduled_sounds()
@@ -118,6 +130,17 @@ bool AudioService::set_sound_group_config(SoundGroup group,const SoundGroupConfi
 const SoundGroupConfig& AudioService::sound_group_config(SoundGroup group) const
 {
     return _sound_scheduler.group_config(group);
+}
+
+void AudioService::set_sound_group_volume(SoundGroup group,int volume)
+{
+    _sound_group_volumes[sound_group_index(group)] = clamp_volume(volume);
+    apply_sound_group_volume(group);
+}
+
+int AudioService::sound_group_volume(SoundGroup group) const
+{
+    return _sound_group_volumes[sound_group_index(group)];
 }
 
 bool AudioService::play_music(const std::string_view& key, int loops)
@@ -185,7 +208,7 @@ const AudioSettings& AudioService::settings() const
     return _settings;
 }
 
-int AudioService::start_sound(const std::string_view& key, int loops)
+int AudioService::start_sound(const std::string_view& key, int loops, SoundGroup group)
 {
     Mix_Chunk* sound = elysia::resources::ResourceManager::instance()->find_sound(key);
     if (!sound)
@@ -200,19 +223,46 @@ int AudioService::start_sound(const std::string_view& key, int loops)
         ELYSIA_LOG_WARN("audio","Play sound failed: " << key
             << " error: " << Mix_GetError());
     }
+    else
+    {
+        apply_sound_channel_volume(channel,group);
+    }
     return channel;
 }
 
-void AudioService::apply_volumes() const
+void AudioService::apply_volumes()
 {
     if (!_initialized)
         return;
 
     const int effective_music = (_settings.master_volume * _settings.music_volume) / 100;
-    const int effective_sound = (_settings.master_volume * _settings.sound_volume) / 100;
-
     Mix_VolumeMusic(to_mix_volume(effective_music));
-    Mix_Volume(-1, to_mix_volume(effective_sound));
+    for (std::size_t index = 0; index < kSoundGroupCount; ++index)
+        apply_sound_group_volume(static_cast<SoundGroup>(index));
+}
+
+void AudioService::apply_sound_group_volume(SoundGroup group)
+{
+    if (!_initialized)
+        return;
+
+    _sound_scheduler.for_each_active_channel(group,
+        [](int channel)
+        {
+            return Mix_Playing(channel) != 0;
+        },
+        [this,group](int channel)
+        {
+            apply_sound_channel_volume(channel,group);
+        });
+}
+
+void AudioService::apply_sound_channel_volume(int channel,SoundGroup group) const
+{
+    const int effective_sound = (_settings.master_volume
+        * _settings.sound_volume
+        * _sound_group_volumes[sound_group_index(group)]) / 10000;
+    Mix_Volume(channel,to_mix_volume(effective_sound));
 }
 
 int AudioService::clamp_volume(int volume)
