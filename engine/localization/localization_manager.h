@@ -31,6 +31,11 @@ public:
 	std::string_view tr(std::string_view key) const;
 	SDL_Texture* get_text_texture(std::string_view key, const LocalizedTextStyle& style);
 	SDL_Texture* get_raw_text_texture(std::string_view text, const LocalizedTextStyle& style);
+	// Creates an owning raw-text texture without inserting it into TextTextureCache.
+	[[nodiscard]] CachedTexturePtr create_uncached_raw_text_texture(
+		std::string_view text,
+		const LocalizedTextStyle& style
+	);
 	bool measure_raw_text(std::string_view text,const LocalizedTextStyle& style,int& out_width,int& out_height) const;
 	[[nodiscard]] SDL_Renderer* renderer() const noexcept;
 

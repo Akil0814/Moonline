@@ -10,6 +10,7 @@
 
 #include <cstddef>
 #include <functional>
+#include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -77,6 +78,7 @@ public:
 
 private:
     struct TextLayout;
+    struct EditingTextTexture;
 
 private:
     // Returns true only when the text input should react to typing or pointer focus.
@@ -126,6 +128,7 @@ private:
     std::string _text;
     UiTextContent _placeholder_content;
     std::string _composition_text;
+    mutable std::unique_ptr<EditingTextTexture> _editing_text_texture;
     std::size_t _caret_codepoint_index = 0;
     std::size_t _composition_insert_codepoint_index = 0;
     int _composition_start = 0;
