@@ -10,5 +10,6 @@ namespace AppSceneKeys
 
 	inline constexpr elysia::scene::SceneKey CharacterSelect = 4;
 
-	inline constexpr elysia::scene::SceneKey UiContainerTest = 99;
+	inline constexpr elysia::scene::SceneKey UiTest = 99;
+	inline constexpr elysia::scene::SceneKey Test = 100;
 }

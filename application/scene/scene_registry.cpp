@@ -9,7 +9,8 @@
 
 #include "../../gameplay/scene/character_select_scene.h"
 
-#include "../../gameplay/scene/ui_container_test_scene.h"
+#include "../../gameplay/scene/ui_test_scene.h"
+#include "../../gameplay/scene/test_scene.h"
 
 
 void register_all_scenes(elysia::scene::SceneManager& scene_manager)
@@ -20,6 +21,7 @@ void register_all_scenes(elysia::scene::SceneManager& scene_manager)
 
     scene_manager.register_scene<arcneco::scene::CharacterSelectScene>(AppSceneKeys::CharacterSelect);
 
-    scene_manager.register_scene<arcneco::scene::UiContainerTestScene>(AppSceneKeys::UiContainerTest);
+    scene_manager.register_scene<arcneco::scene::UiTestScene>(AppSceneKeys::UiTest);
+    scene_manager.register_scene<arcneco::scene::TestScene>(AppSceneKeys::Test);
 
 }

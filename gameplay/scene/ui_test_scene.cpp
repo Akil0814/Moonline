@@ -1,4 +1,4 @@
-#include "ui_container_test_scene.h"
+#include "ui_test_scene.h"
 
 #include "../../application/scene/scene_keys.h"
 #include "../../engine/resources/resource_manager.h"
@@ -109,22 +109,22 @@ std::unique_ptr<UiLabel> status_label()
 }
 }
 
-void UiContainerTestScene::on_enter(const elysia::scene::ScenePayload& payload)
+void UiTestScene::on_enter(const elysia::scene::ScenePayload& payload)
 {
     (void)payload;
     _paused = false;
     rebuild_ui();
 }
 
-void UiContainerTestScene::on_input(const elysia::input::RawInputFrame& input,const std::vector<elysia::input::RawInputEvent>& events)
+void UiTestScene::on_input(const elysia::input::RawInputFrame& input,const std::vector<elysia::input::RawInputEvent>& events)
 {
     ApplicationScene::on_input(input,events);
 }
 
-void UiContainerTestScene::on_exit() { _paused = false; clear_ui(); }
-void UiContainerTestScene::reset() { _paused = false; clear_ui(); }
+void UiTestScene::on_exit() { _paused = false; clear_ui(); }
+void UiTestScene::reset() { _paused = false; clear_ui(); }
 
-void UiContainerTestScene::refresh_theme_preview_styles()
+void UiTestScene::refresh_theme_preview_styles()
 {
     if (!_root_window)
         return;
@@ -134,13 +134,13 @@ void UiContainerTestScene::refresh_theme_preview_styles()
     _root_window->set_style_overrides(overrides);
 }
 
-void UiContainerTestScene::set_status(std::string text)
+void UiTestScene::set_status(std::string text)
 {
     if (_status_label)
         _status_label->set_text_content(elysia::ui::ui_raw_text(std::move(text)));
 }
 
-void UiContainerTestScene::set_active_theme(elysia::ui::UiBuiltinTheme theme)
+void UiTestScene::set_active_theme(elysia::ui::UiBuiltinTheme theme)
 {
     _theme_manager.set_theme(theme);
     refresh_theme_preview_styles();
@@ -148,7 +148,7 @@ void UiContainerTestScene::set_active_theme(elysia::ui::UiBuiltinTheme theme)
     set_status("Theme changed");
 }
 
-void UiContainerTestScene::sync_theme_switch_button_roles() noexcept
+void UiTestScene::sync_theme_switch_button_roles() noexcept
 {
     static constexpr std::array<elysia::ui::UiBuiltinTheme,7> themes{
         elysia::ui::UiBuiltinTheme::BlueGlassMoon, elysia::ui::UiBuiltinTheme::ElysiaLight,
@@ -161,7 +161,7 @@ void UiContainerTestScene::sync_theme_switch_button_roles() noexcept
                 ? elysia::ui::UiButtonVisualRole::Primary : elysia::ui::UiButtonVisualRole::Default);
 }
 
-void UiContainerTestScene::rebuild_ui()
+void UiTestScene::rebuild_ui()
 {
     clear_ui();
     _root_window = Scene::create_and_add_object<UiWindow>(elysia::core::Rect{ 80,52,1120,616 },100);
@@ -344,7 +344,7 @@ void UiContainerTestScene::rebuild_ui()
     sync_theme_switch_button_roles();
 }
 
-void UiContainerTestScene::clear_ui()
+void UiTestScene::clear_ui()
 {
     _theme_registrations.clear();
     _theme_buttons.fill(nullptr);
@@ -352,7 +352,7 @@ void UiContainerTestScene::clear_ui()
     if (_root_window) { _root_window->destroy(); _root_window = nullptr; }
 }
 
-void UiContainerTestScene::request_back_to_menu()
+void UiTestScene::request_back_to_menu()
 {
     request_scene_switch(AppSceneKeys::MainMenu);
 }

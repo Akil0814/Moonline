@@ -17,11 +17,11 @@ class UiLabel;
 
 namespace arcneco::scene
 {
-class UiContainerTestScene final : public ApplicationScene
+class UiTestScene final : public ApplicationScene
 {
 public:
-    UiContainerTestScene() = default;
-    ~UiContainerTestScene() override = default;
+    UiTestScene() = default;
+    ~UiTestScene() override = default;
 
     void on_input(const elysia::input::RawInputFrame& input,const std::vector<elysia::input::RawInputEvent>& events) override;
     void on_enter(const elysia::scene::ScenePayload& payload) override;

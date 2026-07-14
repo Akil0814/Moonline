@@ -110,7 +110,6 @@ void MainMenuScene::build_menu_buttons()
     //about button
     ui_button = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,button_wide,75 });
     ui_button->set_text_content(elysia::ui::ui_text_key("menu_scene.about"));
-    ui_button->set_on_click([this] {Scene::request_scene_switch(AppSceneKeys::UiContainerTest);});
     ui_list->add_back(std::move(ui_button));
 
     //exit button
@@ -143,6 +142,20 @@ void MainMenuScene::build_menu_buttons()
 
     if (auto* list = dynamic_cast<elysia::ui::UiListContainer*>(list_added))
         _main_menu_window->register_focus_scope(*list);
+
+    //test begin
+    auto* ui_test_scene_button = Scene::create_and_add_object<elysia::ui::UiButton>(
+        elysia::core::Rect{ 20,20,180,50 },20);
+    ui_test_scene_button->set_text_content(elysia::ui::ui_raw_text("UiTestScene"));
+    ui_test_scene_button->set_on_click([this]() { Scene::request_scene_switch(AppSceneKeys::UiTest); });
+    //test end
+
+    //test begin
+    auto* test_scene_button = Scene::create_and_add_object<elysia::ui::UiButton>(
+        elysia::core::Rect{ 20,80,180,50 },20);
+    test_scene_button->set_text_content(elysia::ui::ui_raw_text("TestScene"));
+    test_scene_button->set_on_click([this]() { Scene::request_scene_switch(AppSceneKeys::Test); });
+    //test end
 
     SDL_Texture* tex =
         elysia::resources::ResourceManager::instance()->find_texture("ui.moon");
