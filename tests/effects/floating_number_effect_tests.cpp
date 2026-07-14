@@ -1,12 +1,13 @@
 #define SDL_MAIN_HANDLED
 
-#include "../engine/core/time.h"
-#include "../engine/effects/effect_manager.h"
-#include "../engine/io/path/path_manager.h"
-#include "../engine/localization/localization_manager.h"
-#include "../engine/resources/resource_manager.h"
-#include "../engine/scene/scene.h"
-#include "../engine/scene/scene_manager.h"
+#include "engine/core/time.h"
+#include "engine/effects/effect_manager.h"
+#include "engine/io/path/path_manager.h"
+#include "engine/localization/localization_manager.h"
+#include "engine/resources/resource_manager.h"
+#include "engine/scene/scene.h"
+#include "engine/scene/scene_manager.h"
+#include "tests/support/test_assertions.h"
 
 #include <SDL.h>
 #include <SDL_ttf.h>
@@ -18,14 +19,7 @@
 
 namespace
 {
-void require(bool condition, const char* message)
-{
-    if (condition)
-        return;
-
-    std::cerr << "FAILED: " << message << '\n';
-    std::exit(EXIT_FAILURE);
-}
+using moonline::tests::require;
 
 class TestScene final : public elysia::scene::Scene
 {
@@ -46,18 +40,40 @@ public:
     void on_exit() override {}
     void reset() override {}
 };
+
+struct FloatingNumberEffectFixture
+{
+    FloatingNumberEffectFixture()
+    {
+        require(SDL_Init(SDL_INIT_VIDEO) == 0, "floating number tests must initialize SDL video");
+        require(TTF_Init() == 0, "floating number tests must initialize SDL_ttf");
+        surface = SDL_CreateRGBSurfaceWithFormat(0, 128, 128, 32, SDL_PIXELFORMAT_RGBA32);
+        require(surface != nullptr, "floating number tests must create a surface");
+        renderer = SDL_CreateSoftwareRenderer(surface);
+        require(renderer != nullptr, "floating number tests must create a software renderer");
+    }
+
+    ~FloatingNumberEffectFixture()
+    {
+        elysia::effects::EffectManager::instance()->reset_digit_caches();
+        elysia::localization::LocalizationManager::instance()->shutdown();
+        elysia::resources::ResourceManager::instance()->clear();
+        SDL_DestroyRenderer(renderer);
+        SDL_FreeSurface(surface);
+        TTF_Quit();
+        SDL_Quit();
+    }
+
+    SDL_Surface* surface = nullptr;
+    SDL_Renderer* renderer = nullptr;
+};
 }
 
-int main()
+void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingNumberEffectFixture& fixture)
 {
     using namespace elysia;
 
-    require(SDL_Init(SDL_INIT_VIDEO) == 0, "floating number tests must initialize SDL video");
-    require(TTF_Init() == 0, "floating number tests must initialize SDL_ttf");
-    SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, 128, 128, 32, SDL_PIXELFORMAT_RGBA32);
-    require(surface != nullptr, "floating number tests must create a surface");
-    SDL_Renderer* renderer = SDL_CreateSoftwareRenderer(surface);
-    require(renderer != nullptr, "floating number tests must create a software renderer");
+    SDL_Renderer* renderer = fixture.renderer;
 
     effects::EffectManager* effect_manager = effects::EffectManager::instance();
     localization::LocalizationManager* localization_manager = localization::LocalizationManager::instance();
@@ -249,12 +265,11 @@ int main()
     require(!effect_manager->spawn_floating_number_effect(scene_request),
         "floating number spawning must fail after active scene shutdown");
 
-    effect_manager->reset_digit_caches();
-    localization_manager->shutdown();
-    resource_manager->clear();
-    SDL_DestroyRenderer(renderer);
-    SDL_FreeSurface(surface);
-    TTF_Quit();
-    SDL_Quit();
+}
+
+int main()
+{
+    FloatingNumberEffectFixture fixture;
+    test_floating_number_validation_motion_timing_and_scene_lifecycle(fixture);
     return EXIT_SUCCESS;
 }

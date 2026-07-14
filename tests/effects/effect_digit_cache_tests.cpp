@@ -1,9 +1,10 @@
 #define SDL_MAIN_HANDLED
 
-#include "../engine/effects/effect_manager.h"
-#include "../engine/io/path/path_manager.h"
-#include "../engine/localization/localization_manager.h"
-#include "../engine/resources/resource_manager.h"
+#include "engine/effects/effect_manager.h"
+#include "engine/io/path/path_manager.h"
+#include "engine/localization/localization_manager.h"
+#include "engine/resources/resource_manager.h"
+#include "tests/support/test_assertions.h"
 
 #include <SDL.h>
 #include <SDL_ttf.h>
@@ -14,26 +15,41 @@
 
 namespace
 {
-void require(bool condition, const char* message)
+using moonline::tests::require;
+
+struct EffectDigitCacheFixture
 {
-    if (condition)
-        return;
+    EffectDigitCacheFixture()
+    {
+        require(SDL_Init(SDL_INIT_VIDEO) == 0, "effect digit cache tests must initialize SDL video");
+        require(TTF_Init() == 0, "effect digit cache tests must initialize SDL_ttf");
+        surface = SDL_CreateRGBSurfaceWithFormat(0, 64, 64, 32, SDL_PIXELFORMAT_RGBA32);
+        require(surface != nullptr, "effect digit cache tests must create a surface");
+        renderer = SDL_CreateSoftwareRenderer(surface);
+        require(renderer != nullptr, "effect digit cache tests must create a software renderer");
+    }
 
-    std::cerr << "FAILED: " << message << '\n';
-    std::exit(EXIT_FAILURE);
-}
+    ~EffectDigitCacheFixture()
+    {
+        elysia::effects::EffectManager::instance()->reset_digit_caches();
+        elysia::localization::LocalizationManager::instance()->shutdown();
+        elysia::resources::ResourceManager::instance()->clear();
+        SDL_DestroyRenderer(renderer);
+        SDL_FreeSurface(surface);
+        TTF_Quit();
+        SDL_Quit();
+    }
+
+    SDL_Surface* surface = nullptr;
+    SDL_Renderer* renderer = nullptr;
+};
 }
 
-int main()
+void test_digit_cache_initialization_reuse_and_reset(EffectDigitCacheFixture& fixture)
 {
     using namespace elysia;
 
-    require(SDL_Init(SDL_INIT_VIDEO) == 0, "effect digit cache tests must initialize SDL video");
-    require(TTF_Init() == 0, "effect digit cache tests must initialize SDL_ttf");
-    SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, 64, 64, 32, SDL_PIXELFORMAT_RGBA32);
-    require(surface != nullptr, "effect digit cache tests must create a surface");
-    SDL_Renderer* renderer = SDL_CreateSoftwareRenderer(surface);
-    require(renderer != nullptr, "effect digit cache tests must create a software renderer");
+    SDL_Renderer* renderer = fixture.renderer;
 
     effects::EffectManager* effect_manager = effects::EffectManager::instance();
     localization::LocalizationManager* localization_manager = localization::LocalizationManager::instance();
@@ -101,9 +117,11 @@ int main()
     require(effect_manager->digit_cache(effects::EffectDigitColor::White) == nullptr,
         "digit cache must safely reject requests after renderer shutdown");
     resource_manager->clear();
-    SDL_DestroyRenderer(renderer);
-    SDL_FreeSurface(surface);
-    TTF_Quit();
-    SDL_Quit();
+}
+
+int main()
+{
+    EffectDigitCacheFixture fixture;
+    test_digit_cache_initialization_reuse_and_reset(fixture);
     return EXIT_SUCCESS;
 }

@@ -1,4 +1,5 @@
-#include "../engine/audio/sound_playback_scheduler.h"
+#include "engine/audio/sound_playback_scheduler.h"
+#include "tests/support/test_assertions.h"
 
 #include <chrono>
 #include <cstdlib>
@@ -7,20 +8,13 @@
 
 namespace
 {
+using moonline::tests::require;
 using namespace std::chrono_literals;
 using elysia::audio::SoundGroup;
 using elysia::audio::SoundGroupConfig;
 using elysia::audio::SoundPlayOptions;
 using elysia::audio::SoundPlaybackScheduler;
 using elysia::audio::SoundRequestStatus;
-
-void require(bool condition,const char* message)
-{
-    if (condition)
-        return;
-    std::cerr << "FAILED: " << message << '\n';
-    std::exit(EXIT_FAILURE);
-}
 
 struct FakeChannels
 {

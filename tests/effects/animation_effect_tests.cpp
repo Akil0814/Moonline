@@ -1,11 +1,12 @@
 #define SDL_MAIN_HANDLED
 
-#include "../engine/animation/animation_manager.h"
-#include "../engine/core/time.h"
-#include "../engine/effects/effect_manager.h"
-#include "../engine/resources/atlas/atlas.h"
-#include "../engine/scene/scene.h"
-#include "../engine/scene/scene_manager.h"
+#include "engine/animation/animation_manager.h"
+#include "engine/core/time.h"
+#include "engine/effects/effect_manager.h"
+#include "engine/resources/atlas/atlas.h"
+#include "engine/scene/scene.h"
+#include "engine/scene/scene_manager.h"
+#include "tests/support/test_assertions.h"
 
 #include <SDL.h>
 
@@ -17,14 +18,7 @@
 
 namespace
 {
-void require(bool condition, const char* message)
-{
-    if (condition)
-        return;
-
-    std::cerr << "FAILED: " << message << '\n';
-    std::exit(EXIT_FAILURE);
-}
+using moonline::tests::require;
 
 class TestScene final : public elysia::scene::Scene
 {
@@ -65,19 +59,39 @@ void register_animation_effect(SDL_Texture* texture, bool loop, const char* suff
     require(effects::EffectManager::instance()->register_animation_effect(effect_request),
         "animation effect test definition must register");
 }
+
+struct AnimationEffectFixture
+{
+    AnimationEffectFixture()
+    {
+        require(SDL_Init(SDL_INIT_VIDEO) == 0, "animation effect tests must initialize SDL video");
+        surface = SDL_CreateRGBSurfaceWithFormat(0, 20, 10, 32, SDL_PIXELFORMAT_RGBA32);
+        require(surface != nullptr, "animation effect tests must create a surface");
+        renderer = SDL_CreateSoftwareRenderer(surface);
+        require(renderer != nullptr, "animation effect tests must create a software renderer");
+        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, 20, 10);
+        require(texture != nullptr, "animation effect tests must create a texture");
+    }
+
+    ~AnimationEffectFixture()
+    {
+        SDL_DestroyTexture(texture);
+        SDL_DestroyRenderer(renderer);
+        SDL_FreeSurface(surface);
+        SDL_Quit();
+    }
+
+    SDL_Surface* surface = nullptr;
+    SDL_Renderer* renderer = nullptr;
+    SDL_Texture* texture = nullptr;
+};
 }
 
-int main()
+void test_animation_effect_creation_playback_and_scene_lifecycle(AnimationEffectFixture& fixture)
 {
     using namespace elysia;
 
-    require(SDL_Init(SDL_INIT_VIDEO) == 0, "animation effect tests must initialize SDL video");
-    SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, 20, 10, 32, SDL_PIXELFORMAT_RGBA32);
-    require(surface != nullptr, "animation effect tests must create a surface");
-    SDL_Renderer* renderer = SDL_CreateSoftwareRenderer(surface);
-    require(renderer != nullptr, "animation effect tests must create a software renderer");
-    SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, 20, 10);
-    require(texture != nullptr, "animation effect tests must create a texture");
+    SDL_Texture* texture = fixture.texture;
 
     register_animation_effect(texture, false, "oneshot");
     effects::AnimationEffectSpawnRequest request;
@@ -210,9 +224,11 @@ int main()
     require(!effect_manager->spawn_animation_effect(scene_request),
         "animation effect spawning must fail after active scene shutdown");
 
-    SDL_DestroyTexture(texture);
-    SDL_DestroyRenderer(renderer);
-    SDL_FreeSurface(surface);
-    SDL_Quit();
+}
+
+int main()
+{
+    AnimationEffectFixture fixture;
+    test_animation_effect_creation_playback_and_scene_lifecycle(fixture);
     return EXIT_SUCCESS;
 }

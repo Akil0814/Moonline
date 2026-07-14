@@ -1,6 +1,7 @@
-#include "../application/application_event_boundary.h"
-#include "../application/application_exit_policy.h"
-#include "../engine/tools/termination_manager.h"
+#include "application/application_event_boundary.h"
+#include "application/application_exit_policy.h"
+#include "engine/tools/termination_manager.h"
+#include "tests/support/test_assertions.h"
 
 #include <atomic>
 #include <cstdlib>
@@ -11,13 +12,7 @@
 
 namespace
 {
-void require(bool condition,const char* message)
-{
-    if (condition)
-        return;
-    std::cerr << "FAILED: " << message << '\n';
-    std::exit(EXIT_FAILURE);
-}
+using moonline::tests::require;
 
 void test_lifecycle_and_first_request_wins()
 {

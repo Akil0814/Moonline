@@ -1,13 +1,15 @@
 #define SDL_MAIN_HANDLED
 
-#include "../engine/ui/composites/ui_tab_container.h"
-#include "../engine/ui/containers/ui_chrome_container.h"
-#include "../engine/ui/containers/ui_grid_container.h"
-#include "../engine/ui/containers/ui_list_container.h"
-#include "../engine/ui/containers/ui_scroll_container.h"
-#include "../engine/ui/widgets/ui_button.h"
-#include "../engine/ui/widgets/ui_slider.h"
-#include "../engine/ui/window/ui_window.h"
+#include "engine/ui/composites/ui_tab_container.h"
+#include "engine/ui/containers/ui_chrome_container.h"
+#include "engine/ui/containers/ui_grid_container.h"
+#include "engine/ui/containers/ui_list_container.h"
+#include "engine/ui/containers/ui_scroll_container.h"
+#include "engine/ui/input/ui_gamepad_scroll_synthesizer.h"
+#include "engine/ui/widgets/ui_button.h"
+#include "engine/ui/widgets/ui_slider.h"
+#include "engine/ui/window/ui_window.h"
+#include "tests/support/test_assertions.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -17,14 +19,7 @@
 namespace
 {
 using namespace elysia;
-
-void require(bool condition,const char* message)
-{
-    if (condition)
-        return;
-    std::cerr << "FAILED: " << message << '\n';
-    std::exit(EXIT_FAILURE);
-}
+using moonline::tests::require;
 
 ui::UiInputEvent navigation_event(ui::UiAction action,input::InputDevice device)
 {
@@ -275,6 +270,34 @@ void run_slider_focus_matrix(input::InputDevice device)
         "secondary navigation must leave nested slider and clear adjustment mode");
 }
 
+void test_gamepad_scroll_synthesizer_axes()
+{
+    elysia::ui::UiGamepadScrollSynthesizer synthesizer;
+    elysia::input::RawInputFrame frame{};
+    frame.active_device = elysia::input::InputDevice::Gamepad;
+    frame.state.set_axis(elysia::input::RawInputAxis::GamepadLeftX,1.0f);
+    frame.state.set_axis(elysia::input::RawInputAxis::GamepadLeftY,1.0f);
+    require(!synthesizer.synthesize(frame).has_value(),"first diagonal stick sample should accumulate independently");
+    const auto diagonal = synthesizer.synthesize(frame);
+    require(diagonal && diagonal->wheel_x == -1 && diagonal->wheel_y == -1,
+        "diagonal stick input should synthesize independent horizontal and vertical wheel steps");
+
+    frame.state.set_axis(elysia::input::RawInputAxis::GamepadLeftX,0.1f);
+    frame.state.set_axis(elysia::input::RawInputAxis::GamepadLeftY,0.0f);
+    require(!synthesizer.synthesize(frame).has_value(),"deadzone input should reset both idle axis accumulators");
+
+    frame.state.set_axis(elysia::input::RawInputAxis::GamepadLeftX,-1.0f);
+    require(!synthesizer.synthesize(frame).has_value(),"fresh horizontal input should not inherit pre-deadzone accumulation");
+    const auto horizontal = synthesizer.synthesize(frame);
+    require(horizontal && horizontal->wheel_x == 1 && horizontal->wheel_y == 0,
+        "horizontal stick input should emit only horizontal wheel steps");
+
+    frame.device_switched_this_frame = true;
+    require(!synthesizer.synthesize(frame).has_value(),"device switches should clear pending scroll accumulation");
+    frame.device_switched_this_frame = false;
+    require(!synthesizer.synthesize(frame).has_value(),"post-switch input should restart accumulation from zero");
+}
+
 void test_passive_scroll_target_routing()
 {
     ui::UiWindow window{ core::Rect{ 0,0,640,480 } };
@@ -374,6 +397,7 @@ void test_passive_scroll_target_routing()
 
 int main()
 {
+    test_gamepad_scroll_synthesizer_axes();
     run_keyboard_gamepad_matrix(input::InputDevice::Keyboard);
     run_keyboard_gamepad_matrix(input::InputDevice::Gamepad);
     run_real_nested_page_matrix(input::InputDevice::Keyboard);

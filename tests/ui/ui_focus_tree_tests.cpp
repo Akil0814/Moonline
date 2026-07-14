@@ -1,14 +1,15 @@
 #define SDL_MAIN_HANDLED
 
-#include "../engine/ui/composites/ui_tab_container.h"
-#include "../engine/ui/containers/ui_chrome_container.h"
-#include "../engine/ui/containers/ui_grid_container.h"
-#include "../engine/ui/containers/ui_list_container.h"
-#include "../engine/ui/containers/ui_panel.h"
-#include "../engine/ui/containers/ui_scroll_container.h"
-#include "../engine/ui/widgets/ui_button.h"
-#include "../engine/ui/widgets/ui_checkbox.h"
-#include "../engine/ui/window/ui_window.h"
+#include "engine/ui/composites/ui_tab_container.h"
+#include "engine/ui/containers/ui_chrome_container.h"
+#include "engine/ui/containers/ui_grid_container.h"
+#include "engine/ui/containers/ui_list_container.h"
+#include "engine/ui/containers/ui_panel.h"
+#include "engine/ui/containers/ui_scroll_container.h"
+#include "engine/ui/widgets/ui_button.h"
+#include "engine/ui/widgets/ui_checkbox.h"
+#include "engine/ui/window/ui_window.h"
+#include "tests/support/test_assertions.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -16,13 +17,7 @@
 
 namespace
 {
-void require(bool condition,const char* message)
-{
-    if (condition)
-        return;
-    std::cerr << "FAILED: " << message << '\n';
-    std::exit(EXIT_FAILURE);
-}
+using moonline::tests::require;
 
 elysia::ui::UiInputEvent navigate(elysia::ui::UiAction action)
 {
