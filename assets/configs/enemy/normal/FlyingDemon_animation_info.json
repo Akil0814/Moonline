@@ -1,0 +1,7 @@
+{
+  "idle": { "frame_count": 4, "fps": 10, "loop": true },
+  "move": { "frame_count": 4, "fps": 10, "loop": true },
+  "attack": { "frame_count": 8, "fps": 10, "loop": false },
+  "hurt": { "frame_count": 4, "fps": 10, "loop": false },
+  "death": { "frame_count": 7, "fps": 10, "loop": false }
+}

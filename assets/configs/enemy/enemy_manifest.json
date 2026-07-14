@@ -11,6 +11,10 @@
     },
     {
       "id": "slime", "asset_key": "Slime", "enabled": true, "animation_layout": "normal"
+    },
+    {
+      "id": "flying_demon", "asset_key": "FlyingDemon", "enabled": true,
+      "animation_layout": "normal", "horizontal_strip": true
     }
   ]
 }

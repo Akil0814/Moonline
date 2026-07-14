@@ -126,9 +126,14 @@ void UiAnimation::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
     if (!frame || !frame->_texture)
         return;
 
-    elysia::core::UiRenderCommand command =
-        elysia::core::make_ui_texture_command(frame->_texture, screen_rect());
-    apply_opacity(command);
+	elysia::core::UiRenderCommand command =
+		elysia::core::make_ui_texture_command(frame->_texture, screen_rect());
+	if (frame->_source_rect.has_value())
+	{
+		command.use_src_rect = true;
+		command.src_rect = *frame->_source_rect;
+	}
+	apply_opacity(command);
     out_commands.push_back(command);
 }
 }

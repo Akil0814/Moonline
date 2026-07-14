@@ -8,6 +8,12 @@
 
 namespace elysia::resources
 {
+enum class AtlasSourceType
+{
+	FrameDirectory,
+	HorizontalStrip
+};
+
 struct TextureLoadRequest
 {
 	std::string key;
@@ -38,14 +44,15 @@ struct AtlasBuildRequest
 	[[nodiscard]] bool is_valid() const
 	{
 		return !atlas_key.empty()
-			&& !directory_path.empty()
+			&& !source_path.empty()
 			&& frame_count > 0;
 	}
 
 	std::string atlas_key;
-	std::filesystem::path directory_path;
+	std::filesystem::path source_path;
 	size_t frame_count = 0;
 	std::string frame_filename_prefix;
+	AtlasSourceType source_type = AtlasSourceType::FrameDirectory;
 };
 
 struct AnimationBuildRequest

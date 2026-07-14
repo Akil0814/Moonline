@@ -46,15 +46,23 @@ bool AnimationManifestLoader::load(
 				<< manifest_path);
 			return false;
 		}
+		if (animation_node.contains("horizontal_strip")
+			&& !animation_node.at("horizontal_strip").is_boolean())
+		{
+			ELYSIA_LOG_WARN("io","Load animation manifest failed: horizontal_strip is not a boolean: "
+				<< manifest_path);
+			return false;
+		}
 
 		AnimationManifestEntry entry;
 		entry.key = animation_node.at("key").get<std::string>();
-		entry.directory_path = animation_node.at("path").get<std::string>();
+		entry.source_path = animation_node.at("path").get<std::string>();
 		entry.frame_count = animation_node.at("frame_count").get<size_t>();
 		entry.fps = animation_node.at("fps").get<double>();
 		entry.loop = animation_node.at("loop").get<bool>();
+		entry.horizontal_strip = animation_node.value("horizontal_strip", false);
 
-		if (entry.key.empty() || entry.directory_path.empty() || entry.frame_count == 0 || entry.fps <= 0.0)
+		if (entry.key.empty() || entry.source_path.empty() || entry.frame_count == 0 || entry.fps <= 0.0)
 		{
 			ELYSIA_LOG_WARN("io","Load animation manifest failed: invalid animation values: "
 				<< manifest_path);

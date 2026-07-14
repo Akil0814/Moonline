@@ -2,6 +2,11 @@
 
 #include "../../application/scene/application_scene.h"
 
+namespace elysia::ui
+{
+class UiAnimation;
+}
+
 namespace arcneco::scene
 {
 class TestScene final : public ApplicationScene
@@ -16,5 +21,9 @@ public:
     void on_enter(const elysia::scene::ScenePayload& payload) override;
     void on_exit() override;
     void reset() override;
+
+private:
+    elysia::ui::UiAnimation* _test_animation = nullptr;
+    elysia::ui::UiAnimation* _flying_demon_idle = nullptr;
 };
 }

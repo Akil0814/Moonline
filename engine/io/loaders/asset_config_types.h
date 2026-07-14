@@ -84,10 +84,11 @@ struct TextureManifest
 struct AnimationManifestEntry
 {
 	std::string key;
-	std::filesystem::path directory_path;
+	std::filesystem::path source_path;
 	size_t frame_count = 0;
 	double fps = 10.0;
 	bool loop = true;
+	bool horizontal_strip = false;
 };
 
 struct AnimationManifest
@@ -114,6 +115,7 @@ struct EntityManifestEntry
 	std::string id;
 	std::string asset_key;
 	std::string animation_layout;
+	bool horizontal_strip = false;
 };
 
 struct EntityManifest
@@ -127,6 +129,7 @@ struct AnimatedEntityResourceConfig
 	std::string asset_key;
 	std::filesystem::path texture_root;
 	std::filesystem::path audio_root;
+	bool horizontal_strip = false;
 };
 
 struct AnimationLayoutEntry

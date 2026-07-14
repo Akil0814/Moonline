@@ -4,6 +4,7 @@
 #include "../resource_types.h"
 
 #include <filesystem>
+#include <optional>
 #include <vector>
 
 namespace elysia::resources
@@ -13,6 +14,7 @@ struct AtlasCommittedFrame
 	std::filesystem::path frame_path;
 	SDL_Texture* texture = nullptr;
 	size_t frame_index = 0;
+	std::optional<elysia::core::Rect> source_rect;
 };
 
 class AtlasBuilder

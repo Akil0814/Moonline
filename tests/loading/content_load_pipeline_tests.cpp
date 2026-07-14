@@ -103,7 +103,7 @@ void test_registry_and_content_load_pipeline()
 	require(config_result.characters.has_value(),
 		"configured characters module must be loaded");
 	require(config_result.enemies.has_value()
-		&& config_result.enemies->content.animation_entries.size() == 4,
+		&& config_result.enemies->content.animation_entries.size() == 5,
 		"configured enemies module must load the normal enemy animations");
 
 	elysia::loading::ConfigLoadResult core_only_config_result;
@@ -160,7 +160,7 @@ void test_registry_and_content_load_pipeline()
 	require(animated_entity_content_loader.load(
 		path_manager->to_config_path("enemy/enemy_content_manifest.json"), enemy_content, enemy_error),
 		"normal enemy content manifest must load through the generic entity loader");
-	require(enemy_content.animation_entries.size() == 4, "normal enemies must produce four animation entries");
+	require(enemy_content.animation_entries.size() == 5, "normal enemies must produce five animation entries");
 	elysia::resources::ResourceRequestBuilder generic_request_builder;
 	std::vector<elysia::resources::AtlasBuildRequest> enemy_atlas_requests;
 	std::vector<elysia::resources::AnimationBuildRequest> enemy_animation_requests;
@@ -168,15 +168,23 @@ void test_registry_and_content_load_pipeline()
 		require(generic_request_builder.append_animated_entity_animation_requests(
 			entry.entity_config, entry.animation_config, enemy_atlas_requests, enemy_animation_requests),
 			"normal enemy animation requests must build through the generic entity API");
-	require(enemy_atlas_requests.size() == 20 && enemy_animation_requests.size() == 20,
+	require(enemy_atlas_requests.size() == 25 && enemy_animation_requests.size() == 25,
 		"normal enemies must create five animations each");
 	const auto slime_attack = std::find_if(enemy_atlas_requests.begin(), enemy_atlas_requests.end(),
 		[](const elysia::resources::AtlasBuildRequest& request) { return request.atlas_key == "slime.attack"; });
 	require(slime_attack != enemy_atlas_requests.end()
 		&& slime_attack->frame_count == 19
 		&& slime_attack->frame_filename_prefix == "Slime_attack"
-		&& slime_attack->directory_path == path_manager->textures() / "enemy" / "normal" / "Slime" / "attack",
+		&& slime_attack->source_path == path_manager->textures() / "enemy" / "normal" / "Slime" / "attack"
+		&& slime_attack->source_type == elysia::resources::AtlasSourceType::FrameDirectory,
 		"enemy animation requests must infer their directory, frame count, and prefix");
+	const auto flying_demon_death = std::find_if(enemy_atlas_requests.begin(), enemy_atlas_requests.end(),
+		[](const elysia::resources::AtlasBuildRequest& request) { return request.atlas_key == "flying_demon.death"; });
+	require(flying_demon_death != enemy_atlas_requests.end()
+		&& flying_demon_death->frame_count == 7
+		&& flying_demon_death->source_type == elysia::resources::AtlasSourceType::HorizontalStrip
+		&& flying_demon_death->source_path.filename() == "death.png",
+		"entity-wide strip configuration must produce FlyingDemon strip requests");
 	std::filesystem::remove_all(registry_test_root);
 }
 }
@@ -187,4 +195,3 @@ int main()
     std::cout << "content load pipeline tests passed\n";
     return EXIT_SUCCESS;
 }
-

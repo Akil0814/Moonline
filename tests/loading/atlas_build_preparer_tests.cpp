@@ -29,7 +29,7 @@ void test_named_and_legacy_frame_expansion()
 	std::vector<elysia::resources::AtlasFramePrepareTask> atlas_tasks;
 	elysia::resources::AtlasBuildRequest named_request;
 	named_request.atlas_key = "ryougi_shiki.idle";
-	named_request.directory_path = atlas_test_root / "named";
+	named_request.source_path = atlas_test_root / "named";
 	named_request.frame_count = 2;
 	named_request.frame_filename_prefix = "RyougiShiki_idle";
 	require(atlas_build_preparer.expand_build_request(named_request, atlas_tasks),
@@ -44,13 +44,28 @@ void test_named_and_legacy_frame_expansion()
 
 	elysia::resources::AtlasBuildRequest legacy_request;
 	legacy_request.atlas_key = "legacy";
-	legacy_request.directory_path = atlas_test_root / "legacy";
+	legacy_request.source_path = atlas_test_root / "legacy";
 	legacy_request.frame_count = 2;
 	require(atlas_build_preparer.expand_build_request(legacy_request, atlas_tasks),
 		"legacy atlas loading must retain directory-scan compatibility");
 	require(atlas_tasks[0].frame_path.filename() == "frame_001.png"
 		&& atlas_tasks[1].frame_path.filename() == "frame_002.png",
 		"legacy atlas frames must remain filename-sorted");
+
+	const std::filesystem::path strip_path = atlas_test_root / "strip.png";
+	std::ofstream(strip_path).put('\0');
+	elysia::resources::AtlasBuildRequest strip_request;
+	strip_request.atlas_key = "strip";
+	strip_request.source_path = strip_path;
+	strip_request.frame_count = 14;
+	strip_request.source_type = elysia::resources::AtlasSourceType::HorizontalStrip;
+	require(atlas_build_preparer.expand_build_request(strip_request, atlas_tasks),
+		"horizontal strip loading must accept a single image source");
+	require(atlas_tasks.size() == 1
+		&& atlas_tasks[0].frame_path == strip_path
+		&& atlas_tasks[0].source_type == elysia::resources::AtlasSourceType::HorizontalStrip
+		&& atlas_tasks[0].expected_frame_count == 14,
+		"horizontal strip loading must expand to one preparation task");
 	std::filesystem::remove_all(atlas_test_root);
 }
 }
@@ -61,4 +76,3 @@ int main()
     std::cout << "atlas build preparer tests passed\n";
     return EXIT_SUCCESS;
 }
-

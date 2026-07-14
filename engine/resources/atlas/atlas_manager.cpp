@@ -97,6 +97,12 @@ bool AtlasManager::commit_prepared_frame(
 			<< prepared_result.task.atlas_key);
 		return false;
 	}
+	if (prepared_result.task.source_type != state.request.source_type)
+	{
+		ELYSIA_LOG_WARN("resource","Commit atlas frame failed: source type mismatch: "
+			<< prepared_result.task.atlas_key);
+		return false;
+	}
 
 	if (prepared_result.task.frame_index >= state.committed_frames.size())
 	{
@@ -126,6 +132,71 @@ bool AtlasManager::commit_prepared_frame(
 		ELYSIA_LOG_WARN("resource","Commit atlas frame failed: frame index mismatch: "
 			<< prepared_result.task.atlas_key);
 		return false;
+	}
+
+	if (state.request.source_type == AtlasSourceType::HorizontalStrip)
+	{
+		if (prepared_result.task.frame_index != 0)
+		{
+			ELYSIA_LOG_WARN("resource","Commit horizontal strip failed: task index must be zero: "
+				<< prepared_result.task.atlas_key);
+			return false;
+		}
+
+		const int texture_width = surface_result._surface->w;
+		const int texture_height = surface_result._surface->h;
+		if (texture_width <= 0 || texture_height <= 0
+			|| state.request.frame_count > static_cast<size_t>(texture_width)
+			|| static_cast<size_t>(texture_width) % state.request.frame_count != 0)
+		{
+			ELYSIA_LOG_WARN("resource","Commit horizontal strip failed: image width must be divisible by frame count: "
+				<< prepared_result.task.atlas_key << ", width " << texture_width
+				<< ", frames " << state.request.frame_count);
+			return false;
+		}
+
+		const int frame_width = static_cast<int>(
+			static_cast<size_t>(texture_width) / state.request.frame_count
+		);
+		if (frame_width <= 0)
+		{
+			ELYSIA_LOG_WARN("resource","Commit horizontal strip failed: frame width is zero: "
+				<< prepared_result.task.atlas_key);
+			return false;
+		}
+
+		TextureLoader texture_loader;
+		TextureLoadResult texture_result = texture_loader.load_texture(renderer, surface_result);
+		if (!texture_result._success || !texture_result._texture)
+			return false;
+
+		const std::string texture_key = make_strip_texture_key(prepared_result.task.atlas_key);
+		if (!_texture_manager.store_texture(texture_key, std::move(texture_result._texture)))
+			return false;
+
+		SDL_Texture* shared_texture = _texture_manager.find_texture(texture_key);
+		if (!shared_texture)
+		{
+			ELYSIA_LOG_WARN("resource","Commit horizontal strip failed: stored texture lookup failed: "
+				<< texture_key);
+			return false;
+		}
+
+		for (size_t index = 0; index < state.committed_frames.size(); ++index)
+		{
+			AtlasAssemblyFrame& strip_frame = state.committed_frames[index];
+			strip_frame.frame_path = surface_result._frame_path;
+			strip_frame.texture = shared_texture;
+			strip_frame.source_rect = elysia::core::Rect(
+				static_cast<float>(index * static_cast<size_t>(frame_width)),
+				0.0f,
+				static_cast<float>(frame_width),
+				static_cast<float>(texture_height)
+			);
+			strip_frame.committed = true;
+		}
+		state.committed_frame_count = state.request.frame_count;
+		return finalize_build(state.request.atlas_key);
 	}
 
 	AtlasAssemblyFrame& frame_state =
@@ -252,6 +323,7 @@ bool AtlasManager::finalize_build(const std::string& atlas_key)
 		committed_frame.frame_path = frame_state.frame_path;
 		committed_frame.texture = frame_state.texture;
 		committed_frame.frame_index = index;
+		committed_frame.source_rect = frame_state.source_rect;
 		committed_frames.push_back(std::move(committed_frame));
 	}
 
@@ -272,6 +344,11 @@ std::string AtlasManager::make_texture_key(
 ) const
 {
 	return atlas_key + "#" + std::to_string(frame_index);
+}
+
+std::string AtlasManager::make_strip_texture_key(const std::string& atlas_key) const
+{
+	return atlas_key + "#strip";
 }
 
 }

@@ -14,6 +14,7 @@ struct AtlasFramePrepareTask
 	std::filesystem::path frame_path;
 	size_t frame_index = 0;
 	size_t expected_frame_count = 0;
+	AtlasSourceType source_type = AtlasSourceType::FrameDirectory;
 };
 
 struct AtlasFramePreparedResult

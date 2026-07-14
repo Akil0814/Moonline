@@ -40,19 +40,42 @@ size_t Atlas::size() const
 	return _frames.size();
 }
 
-bool Atlas::add_frame(const std::filesystem::path& frame_path, SDL_Texture* texture)
+bool Atlas::add_frame(
+	const std::filesystem::path& frame_path,
+	SDL_Texture* texture,
+	std::optional<elysia::core::Rect> source_rect
+)
 {
 	int width = 0;
 	int height = 0;
 	if (!query_texture_size(texture, width, height))
 		return false;
+	if (source_rect.has_value())
+	{
+		const elysia::core::Rect texture_rect(
+			0.0f,
+			0.0f,
+			static_cast<float>(width),
+			static_cast<float>(height)
+		);
+		if (source_rect->width() <= 0.0f || source_rect->height() <= 0.0f
+			|| !texture_rect.contains(*source_rect))
+		{
+			return false;
+		}
+	}
 
 	FrameInfo frame_info;
 	frame_info._path = frame_path;
 	frame_info._texture = texture;
-	frame_info._width = width;
-	frame_info._height = height;
+	frame_info._width = source_rect.has_value()
+		? static_cast<int>(source_rect->width())
+		: width;
+	frame_info._height = source_rect.has_value()
+		? static_cast<int>(source_rect->height())
+		: height;
 	frame_info._index = _frames.size();
+	frame_info._source_rect = source_rect;
 	_frames.push_back(frame_info);
 	return true;
 }

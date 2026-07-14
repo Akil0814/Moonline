@@ -2,7 +2,7 @@
 
 本文记录 Moonline 当前已经实现的动画资源 JSON 格式、路径解析方式和校验规则。内容以现有 loader、资源请求构建器和 Atlas 加载流程为准。
 
-> 当前 Atlas 只支持“一个目录包含多张 PNG 帧图”。单张横向序列图的自动裁切尚未实现，也不存在 `horizontal_strip` 等配置字段。
+Atlas 支持目录帧和单行横向序列图。横向序列图必须由等宽、无间距的帧从左到右排列，不支持纵向、多行、边距或不等宽帧。
 
 ## 1. 加载链路
 
@@ -46,10 +46,11 @@ assets/content_registry.json
   "animations": [
     {
       "key": "test.animation",
-      "path": "test",
-      "frame_count": 13,
+      "path": "test/frame_group.png",
+      "frame_count": 14,
       "fps": 10,
-      "loop": true
+      "loop": true,
+      "horizontal_strip": true
     }
   ]
 }
@@ -61,12 +62,13 @@ assets/content_registry.json
 | --- | --- | --- |
 | `animations` | array | 根对象中的必填数组 |
 | `key` | string | 必填、非空，在该 manifest 内不可重复 |
-| `path` | string | 必填、非空；相对于 `assets/textures/` 的目录路径 |
+| `path` | string | 必填、非空；相对于 `assets/textures/` 的目录或图片路径 |
 | `frame_count` | integer | 必填，必须大于 0 |
 | `fps` | number | 必填，必须大于 0 |
 | `loop` | boolean | 必填 |
+| `horizontal_strip` | boolean | 可选，默认 `false`；为 `true` 时 `path` 指向横向序列图 |
 
-请求构建阶段要求 `assets/textures/<path>` 是已存在的目录。Atlas key 和 animation key 都使用 `key`。
+请求构建阶段根据 `horizontal_strip` 严格检查路径类型：`false` 要求目录，`true` 要求普通文件。Atlas key 和 animation key 都使用 `key`。
 
 ## 3. 实体 content manifest
 
@@ -149,7 +151,8 @@ assets/textures/enemy/normal/Slime
       "id": "slime",
       "asset_key": "Slime",
       "enabled": true,
-      "animation_layout": "normal"
+      "animation_layout": "normal",
+      "horizontal_strip": false
     }
   ]
 }
@@ -164,6 +167,9 @@ assets/textures/enemy/normal/Slime
 | `asset_key` | string | 必填、非空；用于目录和配置模板替换 |
 | `enabled` | boolean | 可选，默认 `true`；为 `false` 时跳过该实体 |
 | `animation_layout` | string | 使用动画 capability 时必须提供，并且必须匹配已注册布局 |
+| `horizontal_strip` | boolean | 可选，默认 `false`；为 `true` 时该实体的全部动画使用横向序列图 |
+
+实体级 `horizontal_strip` 不支持在 animation info 中逐项覆盖，也不改变实体 effect layout 的目录帧规则。
 
 以 Slime 为例：
 
@@ -279,6 +285,21 @@ atlas key       = slime.idle
 animation key   = slime.idle
 ```
 
+横向序列图敌人示例：
+
+```text
+entity id       = flying_demon
+asset key       = FlyingDemon
+layout path     = idle
+horizontal strip = true
+
+source image    = assets/textures/enemy/normal/FlyingDemon/idle/idle.png
+atlas key       = flying_demon.idle
+animation key   = flying_demon.idle
+```
+
+实体横向序列图固定按 `<实体纹理根>/<layout path>/<animation name>.png` 解析。分段路径会先按现有 `{segment}` 规则解析，再在对应目录内查找 `<animation name>.png`。
+
 角色分段动画示例：
 
 ```text
@@ -359,9 +380,11 @@ animation key   = ryougi_shiki.attack_normal.0
 - 分段 effect 的 playback 数量不足时，缺少配置的动画段会被跳过。
 - effect 目录内存在 `.no_effects` 文件时，该 effect 不生成资源请求。
 
-## 9. Atlas 帧目录规则
+## 9. Atlas 图片来源规则
 
-当前所有动画最终都必须解析到一个存在的目录。
+### 9.1 目录帧
+
+目录帧动画最终必须解析到一个存在的目录。
 
 实体动画会优先检查标准命名序列：
 
@@ -388,7 +411,23 @@ animation key   = ryougi_shiki.attack_normal.0
 
 因此建议帧编号使用固定宽度，例如 `_000`、`_001`、`_002`，避免字符串排序与数值顺序不一致。
 
-当前不会递归查找子目录，也不会从一张图片中裁切多帧。
+目录模式不会递归查找子目录。
+
+### 9.2 横向序列图
+
+横向模式只解码并创建一份纹理，然后按 `frame_count` 生成多个共享纹理的逻辑帧。每帧区域为：
+
+```text
+frame_width = image_width / frame_count
+source_rect = { frame_index * frame_width, 0, frame_width, image_height }
+```
+
+横向序列图必须满足：
+
+- 图片宽高均大于 0。
+- `frame_count` 大于 0 且不超过图片宽度。
+- 图片宽度能被 `frame_count` 整除。
+- 所有帧等宽、占满图片高度、没有外边距和帧间距。
 
 ## 10. 常见失败原因
 
@@ -398,7 +437,7 @@ animation key   = ryougi_shiki.attack_normal.0
 - 普通动画配到了 `segment_path`，或分段动画配到了 `path`。
 - `frame_count` 为 0、`fps` 不大于 0，或者 `loop` 不是 boolean。
 - `segments` 为空或包含非对象项。
-- 最终路径不是目录。
+- 最终路径类型与 `horizontal_strip` 不匹配。
 - PNG 帧数量与 `frame_count` 不一致。
 - 标准命名序列中存在断号或缺帧。
-
+- 横向序列图宽度不能被 `frame_count` 整除。

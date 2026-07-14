@@ -42,10 +42,11 @@ void test_runtime_resource_request_assembly()
 		});
 	require(atlas_request != load_plan.atlas_build_requests().end(),
 		"test.animation must create an atlas request");
-	require(atlas_request->directory_path == path_manager->textures() / "test",
-		"test.animation atlas must use assets/textures/test");
-	require(atlas_request->frame_count == 13,
-		"test.animation atlas must have thirteen frames");
+	require(atlas_request->source_path == path_manager->textures() / "test" / "frame_group.png"
+		&& atlas_request->source_type == elysia::resources::AtlasSourceType::HorizontalStrip,
+		"test.animation atlas must use the configured horizontal strip");
+	require(atlas_request->frame_count == 14,
+		"test.animation atlas must have fourteen frames");
 
 	const auto animation_request = std::find_if(
 		load_plan.animation_build_requests().begin(),
@@ -79,8 +80,34 @@ void test_runtime_resource_request_assembly()
 			return request.atlas_key == "slime.attack";
 		});
 	require(runtime_slime_attack_request != load_plan.atlas_build_requests().end()
-		&& runtime_slime_attack_request->frame_filename_prefix == "Slime_attack",
+		&& runtime_slime_attack_request->frame_filename_prefix == "Slime_attack"
+		&& runtime_slime_attack_request->source_type == elysia::resources::AtlasSourceType::FrameDirectory,
 		"enabled enemies module must contribute enemy atlas requests to the runtime plan");
+
+	const auto flying_demon_idle_request = std::find_if(
+		load_plan.atlas_build_requests().begin(),
+		load_plan.atlas_build_requests().end(),
+		[](const elysia::resources::AtlasBuildRequest& request)
+		{
+			return request.atlas_key == "flying_demon.idle";
+		});
+	require(flying_demon_idle_request != load_plan.atlas_build_requests().end()
+		&& flying_demon_idle_request->source_type == elysia::resources::AtlasSourceType::HorizontalStrip
+		&& flying_demon_idle_request->source_path
+			== path_manager->textures() / "enemy" / "normal" / "FlyingDemon" / "idle" / "idle.png"
+		&& flying_demon_idle_request->frame_count == 4,
+		"FlyingDemon idle must resolve to its entity-wide horizontal strip source");
+
+	const size_t flying_demon_request_count = static_cast<size_t>(std::count_if(
+		load_plan.atlas_build_requests().begin(),
+		load_plan.atlas_build_requests().end(),
+		[](const elysia::resources::AtlasBuildRequest& request)
+		{
+			return request.atlas_key.starts_with("flying_demon.")
+				&& request.source_type == elysia::resources::AtlasSourceType::HorizontalStrip;
+		}));
+	require(flying_demon_request_count == 5,
+		"FlyingDemon must contribute five horizontal strip animation requests");
 
 	const auto ryougi_getup_air_request = std::find_if(
 		load_plan.atlas_build_requests().begin(),
@@ -148,4 +175,3 @@ int main()
     std::cout << "resource request assembler tests passed\n";
     return EXIT_SUCCESS;
 }
-

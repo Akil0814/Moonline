@@ -30,12 +30,18 @@ bool EntityManifestLoader::load(const std::filesystem::path& manifest_path, Enti
 			ELYSIA_LOG_WARN("io", "Load entity manifest failed: enabled is invalid: " << node.at("id"));
 			return false;
 		}
+		if (node.contains("horizontal_strip") && !node.at("horizontal_strip").is_boolean())
+		{
+			ELYSIA_LOG_WARN("io", "Load entity manifest failed: horizontal_strip is invalid: " << node.at("id"));
+			return false;
+		}
 		if (node.value("enabled", true) == false)
 			continue;
 
 		EntityManifestEntry entry;
 		entry.id = node.at("id").get<std::string>();
 		entry.asset_key = node.at("asset_key").get<std::string>();
+		entry.horizontal_strip = node.value("horizontal_strip", false);
 		if (node.contains("animation_layout"))
 		{
 			if (!node.at("animation_layout").is_string())

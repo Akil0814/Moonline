@@ -50,7 +50,10 @@ bool AtlasBuilder::build_atlas(
 			return false;
 		}
 
-		if (!atlas.add_frame(committed_frame.frame_path, committed_frame.texture))
+		if (!atlas.add_frame(
+			committed_frame.frame_path,
+			committed_frame.texture,
+			committed_frame.source_rect))
 		{
 			ELYSIA_LOG_WARN("resource","Build atlas failed: add frame failed: "
 				<< committed_frame.frame_path);

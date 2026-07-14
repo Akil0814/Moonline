@@ -8,6 +8,7 @@
 
 #include <filesystem>
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -44,6 +45,7 @@ private:
 		std::filesystem::path frame_path;
 		SDL_Texture* texture = nullptr;
 		bool committed = false;
+		std::optional<elysia::core::Rect> source_rect;
 	};
 
 	struct AtlasAssemblyState
@@ -59,6 +61,7 @@ private:
 		const std::string& atlas_key,
 		size_t frame_index
 	) const;
+	std::string make_strip_texture_key(const std::string& atlas_key) const;
 
 private:
 	TextureManager& _texture_manager;

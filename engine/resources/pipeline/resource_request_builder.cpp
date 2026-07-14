@@ -293,7 +293,7 @@ bool ResourceRequestBuilder::append_animation_manifest_requests(
 
 	for (const elysia::io::AnimationManifestEntry& entry : animation_manifest.animations)
 	{
-		if (entry.key.empty() || entry.directory_path.empty()
+		if (entry.key.empty() || entry.source_path.empty()
 			|| entry.frame_count == 0 || entry.fps <= 0.0)
 		{
 			ELYSIA_LOG_WARN("resource","Build animation requests failed: invalid animation entry: "
@@ -301,19 +301,25 @@ bool ResourceRequestBuilder::append_animation_manifest_requests(
 			return false;
 		}
 
-		const std::filesystem::path directory_path =
-			(textures_root / entry.directory_path).lexically_normal();
-		if (!std::filesystem::is_directory(directory_path))
+		const std::filesystem::path source_path =
+			(textures_root / entry.source_path).lexically_normal();
+		const bool source_exists = entry.horizontal_strip
+			? std::filesystem::is_regular_file(source_path)
+			: std::filesystem::is_directory(source_path);
+		if (!source_exists)
 		{
-			ELYSIA_LOG_WARN("resource","Build animation requests failed: directory does not exist: "
-				<< directory_path);
+			ELYSIA_LOG_WARN("resource","Build animation requests failed: source does not exist or has the wrong type: "
+				<< source_path);
 			return false;
 		}
 
 		AtlasBuildRequest atlas_request;
 		atlas_request.atlas_key = entry.key;
-		atlas_request.directory_path = directory_path;
+		atlas_request.source_path = source_path;
 		atlas_request.frame_count = entry.frame_count;
+		atlas_request.source_type = entry.horizontal_strip
+			? AtlasSourceType::HorizontalStrip
+			: AtlasSourceType::FrameDirectory;
 
 		AnimationBuildRequest animation_request;
 		animation_request.animation_key = entry.key;
@@ -510,17 +516,33 @@ bool ResourceRequestBuilder::append_animated_entity_animation_requests(
 
 		AtlasBuildRequest atlas_request;
 		atlas_request.atlas_key = animation_key;
-		atlas_request.directory_path = directory_path;
 		atlas_request.frame_count = clip_config.frame_count;
-		const std::string frame_filename_prefix = make_animated_entity_frame_prefix(
-			character_config.asset_key,
-			clip_config.animation_name,
-			clip_config.is_segment,
-			clip_config.segment_index,
-			false
-		);
-		if (has_inferred_frame_sequence(directory_path, frame_filename_prefix))
-			atlas_request.frame_filename_prefix = frame_filename_prefix;
+		if (character_config.horizontal_strip)
+		{
+			atlas_request.source_type = AtlasSourceType::HorizontalStrip;
+			atlas_request.source_path = (
+				directory_path / (clip_config.animation_name + ".png")
+			).lexically_normal();
+			if (!std::filesystem::is_regular_file(atlas_request.source_path))
+			{
+				ELYSIA_LOG_WARN("resource","Build resource requests failed: horizontal strip does not exist: "
+					<< atlas_request.source_path);
+				return false;
+			}
+		}
+		else
+		{
+			atlas_request.source_path = directory_path;
+			const std::string frame_filename_prefix = make_animated_entity_frame_prefix(
+				character_config.asset_key,
+				clip_config.animation_name,
+				clip_config.is_segment,
+				clip_config.segment_index,
+				false
+			);
+			if (has_inferred_frame_sequence(directory_path, frame_filename_prefix))
+				atlas_request.frame_filename_prefix = frame_filename_prefix;
+		}
 
 		AnimationBuildRequest animation_request;
 		animation_request.animation_key = animation_key;
@@ -628,7 +650,7 @@ bool ResourceRequestBuilder::append_animated_entity_effect_requests(
 
 		AtlasBuildRequest atlas_request;
 		atlas_request.atlas_key = animation_key;
-		atlas_request.directory_path = directory_path;
+		atlas_request.source_path = directory_path;
 		atlas_request.frame_count = playback_config.frame_count;
 		const std::string frame_filename_prefix = make_animated_entity_frame_prefix(
 			character_config.asset_key,

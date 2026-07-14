@@ -84,7 +84,7 @@ bool AnimatedEntityContentLoader::load(const std::filesystem::path& path, elysia
 	if (!capabilities)
 	{
 		for (const auto& entity : entity_manifest.entities)
-			content.entities.push_back({entity.id, entity.asset_key, {}, {}});
+			content.entities.push_back({entity.id, entity.asset_key, {}, {}, entity.horizontal_strip});
 		return true;
 	}
 	for (auto it=capabilities->begin();it!=capabilities->end();++it) if (it.key()!="animations"&&it.key()!="textures"&&it.key()!="audio"&&it.key()!="effects") { error="Animated entity content failed: unknown capability: "+it.key(); return false; }
@@ -116,7 +116,13 @@ bool AnimatedEntityContentLoader::load(const std::filesystem::path& path, elysia
 		if ((has_animations || capabilities->contains("textures"))
 			&& !resolve_entity_texture_root(texture_root_template, entity.asset_key, entity_texture_root, error))
 			return false;
-		content.entities.push_back({entity.id, entity.asset_key, std::move(entity_texture_root), audio_root});
+		content.entities.push_back({
+			entity.id,
+			entity.asset_key,
+			std::move(entity_texture_root),
+			audio_root,
+			entity.horizontal_strip
+		});
 	}
 
 	if (capabilities->contains("textures"))

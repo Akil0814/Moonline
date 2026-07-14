@@ -51,10 +51,29 @@ bool AtlasBuildPreparer::expand_build_request(
 		return false;
 	}
 
-	if (!std::filesystem::is_directory(request.directory_path))
+	if (request.source_type == AtlasSourceType::HorizontalStrip)
+	{
+		if (!std::filesystem::is_regular_file(request.source_path))
+		{
+			ELYSIA_LOG_WARN("resource","Expand atlas build request failed: horizontal strip does not exist: "
+				<< request.source_path);
+			return false;
+		}
+
+		AtlasFramePrepareTask task;
+		task.atlas_key = request.atlas_key;
+		task.frame_path = request.source_path;
+		task.frame_index = 0;
+		task.expected_frame_count = request.frame_count;
+		task.source_type = request.source_type;
+		out_tasks.push_back(std::move(task));
+		return true;
+	}
+
+	if (!std::filesystem::is_directory(request.source_path))
 	{
 		ELYSIA_LOG_WARN("resource","Expand atlas build request failed: directory does not exist: "
-			<< request.directory_path);
+			<< request.source_path);
 		return false;
 	}
 
@@ -65,7 +84,7 @@ bool AtlasBuildPreparer::expand_build_request(
 		for (size_t index = 0; index < request.frame_count; ++index)
 		{
 			std::filesystem::path frame_path = make_frame_path(
-				request.directory_path,
+				request.source_path,
 				request.frame_filename_prefix,
 				index
 			);
@@ -82,7 +101,7 @@ bool AtlasBuildPreparer::expand_build_request(
 	else
 	{
 		for (const std::filesystem::directory_entry& entry :
-			std::filesystem::directory_iterator(request.directory_path))
+			std::filesystem::directory_iterator(request.source_path))
 		{
 			if (!entry.is_regular_file() || !is_png_file(entry.path()))
 				continue;
@@ -116,6 +135,7 @@ bool AtlasBuildPreparer::expand_build_request(
 		task.frame_path = frame_paths[index];
 		task.frame_index = index;
 		task.expected_frame_count = request.frame_count;
+		task.source_type = request.source_type;
 		out_tasks.push_back(std::move(task));
 	}
 
