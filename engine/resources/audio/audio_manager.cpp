@@ -78,9 +78,19 @@ bool AudioManager::store_sound(const std::string& key, Mix_Chunk* sound)
 
 Mix_Chunk* AudioManager::find_sound(const std::string_view& key) const
 {
+	if (key.empty())
+	{
+		ELYSIA_LOG_WARN("resource","Find sound failed: key is empty.");
+		return nullptr;
+	}
+
 	SoundPool::const_iterator iterator = _sound_pool.find(std::string(key));
 	if (iterator == _sound_pool.end())
+	{
+		ELYSIA_LOG_WARN("resource","Find sound failed: resource does not exist: "
+			<< key);
 		return nullptr;
+	}
 
 	return iterator->second;
 }
@@ -161,9 +171,19 @@ bool AudioManager::store_music(const std::string& key, Mix_Music* music)
 
 Mix_Music* AudioManager::find_music(const std::string_view& key) const
 {
+	if (key.empty())
+	{
+		ELYSIA_LOG_WARN("resource","Find music failed: key is empty.");
+		return nullptr;
+	}
+
 	MusicPool::const_iterator iterator = _music_pool.find(std::string(key));
 	if (iterator == _music_pool.end())
+	{
+		ELYSIA_LOG_WARN("resource","Find music failed: resource does not exist: "
+			<< key);
 		return nullptr;
+	}
 
 	return iterator->second;
 }

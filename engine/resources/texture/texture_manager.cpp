@@ -28,9 +28,19 @@ bool TextureManager::store_texture(const std::string& key, TexturePtr texture)
 
 SDL_Texture* TextureManager::find_texture(const std::string_view& key) const
 {
+	if (key.empty())
+	{
+		ELYSIA_LOG_WARN("resource","Find texture failed: key is empty.");
+		return nullptr;
+	}
+
 	TexturePool::const_iterator iterator = _texture_pool.find(std::string(key));
 	if (iterator == _texture_pool.end())
+	{
+		ELYSIA_LOG_WARN("resource","Find texture failed: resource does not exist: "
+			<< key);
 		return nullptr;
+	}
 
 	return iterator->second.get();
 }

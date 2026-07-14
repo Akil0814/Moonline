@@ -78,9 +78,19 @@ bool FontManager::store_font(const std::string& key, TTF_Font* font)
 
 TTF_Font* FontManager::find_font(const std::string_view& key) const
 {
+	if (key.empty())
+	{
+		ELYSIA_LOG_WARN("resource","Find font failed: key is empty.");
+		return nullptr;
+	}
+
 	FontPool::const_iterator iterator = _font_pool.find(std::string(key));
 	if (iterator == _font_pool.end())
+	{
+		ELYSIA_LOG_WARN("resource","Find font failed: resource does not exist: "
+			<< key);
 		return nullptr;
+	}
 
 	return iterator->second;
 }

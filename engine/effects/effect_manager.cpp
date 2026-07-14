@@ -209,6 +209,16 @@ bool EffectManager::spawn_animation_effect(const AnimationEffectSpawnRequest& re
 	return false;
 }
 
+elysia::number::DigitCache* EffectManager::digit_cache(EffectDigitColor color)
+{
+	return _effect_digit_cache.digit_cache(color);
+}
+
+void EffectManager::reset_digit_caches() noexcept
+{
+	_effect_digit_cache.reset();
+}
+
 void EffectManager::set_active_scene(elysia::scene::Scene* scene) noexcept
 {
 	_active_scene = scene;

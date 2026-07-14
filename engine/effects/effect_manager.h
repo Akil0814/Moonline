@@ -1,6 +1,7 @@
 #pragma once
 
 #include "animation_effect.h"
+#include "number/effect_digit_cache.h"
 #include "../resources/resource_types.h"
 #include "../tools/singleton.h"
 
@@ -72,6 +73,8 @@ public:
 	const AnimationEffectDefinition* find_animation_effect_definition(const std::string_view& key) const;
 	std::unique_ptr<AnimationEffect> create_animation_effect(const AnimationEffectSpawnRequest& request) const;
 	bool spawn_animation_effect(const AnimationEffectSpawnRequest& request) const;
+	[[nodiscard]] elysia::number::DigitCache* digit_cache(EffectDigitColor color);
+	void reset_digit_caches() noexcept;
 
 private:
 	friend class elysia::scene::SceneManager;
@@ -80,6 +83,7 @@ private:
 	void clear_active_scene(const elysia::scene::Scene* scene) noexcept;
 
 	std::unordered_map<std::string, AnimationEffectDefinition> _animation_effect_definitions;
+	EffectDigitCache _effect_digit_cache;
 	elysia::scene::Scene* _active_scene = nullptr;
 };
 

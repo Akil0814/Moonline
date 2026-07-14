@@ -9,6 +9,7 @@
 #include "../engine/bootstrap/bootstrapper.h"
 #include "../engine/config/config_service.h"
 #include "../engine/core/time.h"
+#include "../engine/effects/effect_manager.h"
 #include "../engine/localization/localization_manager.h"
 #include "../engine/resources/resource_manager.h"
 #include "../engine/tools/logger.h"
@@ -317,6 +318,7 @@ void Application::shutdown()
 	_input_system.shutdown();
 	_scene_manager.detach(this);
 	_scene_manager.shutdown();
+	elysia::effects::EffectManager::instance()->reset_digit_caches();
 	elysia::localization::LocalizationManager::instance()->shutdown();
 	if (_settings_handler_registered)
 	{

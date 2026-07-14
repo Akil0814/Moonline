@@ -171,9 +171,19 @@ bool AtlasManager::commit_prepared_frame(
 
 Atlas* AtlasManager::find_atlas(const std::string_view& key) const
 {
+	if (key.empty())
+	{
+		ELYSIA_LOG_WARN("resource","Find atlas failed: key is empty.");
+		return nullptr;
+	}
+
 	AtlasPool::const_iterator iterator = _atlas_pool.find(std::string(key));
 	if (iterator == _atlas_pool.end())
+	{
+		ELYSIA_LOG_WARN("resource","Find atlas failed: resource does not exist: "
+			<< key);
 		return nullptr;
+	}
 
 	return iterator->second.get();
 }

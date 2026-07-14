@@ -1437,6 +1437,53 @@ void test_logger_console_sink()
             && captured.messages.front().find("[WARN]") != std::string::npos,
         "recoverable resource request failures must log at Warn level");
 
+    resources::ResourceManager* resource_manager = resources::ResourceManager::instance();
+    resource_manager->clear();
+    auto require_missing_resource_logs = [&](const std::string& resource_type,auto&& find_resource)
+    {
+        captured.messages.clear();
+        require(find_resource("") == nullptr,
+            "an empty resource key must return nullptr");
+        require(captured.messages.size() == 1
+                && captured.messages.front().find("[WARN]") != std::string::npos
+                && captured.messages.front().find("[resource]") != std::string::npos
+                && captured.messages.front().find(
+                    "Find " + resource_type + " failed: key is empty.") != std::string::npos,
+            "an empty resource key must emit exactly one resource warning");
+
+        captured.messages.clear();
+        const std::string missing_key = "missing." + resource_type;
+        require(find_resource(missing_key) == nullptr,
+            "a missing resource key must return nullptr");
+        require(captured.messages.size() == 1
+                && captured.messages.front().find("[WARN]") != std::string::npos
+                && captured.messages.front().find("[resource]") != std::string::npos
+                && captured.messages.front().find(
+                    "Find " + resource_type + " failed: resource does not exist: "
+                    + missing_key) != std::string::npos,
+            "a missing resource key must emit exactly one resource warning containing its key");
+    };
+    require_missing_resource_logs("texture",[&](const std::string_view key)
+    {
+        return resource_manager->find_texture(key);
+    });
+    require_missing_resource_logs("font",[&](const std::string_view key)
+    {
+        return resource_manager->find_font(key);
+    });
+    require_missing_resource_logs("sound",[&](const std::string_view key)
+    {
+        return resource_manager->find_sound(key);
+    });
+    require_missing_resource_logs("music",[&](const std::string_view key)
+    {
+        return resource_manager->find_music(key);
+    });
+    require_missing_resource_logs("atlas",[&](const std::string_view key)
+    {
+        return resource_manager->find_atlas(key);
+    });
+
     captured.messages.clear();
     loading::ConfigLoadPipeline config_pipeline;
     loading::ConfigLoadResult config_result;
