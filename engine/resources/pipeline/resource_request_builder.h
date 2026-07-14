@@ -33,26 +33,26 @@ public:
 		const elysia::io::EffectManifest& effect_manifest,
 		std::vector<EffectBuildRequest>& effect_build_requests
 	) const;
-	bool append_character_texture_requests(
-		const elysia::io::CharacterConfig& character_config,
-		const elysia::io::CharacterTextureLayout& texture_layout,
+	bool append_animated_entity_texture_requests(
+		const elysia::io::AnimatedEntityResourceConfig& entity_config,
+		const elysia::io::EntityTextureLayout& texture_layout,
 		std::vector<TextureLoadRequest>& texture_load_requests
 	) const;
-	bool append_character_audio_requests(
-		const elysia::io::CharacterConfig& character_config,
-		const elysia::io::CharacterAudioLayout& audio_layout,
+	bool append_animated_entity_audio_requests(
+		const elysia::io::AnimatedEntityResourceConfig& entity_config,
+		const elysia::io::EntityAudioLayout& audio_layout,
 		std::vector<SoundLoadRequest>& sound_load_requests
 	) const;
-	bool append_character_animation_requests(
-		const elysia::io::CharacterConfig& character_config,
+	bool append_animated_entity_animation_requests(
+		const elysia::io::AnimatedEntityResourceConfig& entity_config,
 		const elysia::io::AnimationConfig& animation_config,
 		std::vector<AtlasBuildRequest>& atlas_build_requests,
 		std::vector<AnimationBuildRequest>& animation_build_requests
 	) const;
-	bool append_character_effect_requests(
-		const elysia::io::CharacterConfig& character_config,
+	bool append_animated_entity_effect_requests(
+		const elysia::io::AnimatedEntityResourceConfig& entity_config,
 		const elysia::io::AnimationConfig& animation_config,
-		const elysia::io::CharacterEffectLayout& effect_layout,
+		const elysia::io::AnimationEffectLayout& effect_layout,
 		std::vector<AtlasBuildRequest>& atlas_build_requests,
 		std::vector<AnimationBuildRequest>& animation_build_requests,
 		std::vector<EffectBuildRequest>& effect_build_requests

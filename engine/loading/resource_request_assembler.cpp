@@ -36,14 +36,14 @@ bool ResourceRequestAssembler::assemble(
 
 	if (config_result.characters)
 	{
-		const ConfigLoadResult::CharactersContent& characters = *config_result.characters;
-		for (const elysia::io::CharacterAnimationContentEntry& entry : characters.animation_entries)
+		const elysia::io::AnimatedEntityContent& characters = config_result.characters->content;
+		for (const elysia::io::AnimatedEntityAnimationContentEntry& entry : characters.animation_entries)
 		{
 		const size_t animation_atlas_count_before = out_plan.atlas_build_requests().size();
 		const size_t animation_count_before = out_plan.animation_build_requests().size();
 
-		if (!request_builder.append_character_animation_requests(
-			entry.character_config,
+		if (!request_builder.append_animated_entity_animation_requests(
+			entry.entity_config,
 			entry.animation_config,
 			out_plan.atlas_build_requests(),
 			out_plan.animation_build_requests()))
@@ -61,10 +61,10 @@ bool ResourceRequestAssembler::assemble(
 		const size_t effect_animation_count_before = out_plan.animation_build_requests().size();
 		const size_t effect_count_before = out_plan.effect_build_requests().size();
 
-		if (!request_builder.append_character_effect_requests(
-			entry.character_config,
+		if (characters.effect_layout && !request_builder.append_animated_entity_effect_requests(
+			entry.entity_config,
 			entry.animation_config,
-			characters.effect_layout,
+			*characters.effect_layout,
 			out_plan.atlas_build_requests(),
 			out_plan.animation_build_requests(),
 			out_plan.effect_build_requests()))
@@ -94,12 +94,12 @@ bool ResourceRequestAssembler::assemble(
 
 	if (config_result.characters)
 	{
-		const ConfigLoadResult::CharactersContent& characters = *config_result.characters;
-		for (const elysia::io::CharacterAnimationContentEntry& entry : characters.animation_entries)
+		const elysia::io::AnimatedEntityContent& characters = config_result.characters->content;
+		if (characters.texture_layout) for (const elysia::io::AnimatedEntityResourceConfig& entry : characters.entities)
 		{
-			if (!request_builder.append_character_texture_requests(
-			entry.character_config,
-			characters.texture_layout,
+			if (!request_builder.append_animated_entity_texture_requests(
+			entry,
+			*characters.texture_layout,
 			out_plan.texture_requests()))
 			{
 				out_plan.clear();
@@ -133,12 +133,12 @@ bool ResourceRequestAssembler::assemble(
 
 	if (config_result.characters)
 	{
-		const ConfigLoadResult::CharactersContent& characters = *config_result.characters;
-		for (const elysia::io::CharacterAnimationContentEntry& entry : characters.animation_entries)
+		const elysia::io::AnimatedEntityContent& characters = config_result.characters->content;
+		if (characters.audio_layout) for (const elysia::io::AnimatedEntityResourceConfig& entry : characters.entities)
 		{
-			if (!request_builder.append_character_audio_requests(
-			entry.character_config,
-			characters.audio_layout,
+			if (!request_builder.append_animated_entity_audio_requests(
+			entry,
+			*characters.audio_layout,
 			out_plan.sound_requests()))
 			{
 				out_plan.clear();

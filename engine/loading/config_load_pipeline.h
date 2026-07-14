@@ -19,10 +19,7 @@ struct ConfigLoadResult
 
 	struct CharactersContent
 	{
-		elysia::io::CharacterEffectLayout effect_layout;
-		elysia::io::CharacterTextureLayout texture_layout;
-		elysia::io::CharacterAudioLayout audio_layout;
-		std::vector<elysia::io::CharacterAnimationContentEntry> animation_entries;
+		elysia::io::AnimatedEntityContent content;
 	};
 
 	std::optional<CharactersContent> characters;

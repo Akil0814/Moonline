@@ -1,0 +1,14 @@
+{
+  "entities": "configs/enemy/enemy_manifest.json",
+  "resources": {
+    "texture_root": "textures/enemy/normal",
+    "animation_config_template": "configs/enemy/normal/{asset_key}_animation_info.json"
+  },
+  "capabilities": {
+    "animations": {
+      "layouts": {
+        "normal": "configs/enemy/enemy_general_animation_layout.json"
+      }
+    }
+  }
+}

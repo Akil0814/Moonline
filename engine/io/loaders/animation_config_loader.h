@@ -13,7 +13,7 @@ class AnimationConfigLoader
 public:
 	bool load(
 		const std::filesystem::path& animation_config_path,
-		const CharacterAnimationLayout& layout,
+		const AnimationLayout& layout,
 		AnimationConfig& config
 	) const;
 
@@ -23,7 +23,7 @@ private:
 		bool is_segment,
 		size_t segment_index,
 		const json& clip_node,
-		const CharacterAnimationLayout& layout
+		const AnimationLayout& layout
 	) const;
 
 	std::filesystem::path resolve_segment_path(
@@ -36,7 +36,7 @@ private:
 		bool is_segment,
 		size_t segment_index,
 		const json& clip_node,
-		const CharacterAnimationLayout& layout,
+		const AnimationLayout& layout,
 		AnimationConfig& config
 	) const;
 };

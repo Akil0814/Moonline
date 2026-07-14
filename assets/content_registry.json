@@ -14,13 +14,7 @@
       "configs": "configs/manifests/config_manifest.json"
     },
     "additional": {
-      "characters": {
-        "manifest": "configs/character/characters_manifest.json",
-        "animations": "configs/character/layouts/character_animation_layout.json",
-        "audio": "configs/character/layouts/character_audio_layout.json",
-        "effects": "configs/character/layouts/character_effect_layout.json",
-        "textures": "configs/character/layouts/character_texture_layout.json"
-      }
+      "characters": "configs/character/character_content_manifest.json"
     }
   }
 }

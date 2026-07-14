@@ -8,7 +8,7 @@ namespace elysia::io
 {
 bool AnimationConfigLoader::load(
 	const std::filesystem::path& animation_config_path,
-	const CharacterAnimationLayout& layout,
+	const AnimationLayout& layout,
 	AnimationConfig& config
 ) const
 {
@@ -96,7 +96,7 @@ std::filesystem::path AnimationConfigLoader::resolve_clip_path(
 	bool is_segment,
 	size_t segment_index,
 	const json& clip_node,
-	const CharacterAnimationLayout& layout
+	const AnimationLayout& layout
 ) const
 {
 	if (clip_node.contains("override_path"))
@@ -111,7 +111,7 @@ std::filesystem::path AnimationConfigLoader::resolve_clip_path(
 		return clip_node.at("override_path").get<std::string>();
 	}
 
-	std::unordered_map<std::string, CharacterAnimationLayoutEntry>::const_iterator iterator =
+	std::unordered_map<std::string, AnimationLayoutEntry>::const_iterator iterator =
 		layout.animations.find(animation_name);
 	if (iterator == layout.animations.end())
 	{
@@ -120,7 +120,7 @@ std::filesystem::path AnimationConfigLoader::resolve_clip_path(
 		return {};
 	}
 
-	const CharacterAnimationLayoutEntry& entry = iterator->second;
+	const AnimationLayoutEntry& entry = iterator->second;
 	if (is_segment)
 	{
 		if (!entry.has_segment_path)
@@ -166,7 +166,7 @@ bool AnimationConfigLoader::append_clip(
 	bool is_segment,
 	size_t segment_index,
 	const json& clip_node,
-	const CharacterAnimationLayout& layout,
+	const AnimationLayout& layout,
 	AnimationConfig& config
 ) const
 {

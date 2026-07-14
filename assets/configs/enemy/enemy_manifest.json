@@ -1,10 +1,16 @@
 {
-  "enemys": [ 
+  "entities": [
     {
-      "id": "arcueid_brunestud",
-      "type":"",
-      "asset_key": "ArcueidBrunestud",
-      "enabled": false
+      "id": "rat", "asset_key": "Rat", "enabled": true, "animation_layout": "normal"
+    },
+    {
+      "id": "skeleton", "asset_key": "Skeleton", "enabled": true, "animation_layout": "normal"
+    },
+    {
+      "id": "skullwolf", "asset_key": "Skullwolf", "enabled": true, "animation_layout": "normal"
+    },
+    {
+      "id": "slime", "asset_key": "Slime", "enabled": true, "animation_layout": "normal"
     }
   ]
 }

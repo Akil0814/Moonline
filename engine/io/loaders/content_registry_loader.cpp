@@ -201,12 +201,20 @@ bool ContentRegistryLoader::load(
 
 	for (json::const_iterator item = additional.begin(); item != additional.end(); ++item)
 	{
-		if (!item.value().is_object())
+		if (!item.value().is_string())
 		{
-			ELYSIA_LOG_WARN("io", "Load content registry failed: additional module config is not an object: " << item.key());
+			ELYSIA_LOG_WARN("io", "Load content registry failed: additional module manifest is not a path string: " << item.key());
 			return false;
 		}
-		content_registry.additional_modules.emplace(item.key(), item.value());
+
+		const std::filesystem::path manifest_path =
+			path_manager->to_asset_path(item.value().get<std::string>());
+		if (!std::filesystem::is_regular_file(manifest_path))
+		{
+			ELYSIA_LOG_WARN("io", "Load content registry failed: additional module manifest does not exist: " << manifest_path);
+			return false;
+		}
+		content_registry.additional_module_manifests.emplace(item.key(), manifest_path);
 	}
 
 	return true;

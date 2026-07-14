@@ -1,19 +1,22 @@
 {
-  "characters": [
+  "entities": [
     {
       "id": "ryougi_shiki",
       "asset_key": "RyougiShiki",
-      "enabled": true
+      "enabled": true,
+      "animation_layout": "fighter"
     },
     {
       "id": "aozaki_aoko",
       "asset_key": "AozakiAoko",
-      "enabled": true
+      "enabled": true,
+      "animation_layout": "fighter"
     },   
     {
       "id": "arcueid_brunestud",
       "asset_key": "ArcueidBrunestud",
-      "enabled": true
+      "enabled": true,
+      "animation_layout": "fighter"
     }
   ]
 }

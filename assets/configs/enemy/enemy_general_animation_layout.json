@@ -1,7 +1,9 @@
 {
-  "idle": "",
-  "attack": "",
-  "hurt": "",
-  "move": "",
-  "death": ""
+  "animations": {
+    "idle": { "path": "idle" },
+    "move": { "path": "move" },
+    "attack": { "path": "attack" },
+    "hurt": { "path": "hurt" },
+    "death": { "path": "death" }
+  }
 }

@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -35,7 +36,7 @@ struct ContentRegistry
 {
 	BootstrapPaths bootstrap;
 	CoreManifestPaths required;
-	std::unordered_map<std::string, json> additional_modules;
+std::unordered_map<std::string, std::filesystem::path> additional_module_manifests;
 };
 
 struct FontManifestEntry
@@ -105,27 +106,27 @@ struct EffectManifest
 	std::vector<EffectManifestEntry> effects;
 };
 
-struct CharacterManifestEntry
+struct EntityManifestEntry
 {
 	std::string id;
 	std::string asset_key;
-	std::filesystem::path config_path;
+	std::string animation_layout;
 };
 
-struct CharacterManifest
+struct EntityManifest
 {
-	std::vector<CharacterManifestEntry> characters;
+	std::vector<EntityManifestEntry> entities;
 };
 
-struct CharacterConfig
+struct AnimatedEntityResourceConfig
 {
 	std::string id;
 	std::string asset_key;
 	std::filesystem::path texture_root;
-	std::filesystem::path animation_config_path;
+	std::filesystem::path audio_root;
 };
 
-struct CharacterAnimationLayoutEntry
+struct AnimationLayoutEntry
 {
 	std::filesystem::path path;
 	std::filesystem::path segment_path;
@@ -133,53 +134,53 @@ struct CharacterAnimationLayoutEntry
 	bool has_segment_path = false;
 };
 
-struct CharacterAnimationLayout
+struct AnimationLayout
 {
-	std::unordered_map<std::string, CharacterAnimationLayoutEntry> animations;
+	std::unordered_map<std::string, AnimationLayoutEntry> animations;
 };
 
-struct CharacterEffectPlaybackConfig
+struct AnimationEffectPlaybackConfig
 {
 	size_t frame_count = 0;
 	double fps = 10.0;
 	bool loop = true;
 };
 
-struct CharacterEffectLayoutEntry
+struct AnimationEffectLayoutEntry
 {
 	std::filesystem::path path;
 	std::filesystem::path segment_path;
 	bool has_path = false;
 	bool has_segment_path = false;
-	CharacterEffectPlaybackConfig playback;
-	std::vector<CharacterEffectPlaybackConfig> segments;
+	AnimationEffectPlaybackConfig playback;
+	std::vector<AnimationEffectPlaybackConfig> segments;
 };
 
-struct CharacterEffectLayout
+struct AnimationEffectLayout
 {
-	std::unordered_map<std::string, CharacterEffectLayoutEntry> effects;
+	std::unordered_map<std::string, AnimationEffectLayoutEntry> effects;
 };
 
-struct CharacterTextureLayoutEntry
-{
-	std::string key;
-	std::filesystem::path path;
-};
-
-struct CharacterTextureLayout
-{
-	std::vector<CharacterTextureLayoutEntry> textures;
-};
-
-struct CharacterAudioLayoutEntry
+struct EntityTextureLayoutEntry
 {
 	std::string key;
 	std::filesystem::path path;
 };
 
-struct CharacterAudioLayout
+struct EntityTextureLayout
 {
-	std::vector<CharacterAudioLayoutEntry> sounds;
+	std::vector<EntityTextureLayoutEntry> textures;
+};
+
+struct EntityAudioLayoutEntry
+{
+	std::string key;
+	std::filesystem::path path;
+};
+
+struct EntityAudioLayout
+{
+	std::vector<EntityAudioLayoutEntry> sounds;
 };
 
 struct AnimationClipConfig
@@ -198,10 +199,19 @@ struct AnimationConfig
 	std::vector<AnimationClipConfig> clips;
 };
 
-struct CharacterAnimationContentEntry
+struct AnimatedEntityAnimationContentEntry
 {
-	CharacterConfig character_config;
+	AnimatedEntityResourceConfig entity_config;
 	AnimationConfig animation_config;
+};
+
+struct AnimatedEntityContent
+{
+	std::vector<AnimatedEntityResourceConfig> entities;
+	std::vector<AnimatedEntityAnimationContentEntry> animation_entries;
+	std::optional<EntityTextureLayout> texture_layout;
+	std::optional<EntityAudioLayout> audio_layout;
+	std::optional<AnimationEffectLayout> effect_layout;
 };
 
 

@@ -30,7 +30,7 @@ std::filesystem::path resolve_segment_path(
 	return (segment_path / segment_number).lexically_normal();
 }
 
-std::string make_character_frame_prefix(
+std::string make_animated_entity_frame_prefix(
 	const std::string& asset_key,
 	const std::string& animation_name,
 	bool is_segment,
@@ -351,9 +351,9 @@ bool ResourceRequestBuilder::append_effect_manifest_requests(
 	return true;
 }
 
-bool ResourceRequestBuilder::append_character_texture_requests(
-	const elysia::io::CharacterConfig& character_config,
-	const elysia::io::CharacterTextureLayout& texture_layout,
+bool ResourceRequestBuilder::append_animated_entity_texture_requests(
+	const elysia::io::AnimatedEntityResourceConfig& character_config,
+	const elysia::io::EntityTextureLayout& texture_layout,
 	std::vector<TextureLoadRequest>& texture_load_requests
 ) const
 {
@@ -370,7 +370,7 @@ bool ResourceRequestBuilder::append_character_texture_requests(
 		return false;
 	}
 
-	for (const elysia::io::CharacterTextureLayoutEntry& entry : texture_layout.textures)
+	for (const elysia::io::EntityTextureLayoutEntry& entry : texture_layout.textures)
 	{
 		const std::string base_key = character_config.id + "." + entry.key;
 		const std::filesystem::path resolved_path =
@@ -412,9 +412,9 @@ bool ResourceRequestBuilder::append_character_texture_requests(
 	return true;
 }
 
-bool ResourceRequestBuilder::append_character_audio_requests(
-	const elysia::io::CharacterConfig& character_config,
-	const elysia::io::CharacterAudioLayout& audio_layout,
+bool ResourceRequestBuilder::append_animated_entity_audio_requests(
+	const elysia::io::AnimatedEntityResourceConfig& character_config,
+	const elysia::io::EntityAudioLayout& audio_layout,
 	std::vector<SoundLoadRequest>& sound_load_requests
 ) const
 {
@@ -431,8 +431,8 @@ bool ResourceRequestBuilder::append_character_audio_requests(
 		return false;
 	}
 
-	const std::filesystem::path audio_root = elysia::io::PathManager::instance()->audio() / "character" / character_config.asset_key;
-	for (const elysia::io::CharacterAudioLayoutEntry& entry : audio_layout.sounds)
+	const std::filesystem::path audio_root = character_config.audio_root / character_config.asset_key;
+	for (const elysia::io::EntityAudioLayoutEntry& entry : audio_layout.sounds)
 	{
 		if (entry.key.empty())
 		{
@@ -463,8 +463,8 @@ bool ResourceRequestBuilder::append_character_audio_requests(
 
 	return true;
 }
-bool ResourceRequestBuilder::append_character_animation_requests(
-	const elysia::io::CharacterConfig& character_config,
+bool ResourceRequestBuilder::append_animated_entity_animation_requests(
+	const elysia::io::AnimatedEntityResourceConfig& character_config,
 	const elysia::io::AnimationConfig& animation_config,
 	std::vector<AtlasBuildRequest>& atlas_build_requests,
 	std::vector<AnimationBuildRequest>& animation_build_requests
@@ -510,7 +510,7 @@ bool ResourceRequestBuilder::append_character_animation_requests(
 		atlas_request.atlas_key = animation_key;
 		atlas_request.directory_path = directory_path;
 		atlas_request.frame_count = clip_config.frame_count;
-		const std::string frame_filename_prefix = make_character_frame_prefix(
+		const std::string frame_filename_prefix = make_animated_entity_frame_prefix(
 			character_config.asset_key,
 			clip_config.animation_name,
 			clip_config.is_segment,
@@ -534,10 +534,10 @@ bool ResourceRequestBuilder::append_character_animation_requests(
 	return true;
 }
 
-bool ResourceRequestBuilder::append_character_effect_requests(
-	const elysia::io::CharacterConfig& character_config,
+bool ResourceRequestBuilder::append_animated_entity_effect_requests(
+	const elysia::io::AnimatedEntityResourceConfig& character_config,
 	const elysia::io::AnimationConfig& animation_config,
-	const elysia::io::CharacterEffectLayout& effect_layout,
+	const elysia::io::AnimationEffectLayout& effect_layout,
 	std::vector<AtlasBuildRequest>& atlas_build_requests,
 	std::vector<AnimationBuildRequest>& animation_build_requests,
 	std::vector<EffectBuildRequest>& effect_build_requests
@@ -551,7 +551,7 @@ bool ResourceRequestBuilder::append_character_effect_requests(
 
 	for (const elysia::io::AnimationClipConfig& clip_config : animation_config.clips)
 	{
-		std::unordered_map<std::string, elysia::io::CharacterEffectLayoutEntry>::const_iterator effect_iterator =
+		std::unordered_map<std::string, elysia::io::AnimationEffectLayoutEntry>::const_iterator effect_iterator =
 			effect_layout.effects.find(clip_config.animation_name);
 		if (effect_iterator == effect_layout.effects.end())
 			continue;
@@ -563,9 +563,9 @@ bool ResourceRequestBuilder::append_character_effect_requests(
 			return false;
 		}
 
-		const elysia::io::CharacterEffectLayoutEntry& effect_entry = effect_iterator->second;
+		const elysia::io::AnimationEffectLayoutEntry& effect_entry = effect_iterator->second;
 		std::filesystem::path effect_relative_path;
-		elysia::io::CharacterEffectPlaybackConfig playback_config;
+		elysia::io::AnimationEffectPlaybackConfig playback_config;
 
 		if (clip_config.is_segment)
 		{
@@ -628,7 +628,7 @@ bool ResourceRequestBuilder::append_character_effect_requests(
 		atlas_request.atlas_key = animation_key;
 		atlas_request.directory_path = directory_path;
 		atlas_request.frame_count = playback_config.frame_count;
-		const std::string frame_filename_prefix = make_character_frame_prefix(
+		const std::string frame_filename_prefix = make_animated_entity_frame_prefix(
 			character_config.asset_key,
 			clip_config.animation_name,
 			clip_config.is_segment,

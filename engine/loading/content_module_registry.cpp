@@ -17,7 +17,7 @@ bool ContentModuleRegistry::load_additional_modules(
 	static const CharactersContentModule characters_module;
 	const std::array<const ContentModule*, 1> modules{ &characters_module };
 
-	for (const auto& [module_name, module_config] : content_registry.additional_modules)
+	for (const auto& [module_name, module_manifest_path] : content_registry.additional_module_manifests)
 	{
 		bool is_registered = false;
 		for (const ContentModule* module : modules)
@@ -38,11 +38,11 @@ bool ContentModuleRegistry::load_additional_modules(
 
 	for (const ContentModule* module : modules)
 	{
-		const auto config = content_registry.additional_modules.find(std::string(module->name()));
-		if (config == content_registry.additional_modules.end())
+		const auto manifest = content_registry.additional_module_manifests.find(std::string(module->name()));
+		if (manifest == content_registry.additional_module_manifests.end())
 			continue;
 
-		if (!module->load(config->second, result, error_message))
+		if (!module->load(manifest->second, result, error_message))
 			return false;
 	}
 

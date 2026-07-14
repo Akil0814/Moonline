@@ -5,11 +5,13 @@
 #include "../engine/io/loaders/content_registry_loader.h"
 #include "../engine/io/json/json_loader.h"
 #include "../engine/io/path/path_manager.h"
+#include "../engine/loading/animated_entity_content_loader.h"
 #include "../engine/loading/config_load_pipeline.h"
 #include "../engine/loading/resource_load_plan.h"
 #include "../engine/loading/resource_request_assembler.h"
 #include "../engine/resources/atlas/atlas.h"
 #include "../engine/resources/atlas/atlas_build_preparer.h"
+#include "../engine/resources/pipeline/resource_request_builder.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -114,7 +116,7 @@ int main()
 	require(content_registry.bootstrap.app_config == path_manager->to_config_path("global/app_config.json")
 		&& content_registry.bootstrap.preload_manifest == path_manager->to_config_path("manifests/preload_manifest.json"),
 		"content registry must resolve bootstrap paths");
-	require(content_registry.additional_modules.empty(),
+	require(content_registry.additional_module_manifests.empty(),
 		"content registry without additional modules must remain empty");
 	require(!content_registry_loader.load(
 		write_root("missing_bootstrap.json", R"({"manifests":{"required":{}}})"), content_registry),
@@ -170,11 +172,53 @@ int main()
 
 	elysia::loading::ConfigLoadResult invalid_module_config_result;
 	require(!config_load_pipeline.load(
-		write_registry("unknown_module.json", R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","configs":"configs/manifests/config_manifest.json"},"additional":{"unknown":{}}})"), invalid_module_config_result),
+		write_registry("unknown_module.json", R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","configs":"configs/manifests/config_manifest.json"},"additional":{"unknown":"configs/character/character_content_manifest.json"}})"), invalid_module_config_result),
 		"config pipeline must reject unknown additional modules");
 	require(!config_load_pipeline.load(
-		write_registry("incomplete_characters.json", R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","configs":"configs/manifests/config_manifest.json"},"additional":{"characters":{}}})"), invalid_module_config_result),
+		write_registry("incomplete_characters.json", R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","configs":"configs/manifests/config_manifest.json"},"additional":{"characters":"configs/manifests/config_manifest.json"}})"), invalid_module_config_result),
 		"config pipeline must reject incomplete characters module config");
+	const std::filesystem::path invalid_capability_path = registry_test_root / "effects_without_animations.json";
+	std::ofstream(invalid_capability_path) << R"({"entities":"configs/enemy/enemy_manifest.json","capabilities":{"effects":{"layout":"configs/character/layouts/character_effect_layout.json"}}})";
+	elysia::loading::AnimatedEntityContentLoader animated_entity_content_loader;
+	elysia::io::AnimatedEntityContent invalid_capability_content;
+	std::string invalid_capability_error;
+	require(!animated_entity_content_loader.load(invalid_capability_path, invalid_capability_content, invalid_capability_error),
+		"effects capability must require animations");
+	const std::filesystem::path roster_only_characters_path = registry_test_root / "roster_only_characters.json";
+	std::ofstream(roster_only_characters_path) << R"({"entities":"configs/character/characters_manifest.json"})";
+	elysia::io::AnimatedEntityContent roster_only_characters;
+	std::string roster_only_characters_error;
+	require(animated_entity_content_loader.load(
+		roster_only_characters_path, roster_only_characters, roster_only_characters_error)
+		&& roster_only_characters.entities.size() == 3
+		&& roster_only_characters.animation_entries.empty()
+		&& !roster_only_characters.texture_layout.has_value()
+		&& !roster_only_characters.audio_layout.has_value()
+		&& !roster_only_characters.effect_layout.has_value(),
+		"a characters module without capabilities must load its roster and skip resource requests");
+
+	elysia::io::AnimatedEntityContent enemy_content;
+	std::string enemy_error;
+	require(animated_entity_content_loader.load(
+		path_manager->to_config_path("enemy/enemy_content_manifest.json"), enemy_content, enemy_error),
+		"normal enemy content manifest must load through the generic entity loader");
+	require(enemy_content.animation_entries.size() == 4, "normal enemies must produce four animation entries");
+	elysia::resources::ResourceRequestBuilder generic_request_builder;
+	std::vector<elysia::resources::AtlasBuildRequest> enemy_atlas_requests;
+	std::vector<elysia::resources::AnimationBuildRequest> enemy_animation_requests;
+	for (const elysia::io::AnimatedEntityAnimationContentEntry& entry : enemy_content.animation_entries)
+		require(generic_request_builder.append_animated_entity_animation_requests(
+			entry.entity_config, entry.animation_config, enemy_atlas_requests, enemy_animation_requests),
+			"normal enemy animation requests must build through the generic entity API");
+	require(enemy_atlas_requests.size() == 20 && enemy_animation_requests.size() == 20,
+		"normal enemies must create five animations each");
+	const auto slime_attack = std::find_if(enemy_atlas_requests.begin(), enemy_atlas_requests.end(),
+		[](const elysia::resources::AtlasBuildRequest& request) { return request.atlas_key == "slime.attack"; });
+	require(slime_attack != enemy_atlas_requests.end()
+		&& slime_attack->frame_count == 19
+		&& slime_attack->frame_filename_prefix == "Slime_attack"
+		&& slime_attack->directory_path == path_manager->textures() / "enemy" / "normal" / "Slime" / "attack",
+		"enemy animation requests must infer their directory, frame count, and prefix");
 	std::filesystem::remove_all(registry_test_root);
 
 	elysia::loading::ResourceLoadPlan load_plan;

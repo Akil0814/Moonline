@@ -9,7 +9,7 @@ class CharactersContentModule final : public ContentModule
 public:
 	std::string_view name() const override;
 	bool load(
-		const elysia::io::json& module_config,
+		const std::filesystem::path& module_manifest_path,
 		ConfigLoadResult& result,
 		std::string& error_message
 	) const override;
