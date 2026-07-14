@@ -2,6 +2,7 @@
 
 #include "engine/io/json/json_loader.h"
 #include "engine/io/loaders/content_registry_loader.h"
+#include "engine/io/loaders/effect_definition_config_loader.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/loading/animated_entity_content_loader.h"
 #include "engine/loading/config_load_pipeline.h"
@@ -136,12 +137,20 @@ void test_registry_and_content_load_pipeline()
 		write_registry("incomplete_characters.json", R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","configs":"configs/manifests/config_manifest.json"},"additional":{"characters":"configs/manifests/config_manifest.json"}})"), invalid_module_config_result),
 		"config pipeline must reject incomplete characters module config");
 	const std::filesystem::path invalid_capability_path = registry_test_root / "effects_without_animations.json";
-	std::ofstream(invalid_capability_path) << R"({"entities":"configs/enemy/enemy_manifest.json","capabilities":{"effects":{"layout":"configs/character/layouts/character_effect_layout.json"}}})";
+	std::ofstream(invalid_capability_path) << R"({"entities":"configs/enemy/enemy_manifest.json","capabilities":{"effects":{"layout":"configs/character/layouts/character_effect_animation_layout.json"}}})";
 	elysia::loading::AnimatedEntityContentLoader animated_entity_content_loader;
 	elysia::io::AnimatedEntityContent invalid_capability_content;
 	std::string invalid_capability_error;
 	require(!animated_entity_content_loader.load(invalid_capability_path, invalid_capability_content, invalid_capability_error),
-		"effects capability must require animations");
+		"effects capability must reject the legacy singular layout field");
+	const auto invalid_effect_template_path = write_root("invalid_effect_template.json",
+		R"({"entities":"configs/character/characters_manifest.json","resources":{"texture_root":"textures/character/{asset_key}","effect_animation_config_template":"configs/character/fixed.json","effect_info_template":"configs/character/{asset_key}/effect_info.json"},"capabilities":{"effects":{"layouts":{"fighter":"configs/character/layouts/character_effect_animation_layout.json"}}}})");
+	require(!animated_entity_content_loader.load(invalid_effect_template_path, invalid_capability_content, invalid_capability_error),
+		"effect animation config template must contain the asset key placeholder");
+	const auto unknown_effect_layout_path = write_root("unknown_effect_layout.json",
+		R"({"entities":"configs/character/characters_manifest.json","resources":{"texture_root":"textures/character/{asset_key}","effect_animation_config_template":"configs/character/{asset_key}/effect_animation_info.json","effect_info_template":"configs/character/{asset_key}/effect_info.json"},"capabilities":{"effects":{"layouts":{"other":"configs/character/layouts/character_effect_animation_layout.json"}}}})");
+	require(!animated_entity_content_loader.load(unknown_effect_layout_path, invalid_capability_content, invalid_capability_error),
+		"entity animation layout key must exist in the effect animation layouts mapping");
 	const std::filesystem::path roster_only_characters_path = registry_test_root / "roster_only_characters.json";
 	std::ofstream(roster_only_characters_path) << R"({"entities":"configs/character/characters_manifest.json"})";
 	elysia::io::AnimatedEntityContent roster_only_characters;
@@ -150,10 +159,37 @@ void test_registry_and_content_load_pipeline()
 		roster_only_characters_path, roster_only_characters, roster_only_characters_error)
 		&& roster_only_characters.entities.size() == 3
 		&& roster_only_characters.animation_entries.empty()
+		&& roster_only_characters.effect_entries.empty()
 		&& !roster_only_characters.texture_layout.has_value()
-		&& !roster_only_characters.audio_layout.has_value()
-		&& !roster_only_characters.effect_layout.has_value(),
+		&& !roster_only_characters.audio_layout.has_value(),
 		"a characters module without capabilities must load its roster and skip resource requests");
+	require(config_result.characters->content.effect_entries.size() == 3,
+		"configured characters must load one effect animation and definition config per entity");
+	require(config_result.characters->content.effect_entries[0].animation_config.clips.size() == 7
+		&& config_result.characters->content.effect_entries[1].animation_config.clips.size() == 2
+		&& config_result.characters->content.effect_entries[2].animation_config.clips.size() == 10,
+		"per-character effect animation configs must preserve their actual configured clips");
+
+	elysia::io::AnimationConfig synthetic_animations;
+	synthetic_animations.clips.push_back({"source_animation", "unused", 1, 10.0, false, false, 0});
+	elysia::io::EffectDefinitionConfigLoader definition_loader;
+	elysia::io::EffectDefinitionConfig definition_config;
+	const auto valid_effect_info = write_root("valid_effect_info.json",
+		R"({"effects":{"logical_effect":{"animation":"source_animation","default_width":0,"default_height":0,"default_angle_degrees":15}}})");
+	require(definition_loader.load(valid_effect_info, synthetic_animations, definition_config)
+		&& definition_config.effects.size() == 1
+		&& definition_config.effects[0].effect_name == "logical_effect"
+		&& definition_config.effects[0].animation_name == "source_animation",
+		"effect info must allow a logical effect name to map to an existing animation name");
+	require(!definition_loader.load(write_root("missing_effect_animation.json",
+		R"({"effects":{"bad":{"animation":"missing"}}})"), synthetic_animations, definition_config),
+		"effect info must reject mappings to missing animations");
+	require(!definition_loader.load(write_root("invalid_effect_size.json",
+		R"({"effects":{"bad":{"animation":"source_animation","default_width":32}}})"), synthetic_animations, definition_config),
+		"effect info must require default width and height together");
+	require(!definition_loader.load(write_root("duplicate_effect_name.json",
+		R"({"effects":{"same":{"animation":"source_animation"},"same":{"animation":"source_animation"}}})"), synthetic_animations, definition_config),
+		"effect info must reject duplicate logical effect names");
 
 	elysia::io::AnimatedEntityContent enemy_content;
 	std::string enemy_error;

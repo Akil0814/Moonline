@@ -28,20 +28,23 @@ bool append_animated_entity_animation_requests(
 			<< (out_plan.atlas_build_requests().size() - animation_atlas_count_before)
 			<< ", animations=" << (out_plan.animation_build_requests().size() - animation_count_before));
 
-		if (!content.effect_layout)
-			continue;
-
-		const size_t effect_atlas_count_before = out_plan.atlas_build_requests().size();
-		const size_t effect_animation_count_before = out_plan.animation_build_requests().size();
+	}
+	for (const elysia::io::AnimatedEntityEffectContentEntry& entry : content.effect_entries)
+	{
+		const size_t atlas_count_before = out_plan.atlas_build_requests().size();
+		const size_t animation_count_before = out_plan.animation_build_requests().size();
 		const size_t effect_count_before = out_plan.animation_effect_build_requests().size();
-		if (!request_builder.append_animated_entity_effect_requests(
-			entry.entity_config, entry.animation_config, *content.effect_layout,
-			out_plan.atlas_build_requests(), out_plan.animation_build_requests(), out_plan.animation_effect_build_requests()))
+		if (!request_builder.append_animated_entity_animation_requests(
+			entry.entity_config, entry.animation_config,
+			out_plan.atlas_build_requests(), out_plan.animation_build_requests(),
+			elysia::resources::AnimatedEntityAnimationKind::Effect)
+			|| !request_builder.append_animated_entity_effect_definition_requests(
+				entry.entity_config, entry.animation_config, entry.effect_config,
+				out_plan.animation_build_requests(), out_plan.animation_effect_build_requests()))
 			return false;
-
 		ELYSIA_LOG("resource", "Animated entity effect requests built: atlases="
-			<< (out_plan.atlas_build_requests().size() - effect_atlas_count_before)
-			<< ", animations=" << (out_plan.animation_build_requests().size() - effect_animation_count_before)
+			<< (out_plan.atlas_build_requests().size() - atlas_count_before)
+			<< ", animations=" << (out_plan.animation_build_requests().size() - animation_count_before)
 			<< ", effects=" << (out_plan.animation_effect_build_requests().size() - effect_count_before));
 	}
 	return true;

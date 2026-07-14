@@ -3,6 +3,8 @@
   "resources": {
     "texture_root": "textures/character/{asset_key}",
     "animation_config_template": "configs/character/{asset_key}/animation_info.json",
+    "effect_animation_config_template": "configs/character/{asset_key}/effect_animation_info.json",
+    "effect_info_template": "configs/character/{asset_key}/effect_info.json",
     "audio_root": "audio/character"
   },
   "capabilities": {
@@ -13,6 +15,10 @@
     },
     "textures": { "layout": "configs/character/layouts/character_texture_layout.json" },
     "audio": { "layout": "configs/character/layouts/character_audio_layout.json" },
-    "effects": { "layout": "configs/character/layouts/character_effect_layout.json" }
+    "effects": {
+      "layouts": {
+        "fighter": "configs/character/layouts/character_effect_animation_layout.json"
+      }
+    }
   }
 }

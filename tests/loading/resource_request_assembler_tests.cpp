@@ -7,6 +7,7 @@
 #include "engine/loading/resource_load_plan.h"
 #include "engine/loading/resource_request_assembler.h"
 #include "engine/resources/atlas/atlas.h"
+#include "engine/resources/atlas/atlas_build_preparer.h"
 #include "tests/support/test_assertions.h"
 
 #include <algorithm>
@@ -137,7 +138,51 @@ void test_runtime_resource_request_assembly()
 			return request.effect_key == "aozaki_aoko.effect.attack_air.0";
 		});
 	require(aoko_no_effect_request == load_plan.animation_effect_build_requests().end(),
-		"Aoko no_effects markers must suppress effect requests");
+		"omitted Aoko melee animations must not create effect requests");
+	const size_t character_effect_count = static_cast<size_t>(std::count_if(
+		load_plan.animation_effect_build_requests().begin(), load_plan.animation_effect_build_requests().end(),
+		[](const elysia::resources::AnimationEffectBuildRequest& request)
+		{
+			return request.effect_key.starts_with("ryougi_shiki.effect.")
+				|| request.effect_key.starts_with("aozaki_aoko.effect.")
+				|| request.effect_key.starts_with("arcueid_brunestud.effect.");
+		}));
+	require(character_effect_count == 19,
+		"per-character effect info must add all nineteen configured character effects");
+	const auto aoko_ranged = std::find_if(load_plan.atlas_build_requests().begin(), load_plan.atlas_build_requests().end(),
+		[](const elysia::resources::AtlasBuildRequest& request) { return request.atlas_key == "aozaki_aoko.effect.attack_ranged_ground"; });
+	require(aoko_ranged != load_plan.atlas_build_requests().end()
+		&& aoko_ranged->frame_count == 31
+		&& aoko_ranged->frame_filename_prefix == "AozakiAoko_effects_attack_ranged_ground"
+		&& aoko_ranged->source_path == path_manager->textures() / "character" / "AozakiAoko" / "animation" / "effects" / "attack" / "ranged" / "ground",
+		"Aoko ranged effect animation must use its per-character frame count, path, and prefix");
+	const auto arcueid_segment = std::find_if(load_plan.atlas_build_requests().begin(), load_plan.atlas_build_requests().end(),
+		[](const elysia::resources::AtlasBuildRequest& request) { return request.atlas_key == "arcueid_brunestud.effect.attack_normal.2"; });
+	require(arcueid_segment != load_plan.atlas_build_requests().end()
+		&& arcueid_segment->frame_count == 29
+		&& arcueid_segment->frame_filename_prefix == "ArcueidBrunestud_effects_attack_normal_3",
+		"Arcueid segmented effect animation must use the effect naming profile");
+	const auto ryougi_ranged = std::find_if(load_plan.atlas_build_requests().begin(), load_plan.atlas_build_requests().end(),
+		[](const elysia::resources::AtlasBuildRequest& request) { return request.atlas_key == "ryougi_shiki.effect.attack_ranged_ground"; });
+	require(ryougi_ranged == load_plan.atlas_build_requests().end(),
+		"omitted Ryougi ranged effect animations must produce no requests");
+
+	elysia::resources::AtlasBuildPreparer preparer;
+	for (const auto& request : load_plan.atlas_build_requests())
+	{
+		if (request.atlas_key.find(".effect.attack_") == std::string::npos) continue;
+		std::vector<elysia::resources::AtlasFramePrepareTask> tasks;
+		require(preparer.expand_build_request(request, tasks),
+			"every configured character effect atlas must match the real PNG sequence");
+	}
+	for (const auto& request : load_plan.animation_effect_build_requests())
+	{
+		if (request.effect_key.find(".effect.attack_") == std::string::npos) continue;
+		const auto matching_animation = std::find_if(load_plan.animation_build_requests().begin(), load_plan.animation_build_requests().end(),
+			[&request](const elysia::resources::AnimationBuildRequest& animation) { return animation.animation_key == request.animation_key; });
+		require(matching_animation != load_plan.animation_build_requests().end(),
+			"every character effect definition must reference an existing animation request");
+	}
 
 	elysia::resources::Atlas atlas("test.animation");
 	elysia::animation::AnimationManager* animation_manager =

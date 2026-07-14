@@ -6,6 +6,12 @@
 
 namespace elysia::resources
 {
+enum class AnimatedEntityAnimationKind
+{
+	Body,
+	Effect
+};
+
 class ResourceRequestBuilder
 {
 public:
@@ -47,14 +53,14 @@ public:
 		const elysia::io::AnimatedEntityResourceConfig& entity_config,
 		const elysia::io::AnimationConfig& animation_config,
 		std::vector<AtlasBuildRequest>& atlas_build_requests,
-		std::vector<AnimationBuildRequest>& animation_build_requests
+		std::vector<AnimationBuildRequest>& animation_build_requests,
+		AnimatedEntityAnimationKind kind = AnimatedEntityAnimationKind::Body
 	) const;
-	bool append_animated_entity_effect_requests(
+	bool append_animated_entity_effect_definition_requests(
 		const elysia::io::AnimatedEntityResourceConfig& entity_config,
 		const elysia::io::AnimationConfig& animation_config,
-		const elysia::io::AnimationEffectLayout& effect_layout,
-		std::vector<AtlasBuildRequest>& atlas_build_requests,
-		std::vector<AnimationBuildRequest>& animation_build_requests,
+		const elysia::io::EffectDefinitionConfig& effect_config,
+		const std::vector<AnimationBuildRequest>& animation_build_requests,
 		std::vector<AnimationEffectBuildRequest>& animation_effect_build_requests
 	) const;
 };
