@@ -9,6 +9,7 @@
 #include <SDL.h>
 
 #include <expected>
+#include <source_location>
 #include <string>
 #include <string_view>
 
@@ -43,22 +44,13 @@ private:
     void on_scene_manager_quit_requested() override;
 
 
-    void init_assert(bool flag, const char* err_msg)
-    {
-        if (flag)
-            return;
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Game Start Error", err_msg, _window);
-        exit(-1);
-    }
-    void startup_fail(const std::string& err_msg)
-    {
-        SDL_ShowSimpleMessageBox(
-            SDL_MESSAGEBOX_ERROR,
-            "Game Start Error",
-            err_msg.c_str(),
-            _window);
-        exit(-1);
-    }
+    void init_assert(
+        bool flag,
+        const char* err_msg,
+        std::source_location location = std::source_location::current());
+    [[noreturn]] void startup_fail(
+        const std::string& err_msg,
+        std::source_location location = std::source_location::current());
 
 private:
     const int _logical_width = 1280;

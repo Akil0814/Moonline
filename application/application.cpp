@@ -1,6 +1,7 @@
 #include "application.h"
 #include "application_event_boundary.h"
 #include "application_exit_policy.h"
+#include "application_termination_logging.h"
 #include "scene/scene_keys.h"
 #include "scene/scene_registry.h"
 
@@ -36,6 +37,26 @@ Application:: ~Application()
 	SDL_Quit();
 }
 
+void Application::init_assert(bool flag,const char* err_msg,std::source_location location)
+{
+	if (flag)
+		return;
+	const std::string error_message = err_msg ? err_msg : "Application runtime initialization failed.";
+	elysia::tools::Logger::instance()->error("application",error_message,location);
+	startup_fail(error_message,location);
+}
+
+[[noreturn]] void Application::startup_fail(const std::string& err_msg,std::source_location location)
+{
+	elysia::tools::Logger::instance()->terminating("application",err_msg,location);
+	SDL_ShowSimpleMessageBox(
+		SDL_MESSAGEBOX_ERROR,
+		"Game Start Error",
+		err_msg.c_str(),
+		_window);
+	std::exit(EXIT_FAILURE);
+}
+
 bool Application::init(int argc, char** argv)
 {
 	elysia::tools::TerminationManager::instance()->initialize_lifecycle();
@@ -45,6 +66,7 @@ bool Application::init(int argc, char** argv)
 
 	if (!parse_result.success)
 	{
+		elysia::tools::Logger::instance()->error("bootstrap",parse_result.error);
 		startup_fail(parse_result.error);
 		return false;
 	}
@@ -60,6 +82,7 @@ bool Application::init(int argc, char** argv)
 
 	if (!init_runtime(runtime_settings))
 	{
+		elysia::tools::Logger::instance()->error("application","Application runtime initialization failed.");
 		startup_fail("Application runtime initialization failed.");
 		return false;
 	}
@@ -69,6 +92,7 @@ bool Application::init(int argc, char** argv)
 		parse_result.i18n_manifest_path,
 		runtime_settings.language))
 	{
+		elysia::tools::Logger::instance()->error("localization","Localization initialization failed.");
 		startup_fail("Localization initialization failed.");
 		return false;
 	}
@@ -98,6 +122,7 @@ bool Application::init(int argc, char** argv)
 
 	if (!elysia::bootstrap::Bootstrapper::instance()->preload_startup_resources(_renderer))
 	{
+		elysia::tools::Logger::instance()->error("bootstrap","Startup resource preload failed.");
 		startup_fail("Startup resource preload failed.");
 		return false;
 	}
@@ -193,21 +218,9 @@ int  Application::run(int argc, char** argv)
 
 		_active = false;
 		if (decision == moonline::application::ApplicationExitDecision::FaultExit)
-		{
 			exit_code = EXIT_FAILURE;
-			if (const auto info = termination_manager->termination_info())
-			{
-				const char* reason = info->reason == elysia::tools::TerminationReason::UnhandledException
-					? "Application termination requested after an unhandled exception"
-					: "Application termination requested after a fatal runtime failure";
-				elysia::tools::Logger::instance()->error("termination",reason,info->location);
-				elysia::tools::Logger::instance()->error(info->category,info->message,info->location);
-			}
-			else
-			{
-				elysia::tools::Logger::instance()->error("termination","Application termination requested without diagnostic information");
-			}
-		}
+		moonline::application::log_fault_exit_if_needed(
+			decision,termination_manager->termination_info());
 		return true;
 	};
 

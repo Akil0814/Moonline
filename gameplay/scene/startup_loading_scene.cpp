@@ -1,4 +1,5 @@
 #include "startup_loading_scene.h"
+#include "startup_loading_failure.h"
 
 #include "../../application/application.h"
 #include "../../application/scene/scene_keys.h"
@@ -85,7 +86,7 @@ void StartupLoadingScene::on_update(double delta)
 		SDL_ShowSimpleMessageBox(
 			SDL_MESSAGEBOX_ERROR,"Game Start Error",
 			error_message.c_str(),nullptr);
-		request_quit();
+		request_startup_content_load_termination();
 		return;
 	}
 }

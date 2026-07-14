@@ -6,11 +6,23 @@ namespace elysia::io
 {
 bool PathManager::init()
 {
-    std::optional<std::filesystem::path> root_path =
-        find_project_root(std::filesystem::current_path());
+    std::optional<std::filesystem::path> root_path;
+    try
+    {
+        root_path = find_project_root(std::filesystem::current_path());
+    }
+    catch (const std::filesystem::filesystem_error& error)
+    {
+        ELYSIA_LOG_ERROR("path","Path manager init failed while reading the current working directory: "
+            << error.what());
+        return false;
+    }
 
     if (!root_path.has_value())
+    {
+        ELYSIA_LOG_ERROR("path","Path manager init failed: project root was not found from the current working directory.");
         return false;
+    }
 
     _root = root_path.value();
     if (!validate_core_asset_dirs())
@@ -30,8 +42,9 @@ bool PathManager::ensure_runtime_dirs() const
         std::filesystem::create_directories(logs());
         return true;
     }
-    catch (const std::filesystem::filesystem_error&)
+    catch (const std::filesystem::filesystem_error& error)
     {
+        ELYSIA_LOG_ERROR("path","Path manager runtime directory setup failed: " << error.what());
         return false;
     }
 }

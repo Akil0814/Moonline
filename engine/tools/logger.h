@@ -20,7 +20,8 @@ enum class LogLevel
     Debug,
     Info,
     Warn,
-    Error
+    Error,
+    Terminating
 };
 
 enum class LogFileMode
@@ -58,6 +59,8 @@ public:
     void warn(std::string_view category,std::string_view message,
         std::source_location location = std::source_location::current()) noexcept;
     void error(std::string_view category,std::string_view message,
+        std::source_location location = std::source_location::current()) noexcept;
+    void terminating(std::string_view category,std::string_view message,
         std::source_location location = std::source_location::current()) noexcept;
 
     template <typename Writer>
@@ -107,3 +110,4 @@ private:
 #define ELYSIA_LOG_INFO(category,...) ELYSIA_LOG_STREAM(::elysia::tools::LogLevel::Info,(category),__VA_ARGS__)
 #define ELYSIA_LOG_WARN(category,...) ELYSIA_LOG_STREAM(::elysia::tools::LogLevel::Warn,(category),__VA_ARGS__)
 #define ELYSIA_LOG_ERROR(category,...) ELYSIA_LOG_STREAM(::elysia::tools::LogLevel::Error,(category),__VA_ARGS__)
+#define ELYSIA_LOG_TERMINATING(category,...) ELYSIA_LOG_STREAM(::elysia::tools::LogLevel::Terminating,(category),__VA_ARGS__)

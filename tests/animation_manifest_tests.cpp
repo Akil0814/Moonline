@@ -82,7 +82,7 @@ int main()
 		file << "{\"manifests\":" << manifests << "}";
 		return path;
 	};
-	const std::string required_manifests = R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","config_manifest":"configs/manifests/config_manifest.json"}})";
+	const std::string required_manifests = R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","configs":"configs/manifests/config_manifest.json"}})";
 
 	elysia::io::ContentRegistryLoader content_registry_loader;
 	elysia::io::ContentRegistry content_registry;

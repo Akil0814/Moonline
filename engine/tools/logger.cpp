@@ -31,6 +31,7 @@ namespace
     case LogLevel::Info: return "INFO";
     case LogLevel::Warn: return "WARN";
     case LogLevel::Error: return "ERROR";
+    case LogLevel::Terminating: return "TERMINATING";
     }
     return "UNKNOWN";
 }
@@ -43,6 +44,7 @@ namespace
     case LogLevel::Info: return SDL_LOG_PRIORITY_INFO;
     case LogLevel::Warn: return SDL_LOG_PRIORITY_WARN;
     case LogLevel::Error: return SDL_LOG_PRIORITY_ERROR;
+    case LogLevel::Terminating: return SDL_LOG_PRIORITY_ERROR;
     }
     return SDL_LOG_PRIORITY_ERROR;
 }
@@ -238,6 +240,12 @@ void Logger::warn(std::string_view category,std::string_view message,std::source
 void Logger::error(std::string_view category,std::string_view message,std::source_location location) noexcept
 {
     log(LogLevel::Error,category,message,location);
+}
+
+void Logger::terminating(std::string_view category,std::string_view message,
+    std::source_location location) noexcept
+{
+    log(LogLevel::Terminating,category,message,location);
 }
 
 bool Logger::should_log(LogLevel level) const noexcept

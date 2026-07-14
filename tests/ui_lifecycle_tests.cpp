@@ -31,6 +31,8 @@
 #include "../engine/resources/pipeline/resource_request_builder.h"
 #include "../engine/tools/logger.h"
 #include "../application/application_event_boundary.h"
+#include "../application/application_termination_logging.h"
+#include "../gameplay/scene/startup_loading_failure.h"
 
 #include <cstdlib>
 #include <cstdint>
@@ -1412,6 +1414,15 @@ void test_logger_console_sink()
         "console sink must emit a compact file-and-line call site without a function signature");
 
     captured.messages.clear();
+    const unsigned int terminating_call_line = __LINE__ + 1;
+    ELYSIA_LOG_TERMINATING("console-test","termination marker");
+    require(captured.messages.size() == 1
+            && captured.messages.front().find("[TERMINATING]") != std::string::npos
+            && captured.messages.front().find("termination marker") != std::string::npos
+            && captured.messages.front().find("ui_lifecycle_tests.cpp:" + std::to_string(terminating_call_line)) != std::string::npos,
+        "terminating macro must emit its level and original call site through the console sink");
+
+    captured.messages.clear();
     resources::ResourceRequestBuilder request_builder;
     io::TextureManifest texture_manifest;
     std::vector<resources::TextureLoadRequest> texture_requests;
@@ -1436,6 +1447,60 @@ void test_logger_console_sink()
     }
     require(saw_loader_warning && saw_pipeline_error,
         "top-level load failure must preserve its Warn-to-Error escalation");
+
+    captured.messages.clear();
+    const std::source_location root_failure_location = std::source_location::current();
+    const tools::TerminationInfo termination_info{
+        tools::TerminationReason::UnhandledException,
+        "input",
+        "termination root cause",
+        root_failure_location,
+        false,
+        false
+    };
+    const unsigned int termination_decision_line = __LINE__ + 1;
+    moonline::application::log_fault_exit_if_needed(
+        moonline::application::ApplicationExitDecision::FaultExit,termination_info);
+    require(captured.messages.size() == 2
+            && captured.messages[0].find("[ERROR]") != std::string::npos
+            && captured.messages[0].find("[input]") != std::string::npos
+            && captured.messages[0].find("termination root cause") != std::string::npos
+            && captured.messages[1].find("[TERMINATING]") != std::string::npos
+            && captured.messages[1].find("Application terminating after an unhandled exception") != std::string::npos
+            && captured.messages[1].find("ui_lifecycle_tests.cpp:" + std::to_string(termination_decision_line)) != std::string::npos,
+        "published termination logging must emit the concrete error before one terminating event");
+
+    captured.messages.clear();
+    auto* termination_manager = tools::TerminationManager::instance();
+    termination_manager->reset_for_testing();
+    const unsigned int startup_termination_line = __LINE__ + 1;
+    arcneco::scene::request_startup_content_load_termination();
+    const auto startup_termination_info = termination_manager->termination_info();
+    require(startup_termination_info.has_value()
+            && startup_termination_info->reason == tools::TerminationReason::FatalRuntimeFailure
+            && startup_termination_info->category == "startup"
+            && startup_termination_info->message == "Startup content loading failed"
+            && startup_termination_info->location.line() == startup_termination_line,
+        "startup content failures must publish a complete fatal termination request at the scene call site");
+    require(moonline::application::resolve_application_exit(false,*termination_manager)
+            == moonline::application::ApplicationExitDecision::FaultExit,
+        "startup content failures must select a fault exit instead of a normal scene quit");
+    const unsigned int startup_exit_decision_line = __LINE__ + 1;
+    moonline::application::log_fault_exit_if_needed(
+        moonline::application::ApplicationExitDecision::FaultExit,startup_termination_info);
+    require(captured.messages.size() == 2
+            && captured.messages[0].find("[ERROR]") != std::string::npos
+            && captured.messages[0].find("[startup]") != std::string::npos
+            && captured.messages[0].find("Startup content loading failed") != std::string::npos
+            && captured.messages[1].find("[TERMINATING]") != std::string::npos
+            && captured.messages[1].find("ui_lifecycle_tests.cpp:" + std::to_string(startup_exit_decision_line)) != std::string::npos,
+        "startup content failures must emit the startup error followed by one terminating event");
+    termination_manager->reset_for_testing();
+
+    captured.messages.clear();
+    moonline::application::log_fault_exit_if_needed(
+        moonline::application::ApplicationExitDecision::NormalExit,std::nullopt);
+    require(captured.messages.empty(),"normal exits must not emit a terminating event");
     logger->shutdown();
 
     captured.messages.clear();
@@ -1448,15 +1513,23 @@ void test_logger_console_sink()
     logger->initialize();
     const unsigned int dual_sink_call_line = __LINE__ + 1;
     logger->warn("console-test","dual sink marker");
+    const unsigned int dual_terminating_call_line = __LINE__ + 1;
+    logger->terminating("console-test","dual terminating marker");
     logger->shutdown();
-    require(captured.messages.size() == 1
-            && captured.messages.front().find("dual sink marker") != std::string::npos
-            && captured.messages.front().find("ui_lifecycle_tests.cpp:" + std::to_string(dual_sink_call_line)) != std::string::npos
-            && captured.messages.front().find("test_logger_console_sink") == std::string::npos,
-        "enabled console sink must receive one entry when the file sink succeeds");
+    require(captured.messages.size() == 2
+            && captured.messages[0].find("dual sink marker") != std::string::npos
+            && captured.messages[0].find("ui_lifecycle_tests.cpp:" + std::to_string(dual_sink_call_line)) != std::string::npos
+            && captured.messages[0].find("test_logger_console_sink") == std::string::npos
+            && captured.messages[1].find("[TERMINATING]") != std::string::npos
+            && captured.messages[1].find("dual terminating marker") != std::string::npos
+            && captured.messages[1].find("ui_lifecycle_tests.cpp:" + std::to_string(dual_terminating_call_line)) != std::string::npos,
+        "enabled console sink must receive each dual-sink entry exactly once");
     const std::string dual_sink_contents = read_text_file(dual_sink_path);
     require(count_occurrences(dual_sink_contents,"dual sink marker") == 1
+            && count_occurrences(dual_sink_contents,"dual terminating marker") == 1
             && dual_sink_contents.find("ui_lifecycle_tests.cpp:" + std::to_string(dual_sink_call_line)) != std::string::npos
+            && dual_sink_contents.find("ui_lifecycle_tests.cpp:" + std::to_string(dual_terminating_call_line)) != std::string::npos
+            && dual_sink_contents.find("[TERMINATING]") != std::string::npos
             && dual_sink_contents.find("test_logger_console_sink") == std::string::npos
             && dual_sink_contents.find("__cdecl") == std::string::npos,
         "enabled file sink must receive the same compact source location exactly once");
@@ -1569,6 +1642,42 @@ void test_logger_file_modes_and_noexcept()
         "logger must filter entries below its configured minimum level");
     remove_test_path(filtered_path);
 
+    const std::filesystem::path error_filtered_path = path_manager->logs() / "ui-lifecycle-logger-error-filtered.log";
+    remove_test_path(error_filtered_path);
+    tools::LoggerConfig error_filtered_config;
+    error_filtered_config.minimum_level = tools::LogLevel::Error;
+    error_filtered_config.file_mode = tools::LogFileMode::Append;
+    error_filtered_config.append_file_name = error_filtered_path.filename().string();
+    require(logger->configure(error_filtered_config),"logger must accept error-level filtering configuration");
+    logger->initialize();
+    logger->warn("logger-test","filtered warn marker");
+    logger->error("logger-test","retained error marker");
+    logger->terminating("logger-test","retained terminating marker");
+    logger->shutdown();
+    const std::string error_filtered_contents = read_text_file(error_filtered_path);
+    require(error_filtered_contents.find("filtered warn marker") == std::string::npos
+            && error_filtered_contents.find("retained error marker") != std::string::npos
+            && error_filtered_contents.find("retained terminating marker") != std::string::npos,
+        "error-level filtering must retain errors and terminating events");
+    remove_test_path(error_filtered_path);
+
+    const std::filesystem::path terminating_filtered_path = path_manager->logs() / "ui-lifecycle-logger-terminating-filtered.log";
+    remove_test_path(terminating_filtered_path);
+    tools::LoggerConfig terminating_filtered_config;
+    terminating_filtered_config.minimum_level = tools::LogLevel::Terminating;
+    terminating_filtered_config.file_mode = tools::LogFileMode::Append;
+    terminating_filtered_config.append_file_name = terminating_filtered_path.filename().string();
+    require(logger->configure(terminating_filtered_config),"logger must accept terminating-level filtering configuration");
+    logger->initialize();
+    logger->error("logger-test","filtered error marker");
+    logger->terminating("logger-test","terminating-only marker");
+    logger->shutdown();
+    const std::string terminating_filtered_contents = read_text_file(terminating_filtered_path);
+    require(terminating_filtered_contents.find("filtered error marker") == std::string::npos
+            && terminating_filtered_contents.find("terminating-only marker") != std::string::npos,
+        "terminating-level filtering must retain only terminating events");
+    remove_test_path(terminating_filtered_path);
+
     tools::LoggerConfig new_run_config;
     new_run_config.file_mode = tools::LogFileMode::NewRunFile;
     require(logger->configure(new_run_config),"logger must accept new-run configuration");
@@ -1605,8 +1714,64 @@ void test_logger_file_modes_and_noexcept()
     logger->info("logger-test","file failure info marker");
     logger->warn("logger-test","file failure warn marker");
     logger->error("logger-test","file failure error marker");
+    logger->terminating("logger-test","file failure terminating marker");
     logger->shutdown();
     remove_test_path(blocked_path);
+}
+
+void test_path_manager_failure_logging()
+{
+    using namespace elysia;
+    auto* path_manager = io::PathManager::instance();
+    auto* logger = tools::Logger::instance();
+    const std::filesystem::path original_working_directory = std::filesystem::current_path();
+    const std::filesystem::path temporary_root = std::filesystem::temp_directory_path()
+        / ("elysia-path-manager-log-test-" + std::to_string(SDL_GetTicks64()));
+    remove_test_path(temporary_root);
+    std::filesystem::create_directories(temporary_root);
+
+    logger->shutdown();
+    tools::LoggerConfig logger_config;
+    logger_config.file_mode = tools::LogFileMode::Disabled;
+    require(logger->configure(logger_config),"path logger test must configure the console sink");
+    logger->initialize();
+
+    SDL_LogOutputFunction previous_callback = nullptr;
+    void* previous_userdata = nullptr;
+    SDL_LogGetOutputFunction(&previous_callback,&previous_userdata);
+    CapturedSdlLogs captured;
+    SDL_LogSetOutputFunction(capture_sdl_log,&captured);
+
+    std::filesystem::current_path(temporary_root);
+    require(!path_manager->init(),"a directory without an Elysia project root must fail initialization");
+    require(captured.messages.size() == 1
+            && captured.messages.front().find("[ERROR]") != std::string::npos
+            && captured.messages.front().find("[path]") != std::string::npos
+            && captured.messages.front().find("project root was not found") != std::string::npos,
+        "missing project roots must emit a path-specific error");
+
+    captured.messages.clear();
+    const std::filesystem::path assets = temporary_root / "assets";
+    std::filesystem::create_directories(assets / "audio");
+    std::filesystem::create_directories(assets / "textures");
+    std::filesystem::create_directories(assets / "fonts");
+    std::filesystem::create_directories(assets / "configs");
+    std::ofstream(assets / "content_registry.json") << "{}";
+    require(path_manager->init(),"the controlled temporary project root must initialize");
+    std::ofstream(temporary_root / "player_data") << "blocking file";
+    require(!path_manager->ensure_runtime_dirs(),"a file at the runtime data path must fail directory setup");
+    require(captured.messages.size() == 1
+            && captured.messages.front().find("[ERROR]") != std::string::npos
+            && captured.messages.front().find("[path]") != std::string::npos
+            && captured.messages.front().find("runtime directory setup failed") != std::string::npos,
+        "runtime directory setup failures must emit a path-specific error");
+
+    std::filesystem::current_path(original_working_directory);
+    require(path_manager->init() && path_manager->ensure_runtime_dirs(),
+        "path logger test must restore the workspace path manager state");
+    SDL_LogSetOutputFunction(previous_callback,previous_userdata);
+    logger->shutdown();
+    remove_test_path(temporary_root);
 }
 }
 
@@ -1648,6 +1813,7 @@ int main()
     test_button_group_preserves_button_callback_after_selection();
     test_logger_file_modes_and_noexcept();
     test_logger_console_sink();
+    test_path_manager_failure_logging();
     std::cout << "ui lifecycle tests passed\n";
     return EXIT_SUCCESS;
 }
