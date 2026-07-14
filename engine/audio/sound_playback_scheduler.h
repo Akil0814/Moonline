@@ -1,0 +1,68 @@
+#pragma once
+
+#include "sound_playback_types.h"
+
+#include <array>
+#include <functional>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <vector>
+
+namespace elysia::audio
+{
+class SoundPlaybackScheduler
+{
+public:
+    using StartSoundCallback = std::function<int(std::string_view,int)>;
+    using ChannelPlayingCallback = std::function<bool(int)>;
+
+    [[nodiscard]] bool set_group_config(SoundGroup group,const SoundGroupConfig& config);
+    [[nodiscard]] const SoundGroupConfig& group_config(SoundGroup group) const;
+
+    [[nodiscard]] SoundRequestResult request_sound(
+        std::string_view key,
+        const SoundPlayOptions& options,
+        const StartSoundCallback& start_sound,
+        const ChannelPlayingCallback& is_channel_playing
+    );
+    void update(double delta_seconds,const StartSoundCallback& start_sound,const ChannelPlayingCallback& is_channel_playing);
+
+    [[nodiscard]] bool cancel_scheduled_sound(ScheduledSoundId id);
+    void cancel_all_scheduled_sounds();
+    void clear_active_sounds();
+    void reset();
+
+private:
+    struct ActiveSound
+    {
+        int channel = -1;
+        SoundGroup group = SoundGroup::Extra;
+    };
+
+    struct PendingSound
+    {
+        ScheduledSoundId id = 0;
+        std::string key;
+        SoundPlayOptions options{};
+        double due_time_seconds = 0.0;
+    };
+
+    [[nodiscard]] bool try_start_sound(
+        std::string_view key,
+        const SoundPlayOptions& options,
+        const StartSoundCallback& start_sound,
+        const ChannelPlayingCallback& is_channel_playing
+    );
+    void prune_finished_sounds(const ChannelPlayingCallback& is_channel_playing);
+    [[nodiscard]] std::size_t active_count(SoundGroup group) const;
+
+private:
+    std::array<SoundGroupConfig,kSoundGroupCount> _group_configs{};
+    std::vector<ActiveSound> _active_sounds;
+    std::vector<PendingSound> _pending_sounds;
+    std::unordered_map<std::string,double> _last_started_seconds_by_key;
+    double _elapsed_seconds = 0.0;
+    ScheduledSoundId _next_scheduled_id = 1;
+};
+}

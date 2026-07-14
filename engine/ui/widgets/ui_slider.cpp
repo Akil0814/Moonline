@@ -923,7 +923,9 @@ void UiSlider::play_sound_if_set(std::string_view sound_key) const
 {
     if (sound_key.empty())
         return;
-    elysia::audio::AudioService::instance()->play_sound(sound_key);
+    elysia::audio::AudioService::instance()->request_sound(sound_key,{
+        .group = elysia::audio::SoundGroup::Ui
+    });
 }
 
 void UiSlider::play_slide_sound_if_allowed()

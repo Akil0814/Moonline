@@ -449,7 +449,9 @@ void UiCheckbox::play_sound_if_set(const std::string& sound_key) const
 {
     if (sound_key.empty())
         return;
-    elysia::audio::AudioService::instance()->play_sound(sound_key);
+    elysia::audio::AudioService::instance()->request_sound(sound_key,{
+        .group = elysia::audio::SoundGroup::Ui
+    });
 }
 
 elysia::core::Rect UiCheckbox::content_rect() const noexcept

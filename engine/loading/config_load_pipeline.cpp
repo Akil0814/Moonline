@@ -12,7 +12,7 @@
 namespace elysia::loading
 {
 bool ConfigLoadPipeline::load(
-	const std::filesystem::path& assets_structure_path,
+	const std::filesystem::path& content_registry_path,
 	ConfigLoadResult& result
 )
 {
@@ -21,7 +21,7 @@ bool ConfigLoadPipeline::load(
 
 	elysia::io::ContentRegistry content_registry;
 	elysia::io::ContentRegistryLoader content_registry_loader;
-	if (!content_registry_loader.load(assets_structure_path, content_registry))
+	if (!content_registry_loader.load(content_registry_path, content_registry))
 	{
 		fail("Config load pipeline failed: content registry load failed.");
 		return false;

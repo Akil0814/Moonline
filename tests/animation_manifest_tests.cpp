@@ -149,6 +149,9 @@ int main()
 		"config pipeline must load the generic animation manifest");
 	require(config_result.characters.has_value(),
 		"configured characters module must be loaded");
+	require(config_result.enemies.has_value()
+		&& config_result.enemies->content.animation_entries.size() == 4,
+		"configured enemies module must load the normal enemy animations");
 
 	elysia::loading::ConfigLoadResult core_only_config_result;
 	require(config_load_pipeline.load(
@@ -156,6 +159,8 @@ int main()
 		"config pipeline must load without the characters module");
 	require(!core_only_config_result.characters.has_value(),
 		"omitted characters module must not produce character content");
+	require(!core_only_config_result.enemies.has_value(),
+		"omitted enemies module must not produce enemy content");
 	elysia::loading::ResourceLoadPlan core_only_load_plan;
 	elysia::loading::ResourceRequestAssembler core_only_request_assembler;
 	require(core_only_request_assembler.assemble(core_only_config_result, core_only_load_plan),
@@ -263,6 +268,17 @@ int main()
 	require(ryougi_start_request != load_plan.atlas_build_requests().end()
 		&& ryougi_start_request->frame_filename_prefix == "RyougiShiki_start",
 		"RyougiShiki start must use its inferred frame prefix");
+
+	const auto runtime_slime_attack_request = std::find_if(
+		load_plan.atlas_build_requests().begin(),
+		load_plan.atlas_build_requests().end(),
+		[](const elysia::resources::AtlasBuildRequest& request)
+		{
+			return request.atlas_key == "slime.attack";
+		});
+	require(runtime_slime_attack_request != load_plan.atlas_build_requests().end()
+		&& runtime_slime_attack_request->frame_filename_prefix == "Slime_attack",
+		"enabled enemies module must contribute enemy atlas requests to the runtime plan");
 
 	const auto ryougi_getup_air_request = std::find_if(
 		load_plan.atlas_build_requests().begin(),

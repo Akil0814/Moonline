@@ -2,6 +2,7 @@
 
 #include "characters_content_module.h"
 #include "content_module.h"
+#include "enemies_content_module.h"
 
 #include <array>
 #include <string>
@@ -15,7 +16,8 @@ bool ContentModuleRegistry::load_additional_modules(
 ) const
 {
 	static const CharactersContentModule characters_module;
-	const std::array<const ContentModule*, 1> modules{ &characters_module };
+	static const EnemiesContentModule enemies_module;
+	const std::array<const ContentModule*, 2> modules{ &characters_module, &enemies_module };
 
 	for (const auto& [module_name, module_manifest_path] : content_registry.additional_module_manifests)
 	{

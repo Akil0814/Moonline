@@ -266,6 +266,7 @@ int  Application::run(int argc, char** argv)
 		if (!moonline::application::run_event_boundary("update",[this]()
 		{
 			_scene_manager.on_update(elysia::core::Time::instance()->delta());
+			elysia::audio::AudioService::instance()->update(elysia::core::Time::instance()->delta());
 		}))
 		{
 			if (!resolve_exit())

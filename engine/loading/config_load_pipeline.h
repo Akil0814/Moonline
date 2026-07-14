@@ -21,15 +21,20 @@ struct ConfigLoadResult
 	{
 		elysia::io::AnimatedEntityContent content;
 	};
+	struct EnemiesContent
+	{
+		elysia::io::AnimatedEntityContent content;
+	};
 
 	std::optional<CharactersContent> characters;
+	std::optional<EnemiesContent> enemies;
 };
 
 class ConfigLoadPipeline
 {
 public:
 	bool load(
-		const std::filesystem::path& assets_structure_path,
+		const std::filesystem::path& content_registry_path,
 		ConfigLoadResult& result
 	);
 

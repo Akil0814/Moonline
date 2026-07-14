@@ -153,7 +153,9 @@ namespace arcneco::scene
                 character_button->set_on_click([this,selected_key = character_key]()
                 {
                     _current_character_key = selected_key;
-                    elysia::audio::AudioService::instance()->play_sound(_current_character_key + ".selected");
+                    elysia::audio::AudioService::instance()->request_sound(_current_character_key + ".selected",{
+                        .group = elysia::audio::SoundGroup::Gameplay
+                    });
                     on_character_change();
                 });
                 _character_button_keys.push_back(character_key);
