@@ -33,16 +33,16 @@ bool append_animated_entity_animation_requests(
 
 		const size_t effect_atlas_count_before = out_plan.atlas_build_requests().size();
 		const size_t effect_animation_count_before = out_plan.animation_build_requests().size();
-		const size_t effect_count_before = out_plan.effect_build_requests().size();
+		const size_t effect_count_before = out_plan.animation_effect_build_requests().size();
 		if (!request_builder.append_animated_entity_effect_requests(
 			entry.entity_config, entry.animation_config, *content.effect_layout,
-			out_plan.atlas_build_requests(), out_plan.animation_build_requests(), out_plan.effect_build_requests()))
+			out_plan.atlas_build_requests(), out_plan.animation_build_requests(), out_plan.animation_effect_build_requests()))
 			return false;
 
 		ELYSIA_LOG("resource", "Animated entity effect requests built: atlases="
 			<< (out_plan.atlas_build_requests().size() - effect_atlas_count_before)
 			<< ", animations=" << (out_plan.animation_build_requests().size() - effect_animation_count_before)
-			<< ", effects=" << (out_plan.effect_build_requests().size() - effect_count_before));
+			<< ", effects=" << (out_plan.animation_effect_build_requests().size() - effect_count_before));
 	}
 	return true;
 }
@@ -95,9 +95,9 @@ bool ResourceRequestAssembler::assemble(
 		return false;
 	}
 
-	if (!request_builder.append_effect_manifest_requests(
-		config_result.effect_manifest,
-		out_plan.effect_build_requests()))
+	if (!request_builder.append_animation_effect_manifest_requests(
+		config_result.animation_effect_manifest,
+		out_plan.animation_effect_build_requests()))
 	{
 		out_plan.clear();
 		return false;

@@ -20,6 +20,27 @@ bool parse_playback(const json& node, const std::string& key, AnimationEffectPla
 	out.loop = node.at("loop").get<bool>();
 	return out.frame_count > 0 && out.fps > 0.0;
 }
+
+bool parse_defaults(const json& node, AnimationEffectLayoutEntry& entry)
+{
+	if (node.contains("default_width"))
+	{
+		if (!node.at("default_width").is_number()) return false;
+		entry.default_width = node.at("default_width").get<float>();
+	}
+	if (node.contains("default_height"))
+	{
+		if (!node.at("default_height").is_number()) return false;
+		entry.default_height = node.at("default_height").get<float>();
+	}
+	if (node.contains("default_angle_degrees"))
+	{
+		if (!node.at("default_angle_degrees").is_number()) return false;
+		entry.default_angle_degrees = node.at("default_angle_degrees").get<double>();
+	}
+	return entry.default_width >= 0.0f && entry.default_height >= 0.0f
+		&& ((entry.default_width == 0.0f) == (entry.default_height == 0.0f));
+}
 }
 
 bool AnimationEffectLayoutLoader::load(const std::filesystem::path& path, AnimationEffectLayout& layout) const
@@ -37,6 +58,7 @@ bool AnimationEffectLayoutLoader::load(const std::filesystem::path& path, Animat
 		if (!it.value().is_object()) return false;
 		const json& node = it.value();
 		AnimationEffectLayoutEntry entry;
+		if (!parse_defaults(node, entry)) return false;
 		if (node.contains("path"))
 		{
 			if (!node.at("path").is_string() || node.contains("segment_path") || node.contains("segments")

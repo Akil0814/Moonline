@@ -95,15 +95,18 @@ struct AnimationManifest
 	std::vector<AnimationManifestEntry> animations;
 };
 
-struct EffectManifestEntry
+struct AnimationEffectManifestEntry
 {
 	std::string key;
 	std::string animation_key;
+	float default_width = 0.0f;
+	float default_height = 0.0f;
+	double default_angle_degrees = 0.0;
 };
 
-struct EffectManifest
+struct AnimationEffectManifest
 {
-	std::vector<EffectManifestEntry> effects;
+	std::vector<AnimationEffectManifestEntry> effects;
 };
 
 struct EntityManifestEntry
@@ -152,6 +155,9 @@ struct AnimationEffectLayoutEntry
 	std::filesystem::path segment_path;
 	bool has_path = false;
 	bool has_segment_path = false;
+	float default_width = 0.0f;
+	float default_height = 0.0f;
+	double default_angle_degrees = 0.0;
 	AnimationEffectPlaybackConfig playback;
 	std::vector<AnimationEffectPlaybackConfig> segments;
 };

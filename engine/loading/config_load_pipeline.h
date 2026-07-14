@@ -15,7 +15,7 @@ struct ConfigLoadResult
 	elysia::io::AudioManifest audio_manifest;
 	elysia::io::TextureManifest texture_manifest;
 	elysia::io::AnimationManifest animation_manifest;
-	elysia::io::EffectManifest effect_manifest;
+	elysia::io::AnimationEffectManifest animation_effect_manifest;
 
 	struct CharactersContent
 	{

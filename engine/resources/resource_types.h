@@ -4,6 +4,8 @@
 #include <filesystem>
 #include <string>
 
+#include "../core/geometry/vector2.h"
+
 namespace elysia::resources
 {
 struct TextureLoadRequest
@@ -55,10 +57,12 @@ struct AnimationBuildRequest
 	size_t segment_index = 0;
 };
 
-struct EffectBuildRequest
+struct AnimationEffectBuildRequest
 {
 	std::string effect_key;
 	std::string animation_key;
+	elysia::core::Vector2 default_size;
+	double default_angle_degrees = 0.0;
 };
 
 }

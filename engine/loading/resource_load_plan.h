@@ -70,14 +70,14 @@ public:
 		return _animation_build_requests;
 	}
 
-	std::vector<elysia::resources::EffectBuildRequest>& effect_build_requests()
+	std::vector<elysia::resources::AnimationEffectBuildRequest>& animation_effect_build_requests()
 	{
-		return _effect_build_requests;
+		return _animation_effect_build_requests;
 	}
 
-	const std::vector<elysia::resources::EffectBuildRequest>& effect_build_requests() const
+	const std::vector<elysia::resources::AnimationEffectBuildRequest>& animation_effect_build_requests() const
 	{
-		return _effect_build_requests;
+		return _animation_effect_build_requests;
 	}
 
 	void clear()
@@ -88,7 +88,7 @@ public:
 		_texture_requests.clear();
 		_atlas_build_requests.clear();
 		_animation_build_requests.clear();
-		_effect_build_requests.clear();
+		_animation_effect_build_requests.clear();
 	}
 
 	[[nodiscard]] bool empty() const
@@ -99,7 +99,7 @@ public:
 			&& _texture_requests.empty()
 			&& _atlas_build_requests.empty()
 			&& _animation_build_requests.empty()
-			&& _effect_build_requests.empty();
+			&& _animation_effect_build_requests.empty();
 	}
 
 	[[nodiscard]] std::size_t total_request_count() const
@@ -110,7 +110,7 @@ public:
 			+ _texture_requests.size()
 			+ _atlas_build_requests.size()
 			+ _animation_build_requests.size()
-			+ _effect_build_requests.size();
+			+ _animation_effect_build_requests.size();
 	}
 
 private:
@@ -120,7 +120,7 @@ private:
 	std::vector<elysia::resources::TextureLoadRequest> _texture_requests;
 	std::vector<elysia::resources::AtlasBuildRequest> _atlas_build_requests;
 	std::vector<elysia::resources::AnimationBuildRequest> _animation_build_requests;
-	std::vector<elysia::resources::EffectBuildRequest> _effect_build_requests;
+	std::vector<elysia::resources::AnimationEffectBuildRequest> _animation_effect_build_requests;
 };
 
 }

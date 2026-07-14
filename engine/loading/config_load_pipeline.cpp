@@ -4,7 +4,7 @@
 #include "../io/loaders/animation_manifest_loader.h"
 #include "../io/loaders/audio_manifest_loader.h"
 #include "../io/loaders/content_registry_loader.h"
-#include "../io/loaders/effect_manifest_loader.h"
+#include "../io/loaders/animation_effect_manifest_loader.h"
 #include "../io/loaders/fonts_manifest_loader.h"
 #include "../io/loaders/texture_manifest_loader.h"
 #include "content_module_registry.h"
@@ -56,8 +56,8 @@ bool ConfigLoadPipeline::load(
 		return false;
 	}
 
-	elysia::io::EffectManifestLoader effect_manifest_loader;
-	if (!effect_manifest_loader.load(manifest_paths.effects, result.effect_manifest))
+	elysia::io::AnimationEffectManifestLoader animation_effect_manifest_loader;
+	if (!animation_effect_manifest_loader.load(manifest_paths.effects, result.animation_effect_manifest))
 	{
 		fail("Config load pipeline failed: effects manifest load failed.");
 		return false;

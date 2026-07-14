@@ -6,12 +6,12 @@
 
 namespace elysia::io
 {
-class EffectManifestLoader
+class AnimationEffectManifestLoader
 {
 public:
 	bool load(
 		const std::filesystem::path& manifest_path,
-		EffectManifest& manifest
+		AnimationEffectManifest& manifest
 	) const;
 };
 }

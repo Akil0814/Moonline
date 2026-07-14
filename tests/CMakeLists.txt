@@ -88,6 +88,26 @@ endif()
 
 add_test(NAME animation_manifest_tests COMMAND animation_manifest_tests)
 
+add_executable(animation_effect_tests
+    "animation_effect_tests.cpp"
+)
+
+target_link_libraries(animation_effect_tests PRIVATE engine_lib ${SDL2_LIBRARIES})
+
+if(WIN32)
+    foreach(SDL2_RUNTIME_FILE IN LISTS SDL2_RUNTIME_FILES)
+        if(EXISTS "${SDL2_RUNTIME_FILE}")
+            add_custom_command(TARGET animation_effect_tests POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${SDL2_RUNTIME_FILE}"
+                    "$<TARGET_FILE_DIR:animation_effect_tests>"
+            )
+        endif()
+    endforeach()
+endif()
+
+add_test(NAME animation_effect_tests COMMAND animation_effect_tests)
+
 add_executable(sound_playback_scheduler_tests
     "sound_playback_scheduler_tests.cpp"
 )

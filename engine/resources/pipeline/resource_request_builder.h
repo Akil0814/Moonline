@@ -29,9 +29,9 @@ public:
 		std::vector<AtlasBuildRequest>& atlas_build_requests,
 		std::vector<AnimationBuildRequest>& animation_build_requests
 	) const;
-	bool append_effect_manifest_requests(
-		const elysia::io::EffectManifest& effect_manifest,
-		std::vector<EffectBuildRequest>& effect_build_requests
+	bool append_animation_effect_manifest_requests(
+		const elysia::io::AnimationEffectManifest& animation_effect_manifest,
+		std::vector<AnimationEffectBuildRequest>& animation_effect_build_requests
 	) const;
 	bool append_animated_entity_texture_requests(
 		const elysia::io::AnimatedEntityResourceConfig& entity_config,
@@ -55,7 +55,7 @@ public:
 		const elysia::io::AnimationEffectLayout& effect_layout,
 		std::vector<AtlasBuildRequest>& atlas_build_requests,
 		std::vector<AnimationBuildRequest>& animation_build_requests,
-		std::vector<EffectBuildRequest>& effect_build_requests
+		std::vector<AnimationEffectBuildRequest>& animation_effect_build_requests
 	) const;
 };
 

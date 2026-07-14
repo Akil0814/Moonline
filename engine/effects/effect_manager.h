@@ -1,6 +1,6 @@
 #pragma once
 
-#include "effect.h"
+#include "animation_effect.h"
 #include "../resources/resource_types.h"
 #include "../tools/singleton.h"
 
@@ -10,6 +10,11 @@
 #include <string_view>
 #include <unordered_map>
 #include <vector>
+
+namespace elysia::scene
+{
+class Scene;
+}
 
 namespace elysia::effects
 {
@@ -26,7 +31,7 @@ enum class EffectAnchor
 	BottomRight
 };
 
-struct EffectDefinition
+struct AnimationEffectDefinition
 {
 	std::string effect_key;
 	std::string animation_key;
@@ -34,7 +39,7 @@ struct EffectDefinition
 	elysia::core::Vector2 default_size;
 };
 
-struct EffectSpawnRequest
+struct AnimationEffectSpawnRequest
 {
 	std::string effect_key;
 	// World-space position of the selected playback anchor.
@@ -43,6 +48,7 @@ struct EffectSpawnRequest
 	std::optional<elysia::core::Vector2> size;
 	std::optional<double> angle_degrees;
 	std::optional<elysia::core::SpriteFlip> flip;
+	double start_delay_seconds = 0.0;
 };
 
 class EffectManager : public elysia::tools::Singleton<EffectManager>
@@ -50,14 +56,18 @@ class EffectManager : public elysia::tools::Singleton<EffectManager>
 	friend elysia::tools::Singleton<EffectManager>;
 
 public:
-	bool register_effect(const elysia::resources::EffectBuildRequest& request);
-	bool register_effect(const std::vector<elysia::resources::EffectBuildRequest>& requests);
+	bool register_animation_effect(const elysia::resources::AnimationEffectBuildRequest& request);
+	bool register_animation_effect(const std::vector<elysia::resources::AnimationEffectBuildRequest>& requests);
 
-	const EffectDefinition* find_definition(const std::string_view& key) const;
-	std::unique_ptr<Effect> create_effect(const EffectSpawnRequest& request) const;
+	const AnimationEffectDefinition* find_animation_effect_definition(const std::string_view& key) const;
+	std::unique_ptr<AnimationEffect> create_animation_effect(const AnimationEffectSpawnRequest& request) const;
+	AnimationEffect* spawn_animation_effect(
+		elysia::scene::Scene& scene,
+		const AnimationEffectSpawnRequest& request
+	) const;
 
 private:
-	std::unordered_map<std::string, EffectDefinition> _definitions;
+	std::unordered_map<std::string, AnimationEffectDefinition> _animation_effect_definitions;
 };
 
 }

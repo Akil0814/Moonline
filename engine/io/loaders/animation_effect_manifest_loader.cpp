@@ -1,5 +1,5 @@
 #include "../../tools/logger.h"
-#include "effect_manifest_loader.h"
+#include "animation_effect_manifest_loader.h"
 
 #include "../json/json_loader.h"
 
@@ -8,12 +8,12 @@
 
 namespace elysia::io
 {
-bool EffectManifestLoader::load(
+bool AnimationEffectManifestLoader::load(
 	const std::filesystem::path& manifest_path,
-	EffectManifest& manifest
+	AnimationEffectManifest& manifest
 ) const
 {
-	manifest = EffectManifest{};
+	manifest = AnimationEffectManifest{};
 
 	JsonLoader loader;
 	JsonReadResult result = loader.open_file(manifest_path);
@@ -32,7 +32,7 @@ bool EffectManifestLoader::load(
 		return false;
 	}
 
-	EffectManifest parsed_manifest;
+	AnimationEffectManifest parsed_manifest;
 	std::unordered_set<std::string> keys;
 	for (const json& effect_node : loader.root().at("effects"))
 	{
@@ -45,9 +45,31 @@ bool EffectManifestLoader::load(
 			return false;
 		}
 
-		EffectManifestEntry entry;
+		AnimationEffectManifestEntry entry;
 		entry.key = effect_node.at("key").get<std::string>();
 		entry.animation_key = effect_node.at("animation_key").get<std::string>();
+		if (effect_node.contains("default_width"))
+		{
+			if (!effect_node.at("default_width").is_number()) return false;
+			entry.default_width = effect_node.at("default_width").get<float>();
+		}
+		if (effect_node.contains("default_height"))
+		{
+			if (!effect_node.at("default_height").is_number()) return false;
+			entry.default_height = effect_node.at("default_height").get<float>();
+		}
+		if (effect_node.contains("default_angle_degrees"))
+		{
+			if (!effect_node.at("default_angle_degrees").is_number()) return false;
+			entry.default_angle_degrees = effect_node.at("default_angle_degrees").get<double>();
+		}
+		if (entry.default_width < 0.0f || entry.default_height < 0.0f
+			|| ((entry.default_width == 0.0f) != (entry.default_height == 0.0f)))
+		{
+			ELYSIA_LOG_WARN("io", "Load effect manifest failed: default size must provide positive width and height: "
+				<< manifest_path);
+			return false;
+		}
 		if (entry.key.empty() || entry.animation_key.empty())
 		{
 			ELYSIA_LOG_WARN("io","Load effect manifest failed: empty effect values: "

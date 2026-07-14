@@ -301,13 +301,13 @@ int main()
 		"RyougiShiki special attacks must not create runtime atlas requests");
 
 	const auto aoko_no_effect_request = std::find_if(
-		load_plan.effect_build_requests().begin(),
-		load_plan.effect_build_requests().end(),
-		[](const elysia::resources::EffectBuildRequest& request)
+		load_plan.animation_effect_build_requests().begin(),
+		load_plan.animation_effect_build_requests().end(),
+		[](const elysia::resources::AnimationEffectBuildRequest& request)
 		{
 			return request.effect_key == "aozaki_aoko.effect.attack_air.0";
 		});
-	require(aoko_no_effect_request == load_plan.effect_build_requests().end(),
+	require(aoko_no_effect_request == load_plan.animation_effect_build_requests().end(),
 		"Aoko no_effects markers must suppress effect requests");
 
 	elysia::resources::Atlas atlas("test.animation");
@@ -319,23 +319,23 @@ int main()
 		"test.animation must create a playback instance after registration");
 
 	const auto effect_request = std::find_if(
-		load_plan.effect_build_requests().begin(),
-		load_plan.effect_build_requests().end(),
-		[](const elysia::resources::EffectBuildRequest& request)
+		load_plan.animation_effect_build_requests().begin(),
+		load_plan.animation_effect_build_requests().end(),
+		[](const elysia::resources::AnimationEffectBuildRequest& request)
 		{
 			return request.effect_key == "effect.test";
 		});
-	require(effect_request != load_plan.effect_build_requests().end(),
+	require(effect_request != load_plan.animation_effect_build_requests().end(),
 		"effect.test must create an effect request");
 	require(effect_request->animation_key == "test.animation",
 		"effect.test must reference test.animation");
 
 	elysia::effects::EffectManager* effect_manager = elysia::effects::EffectManager::instance();
-	require(effect_manager->register_effect(*effect_request),
+	require(effect_manager->register_animation_effect(*effect_request),
 		"effect.test request must register with the effect manager");
-	elysia::effects::EffectSpawnRequest effect_spawn_request;
+	elysia::effects::AnimationEffectSpawnRequest effect_spawn_request;
 	effect_spawn_request.effect_key = "effect.test";
-	require(effect_manager->create_effect(effect_spawn_request) != nullptr,
+	require(effect_manager->create_animation_effect(effect_spawn_request) != nullptr,
 		"effect.test must create an effect instance after registration");
 
 	return EXIT_SUCCESS;

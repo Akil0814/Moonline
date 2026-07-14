@@ -2,13 +2,17 @@
 #include "effect_manager.h"
 
 #include "../animation/animation_manager.h"
+#include "../scene/scene.h"
+
+#include <algorithm>
 namespace elysia::effects
 {
 namespace
 {
 std::optional<elysia::core::Vector2> resolve_effect_size(
-	const EffectSpawnRequest& request,
-	const EffectDefinition& definition
+	const AnimationEffectSpawnRequest& request,
+	const AnimationEffectDefinition& definition,
+	const elysia::animation::Animation& animation
 )
 {
 	if (request.size.has_value())
@@ -17,7 +21,14 @@ std::optional<elysia::core::Vector2> resolve_effect_size(
 	if (!definition.default_size.is_zero())
 		return definition.default_size;
 
-	return std::nullopt;
+	const elysia::resources::FrameInfo* frame = animation.current_frame();
+	if (!frame || frame->_width <= 0 || frame->_height <= 0)
+		return std::nullopt;
+
+	return elysia::core::Vector2(
+		static_cast<float>(frame->_width),
+		static_cast<float>(frame->_height)
+	);
 }
 
 elysia::core::Vector2 get_effect_top_left(
@@ -60,24 +71,24 @@ elysia::core::Vector2 get_effect_top_left(
 	}
 }
 
-void apply_effect_anchor(Effect& effect, const EffectSpawnRequest& request)
+void apply_effect_anchor(AnimationEffect& effect, const AnimationEffectSpawnRequest& request)
 {
 	effect.set_position(get_effect_top_left(request.position, effect.size(), request.anchor));
 }
 }
 
-bool EffectManager::register_effect(const std::vector<elysia::resources::EffectBuildRequest>& requests)
+bool EffectManager::register_animation_effect(const std::vector<elysia::resources::AnimationEffectBuildRequest>& requests)
 {
-	for (const elysia::resources::EffectBuildRequest& request : requests)
+	for (const elysia::resources::AnimationEffectBuildRequest& request : requests)
 	{
-		if (!register_effect(request))
+		if (!register_animation_effect(request))
 			return false;
 	}
 
 	return true;
 }
 
-bool EffectManager::register_effect(const elysia::resources::EffectBuildRequest& request)
+bool EffectManager::register_animation_effect(const elysia::resources::AnimationEffectBuildRequest& request)
 {
 	if (request.effect_key.empty())
 	{
@@ -91,33 +102,42 @@ bool EffectManager::register_effect(const elysia::resources::EffectBuildRequest&
 		return false;
 	}
 
+	if (request.default_size.x < 0.0f || request.default_size.y < 0.0f
+		|| ((request.default_size.x == 0.0f) != (request.default_size.y == 0.0f)))
+	{
+		ELYSIA_LOG_WARN("effects", "Register effect failed: default size must provide positive width and height.");
+		return false;
+	}
+
 	if (!elysia::animation::AnimationManager::instance()->find_definition(request.animation_key))
 	{
 		ELYSIA_LOG_WARN("effects","Register effect failed: can't find animation definition.");
 		return false;
 	}
 
-	EffectDefinition definition;
+	AnimationEffectDefinition definition;
 	definition.effect_key = request.effect_key;
 	definition.animation_key = request.animation_key;
+	definition.default_size = request.default_size;
+	definition.angle_degrees = request.default_angle_degrees;
 
-	_definitions[request.effect_key] = definition;
+	_animation_effect_definitions[request.effect_key] = definition;
 	return true;
 }
 
-const EffectDefinition* EffectManager::find_definition(const std::string_view& key) const
+const AnimationEffectDefinition* EffectManager::find_animation_effect_definition(const std::string_view& key) const
 {
-	std::unordered_map<std::string, EffectDefinition>::const_iterator iterator =
-		_definitions.find(std::string(key));
-	if (iterator == _definitions.end())
+	std::unordered_map<std::string, AnimationEffectDefinition>::const_iterator iterator =
+		_animation_effect_definitions.find(std::string(key));
+	if (iterator == _animation_effect_definitions.end())
 		return nullptr;
 
 	return &iterator->second;
 }
 
-std::unique_ptr<Effect> EffectManager::create_effect(const EffectSpawnRequest& request) const
+std::unique_ptr<AnimationEffect> EffectManager::create_animation_effect(const AnimationEffectSpawnRequest& request) const
 {
-	const EffectDefinition* definition = find_definition(request.effect_key);
+	const AnimationEffectDefinition* definition = find_animation_effect_definition(request.effect_key);
 
 	if (!definition)
 	{
@@ -136,13 +156,14 @@ std::unique_ptr<Effect> EffectManager::create_effect(const EffectSpawnRequest& r
 		return nullptr;
 	}
 
-	std::unique_ptr<Effect> effect = std::make_unique<Effect>(
+	const std::optional<elysia::core::Vector2> final_size = resolve_effect_size(request, *definition, *animation);
+
+	std::unique_ptr<AnimationEffect> effect = std::make_unique<AnimationEffect>(
 		definition->effect_key,
 		definition->animation_key,
 		std::move(animation)
 	);
 
-	const std::optional<elysia::core::Vector2> final_size = resolve_effect_size(request, *definition);
 	if (final_size.has_value())
 		effect->set_size(*final_size);
 
@@ -158,7 +179,17 @@ std::unique_ptr<Effect> EffectManager::create_effect(const EffectSpawnRequest& r
 	else
 		effect->set_flip(elysia::core::SpriteFlip::None);
 
+	effect->set_start_delay(std::max(0.0, request.start_delay_seconds));
+
 	return effect;
+}
+
+AnimationEffect* EffectManager::spawn_animation_effect(
+	elysia::scene::Scene& scene,
+	const AnimationEffectSpawnRequest& request
+) const
+{
+	return scene.add_object(create_animation_effect(request));
 }
 
 }

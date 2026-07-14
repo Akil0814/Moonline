@@ -166,7 +166,7 @@ void GameContentLoader::update()
 
 	if (_state == GameContentLoaderState::RegisteringEffects)
 	{
-		if (!register_effects())
+		if (!register_animation_effects())
 			return;
 
 		_state = GameContentLoaderState::Finished;
@@ -243,7 +243,7 @@ bool GameContentLoader::initialize_streaming_work()
 		+ _load_plan.sound_requests().size()
 		+ _load_plan.music_requests().size()
 		+ _load_plan.animation_build_requests().size()
-		+ _load_plan.effect_build_requests().size();
+		+ _load_plan.animation_effect_build_requests().size();
 
 	start_worker_threads();
 	return true;
@@ -617,12 +617,12 @@ bool GameContentLoader::register_animations()
 	return true;
 }
 
-bool GameContentLoader::register_effects()
+bool GameContentLoader::register_animation_effects()
 {
 	elysia::effects::EffectManager* effect_manager = elysia::effects::EffectManager::instance();
-	for (const elysia::resources::EffectBuildRequest& request : _load_plan.effect_build_requests())
+	for (const elysia::resources::AnimationEffectBuildRequest& request : _load_plan.animation_effect_build_requests())
 	{
-		if (!effect_manager->register_effect(request))
+		if (!effect_manager->register_animation_effect(request))
 		{
 			fail("GameContentLoader effect registration failed.");
 			return false;

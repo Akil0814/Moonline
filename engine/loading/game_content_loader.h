@@ -67,7 +67,7 @@ private:
 	bool load_fonts();
 	bool load_audio();
 	bool register_animations();
-	bool register_effects();
+	bool register_animation_effects();
 	void update_progress_value();
 	void fail(std::string message);
 

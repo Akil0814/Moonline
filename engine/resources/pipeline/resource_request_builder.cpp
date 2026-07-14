@@ -328,12 +328,12 @@ bool ResourceRequestBuilder::append_animation_manifest_requests(
 	return true;
 }
 
-bool ResourceRequestBuilder::append_effect_manifest_requests(
-	const elysia::io::EffectManifest& effect_manifest,
-	std::vector<EffectBuildRequest>& effect_build_requests
+bool ResourceRequestBuilder::append_animation_effect_manifest_requests(
+	const elysia::io::AnimationEffectManifest& animation_effect_manifest,
+	std::vector<AnimationEffectBuildRequest>& animation_effect_build_requests
 ) const
 {
-	for (const elysia::io::EffectManifestEntry& entry : effect_manifest.effects)
+	for (const elysia::io::AnimationEffectManifestEntry& entry : animation_effect_manifest.effects)
 	{
 		if (entry.key.empty() || entry.animation_key.empty())
 		{
@@ -342,10 +342,12 @@ bool ResourceRequestBuilder::append_effect_manifest_requests(
 			return false;
 		}
 
-		EffectBuildRequest request;
+		AnimationEffectBuildRequest request;
 		request.effect_key = entry.key;
 		request.animation_key = entry.animation_key;
-		effect_build_requests.push_back(std::move(request));
+		request.default_size = elysia::core::Vector2(entry.default_width, entry.default_height);
+		request.default_angle_degrees = entry.default_angle_degrees;
+		animation_effect_build_requests.push_back(std::move(request));
 	}
 
 	return true;
@@ -540,7 +542,7 @@ bool ResourceRequestBuilder::append_animated_entity_effect_requests(
 	const elysia::io::AnimationEffectLayout& effect_layout,
 	std::vector<AtlasBuildRequest>& atlas_build_requests,
 	std::vector<AnimationBuildRequest>& animation_build_requests,
-	std::vector<EffectBuildRequest>& effect_build_requests
+	std::vector<AnimationEffectBuildRequest>& animation_effect_build_requests
 ) const
 {
 	if (character_config.id.empty() || character_config.asset_key.empty())
@@ -645,13 +647,15 @@ bool ResourceRequestBuilder::append_animated_entity_effect_requests(
 		animation_request.loop = playback_config.loop;
 		animation_request.segment_index = clip_config.segment_index;
 
-		EffectBuildRequest effect_request;
+		AnimationEffectBuildRequest effect_request;
 		effect_request.effect_key = effect_key;
 		effect_request.animation_key = animation_key;
+		effect_request.default_size = elysia::core::Vector2(effect_entry.default_width, effect_entry.default_height);
+		effect_request.default_angle_degrees = effect_entry.default_angle_degrees;
 
 		atlas_build_requests.push_back(std::move(atlas_request));
 		animation_build_requests.push_back(std::move(animation_request));
-		effect_build_requests.push_back(std::move(effect_request));
+		animation_effect_build_requests.push_back(std::move(effect_request));
 	}
 
 	return true;
