@@ -16,8 +16,10 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <streambuf>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace
@@ -49,16 +51,42 @@ void remove_test_path(const std::filesystem::path& path)
     require(!error,"logger test cleanup must succeed");
 }
 
-struct CapturedSdlLogs
+class CapturedConsoleLogs final : public std::streambuf
 {
+public:
     std::vector<std::string> messages;
-};
 
-void SDLCALL capture_sdl_log(void* userdata,int,SDL_LogPriority,const char* message)
-{
-    auto* captured = static_cast<CapturedSdlLogs*>(userdata);
-    captured->messages.emplace_back(message ? message : "");
-}
+protected:
+    int_type overflow(int_type character) override
+    {
+        if (traits_type::eq_int_type(character,traits_type::eof()))
+            return traits_type::not_eof(character);
+        append_character(traits_type::to_char_type(character));
+        return character;
+    }
+
+    std::streamsize xsputn(const char* text,std::streamsize count) override
+    {
+        for (std::streamsize index = 0;index < count;++index)
+            append_character(text[index]);
+        return count;
+    }
+
+private:
+    void append_character(char character)
+    {
+        if (character == '\n')
+        {
+            messages.push_back(std::move(_current_line));
+            _current_line.clear();
+            return;
+        }
+        if (character != '\r')
+            _current_line.push_back(character);
+    }
+
+    std::string _current_line;
+};
 
 void test_logger_console_sink()
 {
@@ -69,12 +97,9 @@ void test_logger_console_sink()
     auto* logger = tools::Logger::instance();
     logger->shutdown();
 
-    SDL_LogOutputFunction previous_callback = nullptr;
-    void* previous_userdata = nullptr;
-    SDL_LogGetOutputFunction(&previous_callback,&previous_userdata);
-    CapturedSdlLogs captured;
+    CapturedConsoleLogs captured;
     captured.messages.reserve(8);
-    SDL_LogSetOutputFunction(capture_sdl_log,&captured);
+    std::streambuf* previous_console_buffer = std::clog.rdbuf(&captured);
 
     tools::LoggerConfig console_config;
     console_config.file_mode = tools::LogFileMode::Disabled;
@@ -83,14 +108,15 @@ void test_logger_console_sink()
     const unsigned int console_call_line = __LINE__ + 1;
     ELYSIA_LOG("console-test","console marker");
     require(captured.messages.size() == 1,"enabled console sink must emit exactly once");
-    require(captured.messages.front().find("[INFO]") != std::string::npos
+    require(captured.messages.front().find("INFO:") == std::string::npos
+            && captured.messages.front().find("[INFO]") != std::string::npos
             && captured.messages.front().find("[console-test]") != std::string::npos
             && captured.messages.front().find("console marker") != std::string::npos
             && captured.messages.front().find("logging_tests.cpp:" + std::to_string(console_call_line)) != std::string::npos
             && captured.messages.front().find("tests/tools/logging_tests.cpp") == std::string::npos
             && captured.messages.front().find("test_logger_console_sink") == std::string::npos
             && captured.messages.front().find("__cdecl") == std::string::npos,
-        "console sink must emit a compact file-and-line call site without a function signature");
+        "console sink must emit one structured level without an SDL priority prefix");
 
     captured.messages.clear();
     const unsigned int terminating_call_line = __LINE__ + 1;
@@ -301,7 +327,7 @@ void test_logger_console_sink()
     logger->shutdown();
     remove_test_path(blocked_path);
 
-    SDL_LogSetOutputFunction(previous_callback,previous_userdata);
+    std::clog.rdbuf(previous_console_buffer);
 }
 
 void test_logger_file_modes_and_noexcept()
@@ -462,11 +488,8 @@ void test_path_manager_failure_logging()
     require(logger->configure(logger_config),"path logger test must configure the console sink");
     logger->initialize();
 
-    SDL_LogOutputFunction previous_callback = nullptr;
-    void* previous_userdata = nullptr;
-    SDL_LogGetOutputFunction(&previous_callback,&previous_userdata);
-    CapturedSdlLogs captured;
-    SDL_LogSetOutputFunction(capture_sdl_log,&captured);
+    CapturedConsoleLogs captured;
+    std::streambuf* previous_console_buffer = std::clog.rdbuf(&captured);
 
     std::filesystem::current_path(temporary_root);
     require(!path_manager->init(),"a directory without an Elysia project root must fail initialization");
@@ -495,7 +518,7 @@ void test_path_manager_failure_logging()
     std::filesystem::current_path(original_working_directory);
     require(path_manager->init() && path_manager->ensure_runtime_dirs(),
         "path logger test must restore the workspace path manager state");
-    SDL_LogSetOutputFunction(previous_callback,previous_userdata);
+    std::clog.rdbuf(previous_console_buffer);
     logger->shutdown();
     remove_test_path(temporary_root);
 }
@@ -509,4 +532,3 @@ int main()
     std::cout << "logging tests passed\n";
     return EXIT_SUCCESS;
 }
-

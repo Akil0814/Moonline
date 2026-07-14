@@ -87,8 +87,8 @@ private:
     [[nodiscard]] std::string format_line(LogLevel level,std::string_view category,
         std::string_view message,const std::source_location& location) const;
     void disable_file_sink() noexcept;
-    static void write_console_line(LogLevel level,std::string_view line) noexcept;
-    static void write_sdl_fallback(LogLevel level,std::string_view category,
+    static void write_console_line(std::string_view line) noexcept;
+    static void write_console_fallback(LogLevel level,std::string_view category,
         std::string_view message,const std::source_location& location) noexcept;
 
 private:

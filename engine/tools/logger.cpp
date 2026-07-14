@@ -2,11 +2,10 @@
 
 #include "../io/path/path_manager.h"
 
-#include <SDL.h>
-
 #include <chrono>
 #include <ctime>
 #include <iomanip>
+#include <iostream>
 #if defined(_WIN32)
 #include <process.h>
 #else
@@ -34,19 +33,6 @@ namespace
     case LogLevel::Terminating: return "TERMINATING";
     }
     return "UNKNOWN";
-}
-
-[[nodiscard]] SDL_LogPriority sdl_priority(LogLevel level) noexcept
-{
-    switch (level)
-    {
-    case LogLevel::Debug: return SDL_LOG_PRIORITY_DEBUG;
-    case LogLevel::Info: return SDL_LOG_PRIORITY_INFO;
-    case LogLevel::Warn: return SDL_LOG_PRIORITY_WARN;
-    case LogLevel::Error: return SDL_LOG_PRIORITY_ERROR;
-    case LogLevel::Terminating: return SDL_LOG_PRIORITY_ERROR;
-    }
-    return SDL_LOG_PRIORITY_ERROR;
 }
 
 [[nodiscard]] std::tm local_time(std::time_t time)
@@ -212,13 +198,13 @@ void Logger::log(LogLevel level,std::string_view category,std::string_view messa
             }
         }
         if (_config.console_enabled)
-            write_console_line(level,line);
+            write_console_line(line);
     }
     catch (...)
     {
         disable_file_sink();
         if (_config.console_enabled)
-            write_sdl_fallback(level,category,message,location);
+            write_console_fallback(level,category,message,location);
     }
 }
 
@@ -298,30 +284,28 @@ void Logger::disable_file_sink() noexcept
     }
 }
 
-void Logger::write_console_line(LogLevel level,std::string_view line) noexcept
+void Logger::write_console_line(std::string_view line) noexcept
 {
     try
     {
-        const char* text = line.empty() ? "" : line.data();
-        SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION,sdl_priority(level),"%.*s",
-            static_cast<int>(line.size()),text);
+        std::clog.write(line.data(),static_cast<std::streamsize>(line.size()));
+        std::clog.put('\n');
+        std::clog.flush();
     }
     catch (...)
     {
     }
 }
 
-void Logger::write_sdl_fallback(LogLevel level,std::string_view category,std::string_view message,
+void Logger::write_console_fallback(LogLevel level,std::string_view category,std::string_view message,
     const std::source_location& location) noexcept
 {
     try
     {
-        const char* category_text = category.empty() ? "" : category.data();
-        const char* message_text = message.empty() ? "" : message.data();
         const std::string_view source_file = source_file_name(location);
-        SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION,sdl_priority(level),"[%.*s] (%.*s:%u) %.*s",
-            static_cast<int>(category.size()),category_text,static_cast<int>(source_file.size()),source_file.data(),
-            location.line(),static_cast<int>(message.size()),message_text);
+        std::clog << '[' << level_name(level) << "] [" << category << "] ("
+            << source_file << ':' << location.line() << ") " << message << '\n';
+        std::clog.flush();
     }
     catch (...)
     {
