@@ -31,9 +31,9 @@ shared API contracts, and a header coverage checklist.
 
 ## Asset Configuration Documentation
 
-The current animation JSON loading chain, schema rules, path resolution, and frame-directory
-requirements are documented in Chinese in
-[`docs/animation-json-config.md`](animation-json-config.md).
+The current resource-loading JSON chain, manifest schemas, entity content rules, animation paths,
+and failure behavior are documented in Chinese in
+[`docs/json/`](json/README.md).
 
 
 ## Planned Game Features
