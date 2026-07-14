@@ -145,31 +145,6 @@ struct AnimationLayout
 	std::unordered_map<std::string, AnimationLayoutEntry> animations;
 };
 
-struct AnimationEffectPlaybackConfig
-{
-	size_t frame_count = 0;
-	double fps = 10.0;
-	bool loop = true;
-};
-
-struct AnimationEffectLayoutEntry
-{
-	std::filesystem::path path;
-	std::filesystem::path segment_path;
-	bool has_path = false;
-	bool has_segment_path = false;
-	float default_width = 0.0f;
-	float default_height = 0.0f;
-	double default_angle_degrees = 0.0;
-	AnimationEffectPlaybackConfig playback;
-	std::vector<AnimationEffectPlaybackConfig> segments;
-};
-
-struct AnimationEffectLayout
-{
-	std::unordered_map<std::string, AnimationEffectLayoutEntry> effects;
-};
-
 struct EntityTextureLayoutEntry
 {
 	std::string key;
@@ -208,19 +183,40 @@ struct AnimationConfig
 	std::vector<AnimationClipConfig> clips;
 };
 
+struct EffectDefinitionConfigEntry
+{
+	std::string effect_name;
+	std::string animation_name;
+	float default_width = 0.0f;
+	float default_height = 0.0f;
+	double default_angle_degrees = 0.0;
+};
+
+struct EffectDefinitionConfig
+{
+	std::vector<EffectDefinitionConfigEntry> effects;
+};
+
 struct AnimatedEntityAnimationContentEntry
 {
 	AnimatedEntityResourceConfig entity_config;
 	AnimationConfig animation_config;
 };
 
+struct AnimatedEntityEffectContentEntry
+{
+	AnimatedEntityResourceConfig entity_config;
+	AnimationConfig animation_config;
+	EffectDefinitionConfig effect_config;
+};
+
 struct AnimatedEntityContent
 {
 	std::vector<AnimatedEntityResourceConfig> entities;
 	std::vector<AnimatedEntityAnimationContentEntry> animation_entries;
+	std::vector<AnimatedEntityEffectContentEntry> effect_entries;
 	std::optional<EntityTextureLayout> texture_layout;
 	std::optional<EntityAudioLayout> audio_layout;
-	std::optional<AnimationEffectLayout> effect_layout;
 };
 
 

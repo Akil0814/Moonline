@@ -1,0 +1,8 @@
+{
+  "effects": {
+    "attack_normal": { "animation": "attack_normal" },
+    "attack_air": { "animation": "attack_air" },
+    "attack_ranged_ground": { "animation": "attack_ranged_ground" },
+    "attack_ranged_air": { "animation": "attack_ranged_air" }
+  }
+}

@@ -12,24 +12,6 @@ namespace elysia::resources
 {
 namespace
 {
-std::filesystem::path resolve_segment_path(
-	const std::filesystem::path& segment_path,
-	size_t segment_index
-)
-{
-	std::string path_string = segment_path.string();
-	std::string segment_number = std::to_string(segment_index + 1);
-
-	size_t marker_position = path_string.find("{segment}");
-	if (marker_position != std::string::npos)
-	{
-		path_string.replace(marker_position, std::string("{segment}").size(), segment_number);
-		return path_string;
-	}
-
-	return (segment_path / segment_number).lexically_normal();
-}
-
 std::string make_animated_entity_frame_prefix(
 	const std::string& asset_key,
 	const std::string& animation_name,
@@ -475,9 +457,11 @@ bool ResourceRequestBuilder::append_animated_entity_animation_requests(
 	const elysia::io::AnimatedEntityResourceConfig& character_config,
 	const elysia::io::AnimationConfig& animation_config,
 	std::vector<AtlasBuildRequest>& atlas_build_requests,
-	std::vector<AnimationBuildRequest>& animation_build_requests
+	std::vector<AnimationBuildRequest>& animation_build_requests,
+	AnimatedEntityAnimationKind kind
 ) const
 {
+	const bool is_effect = kind == AnimatedEntityAnimationKind::Effect;
 	if (character_config.id.empty() || character_config.asset_key.empty())
 	{
 		ELYSIA_LOG_WARN("resource","Build resource requests failed: character id or asset key is empty.");
@@ -509,15 +493,15 @@ bool ResourceRequestBuilder::append_animated_entity_animation_requests(
 			return false;
 		}
 
-		std::string animation_key =
-			character_config.id + "." + clip_config.animation_name;
+		std::string animation_key = character_config.id
+			+ (is_effect ? ".effect." : ".") + clip_config.animation_name;
 		if (clip_config.is_segment)
 			animation_key += "." + std::to_string(clip_config.segment_index);
 
 		AtlasBuildRequest atlas_request;
 		atlas_request.atlas_key = animation_key;
 		atlas_request.frame_count = clip_config.frame_count;
-		if (character_config.horizontal_strip)
+		if (!is_effect && character_config.horizontal_strip)
 		{
 			atlas_request.source_type = AtlasSourceType::HorizontalStrip;
 			atlas_request.source_path = (
@@ -538,7 +522,7 @@ bool ResourceRequestBuilder::append_animated_entity_animation_requests(
 				clip_config.animation_name,
 				clip_config.is_segment,
 				clip_config.segment_index,
-				false
+				is_effect
 			);
 			if (has_inferred_frame_sequence(directory_path, frame_filename_prefix))
 				atlas_request.frame_filename_prefix = frame_filename_prefix;
@@ -558,12 +542,11 @@ bool ResourceRequestBuilder::append_animated_entity_animation_requests(
 	return true;
 }
 
-bool ResourceRequestBuilder::append_animated_entity_effect_requests(
+bool ResourceRequestBuilder::append_animated_entity_effect_definition_requests(
 	const elysia::io::AnimatedEntityResourceConfig& character_config,
 	const elysia::io::AnimationConfig& animation_config,
-	const elysia::io::AnimationEffectLayout& effect_layout,
-	std::vector<AtlasBuildRequest>& atlas_build_requests,
-	std::vector<AnimationBuildRequest>& animation_build_requests,
+	const elysia::io::EffectDefinitionConfig& effect_config,
+	const std::vector<AnimationBuildRequest>& animation_build_requests,
 	std::vector<AnimationEffectBuildRequest>& animation_effect_build_requests
 ) const
 {
@@ -573,111 +556,47 @@ bool ResourceRequestBuilder::append_animated_entity_effect_requests(
 		return false;
 	}
 
-	for (const elysia::io::AnimationClipConfig& clip_config : animation_config.clips)
+	for (const elysia::io::EffectDefinitionConfigEntry& definition : effect_config.effects)
 	{
-		std::unordered_map<std::string, elysia::io::AnimationEffectLayoutEntry>::const_iterator effect_iterator =
-			effect_layout.effects.find(clip_config.animation_name);
-		if (effect_iterator == effect_layout.effects.end())
-			continue;
-
-		if (clip_config.animation_name.empty())
+		if (definition.effect_name.empty() || definition.animation_name.empty())
 		{
-			ELYSIA_LOG_WARN("resource","Build effect requests failed: animation name is empty: "
+			ELYSIA_LOG_WARN("resource","Build effect requests failed: effect or animation name is empty: "
 				<< character_config.id);
 			return false;
 		}
-
-		const elysia::io::AnimationEffectLayoutEntry& effect_entry = effect_iterator->second;
-		std::filesystem::path effect_relative_path;
-		elysia::io::AnimationEffectPlaybackConfig playback_config;
-
-		if (clip_config.is_segment)
+		bool matched_animation = false;
+		for (const elysia::io::AnimationClipConfig& clip_config : animation_config.clips)
 		{
-			if (!effect_entry.has_segment_path)
+			if (clip_config.animation_name != definition.animation_name) continue;
+			matched_animation = true;
+			std::string suffix = definition.animation_name;
+			std::string effect_suffix = definition.effect_name;
+			if (clip_config.is_segment)
 			{
-				ELYSIA_LOG_WARN("resource","Build effect requests failed: segment_path is missing in effect config: "
-					<< clip_config.animation_name);
+				suffix += "." + std::to_string(clip_config.segment_index);
+				effect_suffix += "." + std::to_string(clip_config.segment_index);
+			}
+			const std::string animation_key = character_config.id + ".effect." + suffix;
+			const bool request_exists = std::any_of(
+				animation_build_requests.begin(), animation_build_requests.end(),
+				[&animation_key](const AnimationBuildRequest& request) { return request.animation_key == animation_key; });
+			if (!request_exists)
+			{
+				ELYSIA_LOG_WARN("resource", "Build effect requests failed: animation request does not exist: " << animation_key);
 				return false;
 			}
-
-			if (clip_config.segment_index >= effect_entry.segments.size())
-			{
-				ELYSIA_LOG_WARN("resource","Skip effect requests: segment playback is missing: "
-					<< character_config.id << "." << clip_config.animation_name
-					<< "." << clip_config.segment_index);
-				continue;
-			}
-
-			effect_relative_path = resolve_segment_path(
-				effect_entry.segment_path,
-				clip_config.segment_index
-			);
-			playback_config = effect_entry.segments[clip_config.segment_index];
+			AnimationEffectBuildRequest request;
+			request.effect_key = character_config.id + ".effect." + effect_suffix;
+			request.animation_key = animation_key;
+			request.default_size = elysia::core::Vector2(definition.default_width, definition.default_height);
+			request.default_angle_degrees = definition.default_angle_degrees;
+			animation_effect_build_requests.push_back(std::move(request));
 		}
-		else
+		if (!matched_animation)
 		{
-			if (!effect_entry.has_path)
-			{
-				ELYSIA_LOG_WARN("resource","Build effect requests failed: path is missing in effect config: "
-					<< clip_config.animation_name);
-				return false;
-			}
-
-			effect_relative_path = effect_entry.path;
-			playback_config = effect_entry.playback;
-		}
-
-		std::filesystem::path directory_path =
-			(character_config.texture_root / effect_relative_path).lexically_normal();
-		if (directory_path.empty())
-		{
-			ELYSIA_LOG_WARN("resource","Build effect requests failed: effect directory is empty: "
-				<< character_config.id << "." << clip_config.animation_name);
+			ELYSIA_LOG_WARN("resource", "Build effect requests failed: configured animation is missing: " << definition.animation_name);
 			return false;
 		}
-
-		if (std::filesystem::is_regular_file(directory_path / ".no_effects"))
-			continue;
-
-		std::string effect_suffix = clip_config.animation_name;
-		if (clip_config.is_segment)
-			effect_suffix += "." + std::to_string(clip_config.segment_index);
-
-		const std::string animation_key =
-			character_config.id + ".effect." + effect_suffix;
-		const std::string effect_key =
-			character_config.id + ".effect." + effect_suffix;
-
-		AtlasBuildRequest atlas_request;
-		atlas_request.atlas_key = animation_key;
-		atlas_request.source_path = directory_path;
-		atlas_request.frame_count = playback_config.frame_count;
-		const std::string frame_filename_prefix = make_animated_entity_frame_prefix(
-			character_config.asset_key,
-			clip_config.animation_name,
-			clip_config.is_segment,
-			clip_config.segment_index,
-			true
-		);
-		if (has_inferred_frame_sequence(directory_path, frame_filename_prefix))
-			atlas_request.frame_filename_prefix = frame_filename_prefix;
-
-		AnimationBuildRequest animation_request;
-		animation_request.animation_key = animation_key;
-		animation_request.atlas_key = atlas_request.atlas_key;
-		animation_request.fps = playback_config.fps;
-		animation_request.loop = playback_config.loop;
-		animation_request.segment_index = clip_config.segment_index;
-
-		AnimationEffectBuildRequest effect_request;
-		effect_request.effect_key = effect_key;
-		effect_request.animation_key = animation_key;
-		effect_request.default_size = elysia::core::Vector2(effect_entry.default_width, effect_entry.default_height);
-		effect_request.default_angle_degrees = effect_entry.default_angle_degrees;
-
-		atlas_build_requests.push_back(std::move(atlas_request));
-		animation_build_requests.push_back(std::move(animation_request));
-		animation_effect_build_requests.push_back(std::move(effect_request));
 	}
 
 	return true;

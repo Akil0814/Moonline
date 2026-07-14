@@ -33,6 +33,19 @@ assets/content_registry.json
 
 实体 manifest 决定加载哪些实体以及使用哪个动画布局；布局决定动画名对应的资源相对路径；每个实体自己的 animation info 决定帧数和播放参数。
 
+角色特效动画走同一条 Animation 管线：
+
+```text
+character_content_manifest.json
+  -> resources.effect_animation_config_template: effect_animation_info.json
+  -> capabilities.effects.layouts: character_effect_animation_layout.json
+  -> AtlasBuildRequest + AnimationBuildRequest
+  -> resources.effect_info_template: effect_info.json
+  -> AnimationEffectBuildRequest
+```
+
+因此加载顺序仍是 Atlas、Animation、EffectDefinition；`effect_info.json` 不负责图片路径或播放参数。
+
 `manifests.additional` 当前只识别 `characters` 和 `enemies`。未注册的模块名会导致配置加载失败。
 
 ## 2. 核心动画 manifest
@@ -106,6 +119,8 @@ assets/content_registry.json
 | --- | --- |
 | `texture_root` | 动画或纹理 capability 存在时必填 |
 | `animation_config_template` | 动画 capability 存在时必填，而且必须包含 `{asset_key}` |
+| `effect_animation_config_template` | effect capability 存在时必填，而且必须包含 `{asset_key}` |
+| `effect_info_template` | effect capability 存在时必填，而且必须包含 `{asset_key}` |
 | `audio_root` | 音频 capability 使用的根目录 |
 
 `texture_root` 的实体化规则：
@@ -138,7 +153,7 @@ assets/textures/enemy/normal/Slime
 
 - 每个值必须是字符串并指向存在的文件。
 - entity manifest 中的 `animation_layout` 必须能在这里找到。
-- 使用 `effects` capability 时必须同时启用 `animations`。
+- `capabilities.effects.layouts` 使用同样的布局名映射结构，并通过 entity 的 `animation_layout` 选择特效动画布局。
 
 ## 4. Entity manifest
 
@@ -169,7 +184,7 @@ assets/textures/enemy/normal/Slime
 | `animation_layout` | string | 使用动画 capability 时必须提供，并且必须匹配已注册布局 |
 | `horizontal_strip` | boolean | 可选，默认 `false`；为 `true` 时该实体的全部动画使用横向序列图 |
 
-实体级 `horizontal_strip` 不支持在 animation info 中逐项覆盖，也不改变实体 effect layout 的目录帧规则。
+实体级 `horizontal_strip` 不支持在 animation info 中逐项覆盖，也不改变特效动画的目录帧规则。
 
 以 Slime 为例：
 
@@ -337,48 +352,66 @@ animation key   = ryougi_shiki.attack_normal.0
 - 默认宽高可省略，此时都为 0；若提供尺寸，宽高必须同时为正数。
 - `default_angle_degrees` 可省略，默认 0。
 
-### 8.2 实体 effect layout
+### 8.2 实体特效动画 layout 与 info
 
-普通 effect 在同一条目中提供路径和播放参数：
+实体特效动画完全复用 Animation layout 和 Animation info 格式。共享 layout 只描述路径：
 
 ```json
 {
-  "effects": {
+  "animations": {
     "attack_ranged_ground": {
-      "path": "animation/effects/attack/ranged/ground",
-      "frame_count": 1,
-      "fps": 10,
-      "loop": false
+      "path": "animation/effects/attack/ranged/ground"
     }
   }
 }
 ```
 
-分段 effect 使用 `segment_path` 和非空 `segments` 数组：
+每角色的 `effect_animation_info.json` 记录实际帧数和播放参数：
+
+```json
+{
+  "attack_normal": {
+    "segments": [
+      { "frame_count": 3, "fps": 10, "loop": false }
+    ]
+  }
+}
+```
+
+其普通/分段格式、数值限制和路径互斥规则与第 5、6 节完全一致。没有特效素材的动画或分段不写入该角色的配置，因此不会生成 Atlas 或 Animation 请求。
+
+特效动画运行时 key 和标准帧前缀为：
+
+```text
+animation key = <entity>.effect.<animation>[.<segment index>]
+frame prefix  = <asset_key>_effects_<animation>[_<segment number>]
+```
+
+### 8.3 实体 effect info
+
+每角色的 `effect_info.json` 只把已经配置的特效动画注册为 EffectDefinition：
 
 ```json
 {
   "effects": {
-    "attack_normal": {
-      "segment_path": "animation/effects/attack/normal/{segment}",
-      "segments": [
-        { "frame_count": 3, "fps": 10, "loop": false }
-      ]
+    "slash_trail": {
+      "animation": "attack_normal",
+      "default_width": 0,
+      "default_height": 0,
+      "default_angle_degrees": 0
     }
   }
 }
 ```
 
-规则如下：
-
-- 普通 effect 必须包含 `path`、`frame_count`、`fps`、`loop`，不可同时包含 `segment_path` 或 `segments`。
-- 分段 effect 必须包含 `segment_path` 和非空 `segments`，顶层不可再包含 `frame_count`、`fps`、`loop`。
-- 每项 playback 的 `frame_count` 和 `fps` 必须大于 0。
-- `default_width` 和 `default_height` 可省略；提供时必须同时为正数。
-- `default_angle_degrees` 可选，默认 0。
-- effect 名通过同名 animation info 条目关联；布局中没有对应 effect 时不生成 effect。
-- 分段 effect 的 playback 数量不足时，缺少配置的动画段会被跳过。
-- effect 目录内存在 `.no_effects` 文件时，该 effect 不生成资源请求。
+- `effects` 必须是对象；属性名是逻辑 effect 名，且不能为空。
+- `animation` 必须是非空字符串，并且必须存在于同角色的 `effect_animation_info.json`。
+- effect 名与 animation 名可以不同。
+- 映射到分段动画时，会为该动画已经配置的每个 segment 自动生成 EffectDefinition。
+- effect key 为 `<entity>.effect.<effect>[.<segment index>]`，引用对应的特效 animation key。
+- `default_width` 和 `default_height` 可同时省略或同时为 0，此时使用动画单帧的自然尺寸；显式设置时必须同时为正数。
+- `default_angle_degrees` 可省略，默认 0。
+- 未配置的动画、尾段或 effect 不生成任何资源请求；是否存在素材完全由每角色 JSON 显式表达。
 
 ## 9. Atlas 图片来源规则
 

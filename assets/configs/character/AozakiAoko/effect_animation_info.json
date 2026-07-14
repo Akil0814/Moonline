@@ -1,0 +1,4 @@
+{
+  "attack_ranged_ground": { "frame_count": 31, "fps": 10, "loop": false },
+  "attack_ranged_air": { "frame_count": 16, "fps": 10, "loop": false }
+}
