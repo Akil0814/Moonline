@@ -16,6 +16,7 @@ class SoundPlaybackScheduler
 public:
     using StartSoundCallback = std::function<int(std::string_view,int)>;
     using ChannelPlayingCallback = std::function<bool(int)>;
+    using StopSoundCallback = std::function<void(int)>;
 
     [[nodiscard]] bool set_group_config(SoundGroup group,const SoundGroupConfig& config);
     [[nodiscard]] const SoundGroupConfig& group_config(SoundGroup group) const;
@@ -24,9 +25,15 @@ public:
         std::string_view key,
         const SoundPlayOptions& options,
         const StartSoundCallback& start_sound,
-        const ChannelPlayingCallback& is_channel_playing
+        const ChannelPlayingCallback& is_channel_playing,
+        const StopSoundCallback& stop_sound = {}
     );
-    void update(double delta_seconds,const StartSoundCallback& start_sound,const ChannelPlayingCallback& is_channel_playing);
+    void update(
+        double delta_seconds,
+        const StartSoundCallback& start_sound,
+        const ChannelPlayingCallback& is_channel_playing,
+        const StopSoundCallback& stop_sound = {}
+    );
 
     [[nodiscard]] bool cancel_scheduled_sound(ScheduledSoundId id);
     void cancel_all_scheduled_sounds();
@@ -52,7 +59,8 @@ private:
         std::string_view key,
         const SoundPlayOptions& options,
         const StartSoundCallback& start_sound,
-        const ChannelPlayingCallback& is_channel_playing
+        const ChannelPlayingCallback& is_channel_playing,
+        const StopSoundCallback& stop_sound
     );
     void prune_finished_sounds(const ChannelPlayingCallback& is_channel_playing);
     [[nodiscard]] std::size_t active_count(SoundGroup group) const;
