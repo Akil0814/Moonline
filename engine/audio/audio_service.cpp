@@ -67,6 +67,10 @@ SoundRequestResult AudioService::request_sound(const std::string_view& key, cons
         [](int channel)
         {
             return Mix_Playing(channel) != 0;
+        },
+        [](int channel)
+        {
+            Mix_HaltChannel(channel);
         });
 }
 
@@ -83,6 +87,10 @@ void AudioService::update(double delta_seconds)
         [](int channel)
         {
             return Mix_Playing(channel) != 0;
+        },
+        [](int channel)
+        {
+            Mix_HaltChannel(channel);
         });
 }
 

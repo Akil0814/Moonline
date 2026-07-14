@@ -31,12 +31,19 @@ inline constexpr std::array<std::size_t,kSoundGroupCount> kSoundGroupHardLimits{
     return kSoundGroupHardLimits[sound_group_index(group)];
 }
 
+enum class SoundOverflowPolicy
+{
+    IgnoreNew,
+    ReplaceOldest,
+};
+
 struct SoundGroupConfig
 {
     // nullopt uses the fixed maximum assigned to this group.
     std::optional<std::size_t> max_simultaneous = std::nullopt;
     // Applied per sound key after a successful start.
     std::chrono::milliseconds cooldown{ 0 };
+    SoundOverflowPolicy overflow_policy = SoundOverflowPolicy::IgnoreNew;
 };
 
 struct SoundPlayOptions
