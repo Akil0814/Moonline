@@ -31,12 +31,20 @@ enum class LogFileMode
     NewRunFile
 };
 
+enum class ConsoleColorMode
+{
+    Auto,
+    Always,
+    Never
+};
+
 struct LoggerConfig
 {
     LogLevel minimum_level{ LogLevel::Debug };
     LogFileMode file_mode{ LogFileMode::NewRunFile };
     std::string append_file_name{ "Elysia.log" };
     bool console_enabled = true;
+    ConsoleColorMode console_color_mode{ ConsoleColorMode::Auto };
 };
 
 class Logger : public Singleton<Logger>
@@ -87,9 +95,9 @@ private:
     [[nodiscard]] std::string format_line(LogLevel level,std::string_view category,
         std::string_view message,const std::source_location& location) const;
     void disable_file_sink() noexcept;
-    static void write_console_line(std::string_view line) noexcept;
+    static void write_console_line(LogLevel level,std::string_view line,bool colors_enabled) noexcept;
     static void write_console_fallback(LogLevel level,std::string_view category,
-        std::string_view message,const std::source_location& location) noexcept;
+        std::string_view message,const std::source_location& location,bool colors_enabled) noexcept;
 
 private:
     mutable std::mutex _mutex;
@@ -97,6 +105,7 @@ private:
     std::ofstream _file;
     std::optional<std::filesystem::path> _active_file_path;
     bool _initialized = false;
+    bool _console_colors_enabled = false;
 };
 }
 

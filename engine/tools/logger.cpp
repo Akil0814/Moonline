@@ -3,11 +3,16 @@
 #include "../io/path/path_manager.h"
 
 #include <chrono>
+#include <cstdio>
+#include <cstdlib>
 #include <ctime>
 #include <iomanip>
 #include <iostream>
 #if defined(_WIN32)
+#include <io.h>
 #include <process.h>
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #else
 #include <unistd.h>
 #endif
@@ -33,6 +38,70 @@ namespace
     case LogLevel::Terminating: return "TERMINATING";
     }
     return "UNKNOWN";
+}
+
+[[nodiscard]] std::string_view console_color_code(LogLevel level) noexcept
+{
+    switch (level)
+    {
+    case LogLevel::Debug: return "\x1b[90m";
+    case LogLevel::Info: return "\x1b[36m";
+    case LogLevel::Warn: return "\x1b[33m";
+    case LogLevel::Error: return "\x1b[31m";
+    case LogLevel::Terminating: return "\x1b[38;5;88m";
+    }
+    return {};
+}
+
+[[nodiscard]] bool standard_error_is_terminal() noexcept
+{
+#if defined(_WIN32)
+    return _isatty(_fileno(stderr)) != 0;
+#else
+    return isatty(fileno(stderr)) != 0;
+#endif
+}
+
+#if defined(_WIN32)
+[[nodiscard]] bool enable_virtual_terminal_processing() noexcept
+{
+    const HANDLE handle = GetStdHandle(STD_ERROR_HANDLE);
+    if (!handle || handle == INVALID_HANDLE_VALUE)
+        return false;
+
+    DWORD mode = 0;
+    if (!GetConsoleMode(handle,&mode))
+        return false;
+    if ((mode & ENABLE_VIRTUAL_TERMINAL_PROCESSING) != 0)
+        return true;
+    return SetConsoleMode(handle,mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING) != 0;
+}
+#endif
+
+[[nodiscard]] bool resolve_console_colors(ConsoleColorMode mode) noexcept
+{
+    if (mode == ConsoleColorMode::Never)
+        return false;
+
+#if defined(_WIN32)
+    if (mode == ConsoleColorMode::Always)
+    {
+        enable_virtual_terminal_processing();
+        return true;
+    }
+#else
+    if (mode == ConsoleColorMode::Always)
+        return true;
+#endif
+
+    if (std::getenv("NO_COLOR") != nullptr || !standard_error_is_terminal())
+        return false;
+
+#if defined(_WIN32)
+    return enable_virtual_terminal_processing();
+#else
+    return true;
+#endif
 }
 
 [[nodiscard]] std::tm local_time(std::time_t time)
@@ -102,6 +171,8 @@ void Logger::initialize() noexcept
             return;
         _initialized = true;
         _active_file_path.reset();
+        _console_colors_enabled = _config.console_enabled
+            && resolve_console_colors(_config.console_color_mode);
         if (_config.file_mode == LogFileMode::Disabled)
             return;
 
@@ -138,11 +209,13 @@ void Logger::shutdown() noexcept
         }
         _active_file_path.reset();
         _initialized = false;
+        _console_colors_enabled = false;
     }
     catch (...)
     {
         disable_file_sink();
         _initialized = false;
+        _console_colors_enabled = false;
     }
 }
 
@@ -198,13 +271,13 @@ void Logger::log(LogLevel level,std::string_view category,std::string_view messa
             }
         }
         if (_config.console_enabled)
-            write_console_line(line);
+            write_console_line(level,line,_console_colors_enabled);
     }
     catch (...)
     {
         disable_file_sink();
         if (_config.console_enabled)
-            write_console_fallback(level,category,message,location);
+            write_console_fallback(level,category,message,location,_console_colors_enabled);
     }
 }
 
@@ -284,11 +357,31 @@ void Logger::disable_file_sink() noexcept
     }
 }
 
-void Logger::write_console_line(std::string_view line) noexcept
+void Logger::write_console_line(LogLevel level,std::string_view line,bool colors_enabled) noexcept
 {
     try
     {
-        std::clog.write(line.data(),static_cast<std::streamsize>(line.size()));
+        const std::string_view name = level_name(level);
+        const size_t name_position = line.find(name);
+        const bool has_level_tag = name_position > 0
+            && name_position + name.size() < line.size()
+            && line[name_position - 1] == '['
+            && line[name_position + name.size()] == ']';
+        if (!colors_enabled || !has_level_tag)
+        {
+            std::clog.write(line.data(),static_cast<std::streamsize>(line.size()));
+            std::clog.put('\n');
+            std::clog.flush();
+            return;
+        }
+
+        const size_t tag_start = name_position - 1;
+        const size_t tag_end = name_position + name.size() + 1;
+        std::clog.write(line.data(),static_cast<std::streamsize>(tag_start));
+        std::clog << console_color_code(level);
+        std::clog.write(line.data() + tag_start,static_cast<std::streamsize>(tag_end - tag_start));
+        std::clog << "\x1b[0m";
+        std::clog.write(line.data() + tag_end,static_cast<std::streamsize>(line.size() - tag_end));
         std::clog.put('\n');
         std::clog.flush();
     }
@@ -298,12 +391,17 @@ void Logger::write_console_line(std::string_view line) noexcept
 }
 
 void Logger::write_console_fallback(LogLevel level,std::string_view category,std::string_view message,
-    const std::source_location& location) noexcept
+    const std::source_location& location,bool colors_enabled) noexcept
 {
     try
     {
         const std::string_view source_file = source_file_name(location);
-        std::clog << '[' << level_name(level) << "] [" << category << "] ("
+        if (colors_enabled)
+            std::clog << console_color_code(level);
+        std::clog << '[' << level_name(level) << ']';
+        if (colors_enabled)
+            std::clog << "\x1b[0m";
+        std::clog << " [" << category << "] ("
             << source_file << ':' << location.line() << ") " << message << '\n';
         std::clog.flush();
     }

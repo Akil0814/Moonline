@@ -11,6 +11,7 @@
 
 #include <SDL.h>
 
+#include <array>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -103,12 +104,14 @@ void test_logger_console_sink()
 
     tools::LoggerConfig console_config;
     console_config.file_mode = tools::LogFileMode::Disabled;
+    console_config.console_color_mode = tools::ConsoleColorMode::Never;
     require(logger->configure(console_config),"logger must accept console configuration");
     logger->initialize();
     const unsigned int console_call_line = __LINE__ + 1;
     ELYSIA_LOG("console-test","console marker");
     require(captured.messages.size() == 1,"enabled console sink must emit exactly once");
     require(captured.messages.front().find("INFO:") == std::string::npos
+            && captured.messages.front().find("\x1b[") == std::string::npos
             && captured.messages.front().find("[INFO]") != std::string::npos
             && captured.messages.front().find("[console-test]") != std::string::npos
             && captured.messages.front().find("console marker") != std::string::npos
@@ -256,11 +259,40 @@ void test_logger_console_sink()
     logger->shutdown();
 
     captured.messages.clear();
+    tools::LoggerConfig colored_console_config;
+    colored_console_config.file_mode = tools::LogFileMode::Disabled;
+    colored_console_config.console_color_mode = tools::ConsoleColorMode::Always;
+    require(logger->configure(colored_console_config),"logger must accept forced console colors");
+    logger->initialize();
+    logger->debug("color-test","debug color marker");
+    logger->info("color-test","info color marker");
+    logger->warn("color-test","warn color marker");
+    logger->error("color-test","error color marker");
+    logger->terminating("color-test","terminating color marker");
+    logger->shutdown();
+    const std::array<std::string_view,5> expected_colored_levels{
+        "\x1b[90m[DEBUG]\x1b[0m",
+        "\x1b[36m[INFO]\x1b[0m",
+        "\x1b[33m[WARN]\x1b[0m",
+        "\x1b[31m[ERROR]\x1b[0m",
+        "\x1b[38;5;88m[TERMINATING]\x1b[0m"
+    };
+    require(captured.messages.size() == expected_colored_levels.size(),
+        "forced console colors must emit all five log levels");
+    for (size_t index = 0;index < expected_colored_levels.size();++index)
+    {
+        require(captured.messages[index].find(expected_colored_levels[index]) != std::string::npos
+                && count_occurrences(captured.messages[index],"\x1b[") == 2,
+            "console colors must wrap only the level tag and reset immediately");
+    }
+
+    captured.messages.clear();
     const std::filesystem::path dual_sink_path = path_manager->logs() / "ui-lifecycle-console-dual.log";
     remove_test_path(dual_sink_path);
     tools::LoggerConfig dual_sink_config;
     dual_sink_config.file_mode = tools::LogFileMode::Append;
     dual_sink_config.append_file_name = dual_sink_path.filename().string();
+    dual_sink_config.console_color_mode = tools::ConsoleColorMode::Always;
     require(logger->configure(dual_sink_config),"logger must accept dual-sink configuration");
     logger->initialize();
     const unsigned int dual_sink_call_line = __LINE__ + 1;
@@ -269,10 +301,11 @@ void test_logger_console_sink()
     logger->terminating("console-test","dual terminating marker");
     logger->shutdown();
     require(captured.messages.size() == 2
+            && captured.messages[0].find("\x1b[33m[WARN]\x1b[0m") != std::string::npos
             && captured.messages[0].find("dual sink marker") != std::string::npos
             && captured.messages[0].find("logging_tests.cpp:" + std::to_string(dual_sink_call_line)) != std::string::npos
             && captured.messages[0].find("test_logger_console_sink") == std::string::npos
-            && captured.messages[1].find("[TERMINATING]") != std::string::npos
+            && captured.messages[1].find("\x1b[38;5;88m[TERMINATING]\x1b[0m") != std::string::npos
             && captured.messages[1].find("dual terminating marker") != std::string::npos
             && captured.messages[1].find("logging_tests.cpp:" + std::to_string(dual_terminating_call_line)) != std::string::npos,
         "enabled console sink must receive each dual-sink entry exactly once");
@@ -282,6 +315,7 @@ void test_logger_console_sink()
             && dual_sink_contents.find("logging_tests.cpp:" + std::to_string(dual_sink_call_line)) != std::string::npos
             && dual_sink_contents.find("logging_tests.cpp:" + std::to_string(dual_terminating_call_line)) != std::string::npos
             && dual_sink_contents.find("[TERMINATING]") != std::string::npos
+            && dual_sink_contents.find("\x1b[") == std::string::npos
             && dual_sink_contents.find("test_logger_console_sink") == std::string::npos
             && dual_sink_contents.find("__cdecl") == std::string::npos,
         "enabled file sink must receive the same compact source location exactly once");
@@ -294,6 +328,7 @@ void test_logger_console_sink()
     silent_config.file_mode = tools::LogFileMode::Append;
     silent_config.append_file_name = silent_path.filename().string();
     silent_config.console_enabled = false;
+    silent_config.console_color_mode = tools::ConsoleColorMode::Always;
     require(logger->configure(silent_config),"logger must accept silent console configuration");
     logger->info("console-test","preinit silent marker");
     logger->initialize();
@@ -314,6 +349,7 @@ void test_logger_console_sink()
     fallback_config.file_mode = tools::LogFileMode::Append;
     fallback_config.append_file_name = blocked_path.filename().string();
     fallback_config.console_enabled = true;
+    fallback_config.console_color_mode = tools::ConsoleColorMode::Never;
     require(logger->configure(fallback_config),"logger must accept file-fallback configuration");
     logger->initialize();
     const unsigned int fallback_call_line = __LINE__ + 1;
@@ -485,6 +521,7 @@ void test_path_manager_failure_logging()
     logger->shutdown();
     tools::LoggerConfig logger_config;
     logger_config.file_mode = tools::LogFileMode::Disabled;
+    logger_config.console_color_mode = tools::ConsoleColorMode::Never;
     require(logger->configure(logger_config),"path logger test must configure the console sink");
     logger->initialize();
 
