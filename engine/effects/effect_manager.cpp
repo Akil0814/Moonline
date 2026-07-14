@@ -5,10 +5,25 @@
 #include "../scene/scene.h"
 
 #include <algorithm>
+#include <cmath>
 namespace elysia::effects
 {
 namespace
 {
+bool is_supported_floating_number_character(char ch) noexcept
+{
+	return (ch >= '0' && ch <= '9')
+		|| ch == '-'
+		|| ch == '.'
+		|| ch == '/'
+		|| ch == '%';
+}
+
+bool is_finite_vector(const elysia::core::Vector2& value) noexcept
+{
+	return std::isfinite(value.x) && std::isfinite(value.y);
+}
+
 std::optional<elysia::core::Vector2> resolve_effect_size(
 	const AnimationEffectSpawnRequest& request,
 	const AnimationEffectDefinition& definition,
@@ -206,6 +221,86 @@ bool EffectManager::spawn_animation_effect(const AnimationEffectSpawnRequest& re
 		return true;
 
 	ELYSIA_LOG_WARN("effects", "Spawn animation effect failed: active scene rejected the effect.");
+	return false;
+}
+
+std::unique_ptr<FloatingNumberEffect> EffectManager::create_floating_number_effect(
+	const FloatingNumberEffectSpawnRequest& request
+)
+{
+	if (request.text.empty())
+	{
+		ELYSIA_LOG_WARN("effects", "Create floating number effect failed: text is empty.");
+		return nullptr;
+	}
+
+	if (!is_finite_vector(request.position)
+		|| !std::isfinite(request.target_height) || request.target_height <= 0.0f
+		|| !std::isfinite(request.start_delay_seconds)
+		|| !std::isfinite(request.time_scale) || request.time_scale < 0.0
+		|| !std::isfinite(request.lifetime_seconds) || request.lifetime_seconds <= 0.0
+		|| !FloatingNumberEffect::is_valid_effects(request.effects))
+	{
+		ELYSIA_LOG_WARN("effects", "Create floating number effect failed: request parameters are invalid.");
+		return nullptr;
+	}
+
+	for (const char ch : request.text)
+	{
+		if (!is_supported_floating_number_character(ch))
+		{
+			ELYSIA_LOG_WARN("effects", "Create floating number effect failed: text contains an unsupported character.");
+			return nullptr;
+		}
+	}
+
+	elysia::number::DigitCache* cache = digit_cache(request.color);
+	if (!cache)
+	{
+		ELYSIA_LOG_WARN("effects", "Create floating number effect failed: digit cache is unavailable.");
+		return nullptr;
+	}
+
+	for (const char ch : request.text)
+	{
+		if (!cache->get_glyph(ch))
+		{
+			ELYSIA_LOG_WARN("effects", "Create floating number effect failed: digit glyph is unavailable.");
+			return nullptr;
+		}
+	}
+
+	std::unique_ptr<FloatingNumberEffect> effect = std::make_unique<FloatingNumberEffect>(
+		request.text,
+		cache,
+		request.position,
+		request.alignment,
+		request.target_height,
+		request.lifetime_seconds,
+		request.effects,
+		request.on_finished
+	);
+	effect->set_start_delay(std::max(0.0, request.start_delay_seconds));
+	effect->set_time_scale(request.time_scale);
+	return effect;
+}
+
+bool EffectManager::spawn_floating_number_effect(const FloatingNumberEffectSpawnRequest& request)
+{
+	if (!_active_scene)
+	{
+		ELYSIA_LOG_WARN("effects", "Spawn floating number effect failed: there is no active scene.");
+		return false;
+	}
+
+	std::unique_ptr<FloatingNumberEffect> effect = create_floating_number_effect(request);
+	if (!effect)
+		return false;
+
+	if (_active_scene->add_object(std::move(effect)))
+		return true;
+
+	ELYSIA_LOG_WARN("effects", "Spawn floating number effect failed: active scene rejected the effect.");
 	return false;
 }
 

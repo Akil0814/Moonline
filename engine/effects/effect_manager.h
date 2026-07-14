@@ -2,6 +2,7 @@
 
 #include "animation_effect.h"
 #include "number/effect_digit_cache.h"
+#include "number/floating_number_effect.h"
 #include "../resources/resource_types.h"
 #include "../tools/singleton.h"
 
@@ -62,6 +63,20 @@ struct AnimationEffectSpawnRequest
 	std::vector<ScheduledCallbackRequest> scheduled_callbacks;
 };
 
+struct FloatingNumberEffectSpawnRequest
+{
+	std::string text;
+	EffectDigitColor color = EffectDigitColor::White;
+	elysia::core::Vector2 position;
+	elysia::number::DigitAlignment alignment = elysia::number::DigitAlignment::Center;
+	float target_height = 20.0f;
+	double start_delay_seconds = 0.0;
+	double time_scale = 1.0;
+	double lifetime_seconds = 0.6;
+	FloatingNumberEffects effects;
+	FloatingNumberEffect::Callback on_finished;
+};
+
 class EffectManager : public elysia::tools::Singleton<EffectManager>
 {
 	friend elysia::tools::Singleton<EffectManager>;
@@ -73,6 +88,8 @@ public:
 	const AnimationEffectDefinition* find_animation_effect_definition(const std::string_view& key) const;
 	std::unique_ptr<AnimationEffect> create_animation_effect(const AnimationEffectSpawnRequest& request) const;
 	bool spawn_animation_effect(const AnimationEffectSpawnRequest& request) const;
+	std::unique_ptr<FloatingNumberEffect> create_floating_number_effect(const FloatingNumberEffectSpawnRequest& request);
+	bool spawn_floating_number_effect(const FloatingNumberEffectSpawnRequest& request);
 	[[nodiscard]] elysia::number::DigitCache* digit_cache(EffectDigitColor color);
 	void reset_digit_caches() noexcept;
 

@@ -128,6 +128,26 @@ endif()
 
 add_test(NAME effect_digit_cache_tests COMMAND effect_digit_cache_tests)
 
+add_executable(floating_number_effect_tests
+    "floating_number_effect_tests.cpp"
+)
+
+target_link_libraries(floating_number_effect_tests PRIVATE engine_lib ${SDL2_LIBRARIES} ${SDL2_TTF_LIBRARIES})
+
+if(WIN32)
+    foreach(SDL2_RUNTIME_FILE IN LISTS SDL2_RUNTIME_FILES)
+        if(EXISTS "${SDL2_RUNTIME_FILE}")
+            add_custom_command(TARGET floating_number_effect_tests POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${SDL2_RUNTIME_FILE}"
+                    "$<TARGET_FILE_DIR:floating_number_effect_tests>"
+            )
+        endif()
+    endforeach()
+endif()
+
+add_test(NAME floating_number_effect_tests COMMAND floating_number_effect_tests)
+
 add_executable(sound_playback_scheduler_tests
     "sound_playback_scheduler_tests.cpp"
 )

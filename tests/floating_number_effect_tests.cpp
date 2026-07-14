@@ -1,0 +1,260 @@
+#define SDL_MAIN_HANDLED
+
+#include "../engine/core/time.h"
+#include "../engine/effects/effect_manager.h"
+#include "../engine/io/path/path_manager.h"
+#include "../engine/localization/localization_manager.h"
+#include "../engine/resources/resource_manager.h"
+#include "../engine/scene/scene.h"
+#include "../engine/scene/scene_manager.h"
+
+#include <SDL.h>
+#include <SDL_ttf.h>
+
+#include <cstdlib>
+#include <iostream>
+#include <memory>
+#include <vector>
+
+namespace
+{
+void require(bool condition, const char* message)
+{
+    if (condition)
+        return;
+
+    std::cerr << "FAILED: " << message << '\n';
+    std::exit(EXIT_FAILURE);
+}
+
+class TestScene final : public elysia::scene::Scene
+{
+public:
+    TestScene() { instance = this; }
+    ~TestScene() override { instance = nullptr; }
+	inline static TestScene* instance = nullptr;
+
+    void on_enter(const elysia::scene::ScenePayload&) override {}
+    void on_exit() override {}
+    void reset() override {}
+};
+
+class SecondTestScene final : public elysia::scene::Scene
+{
+public:
+    void on_enter(const elysia::scene::ScenePayload&) override {}
+    void on_exit() override {}
+    void reset() override {}
+};
+}
+
+int main()
+{
+    using namespace elysia;
+
+    require(SDL_Init(SDL_INIT_VIDEO) == 0, "floating number tests must initialize SDL video");
+    require(TTF_Init() == 0, "floating number tests must initialize SDL_ttf");
+    SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, 128, 128, 32, SDL_PIXELFORMAT_RGBA32);
+    require(surface != nullptr, "floating number tests must create a surface");
+    SDL_Renderer* renderer = SDL_CreateSoftwareRenderer(surface);
+    require(renderer != nullptr, "floating number tests must create a software renderer");
+
+    effects::EffectManager* effect_manager = effects::EffectManager::instance();
+    localization::LocalizationManager* localization_manager = localization::LocalizationManager::instance();
+    resources::ResourceManager* resource_manager = resources::ResourceManager::instance();
+    io::PathManager* path_manager = io::PathManager::instance();
+
+    effect_manager->reset_digit_caches();
+    localization_manager->shutdown();
+    resource_manager->clear();
+    require(path_manager->init(), "floating number tests must initialize the project path manager");
+    require(localization_manager->init(
+        renderer,
+        path_manager->configs() / "manifests" / "i18n_manifest.json",
+        "en"), "floating number tests must initialize localization");
+
+    effects::FloatingNumberEffectSpawnRequest request;
+    request.text = "12%";
+    request.color = effects::EffectDigitColor::Yellow;
+    request.position = core::Vector2(50.0f, 50.0f);
+    request.target_height = 20.0f;
+    require(effect_manager->create_floating_number_effect(request) == nullptr,
+        "floating number creation must fail safely when the digit font is missing");
+    require(resource_manager->load_font(
+        "ui.latin.20",
+        path_manager->fonts() / "fusion-pixel-10px-proportional-latin.ttf",
+        20), "floating number tests must load the base digit font");
+
+    request.text.clear();
+    require(effect_manager->create_floating_number_effect(request) == nullptr,
+        "empty floating number text must be rejected");
+    request.text = "12A";
+    require(effect_manager->create_floating_number_effect(request) == nullptr,
+        "letter characters must reject the complete floating number request");
+    request.text = "12+";
+    require(effect_manager->create_floating_number_effect(request) == nullptr,
+        "unsupported symbols must reject the complete floating number request");
+    request.text = "12%";
+    request.lifetime_seconds = 0.0;
+    require(effect_manager->create_floating_number_effect(request) == nullptr,
+        "non-positive lifetimes must be rejected");
+    request.lifetime_seconds = 0.6;
+    request.effects.scale = effects::FloatingNumberScale{
+        .from_scale = 1.0f,
+        .to_scale = 2.0f,
+        .time_range = { .start_progress = 0.8f, .end_progress = 0.2f }
+    };
+    require(effect_manager->create_floating_number_effect(request) == nullptr,
+        "invalid effect time ranges must be rejected");
+
+    request.effects.motion = effects::FloatingNumberLinearMotion{
+        .offset = core::Vector2(10.0f, -20.0f)
+    };
+    request.effects.scale = effects::FloatingNumberScale{
+        .from_scale = 0.5f,
+        .to_scale = 1.5f
+    };
+    request.effects.fade = effects::FloatingNumberFade{
+        .from_alpha = 255,
+        .to_alpha = 55
+    };
+    std::unique_ptr<effects::FloatingNumberEffect> effect =
+        effect_manager->create_floating_number_effect(request);
+    require(effect != nullptr, "valid floating number request must create an effect");
+    std::vector<core::RenderCommand> commands;
+    effect->submit_render_commands(commands);
+    require(commands.size() == 3 && commands.front().alpha == 255,
+        "floating numbers must render each supported glyph at their initial alpha");
+    effect->update(0.3);
+    require(effect->position().nearly_equals(core::Vector2(55.0f, 40.0f)),
+        "linear motion must update the number position over its shared lifetime");
+    commands.clear();
+    effect->submit_render_commands(commands);
+    require(!commands.empty() && commands.front().alpha == 155,
+        "fade must combine with motion and update glyph alpha");
+
+    effects::FloatingNumberEffectSpawnRequest arc_request;
+    arc_request.text = "8";
+    arc_request.position = core::Vector2(50.0f, 50.0f);
+    arc_request.effects.motion = effects::FloatingNumberArcMotion{
+        .offset = core::Vector2(20.0f, -20.0f),
+        .arc_height = 10.0f
+    };
+    std::unique_ptr<effects::FloatingNumberEffect> arc_effect =
+        effect_manager->create_floating_number_effect(arc_request);
+    require(arc_effect != nullptr, "arc motion request must create an effect");
+    arc_effect->update(0.3);
+    require(arc_effect->position().nearly_equals(core::Vector2(60.0f, 30.0f)),
+        "positive arc height must bend the movement upward");
+
+    int finished = 0;
+    effects::FloatingNumberEffectSpawnRequest delayed_request;
+    delayed_request.text = "5";
+    delayed_request.start_delay_seconds = 0.1;
+    delayed_request.lifetime_seconds = 0.2;
+    delayed_request.on_finished = [&finished](effects::FloatingNumberEffect&) { ++finished; };
+    std::unique_ptr<effects::FloatingNumberEffect> delayed_effect =
+        effect_manager->create_floating_number_effect(delayed_request);
+    require(delayed_effect != nullptr, "delayed floating number request must create an effect");
+    commands.clear();
+    delayed_effect->submit_render_commands(commands);
+    require(commands.empty(), "floating numbers must be invisible during their start delay");
+    delayed_effect->update(0.1);
+    require(delayed_effect->is_started() && !delayed_effect->is_destroyed(),
+        "floating number playback must begin after its delay");
+    delayed_effect->update(0.2);
+    require(delayed_effect->is_destroyed() && finished == 1,
+        "natural completion must invoke the finished callback once and destroy the number");
+    delayed_effect->update(1.0);
+    require(finished == 1, "finished callback must not run more than once");
+
+    effects::FloatingNumberEffectSpawnRequest scaled_request;
+    scaled_request.text = "7";
+    scaled_request.lifetime_seconds = 0.2;
+    scaled_request.time_scale = 0.5;
+    std::unique_ptr<effects::FloatingNumberEffect> scaled_effect =
+        effect_manager->create_floating_number_effect(scaled_request);
+    require(scaled_effect != nullptr, "scaled floating number request must create an effect");
+    scaled_effect->update(0.2);
+    require(!scaled_effect->is_destroyed(), "local time scale must slow floating number lifetime");
+    scaled_effect->update(0.2);
+    require(scaled_effect->is_destroyed(), "local time scale must still allow floating number completion");
+
+    effects::FloatingNumberEffectSpawnRequest global_scaled_request;
+    global_scaled_request.text = "6";
+    global_scaled_request.lifetime_seconds = 0.2;
+    std::unique_ptr<effects::FloatingNumberEffect> global_scaled_effect =
+        effect_manager->create_floating_number_effect(global_scaled_request);
+    require(global_scaled_effect != nullptr, "global scaled floating number request must create an effect");
+    core::Time::instance()->reset();
+    core::Time::instance()->set_time_scale(0.5);
+    core::Time::instance()->begin_frame(0.2);
+    global_scaled_effect->update(core::Time::instance()->delta());
+    require(!global_scaled_effect->is_destroyed(), "global time scale must slow floating number lifetime");
+    core::Time::instance()->begin_frame(0.2);
+    global_scaled_effect->update(core::Time::instance()->delta());
+    require(global_scaled_effect->is_destroyed(), "global time scale must flow through the floating number update delta");
+    core::Time::instance()->reset();
+
+    require(!effect_manager->spawn_floating_number_effect(request),
+        "floating number spawning must fail without an active scene");
+    scene::SceneManager scene_manager;
+    constexpr scene::SceneKey first_scene_key = 1101;
+    constexpr scene::SceneKey second_scene_key = 1102;
+    scene_manager.register_scene<TestScene>(first_scene_key);
+    scene_manager.register_scene<SecondTestScene>(second_scene_key);
+    scene_manager.start(first_scene_key);
+
+    int scene_finished = 0;
+    effects::FloatingNumberEffectSpawnRequest scene_request;
+    scene_request.text = "9";
+    scene_request.lifetime_seconds = 0.2;
+    scene_request.on_finished = [&scene_finished](effects::FloatingNumberEffect&) { ++scene_finished; };
+    require(effect_manager->spawn_floating_number_effect(scene_request),
+        "effect manager must attach floating numbers to the active scene");
+    scene_manager.on_update(0.0);
+    require(TestScene::instance != nullptr, "first test scene must be active");
+    TestScene::instance->pause();
+    scene_manager.on_update(1.0);
+    require(scene_finished == 0, "scene pause must suspend floating number lifetimes");
+    TestScene::instance->resume();
+    scene_manager.on_update(0.2);
+    require(scene_finished == 1, "resumed scenes must complete attached floating numbers");
+
+    int switch_finished = 0;
+    effects::FloatingNumberEffectSpawnRequest switch_pending_request;
+    switch_pending_request.text = "4";
+    switch_pending_request.lifetime_seconds = 2.0;
+    switch_pending_request.on_finished = [&switch_finished](effects::FloatingNumberEffect&) { ++switch_finished; };
+    require(effect_manager->spawn_floating_number_effect(switch_pending_request),
+        "a pending floating number must attach before a scene switch");
+    scene::SceneRequest switch_request;
+    switch_request.type = scene::SceneRequestType::Switch;
+    switch_request.target = second_scene_key;
+    scene_manager.on_scene_request(switch_request);
+    scene_manager.on_update(0.0);
+    require(switch_finished == 0, "scene switching must not invoke pending floating number callbacks");
+
+    int shutdown_finished = 0;
+    effects::FloatingNumberEffectSpawnRequest shutdown_request;
+    shutdown_request.text = "3";
+    shutdown_request.lifetime_seconds = 2.0;
+    shutdown_request.on_finished = [&shutdown_finished](effects::FloatingNumberEffect&) { ++shutdown_finished; };
+    require(effect_manager->spawn_floating_number_effect(scene_request),
+        "floating number effects must rebind to the switched scene");
+    require(effect_manager->spawn_floating_number_effect(shutdown_request),
+        "pending floating number effects must attach to the switched scene");
+    scene_manager.shutdown();
+    require(shutdown_finished == 0, "scene shutdown must not invoke pending floating number callbacks");
+    require(!effect_manager->spawn_floating_number_effect(scene_request),
+        "floating number spawning must fail after active scene shutdown");
+
+    effect_manager->reset_digit_caches();
+    localization_manager->shutdown();
+    resource_manager->clear();
+    SDL_DestroyRenderer(renderer);
+    SDL_FreeSurface(surface);
+    TTF_Quit();
+    SDL_Quit();
+    return EXIT_SUCCESS;
+}
