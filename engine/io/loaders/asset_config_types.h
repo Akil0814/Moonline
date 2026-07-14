@@ -25,8 +25,15 @@ struct CoreManifestPaths
 
 };
 
+struct BootstrapPaths
+{
+	std::filesystem::path app_config;
+	std::filesystem::path preload_manifest;
+};
+
 struct ContentRegistry
 {
+	BootstrapPaths bootstrap;
 	CoreManifestPaths required;
 	std::unordered_map<std::string, json> additional_modules;
 };

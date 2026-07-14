@@ -79,7 +79,15 @@ int main()
 	{
 		const std::filesystem::path path = registry_test_root / file_name;
 		std::ofstream file(path);
-		file << "{\"manifests\":" << manifests << "}";
+		file << R"({"bootstrap":{"app_config":"configs/global/app_config.json","preload_manifest":"configs/manifests/preload_manifest.json"},"manifests":)"
+			<< manifests << "}";
+		return path;
+	};
+	const auto write_root = [&registry_test_root](const char* file_name, const std::string& root)
+	{
+		const std::filesystem::path path = registry_test_root / file_name;
+		std::ofstream file(path);
+		file << root;
 		return path;
 	};
 	const std::string required_manifests = R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","configs":"configs/manifests/config_manifest.json"}})";
@@ -103,8 +111,26 @@ int main()
 	require(content_registry_loader.load(
 		write_registry("without_characters.json", required_manifests), content_registry),
 		"content registry must allow no additional modules");
+	require(content_registry.bootstrap.app_config == path_manager->to_config_path("global/app_config.json")
+		&& content_registry.bootstrap.preload_manifest == path_manager->to_config_path("manifests/preload_manifest.json"),
+		"content registry must resolve bootstrap paths");
 	require(content_registry.additional_modules.empty(),
 		"content registry without additional modules must remain empty");
+	require(!content_registry_loader.load(
+		write_root("missing_bootstrap.json", R"({"manifests":{"required":{}}})"), content_registry),
+		"content registry must reject a missing bootstrap section");
+	require(!content_registry_loader.load(
+		write_root("invalid_bootstrap.json", R"({"bootstrap":"invalid","manifests":{"required":{}}})"), content_registry),
+		"content registry must reject a non-object bootstrap section");
+	require(!content_registry_loader.load(
+		write_root("missing_bootstrap_path.json", R"({"bootstrap":{"app_config":"configs/global/app_config.json"},"manifests":{"required":{}}})"), content_registry),
+		"content registry must reject a missing bootstrap path");
+	require(!content_registry_loader.load(
+		write_root("unknown_bootstrap.json", R"({"bootstrap":{"app_config":"configs/global/app_config.json","preload_manifest":"configs/manifests/preload_manifest.json","unknown":"x"},"manifests":{"required":{}}})"), content_registry),
+		"content registry must reject unknown bootstrap keys");
+	require(!content_registry_loader.load(
+		write_root("missing_bootstrap_file.json", R"({"bootstrap":{"app_config":"configs/global/missing.json","preload_manifest":"configs/manifests/preload_manifest.json"},"manifests":{"required":{}}})"), content_registry),
+		"content registry must reject missing bootstrap files");
 	require(!content_registry_loader.load(
 		write_registry("missing_required.json", R"({"additional":{}})"), content_registry),
 		"content registry must reject a missing required section");
@@ -144,10 +170,10 @@ int main()
 
 	elysia::loading::ConfigLoadResult invalid_module_config_result;
 	require(!config_load_pipeline.load(
-		write_registry("unknown_module.json", R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","config_manifest":"configs/manifests/config_manifest.json"},"additional":{"unknown":{}}})"), invalid_module_config_result),
+		write_registry("unknown_module.json", R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","configs":"configs/manifests/config_manifest.json"},"additional":{"unknown":{}}})"), invalid_module_config_result),
 		"config pipeline must reject unknown additional modules");
 	require(!config_load_pipeline.load(
-		write_registry("incomplete_characters.json", R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","config_manifest":"configs/manifests/config_manifest.json"},"additional":{"characters":{}}})"), invalid_module_config_result),
+		write_registry("incomplete_characters.json", R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","configs":"configs/manifests/config_manifest.json"},"additional":{"characters":{}}})"), invalid_module_config_result),
 		"config pipeline must reject incomplete characters module config");
 	std::filesystem::remove_all(registry_test_root);
 

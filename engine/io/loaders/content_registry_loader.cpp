@@ -12,8 +12,12 @@ namespace elysia::io
 namespace
 {
 constexpr std::string_view manifests_key = "manifests";
+constexpr std::string_view bootstrap_key = "bootstrap";
 constexpr std::string_view required_key = "required";
 constexpr std::string_view additional_key = "additional";
+constexpr std::array<std::string_view, 2> bootstrap_path_keys{
+	"app_config", "preload_manifest"
+};
 constexpr std::array<std::string_view, 7> required_manifest_keys{
 	"fonts", "audio", "i18n", "textures", "animations", "effects", "configs"
 };
@@ -51,6 +55,40 @@ bool contains_required_key(std::string_view key)
 	}
 	return false;
 }
+
+bool read_bootstrap_path(
+	const json& bootstrap,
+	std::string_view key,
+	PathManager& path_manager,
+	std::filesystem::path& out_path
+)
+{
+	const std::string key_string(key);
+	if (!bootstrap.contains(key_string) || !bootstrap.at(key_string).is_string())
+	{
+		ELYSIA_LOG_WARN("io", "Load content registry failed: bootstrap path is missing or invalid: " << key);
+		return false;
+	}
+
+	out_path = path_manager.to_asset_path(bootstrap.at(key_string).get<std::string>());
+	if (!std::filesystem::is_regular_file(out_path))
+	{
+		ELYSIA_LOG_WARN("io", "Load content registry failed: bootstrap file does not exist: " << out_path);
+		return false;
+	}
+
+	return true;
+}
+
+bool contains_bootstrap_key(std::string_view key)
+{
+	for (const std::string_view known_key : bootstrap_path_keys)
+	{
+		if (known_key == key)
+			return true;
+	}
+	return false;
+}
 }
 
 bool ContentRegistryLoader::load(
@@ -68,10 +106,35 @@ bool ContentRegistryLoader::load(
 		return false;
 	}
 
-	if (loader.root().size() != 1 || !loader.root().contains(std::string(manifests_key)))
+	if (loader.root().size() != 2
+		|| !loader.root().contains(std::string(bootstrap_key))
+		|| !loader.root().contains(std::string(manifests_key)))
 	{
-		ELYSIA_LOG_WARN("io", "Load content registry failed: root must contain only manifests.");
+		ELYSIA_LOG_WARN("io", "Load content registry failed: root must contain bootstrap and manifests.");
 		return false;
+	}
+	for (json::const_iterator item = loader.root().begin(); item != loader.root().end(); ++item)
+	{
+		if (item.key() != bootstrap_key && item.key() != manifests_key)
+		{
+			ELYSIA_LOG_WARN("io", "Load content registry failed: unknown root key: " << item.key());
+			return false;
+		}
+	}
+
+	const json& bootstrap = loader.root().at(std::string(bootstrap_key));
+	if (!bootstrap.is_object())
+	{
+		ELYSIA_LOG_WARN("io", "Load content registry failed: bootstrap is not an object.");
+		return false;
+	}
+	for (json::const_iterator item = bootstrap.begin(); item != bootstrap.end(); ++item)
+	{
+		if (!contains_bootstrap_key(item.key()))
+		{
+			ELYSIA_LOG_WARN("io", "Load content registry failed: unknown bootstrap key: " << item.key());
+			return false;
+		}
 	}
 
 	const json& manifests = loader.root().at(std::string(manifests_key));
@@ -108,6 +171,11 @@ bool ContentRegistryLoader::load(
 	PathManager* path_manager = PathManager::instance();
 	if (!path_manager)
 		return false;
+	if (!read_bootstrap_path(bootstrap, "app_config", *path_manager, content_registry.bootstrap.app_config)
+		|| !read_bootstrap_path(bootstrap, "preload_manifest", *path_manager, content_registry.bootstrap.preload_manifest))
+	{
+		return false;
+	}
 
 	CoreManifestPaths& paths = content_registry.required;
 	if (!read_required_manifest_path(required, "fonts", *path_manager, paths.fonts)

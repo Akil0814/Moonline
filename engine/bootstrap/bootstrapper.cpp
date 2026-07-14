@@ -9,7 +9,6 @@ namespace elysia::bootstrap
 {
 namespace
 {
-constexpr const char* APP_CONFIG_PATH = "configs/global/app_config.json";
 constexpr const char* USER_CONFIG_FILE_NAME = "user_config.json";
 }
 
@@ -33,17 +32,7 @@ StartupParseResult Bootstrapper::parse_runtime_settings()
         return result;
     }
 
-    const std::filesystem::path app_config_path =
-        path_manager->to_config_path(APP_CONFIG_PATH);
-    const AppConfigLoader::Result app_config_result =
-        _app_config_loader.load(app_config_path);
-    if (!app_config_result.success)
-    {
-        result.error = app_config_result.error;
-        return result;
-    }
-
-    elysia::io::ContentRegistry content_registry;
+	elysia::io::ContentRegistry content_registry;
     elysia::io::ContentRegistryLoader content_registry_loader;
     if (!content_registry_loader.load(path_manager->content_registry(), content_registry))
     {
@@ -51,8 +40,16 @@ StartupParseResult Bootstrapper::parse_runtime_settings()
             result.error,
             "Bootstrapper phase1 failed: content registry load failed."
         );
-        return result;
-    }
+		return result;
+	}
+
+	const AppConfigLoader::Result app_config_result =
+		_app_config_loader.load(content_registry.bootstrap.app_config);
+	if (!app_config_result.success)
+	{
+		result.error = app_config_result.error;
+		return result;
+	}
 
     const std::filesystem::path user_config_path =
         path_manager->player_data() / USER_CONFIG_FILE_NAME;
@@ -76,7 +73,7 @@ StartupParseResult Bootstrapper::parse_runtime_settings()
     result.runtime_settings = config_result->settings;
     result.i18n_manifest_path = content_registry.required.i18n;
     result.rebuilt_user_config = config_result->rebuilt_user_config;
-    _startup_preload_loader.set_manifest_path(app_config_result.preload_manifest_path);
+	_startup_preload_loader.set_manifest_path(content_registry.bootstrap.preload_manifest);
     result.success = true;
     return result;
 }

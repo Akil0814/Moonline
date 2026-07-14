@@ -2,16 +2,11 @@
 
 #include "bootstrap_error_utils.h"
 #include "../io/json/json_loader.h"
-#include "../io/path/path_manager.h"
-
-#include <filesystem>
 
 namespace elysia::bootstrap
 {
 namespace
 {
-constexpr const char* DEFAULT_PRELOAD_MANIFEST_PATH = "preload/preload_manifest.json";
-
 bool read_volume_setting(
     const elysia::io::JsonLoader& loader,
     const elysia::io::json& node,
@@ -135,46 +130,7 @@ AppConfigLoader::Result AppConfigLoader::load(const std::filesystem::path& app_c
         return result;
     }
 
-    const elysia::io::json* startup_node = nullptr;
-    std::filesystem::path preload_manifest_relative = DEFAULT_PRELOAD_MANIFEST_PATH;
-    const elysia::io::json& root = loader.root();
-    if (root.contains("startup"))
-    {
-        if (!loader.get_object("startup", startup_node))
-        {
-            append_bootstrap_error(result.error, "App config startup must be an object.");
-            return result;
-        }
-
-        if (startup_node->contains("preload_manifest"))
-        {
-            const elysia::io::json& preload_manifest_node = startup_node->at("preload_manifest");
-            if (!preload_manifest_node.is_string())
-            {
-                append_bootstrap_error(
-                    result.error,
-                    "App config startup.preload_manifest must be a string."
-                );
-                return result;
-            }
-
-            preload_manifest_relative = preload_manifest_node.get<std::string>();
-        }
-    }
-
-    result.preload_manifest_path =
-        elysia::io::PathManager::instance()->to_asset_path(preload_manifest_relative);
-
-    if (!std::filesystem::exists(result.preload_manifest_path))
-    {
-        append_bootstrap_error(
-            result.error,
-            "App config preload manifest does not exist: " + result.preload_manifest_path.string()
-        );
-        return result;
-    }
-
-    result.success = true;
+	result.success = true;
     return result;
 }
 

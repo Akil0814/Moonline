@@ -14,8 +14,7 @@ public:
     {
         bool success = false;
         RuntimeSettings runtime_settings;
-        std::filesystem::path preload_manifest_path;
-        std::string error;
+		std::string error;
 
         explicit operator bool() const { return success; }
     };
