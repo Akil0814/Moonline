@@ -75,20 +75,35 @@ void test_horizontal_strip_manifest_schema()
 		&& animation_manifest.animations.front().horizontal_strip,
 		"core horizontal-strip animations must load without a frame_prefix");
 
-	const std::filesystem::path entity_manifest_path = test_root / "entities.json";
+	const std::filesystem::path entity_manifest_path = test_root / "legacy_asset_key_entity.json";
 	std::ofstream(entity_manifest_path)
-		<< R"({"entities":[{"id":"bad","asset_key":"Bad","horizontal_strip":true}]})";
+		<< R"({"entities":[{"id":"Bad","asset_key":"Bad"}]})";
 	elysia::io::EntityManifest entity_manifest;
 	require(!elysia::io::EntityManifestLoader{}.load(entity_manifest_path, entity_manifest),
+		"entity manifests must reject the removed asset_key field");
+	const std::filesystem::path removed_horizontal_strip_entity_path = test_root / "horizontal_strip_entity.json";
+	std::ofstream(removed_horizontal_strip_entity_path)
+		<< R"({"entities":[{"id":"Bad","horizontal_strip":true}]})";
+	require(!elysia::io::EntityManifestLoader{}.load(removed_horizontal_strip_entity_path, entity_manifest),
 		"entity manifests must reject the removed horizontal_strip field");
+	const std::filesystem::path missing_id_entity_path = test_root / "missing_id_entity.json";
+	std::ofstream(missing_id_entity_path)
+		<< R"({"entities":[{"enabled":true}]})";
+	require(!elysia::io::EntityManifestLoader{}.load(missing_id_entity_path, entity_manifest),
+		"entity manifests must reject entries without id");
+	const std::filesystem::path unknown_entity_field_path = test_root / "unknown_entity_field.json";
+	std::ofstream(unknown_entity_field_path)
+		<< R"({"entities":[{"id":"Bad","unknown":true}]})";
+	require(!elysia::io::EntityManifestLoader{}.load(unknown_entity_field_path, entity_manifest),
+		"entity manifests must reject unknown fields");
 	const std::filesystem::path disabled_invalid_entity_path = test_root / "disabled_invalid_entity.json";
 	std::ofstream(disabled_invalid_entity_path)
-		<< R"({"entities":[{"id":"bad-id","asset_key":"Bad","animation_layout":1,"enabled":false}]})";
+		<< R"({"entities":[{"id":"bad-id","animation_layout":1,"enabled":false}]})";
 	require(!elysia::io::EntityManifestLoader{}.load(disabled_invalid_entity_path, entity_manifest),
 		"disabled entities must still validate all configured fields and key components");
 	const std::filesystem::path duplicate_entity_path = test_root / "duplicate_entity.json";
 	std::ofstream(duplicate_entity_path)
-		<< R"({"entities":[{"id":"duplicate","asset_key":"First"},{"id":"duplicate","asset_key":"Second"}]})";
+		<< R"({"entities":[{"id":"duplicate"},{"id":"duplicate"}]})";
 	std::ostringstream duplicate_entity_log;
 	std::streambuf* previous_log_buffer = std::clog.rdbuf(duplicate_entity_log.rdbuf());
 	const bool duplicate_entity_loaded =

@@ -4,9 +4,9 @@ namespace arcneco::character
 {
 	bool CharacterManager::init()
 	{
-		_prototypes.emplace_back("ryougi_shiki");
-		_prototypes.emplace_back("aozaki_aoko");
-		_prototypes.emplace_back("arcueid_brunestud");
+		_prototypes.emplace_back("RyougiShiki");
+		_prototypes.emplace_back("AozakiAoko");
+		_prototypes.emplace_back("ArcueidBrunestud");
 		return true;
 	}
 

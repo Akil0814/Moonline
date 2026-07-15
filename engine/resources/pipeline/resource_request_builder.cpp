@@ -52,7 +52,7 @@ bool make_frame_prefix(
 	std::string& prefix)
 {
 	prefix = pattern;
-	replace_all(prefix, "{asset_key}", entry.entity.asset_key);
+	replace_all(prefix, "{id}", entry.entity.id);
 	replace_all(prefix, "{animation}", clip.animation_name);
 	std::string suffix;
 	if (clip.is_segment)

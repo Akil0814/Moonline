@@ -54,7 +54,7 @@ std::string make_expected_prefix(
 	const elysia::io::AnimationClipConfig& clip)
 {
 	std::string prefix = entry.frame_prefix_template;
-	replace_all(prefix, "{asset_key}", entry.entity.asset_key);
+	replace_all(prefix, "{id}", entry.entity.id);
 	replace_all(prefix, "{animation}", clip.animation_name);
 	std::string segment_suffix;
 	if (clip.is_segment)
@@ -125,9 +125,9 @@ void verify_repository_mapping_snapshot(const elysia::loading::ResourceLoadPlan&
 	const uint64_t atlas_hash = fnv1a64(atlas_records);
 	const uint64_t animation_hash = fnv1a64(animation_records);
 	const uint64_t effect_hash = fnv1a64(effect_records);
-	constexpr uint64_t expected_atlas_hash = 17045219784734218663ull;
-	constexpr uint64_t expected_animation_hash = 15573479966319656006ull;
-	constexpr uint64_t expected_effect_hash = 11933629621856248736ull;
+	constexpr uint64_t expected_atlas_hash = 1782569922306090303ull;
+	constexpr uint64_t expected_animation_hash = 5718358840783149386ull;
+	constexpr uint64_t expected_effect_hash = 12763037786180384463ull;
 	if (atlas_hash != expected_atlas_hash || animation_hash != expected_animation_hash
 		|| effect_hash != expected_effect_hash)
 		std::cerr << "mapping hashes: atlas=" << atlas_hash << " animation=" << animation_hash
@@ -313,7 +313,7 @@ void test_runtime_resource_request_assembly()
 		load_plan.atlas_build_requests().end(),
 		[](const elysia::resources::AtlasBuildRequest& request)
 		{
-			return request.atlas_key == "ryougi_shiki.start";
+			return request.atlas_key == "RyougiShiki.start";
 		});
 	require(ryougi_start_request != load_plan.atlas_build_requests().end()
 		&& ryougi_start_request->frame_filename_prefix == "RyougiShiki_start",
@@ -324,7 +324,7 @@ void test_runtime_resource_request_assembly()
 		load_plan.atlas_build_requests().end(),
 		[](const elysia::resources::AtlasBuildRequest& request)
 		{
-			return request.atlas_key == "slime.attack";
+			return request.atlas_key == "Slime.attack";
 		});
 	require(runtime_slime_attack_request != load_plan.atlas_build_requests().end()
 		&& runtime_slime_attack_request->frame_filename_prefix == "Slime_attack"
@@ -336,7 +336,7 @@ void test_runtime_resource_request_assembly()
 		load_plan.atlas_build_requests().end(),
 		[](const elysia::resources::AtlasBuildRequest& request)
 		{
-			return request.atlas_key == "flying_demon.idle";
+			return request.atlas_key == "FlyingDemon.idle";
 		});
 	require(flying_demon_idle_request != load_plan.atlas_build_requests().end()
 		&& flying_demon_idle_request->source_type == elysia::resources::AtlasSourceType::HorizontalStrip
@@ -350,7 +350,7 @@ void test_runtime_resource_request_assembly()
 		load_plan.atlas_build_requests().end(),
 		[](const elysia::resources::AtlasBuildRequest& request)
 		{
-			return request.atlas_key.starts_with("flying_demon.")
+			return request.atlas_key.starts_with("FlyingDemon.")
 				&& request.source_type == elysia::resources::AtlasSourceType::HorizontalStrip;
 		}));
 	require(flying_demon_request_count == 5,
@@ -361,7 +361,7 @@ void test_runtime_resource_request_assembly()
 		load_plan.atlas_build_requests().end(),
 		[](const elysia::resources::AtlasBuildRequest& request)
 		{
-			return request.atlas_key == "ryougi_shiki.getup_air";
+			return request.atlas_key == "RyougiShiki.getup_air";
 		});
 	require(ryougi_getup_air_request != load_plan.atlas_build_requests().end(),
 		"RyougiShiki getup_air must create an atlas request");
@@ -371,7 +371,7 @@ void test_runtime_resource_request_assembly()
 		load_plan.atlas_build_requests().end(),
 		[](const elysia::resources::AtlasBuildRequest& request)
 		{
-			return request.atlas_key.find("ryougi_shiki.attack_special") != std::string::npos;
+			return request.atlas_key.find("RyougiShiki.attack_special") != std::string::npos;
 		});
 	require(ryougi_special_request == load_plan.atlas_build_requests().end(),
 		"RyougiShiki special attacks must not create runtime atlas requests");
@@ -381,7 +381,7 @@ void test_runtime_resource_request_assembly()
 		load_plan.animation_effect_build_requests().end(),
 		[](const elysia::resources::AnimationEffectBuildRequest& request)
 		{
-			return request.effect_key == "aozaki_aoko.effect.attack_air.0";
+			return request.effect_key == "AozakiAoko.effect.attack_air.0";
 		});
 	require(aoko_no_effect_request == load_plan.animation_effect_build_requests().end(),
 		"omitted Aoko melee animations must not create effect requests");
@@ -389,35 +389,35 @@ void test_runtime_resource_request_assembly()
 		load_plan.animation_effect_build_requests().begin(), load_plan.animation_effect_build_requests().end(),
 		[](const elysia::resources::AnimationEffectBuildRequest& request)
 		{
-			return request.effect_key.starts_with("ryougi_shiki.effect.")
-				|| request.effect_key.starts_with("aozaki_aoko.effect.")
-				|| request.effect_key.starts_with("arcueid_brunestud.effect.");
+			return request.effect_key.starts_with("RyougiShiki.effect.")
+				|| request.effect_key.starts_with("AozakiAoko.effect.")
+				|| request.effect_key.starts_with("ArcueidBrunestud.effect.");
 		}));
 	require(character_effect_count == 19,
 		"per-character effect info must add all nineteen configured character effects");
 	const auto aoko_ranged = std::find_if(load_plan.atlas_build_requests().begin(), load_plan.atlas_build_requests().end(),
-		[](const elysia::resources::AtlasBuildRequest& request) { return request.atlas_key == "aozaki_aoko.effect.attack_ranged_ground"; });
+		[](const elysia::resources::AtlasBuildRequest& request) { return request.atlas_key == "AozakiAoko.effect.attack_ranged_ground"; });
 	require(aoko_ranged != load_plan.atlas_build_requests().end()
 		&& aoko_ranged->frame_count == 31
 		&& aoko_ranged->frame_filename_prefix == "AozakiAoko_effects_attack_ranged_ground"
 		&& aoko_ranged->source_path == path_manager->textures() / "character" / "AozakiAoko" / "animation" / "effects" / "attack" / "ranged" / "ground",
 		"Aoko ranged effect animation must use its per-character frame count, path, and prefix");
 	const auto arcueid_segment = std::find_if(load_plan.atlas_build_requests().begin(), load_plan.atlas_build_requests().end(),
-		[](const elysia::resources::AtlasBuildRequest& request) { return request.atlas_key == "arcueid_brunestud.effect.attack_normal.2"; });
+		[](const elysia::resources::AtlasBuildRequest& request) { return request.atlas_key == "ArcueidBrunestud.effect.attack_normal.2"; });
 	require(arcueid_segment != load_plan.atlas_build_requests().end()
 		&& arcueid_segment->frame_count == 29
 		&& arcueid_segment->source_path.filename() == "02"
 		&& arcueid_segment->frame_filename_prefix == "ArcueidBrunestud_effects_attack_normal_02",
 		"Arcueid segmented effect animation must use the effect naming profile");
 	const auto ryougi_ranged = std::find_if(load_plan.atlas_build_requests().begin(), load_plan.atlas_build_requests().end(),
-		[](const elysia::resources::AtlasBuildRequest& request) { return request.atlas_key == "ryougi_shiki.effect.attack_ranged_ground"; });
+		[](const elysia::resources::AtlasBuildRequest& request) { return request.atlas_key == "RyougiShiki.effect.attack_ranged_ground"; });
 	require(ryougi_ranged == load_plan.atlas_build_requests().end(),
 		"omitted Ryougi ranged effect animations must produce no requests");
 	for (const char* omitted_key : {
-		"ryougi_shiki.effect.attack_normal.4",
-		"ryougi_shiki.effect.attack_normal.5",
-		"aozaki_aoko.effect.attack_normal.0",
-		"aozaki_aoko.effect.attack_air.0"})
+		"RyougiShiki.effect.attack_normal.4",
+		"RyougiShiki.effect.attack_normal.5",
+		"AozakiAoko.effect.attack_normal.0",
+		"AozakiAoko.effect.attack_air.0"})
 	{
 		require(!std::any_of(load_plan.atlas_build_requests().begin(), load_plan.atlas_build_requests().end(),
 			[omitted_key](const auto& request) { return request.atlas_key == omitted_key; }),

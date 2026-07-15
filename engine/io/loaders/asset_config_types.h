@@ -117,7 +117,6 @@ struct AnimationEffectManifest
 struct EntityManifestEntry
 {
 	std::string id;
-	std::string asset_key;
 	std::string animation_layout;
 	elysia::resources::ResourceOrigin origin;
 };
@@ -209,7 +208,6 @@ struct EffectDefinitionConfig
 struct EntityResourceIdentity
 {
 	std::string id;
-	std::string asset_key;
 	std::string animation_layout;
 	elysia::resources::ResourceOrigin origin;
 };

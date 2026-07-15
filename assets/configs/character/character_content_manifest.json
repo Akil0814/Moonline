@@ -3,19 +3,19 @@
   "key_namespace": "",
   "capabilities": {
     "animations": {
-      "texture_root": "textures/character/{asset_key}",
-      "config_template": "configs/character/{asset_key}/animation_info.json",
-      "frame_prefix_template": "{asset_key}_{animation}{segment_suffix}",
+      "texture_root": "textures/character/{id}",
+      "config_template": "configs/character/{id}/animation_info.json",
+      "frame_prefix_template": "{id}_{animation}{segment_suffix}",
       "layouts": {
         "fighter": "configs/character/layouts/character_animation_layout.json"
       }
     },
     "textures": {
-      "texture_root": "textures/character/{asset_key}",
+      "texture_root": "textures/character/{id}",
       "layout": "configs/character/layouts/character_texture_layout.json"
     },
     "audio": {
-      "audio_root": "audio/character/{asset_key}",
+      "audio_root": "audio/character/{id}",
       "layout": "configs/character/layouts/character_audio_layout.json"
     }
   }

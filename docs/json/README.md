@@ -64,7 +64,7 @@ assets/content_registry.json
 [A-Za-z0-9_]+
 ```
 
-点 `.` 只用于连接 component。空 component、连续点、首尾点、横线、空格、非 ASCII 字符以及其他分隔符都非法；纯数字 component 合法。规则覆盖 entity id、`asset_key`、非空 `key_namespace`、layout 名、动画/特效/纹理/音频逻辑名、目录纹理的 file stem，以及按点拆分后的核心显式 key。`key_namespace: ""` 是唯一允许为空的 key 输入，构建 key 时会直接跳过。
+点 `.` 只用于连接 component。空 component、连续点、首尾点、横线、空格、非 ASCII 字符以及其他分隔符都非法；纯数字 component 合法。规则覆盖 entity id、非空 `key_namespace`、layout 名、动画/特效/纹理/音频逻辑名、目录纹理的 file stem，以及按点拆分后的核心显式 key。实体 id 约定使用 PascalCase。`key_namespace: ""` 是唯一允许为空的 key 输入，构建 key 时会直接跳过。
 
 module 资源统一构造为：
 

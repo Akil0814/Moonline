@@ -170,7 +170,7 @@ namespace arcneco::scene
 
     void CharacterSelectScene::build_left_panel()
     {
-        auto ui_character_selected_background = std::make_unique<elysia::ui::UiAnimation>("ryougi_shiki.idle", elysia::core::Rect{ 0,0,700,700 }, 0);
+        auto ui_character_selected_background = std::make_unique<elysia::ui::UiAnimation>("RyougiShiki.idle", elysia::core::Rect{ 0,0,700,700 }, 0);
         _character_visuals.idle_preview = ui_character_selected_background.get();
         _main_window->add_child(std::move(ui_character_selected_background), {
             ._anchor = elysia::ui::UiLayoutAnchor::BottomLeft,
@@ -181,13 +181,13 @@ namespace arcneco::scene
     void CharacterSelectScene::build_right_panel()
     {
         SDL_Texture* tex =
-            elysia::resources::ResourceManager::instance()->find_texture("ryougi_shiki.full");
+            elysia::resources::ResourceManager::instance()->find_texture("RyougiShiki.full");
         SDL_Texture* name_texture =
-            elysia::resources::ResourceManager::instance()->find_texture("ryougi_shiki.name");
+            elysia::resources::ResourceManager::instance()->find_texture("RyougiShiki.name");
 
         auto ui_character_stand = std::make_unique<elysia::ui::UiImage>(tex, elysia::core::Rect{0,0,512,512}, 0);
         auto ui_character_name = std::make_unique<elysia::ui::UiImage>(name_texture, elysia::core::Rect{0,0,512,64}, 1);
-        auto ui_character_selected_background = std::make_unique<elysia::ui::UiAnimation>("ryougi_shiki.selected_background", elysia::core::Rect{ 0,0,600,600 },-10);
+        auto ui_character_selected_background = std::make_unique<elysia::ui::UiAnimation>("RyougiShiki.selected_background", elysia::core::Rect{ 0,0,600,600 },-10);
         _character_visuals.full_portrait = ui_character_stand.get();
         _character_visuals.name_image = ui_character_name.get();
         _character_visuals.selected_background = ui_character_selected_background.get();

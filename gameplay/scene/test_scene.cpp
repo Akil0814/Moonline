@@ -35,7 +35,7 @@ void TestScene::on_enter(const elysia::scene::ScenePayload& payload)
     if (!_flying_demon_idle)
     {
         _flying_demon_idle = create_and_add_object<elysia::ui::UiAnimation>(
-            "flying_demon.idle",
+			"FlyingDemon.idle",
             elysia::core::Rect{ 760.0f,204.0f,324.0f,284.0f }
         );
     }

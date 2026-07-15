@@ -1,19 +1,19 @@
 {
   "entities": [
     {
-      "id": "rat", "asset_key": "Rat", "enabled": true, "animation_layout": "normal"
+      "id": "Rat", "enabled": true, "animation_layout": "normal"
     },
     {
-      "id": "skeleton", "asset_key": "Skeleton", "enabled": true, "animation_layout": "normal"
+      "id": "Skeleton", "enabled": true, "animation_layout": "normal"
     },
     {
-      "id": "skullwolf", "asset_key": "Skullwolf", "enabled": true, "animation_layout": "normal"
+      "id": "Skullwolf", "enabled": true, "animation_layout": "normal"
     },
     {
-      "id": "slime", "asset_key": "Slime", "enabled": true, "animation_layout": "normal"
+      "id": "Slime", "enabled": true, "animation_layout": "normal"
     },
     {
-      "id": "flying_demon", "asset_key": "FlyingDemon", "enabled": true,
+      "id": "FlyingDemon", "enabled": true,
       "animation_layout": "normal"
     }
   ]

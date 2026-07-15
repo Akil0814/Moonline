@@ -26,7 +26,7 @@ void test_explicit_frame_directory_expansion()
 	elysia::resources::AtlasBuildPreparer atlas_build_preparer;
 	std::vector<elysia::resources::AtlasFramePrepareTask> atlas_tasks;
 	elysia::resources::AtlasBuildRequest request;
-	request.atlas_key = "ryougi_shiki.idle";
+	request.atlas_key = "RyougiShiki.idle";
 	request.source_path = atlas_test_root / "frames";
 	request.frame_count = 2;
 	request.frame_filename_prefix = "RyougiShiki_idle";

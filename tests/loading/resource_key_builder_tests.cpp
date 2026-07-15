@@ -50,7 +50,7 @@ void test_component_validation()
 void test_full_key_validation()
 {
 	const std::vector<std::string> valid_keys{
-		"idle", "test.animation", "ryougi_shiki.effect.attack_normal.0",
+		"idle", "test.animation", "RyougiShiki.effect.attack_normal.0",
 		"font.default.10", "stage_000.background"
 	};
 	for (const std::string& key : valid_keys)
@@ -78,23 +78,23 @@ void test_namespace_and_component_building()
 {
 	std::string key;
 	std::string error;
-	require(ResourceKeyBuilder::build("ryougi_shiki", "", {"idle"}, std::nullopt, key, error),
+	require(ResourceKeyBuilder::build("RyougiShiki", "", {"idle"}, std::nullopt, key, error),
 		"an empty namespace must be accepted");
-	require_equal(key, "ryougi_shiki.idle", "empty namespace must not create an empty component");
+	require_equal(key, "RyougiShiki.idle", "empty namespace must not create an empty component");
 
 	key.clear();
 	error.clear();
 	require(ResourceKeyBuilder::build(
-		"ryougi_shiki", "effect", {"attack", "normal"}, std::nullopt, key, error),
+		"RyougiShiki", "effect", {"attack", "normal"}, std::nullopt, key, error),
 		"a non-empty valid namespace must be accepted");
-	require_equal(key, "ryougi_shiki.effect.attack.normal",
+	require_equal(key, "RyougiShiki.effect.attack.normal",
 		"namespace and logical components must be joined in the documented order");
 
 	std::string appended;
 	error.clear();
-	require(ResourceKeyBuilder::append_component("ryougi_shiki.effect", "slash_01", appended, error),
+	require(ResourceKeyBuilder::append_component("RyougiShiki.effect", "slash_01", appended, error),
 		"a valid component must append to a valid base key");
-	require_equal(appended, "ryougi_shiki.effect.slash_01",
+	require_equal(appended, "RyougiShiki.effect.slash_01",
 		"append_component must insert exactly one separator");
 
 	for (const auto& invalid_build : std::vector<std::pair<std::string, std::string>>{

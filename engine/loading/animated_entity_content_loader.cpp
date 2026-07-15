@@ -91,16 +91,16 @@ void replace_all(std::string& value, std::string_view marker, std::string_view r
 
 bool resolve_entity_root(
 	const std::string& pattern,
-	const std::string& asset_key,
+	const std::string& id,
 	std::filesystem::path& result,
 	std::string& error)
 {
-	if (!validate_template_tokens(pattern, {"{asset_key}"}, error)) return false;
+	if (!validate_template_tokens(pattern, {"{id}"}, error)) return false;
 	std::string value = pattern;
-	if (value.find("{asset_key}") == std::string::npos)
-		value = (std::filesystem::path(value) / asset_key).generic_string();
+	if (value.find("{id}") == std::string::npos)
+		value = (std::filesystem::path(value) / id).generic_string();
 	else
-		replace_all(value, "{asset_key}", asset_key);
+		replace_all(value, "{id}", id);
 	result = elysia::io::PathManager::instance()->to_asset_path(value);
 	if (!std::filesystem::is_directory(result))
 		return fail(error, "entity resource root does not exist: " + result.generic_string());
@@ -109,15 +109,15 @@ bool resolve_entity_root(
 
 bool resolve_config_template(
 	const std::string& pattern,
-	const std::string& asset_key,
+	const std::string& id,
 	std::filesystem::path& result,
 	std::string& error)
 {
-	if (!validate_template_tokens(pattern, {"{asset_key}"}, error)) return false;
-	if (pattern.find("{asset_key}") == std::string::npos)
-		return fail(error, "config_template must contain {asset_key}");
+	if (!validate_template_tokens(pattern, {"{id}"}, error)) return false;
+	if (pattern.find("{id}") == std::string::npos)
+		return fail(error, "config_template must contain {id}");
 	std::string value = pattern;
-	replace_all(value, "{asset_key}", asset_key);
+	replace_all(value, "{id}", id);
 	result = elysia::io::PathManager::instance()->to_config_path(value);
 	if (!std::filesystem::is_regular_file(result))
 		return fail(error, "configured file does not exist: " + result.generic_string());
@@ -155,10 +155,10 @@ bool validate_frame_prefix_template(
 		|| value.find("..") != std::string::npos)
 		return fail(error, "frame_prefix_template must be a filename prefix, not a path");
 	if (!validate_template_tokens(value,
-		{"{asset_key}", "{animation}", "{segment_suffix}"}, error)) return false;
-	if (value.find("{asset_key}") == std::string::npos
+		{"{id}", "{animation}", "{segment_suffix}"}, error)) return false;
+	if (value.find("{id}") == std::string::npos
 		|| value.find("{animation}") == std::string::npos)
-		return fail(error, "frame_prefix_template must contain {asset_key} and {animation}");
+		return fail(error, "frame_prefix_template must contain {id} and {animation}");
 	if (has_segments && value.find("{segment_suffix}") == std::string::npos)
 		return fail(error, "segmented animations require {segment_suffix} in frame_prefix_template");
 	return true;
@@ -169,7 +169,7 @@ elysia::io::EntityResourceIdentity make_identity(
 	const std::string& module_name)
 {
 	auto identity = elysia::io::EntityResourceIdentity{
-		entity.id, entity.asset_key, entity.animation_layout, entity.origin};
+		entity.id, entity.animation_layout, entity.origin};
 	identity.origin.module = module_name;
 	identity.origin.scope = elysia::resources::ResourceOriginScope::AdditionalModule;
 	return identity;
@@ -274,8 +274,8 @@ bool AnimatedEntityContentLoader::load(
 			if (entity.animation_layout.empty() || layout == layouts.end())
 				return fail(error, "unknown animation layout for entity: " + entity.id);
 			std::filesystem::path texture_root, config_path;
-			if (!resolve_entity_root(texture_template, entity.asset_key, texture_root, error)
-				|| !resolve_config_template(config_template, entity.asset_key, config_path, error)) return false;
+			if (!resolve_entity_root(texture_template, entity.id, texture_root, error)
+				|| !resolve_config_template(config_template, entity.id, config_path, error)) return false;
 			elysia::io::AnimationConfig config;
 			if (!config_loader.load(config_path, layout->second, config))
 				return fail(error, "animation config load failed: " + config_path.generic_string());
@@ -302,7 +302,7 @@ bool AnimatedEntityContentLoader::load(
 		for (const auto& animation_entry : content.animation_entries)
 		{
 			std::filesystem::path config_path;
-			if (!resolve_config_template(config_template, animation_entry.entity.asset_key, config_path, error)) return false;
+			if (!resolve_config_template(config_template, animation_entry.entity.id, config_path, error)) return false;
 			elysia::io::EffectDefinitionConfig config;
 			if (!effect_loader.load(config_path, animation_entry.animation_config, config))
 				return fail(error, "effect config load failed: " + config_path.generic_string());
@@ -326,7 +326,7 @@ bool AnimatedEntityContentLoader::load(
 		for (const auto& entity : entity_manifest.entities)
 		{
 			std::filesystem::path root_path;
-			if (!resolve_entity_root(texture_template, entity.asset_key, root_path, error)) return false;
+			if (!resolve_entity_root(texture_template, entity.id, root_path, error)) return false;
 			auto entity_layout = layout;
 			for (auto& item : entity_layout.textures)
 			{
@@ -353,7 +353,7 @@ bool AnimatedEntityContentLoader::load(
 		for (const auto& entity : entity_manifest.entities)
 		{
 			std::filesystem::path root_path;
-			if (!resolve_entity_root(audio_template, entity.asset_key, root_path, error)) return false;
+			if (!resolve_entity_root(audio_template, entity.id, root_path, error)) return false;
 			auto entity_layout = layout;
 			for (auto& item : entity_layout.sounds)
 			{

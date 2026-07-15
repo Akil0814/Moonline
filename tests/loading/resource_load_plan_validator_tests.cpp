@@ -59,7 +59,7 @@ ResourceOrigin second_origin()
 	ResourceOrigin origin{
 		std::filesystem::path{"assets/configs/modules/second.json"},
 		"/animations/idle/segments/99", "character_effects", "effects",
-		"ryougi_shiki", "slash_trail", 99
+		"RyougiShiki", "slash_trail", 99
 	};
 	origin.scope = elysia::resources::ResourceOriginScope::AdditionalModule;
 	return origin;
@@ -210,7 +210,7 @@ void test_duplicate_key_diagnostics_for_every_registry()
 				"description must include the second project-relative path and JSON pointer");
 			require_contains(description, "scope=additional module=character_effects", "description must include module scope and name");
 			require_contains(description, "capability=effects", "description must include second capability");
-			require_contains(description, "entity=ryougi_shiki", "description must include second entity");
+			require_contains(description, "entity=RyougiShiki", "description must include second entity");
 			require_contains(description, "logical=slash_trail", "description must include second logical name");
 			require_contains(description, "segment=99", "description must include second segment index");
 		}

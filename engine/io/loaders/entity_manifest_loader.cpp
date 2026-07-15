@@ -27,10 +27,9 @@ bool EntityManifestLoader::load(const std::filesystem::path& manifest_path, Enti
 	for (const json& node : loader.root().at("entities"))
 	{
 		const std::string pointer = "/entities/" + std::to_string(entity_index++);
-		if (!node.is_object() || !node.contains("id") || !node.at("id").is_string()
-			|| !node.contains("asset_key") || !node.at("asset_key").is_string())
+		if (!node.is_object() || !node.contains("id") || !node.at("id").is_string())
 		{
-			ELYSIA_LOG_WARN("io", "Load entity manifest failed: entity id or asset_key is missing or invalid.");
+			ELYSIA_LOG_WARN("io", "Load entity manifest failed: entity id is missing or invalid.");
 			return false;
 		}
 		if (node.contains("enabled") && !node.at("enabled").is_boolean())
@@ -39,7 +38,7 @@ bool EntityManifestLoader::load(const std::filesystem::path& manifest_path, Enti
 			return false;
 		}
 		for (auto field = node.begin(); field != node.end(); ++field)
-			if (field.key() != "id" && field.key() != "asset_key" && field.key() != "enabled"
+			if (field.key() != "id" && field.key() != "enabled"
 				&& field.key() != "animation_layout")
 			{
 				ELYSIA_LOG_WARN("io", "Load entity manifest failed: unknown field: " << field.key());
@@ -47,7 +46,6 @@ bool EntityManifestLoader::load(const std::filesystem::path& manifest_path, Enti
 			}
 		EntityManifestEntry entry;
 		entry.id = node.at("id").get<std::string>();
-		entry.asset_key = node.at("asset_key").get<std::string>();
 		if (node.contains("animation_layout"))
 		{
 			if (!node.at("animation_layout").is_string())
@@ -59,7 +57,6 @@ bool EntityManifestLoader::load(const std::filesystem::path& manifest_path, Enti
 		}
 		std::string key_error;
 		if (!elysia::resources::ResourceKeyBuilder::validate_component(entry.id, key_error)
-			|| !elysia::resources::ResourceKeyBuilder::validate_component(entry.asset_key, key_error)
 			|| (!entry.animation_layout.empty()
 				&& !elysia::resources::ResourceKeyBuilder::validate_component(entry.animation_layout, key_error)))
 		{

@@ -3,9 +3,9 @@
   "key_namespace": "",
   "capabilities": {
     "animations": {
-      "texture_root": "textures/enemy/normal/{asset_key}",
-      "config_template": "configs/enemy/normal/{asset_key}_animation_info.json",
-      "frame_prefix_template": "{asset_key}_{animation}{segment_suffix}",
+      "texture_root": "textures/enemy/normal/{id}",
+      "config_template": "configs/enemy/normal/{id}_animation_info.json",
+      "frame_prefix_template": "{id}_{animation}{segment_suffix}",
       "layouts": {
         "normal": "configs/enemy/enemy_general_animation_layout.json"
       }

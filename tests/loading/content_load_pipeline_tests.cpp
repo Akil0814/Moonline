@@ -101,7 +101,7 @@ void test_arbitrary_and_empty_additional_module()
 	std::filesystem::remove_all(root);
 	std::filesystem::create_directories(root);
 	const auto entities = write_file(root, "npcs.json",
-		R"({"entities":[{"id":"npc_1","asset_key":"Npc_1"}]})");
+		R"({"entities":[{"id":"Npc_1"}]})");
 	const auto module = write_file(root, "npc_module.json",
 		"{\"entities\":\"" + json_path(entities)
 		+ "\",\"key_namespace\":\"\",\"capabilities\":{}}");
@@ -112,7 +112,7 @@ void test_arbitrary_and_empty_additional_module()
 	require(loader.load("npcs", module, content, error)
 		&& content.name == "npcs"
 		&& content.entities.size() == 1
-		&& content.entities.front().id == "npc_1"
+		&& content.entities.front().id == "Npc_1"
 		&& content.animation_entries.empty()
 		&& content.effect_entries.empty()
 		&& content.texture_entries.empty()
@@ -149,14 +149,14 @@ void test_module_schema_rejections()
 	std::filesystem::remove_all(root);
 	std::filesystem::create_directories(root);
 	const auto entities = write_file(root, "entities.json",
-		R"({"entities":[{"id":"npc","asset_key":"Npc"}]})");
+		R"({"entities":[{"id":"Npc"}]})");
 	const std::string prefix = "{\"entities\":\"" + json_path(entities) + "\",\"key_namespace\":\"\",";
 
 	elysia::loading::AnimatedEntityContentLoader loader;
 	elysia::io::EntityContentModule content;
 	std::string error;
 	require(!loader.load("effects_only", write_file(root, "effects_only.json",
-		prefix + R"("capabilities":{"effects":{"config_template":"configs/{asset_key}/effects.json"}}})"), content, error)
+		prefix + R"("capabilities":{"effects":{"config_template":"configs/{id}/effects.json"}}})"), content, error)
 		&& error.find("effects requires animations") != std::string::npos,
 		"effects capability must require animations in the same module");
 	require(!loader.load("unknown", write_file(root, "unknown_capability.json",
@@ -170,7 +170,7 @@ void test_module_schema_rejections()
 		"{\"entities\":\"" + json_path(entities) + "\",\"capabilities\":{}}"), content, error),
 		"module manifests must require key_namespace even when it is empty");
 	require(!loader.load("unknown_field", write_file(root, "unknown_animation_field.json",
-		prefix + R"("capabilities":{"animations":{"texture_root":"textures/{asset_key}","config_template":"configs/{asset_key}.json","layouts":{},"legacy":true}}})"), content, error)
+		prefix + R"("capabilities":{"animations":{"texture_root":"textures/{id}","config_template":"configs/{id}.json","layouts":{},"legacy":true}}})"), content, error)
 		&& error.find("unknown animations capability field") != std::string::npos,
 		"capability objects must reject unknown fields");
 
@@ -187,14 +187,14 @@ void test_texture_only_and_audio_only_modules()
 	std::string error;
 
 	const auto texture_module = write_file(root, "textures.json",
-		R"({"entities":"configs/character/characters_manifest.json","key_namespace":"portrait","capabilities":{"textures":{"texture_root":"textures/character/{asset_key}","layout":"configs/character/layouts/character_texture_layout.json"}}})");
+		R"({"entities":"configs/character/characters_manifest.json","key_namespace":"portrait","capabilities":{"textures":{"texture_root":"textures/character/{id}","layout":"configs/character/layouts/character_texture_layout.json"}}})");
 	require(loader.load("portraits", texture_module, content, error)
 		&& content.animation_entries.empty() && content.effect_entries.empty()
 		&& content.texture_entries.size() == 3 && content.audio_entries.empty(),
 		"a texture-only module must load without Animation, Effect, or Audio capabilities");
 
 	const auto audio_module = write_file(root, "audio.json",
-		R"({"entities":"configs/character/characters_manifest.json","key_namespace":"voice","capabilities":{"audio":{"audio_root":"audio/character/{asset_key}","layout":"configs/character/layouts/character_audio_layout.json"}}})");
+		R"({"entities":"configs/character/characters_manifest.json","key_namespace":"voice","capabilities":{"audio":{"audio_root":"audio/character/{id}","layout":"configs/character/layouts/character_audio_layout.json"}}})");
 	require(loader.load("voices", audio_module, content, error)
 		&& content.animation_entries.empty() && content.effect_entries.empty()
 		&& content.texture_entries.empty() && content.audio_entries.size() == 3,
@@ -214,30 +214,34 @@ void test_animation_frame_prefix_template_rules()
 	std::string error;
 
 	const std::string enemy_animation_fields =
-		R"("texture_root":"textures/enemy/normal/{asset_key}","config_template":"configs/enemy/normal/{asset_key}_animation_info.json","layouts":{"normal":"configs/enemy/enemy_general_animation_layout.json"})";
+		R"("texture_root":"textures/enemy/normal/{id}","config_template":"configs/enemy/normal/{id}_animation_info.json","layouts":{"normal":"configs/enemy/enemy_general_animation_layout.json"})";
 	require(!loader.load("missing_prefix", write_file(root, "missing_prefix.json",
 		R"({"entities":"configs/enemy/enemy_manifest.json","key_namespace":"","capabilities":{"animations":{)"
 		+ enemy_animation_fields + "}}}"), content, error),
 		"a module containing frame-directory configs must require frame_prefix_template");
 	require(!loader.load("invalid_token", write_file(root, "invalid_token.json",
 		R"({"entities":"configs/enemy/enemy_manifest.json","key_namespace":"","capabilities":{"animations":{)"
-		+ enemy_animation_fields + R"(,"frame_prefix_template":"{asset_key}_{animation}_{unknown}"}}})"),
+		+ enemy_animation_fields + R"(,"frame_prefix_template":"{id}_{animation}_{unknown}"}}})"),
 		content, error),
 		"frame_prefix_template must reject tokens outside the documented three-token set");
 
 	const std::string character_animation_fields =
-		R"("texture_root":"textures/character/{asset_key}","config_template":"configs/character/{asset_key}/animation_info.json","layouts":{"fighter":"configs/character/layouts/character_animation_layout.json"})";
+		R"("texture_root":"textures/character/{id}","config_template":"configs/character/{id}/animation_info.json","layouts":{"fighter":"configs/character/layouts/character_animation_layout.json"})";
+	require(!loader.load("legacy_id_token", write_file(root, "legacy_id_token.json",
+		R"({"entities":"configs/character/characters_manifest.json","key_namespace":"","capabilities":{"animations":{"texture_root":"textures/character/{asset_key}","config_template":"configs/character/{id}/animation_info.json","frame_prefix_template":"{id}_{animation}{segment_suffix}","layouts":{"fighter":"configs/character/layouts/character_animation_layout.json"}}}})"),
+		content, error),
+		"module capability templates must reject the removed asset_key token");
 	require(!loader.load("missing_segment_suffix", write_file(root, "missing_segment_suffix.json",
 		R"({"entities":"configs/character/characters_manifest.json","key_namespace":"","capabilities":{"animations":{)"
-		+ character_animation_fields + R"(,"frame_prefix_template":"{asset_key}_{animation}"}}})"),
+		+ character_animation_fields + R"(,"frame_prefix_template":"{id}_{animation}"}}})"),
 		content, error),
 		"a module with segmented animations must include segment_suffix in its frame prefix template");
 
 	const auto strip_entities = write_file(root, "strip_entities.json",
-		R"({"entities":[{"id":"flying_demon","asset_key":"FlyingDemon","animation_layout":"normal"}]})");
+		R"({"entities":[{"id":"FlyingDemon","animation_layout":"normal"}]})");
 	require(loader.load("strip_only", write_file(root, "strip_only.json",
 		"{\"entities\":\"" + json_path(strip_entities)
-		+ R"(","key_namespace":"","capabilities":{"animations":{"texture_root":"textures/enemy/normal/{asset_key}","config_template":"configs/enemy/normal/{asset_key}_animation_info.json","layouts":{"normal":"configs/enemy/enemy_general_animation_layout.json"}}}})"),
+		+ R"(","key_namespace":"","capabilities":{"animations":{"texture_root":"textures/enemy/normal/{id}","config_template":"configs/enemy/normal/{id}_animation_info.json","layouts":{"normal":"configs/enemy/enemy_general_animation_layout.json"}}}})"),
 		content, error)
 		&& content.animation_entries.size() == 1
 		&& content.animation_entries.front().frame_prefix_template.empty()

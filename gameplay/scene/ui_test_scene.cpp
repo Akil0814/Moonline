@@ -271,8 +271,8 @@ void UiTestScene::rebuild_ui()
         pulse->configure_playback(effects::UiOpacityPulseMode::MinToMax,0.0,0.3,0.3,2); pulse->play(); media_section->add_back(std::move(pulse));
     }
     else media_section->add_back(std::make_unique<UiLabel>(elysia::core::Rect{ 0,0,500,32 },0,ui_text_key("ui_test_scene.media.texture_unavailable")));
-    auto animation = std::make_unique<UiAnimation>("aozaki_aoko.idle",elysia::core::Rect{ 0,0,120,120 });
-    const bool animation_loaded = animation->set_animation_key("aozaki_aoko.idle"); animation->set_visible(animation_loaded);
+    auto animation = std::make_unique<UiAnimation>("AozakiAoko.idle",elysia::core::Rect{ 0,0,120,120 });
+    const bool animation_loaded = animation->set_animation_key("AozakiAoko.idle"); animation->set_visible(animation_loaded);
     if (animation_loaded) { animation->play(); media_section->add_back(std::move(animation)); }
     else media_section->add_back(std::make_unique<UiLabel>(elysia::core::Rect{ 0,0,500,32 },0,ui_text_key("ui_test_scene.media.animation_unavailable")));
     (void)tabs->add_tab(ui_text_key("ui_test_scene.pages.media"),std::move(media));
