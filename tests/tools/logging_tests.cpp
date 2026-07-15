@@ -1,6 +1,7 @@
 #define SDL_MAIN_HANDLED
 
 #include "application/application_termination_logging.h"
+#include "engine/io/loaders/content_registry_loader.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/loading/content_manifest_pipeline.h"
 #include "engine/resources/pipeline/resource_request_builder.h"
@@ -189,19 +190,26 @@ void test_logger_console_sink()
     });
 
     captured.messages.clear();
+    io::ContentRegistry content_registry;
+    require(!io::ContentRegistryLoader{}.load(path_manager->assets() / "missing-assets-structure.json",content_registry),
+        "missing top-level registry input must fail the registry loader");
+    bool saw_loader_warning = false;
+    for (const std::string& message : captured.messages)
+        saw_loader_warning = saw_loader_warning || message.find("[WARN]") != std::string::npos;
+    require(saw_loader_warning, "registry loader failure must retain its warning diagnostic");
+
+    captured.messages.clear();
     loading::ContentManifestPipeline content_manifest_pipeline;
     loading::ContentManifestResult config_result;
-    require(!content_manifest_pipeline.load(path_manager->assets() / "missing-assets-structure.json",config_result),
-        "missing top-level config input must fail the load pipeline");
-    bool saw_loader_warning = false;
+    require(!content_manifest_pipeline.load(content_registry,config_result),
+        "invalid supplied registry must fail the content manifest pipeline");
     bool saw_pipeline_error = false;
     for (const std::string& message : captured.messages)
     {
-        saw_loader_warning = saw_loader_warning || message.find("[WARN]") != std::string::npos;
         saw_pipeline_error = saw_pipeline_error || message.find("[ERROR]") != std::string::npos;
     }
-    require(saw_loader_warning && saw_pipeline_error,
-        "top-level load failure must preserve its Warn-to-Error escalation");
+    require(saw_pipeline_error,
+        "content manifest pipeline failure must record an error diagnostic");
 
     captured.messages.clear();
     const std::source_location root_failure_location = std::source_location::current();

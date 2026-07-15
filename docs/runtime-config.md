@@ -12,10 +12,11 @@ Moonline 将配置划分为三个职责明确的模块：
 
 ```text
 Bootstrap
+  content_registry.json（解析一次） -> Application 持有 ContentRegistry
   AppConfig -> UserConfigService -> preload manifest
 
 GameContentLoader
-  manifests.required.configs -> ConfigLoadPipeline
+  Application::content_registry() -> manifests.required.configs -> ConfigLoadPipeline
     -> ConfigManifestLoader
     -> ConfigDocumentLoader
     -> ConfigSnapshotBuilder

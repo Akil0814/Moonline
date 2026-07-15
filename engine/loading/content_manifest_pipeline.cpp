@@ -3,7 +3,6 @@
 
 #include "../io/loaders/animation_manifest_loader.h"
 #include "../io/loaders/audio_manifest_loader.h"
-#include "../io/loaders/content_registry_loader.h"
 #include "../io/loaders/animation_effect_manifest_loader.h"
 #include "../io/loaders/fonts_manifest_loader.h"
 #include "../io/loaders/texture_manifest_loader.h"
@@ -13,20 +12,13 @@
 namespace elysia::loading
 {
 bool ContentManifestPipeline::load(
-	const std::filesystem::path& content_registry_path,
+	const elysia::io::ContentRegistry& content_registry,
 	ContentManifestResult& result
 )
 {
 	result = ContentManifestResult{};
 	_error_message.clear();
 
-	elysia::io::ContentRegistry content_registry;
-	elysia::io::ContentRegistryLoader content_registry_loader;
-	if (!content_registry_loader.load(content_registry_path, content_registry))
-	{
-		fail("Content manifest pipeline failed: content registry load failed.");
-		return false;
-	}
 	const elysia::io::CoreManifestPaths& manifest_paths = content_registry.required;
 	const auto config_snapshot = elysia::config::ConfigLoadPipeline{}.load(manifest_paths.configs);
 	if (!config_snapshot)

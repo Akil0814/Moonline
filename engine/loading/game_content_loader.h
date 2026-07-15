@@ -3,6 +3,7 @@
 #include <SDL.h>
 
 #include "resource_load_plan.h"
+#include "../io/loaders/asset_config_types.h"
 #include "../resources/atlas/atlas_build_preparer.h"
 
 #include <atomic>
@@ -43,7 +44,7 @@ public:
 
 	void reset();
 
-	bool start(SDL_Renderer* renderer);
+	bool start(SDL_Renderer* renderer, const elysia::io::ContentRegistry& content_registry);
 	void update();
 
 	bool is_running() const;

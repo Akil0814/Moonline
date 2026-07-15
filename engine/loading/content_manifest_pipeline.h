@@ -2,7 +2,6 @@
 
 #include "../io/loaders/asset_config_types.h"
 
-#include <filesystem>
 #include <map>
 #include <memory>
 #include <string>
@@ -31,7 +30,7 @@ class ContentManifestPipeline
 {
 public:
 	bool load(
-		const std::filesystem::path& content_registry_path,
+		const elysia::io::ContentRegistry& content_registry,
 		ContentManifestResult& result
 	);
 

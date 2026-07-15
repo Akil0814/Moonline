@@ -58,7 +58,7 @@ void GameContentLoader::reset()
 	_completed_work_units = 0;
 }
 
-bool GameContentLoader::start(SDL_Renderer* renderer)
+bool GameContentLoader::start(SDL_Renderer* renderer, const elysia::io::ContentRegistry& content_registry)
 {
 	reset();
 
@@ -80,8 +80,7 @@ bool GameContentLoader::start(SDL_Renderer* renderer)
 
 	ContentManifestPipeline content_manifest_pipeline;
 	ContentManifestResult config_result;
-	const std::filesystem::path content_registry_path = path_manager->content_registry();
-	if (!content_manifest_pipeline.load(content_registry_path, config_result))
+	if (!content_manifest_pipeline.load(content_registry, config_result))
 	{
 		fail(content_manifest_pipeline.error_message());
 		return false;

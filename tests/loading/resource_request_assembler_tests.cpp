@@ -2,6 +2,7 @@
 
 #include "engine/animation/animation_manager.h"
 #include "engine/effects/effect_manager.h"
+#include "engine/io/loaders/content_registry_loader.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/loading/content_manifest_pipeline.h"
 #include "engine/loading/resource_load_plan.h"
@@ -266,7 +267,10 @@ void test_runtime_resource_request_assembly()
 
     elysia::loading::ContentManifestResult config_result;
     elysia::loading::ContentManifestPipeline content_manifest_pipeline;
-    require(content_manifest_pipeline.load(path_manager->content_registry(), config_result),
+	elysia::io::ContentRegistry content_registry;
+	require(elysia::io::ContentRegistryLoader{}.load(path_manager->content_registry(), content_registry),
+		"content registry must parse before resource request assembly");
+    require(content_manifest_pipeline.load(content_registry, config_result),
         "config pipeline must load content before assembling resource requests");
 
 	elysia::loading::ResourceLoadPlan load_plan;

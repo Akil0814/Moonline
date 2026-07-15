@@ -18,6 +18,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <expected>
+#include <utility>
 
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
@@ -63,7 +64,7 @@ bool Application::init(int argc, char** argv)
 {
 	elysia::tools::TerminationManager::instance()->initialize_lifecycle();
 
-	const elysia::bootstrap::StartupParseResult parse_result =
+	elysia::bootstrap::StartupParseResult parse_result =
 		elysia::bootstrap::Bootstrapper::instance()->parse_runtime_settings();
 
 	if (!parse_result.success)
@@ -72,6 +73,7 @@ bool Application::init(int argc, char** argv)
 		startup_fail(parse_result.error);
 		return false;
 	}
+	_content_registry = std::move(parse_result.content_registry);
 
 	elysia::tools::Logger::instance()->initialize();
 

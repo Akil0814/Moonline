@@ -26,6 +26,7 @@ public:
     bool init(int argc, char** argv);
     int run(int argc, char** argv);
     SDL_Renderer* renderer() const { return _renderer; }
+    const elysia::io::ContentRegistry& content_registry() const noexcept { return _content_registry; }
 
     std::expected<void,elysia::config::UserConfigFailure> apply_master_volume(int value) override;
     std::expected<void,elysia::config::UserConfigFailure> apply_music_volume(int value) override;
@@ -67,6 +68,7 @@ private:
 
     elysia::input::InputSystem _input_system;
     elysia::scene::SceneManager _scene_manager;
+    elysia::io::ContentRegistry _content_registry;
 
     bool _active = { true };
     bool _normal_exit_requested = false;

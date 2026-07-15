@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../audio/audio_settings.h"
+#include "../io/loaders/asset_config_types.h"
 
 #include <filesystem>
 #include <string>
@@ -37,6 +38,7 @@ struct StartupParseResult
 {
     bool success = false;
     StartupSettings startup_settings;
+    elysia::io::ContentRegistry content_registry;
     std::filesystem::path i18n_manifest_path;
     std::string error;
     std::string warning;

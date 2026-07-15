@@ -9,6 +9,12 @@ int main()
 {
     const auto result = elysia::bootstrap::Bootstrapper::instance()->parse_runtime_settings();
     moonline::tests::require(result.success,"Bootstrapper must load AppConfig and UserConfig");
+	moonline::tests::require(
+		result.content_registry.required.configs.filename() == "config_manifest.json"
+			&& result.content_registry.required.i18n.filename() == "i18n_manifest.json"
+			&& result.content_registry.bootstrap.preload_manifest.filename() == "preload_manifest.json"
+			&& result.content_registry.additional_module_manifests.contains("characters"),
+		"Bootstrapper must return the resolved immutable content registry snapshot");
     auto* configs = elysia::config::ConfigService::instance();
     moonline::tests::require(!configs->is_initialized(),
         "Bootstrapper must not publish gameplay configuration before content loading");

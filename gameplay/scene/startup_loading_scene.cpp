@@ -63,7 +63,10 @@ void StartupLoadingScene::on_enter(const elysia::scene::ScenePayload& payload)
 	//starting
 	_akil_icon->play();
 
-	(void)_content_loader.start(Application::instance()->renderer());
+	(void)_content_loader.start(
+		Application::instance()->renderer(),
+		Application::instance()->content_registry()
+	);
 }
 
 void StartupLoadingScene::on_update(double delta)

@@ -56,7 +56,10 @@ void test_current_modules_load_through_generic_pipeline()
 
 	elysia::loading::ContentManifestPipeline pipeline;
 	elysia::loading::ContentManifestResult result;
-	require(pipeline.load(path_manager->content_registry(), result),
+	elysia::io::ContentRegistry registry;
+	require(elysia::io::ContentRegistryLoader{}.load(path_manager->content_registry(), registry),
+		"current content registry must parse before it is supplied to the content pipeline");
+	require(pipeline.load(registry, result),
 		"current content registry must load through the generic additional-module pipeline");
 	require(result.config_snapshot != nullptr,
 		"content manifest loading must build the deferred generic config snapshot");
@@ -128,7 +131,10 @@ void test_arbitrary_and_empty_additional_module()
 	elysia::loading::ContentManifestResult result;
 	const auto registry = write_registry(root, "registry.json",
 		"{\"npcs\":\"" + json_path(module) + "\"}");
-	require(pipeline.load(registry, result)
+	elysia::io::ContentRegistry content_registry;
+	require(elysia::io::ContentRegistryLoader{}.load(registry, content_registry),
+		"arbitrary-module registry must parse before it is supplied to the content pipeline");
+	require(pipeline.load(content_registry, result)
 		&& result.additional_modules.size() == 1
 		&& result.additional_modules.contains("npcs")
 		&& result.additional_modules.at("npcs").entities.size() == 1,
@@ -249,9 +255,14 @@ void test_content_registry_still_allows_core_only()
 	std::filesystem::create_directories(root);
 	elysia::loading::ContentManifestPipeline pipeline;
 	elysia::loading::ContentManifestResult result;
-	require(pipeline.load(write_registry(root, "core_only.json"), result)
+	const auto registry_path = write_registry(root, "core_only.json");
+	elysia::io::ContentRegistry registry;
+	require(elysia::io::ContentRegistryLoader{}.load(registry_path, registry),
+		"core-only registry must parse before it is supplied to the content pipeline");
+	std::filesystem::remove(registry_path);
+	require(pipeline.load(registry, result)
 		&& result.additional_modules.empty(),
-		"content registry must continue to allow no additional modules");
+		"content pipeline must use the supplied registry snapshot without rereading its source file");
 	std::filesystem::remove_all(root);
 }
 
