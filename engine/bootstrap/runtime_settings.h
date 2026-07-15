@@ -7,9 +7,8 @@
 
 namespace elysia::bootstrap
 {
-struct RuntimeSettings
+struct UserConfigData
 {
-    std::string window_title = "Elysia";
     int window_width = 1280;
     int window_height = 720;
     bool fullscreen = false;
@@ -18,16 +17,31 @@ struct RuntimeSettings
     std::string language;
     elysia::audio::AudioSettings audio;
 
-    friend bool operator==(const RuntimeSettings&,const RuntimeSettings&) = default;
+    friend bool operator==(const UserConfigData&,const UserConfigData&) = default;
+};
+
+struct AppConfig
+{
+    std::string window_title = "Moonline";
+    UserConfigData user_defaults;
+};
+
+struct StartupSettings : UserConfigData
+{
+    std::string window_title = "Moonline";
+
+    friend bool operator==(const StartupSettings&,const StartupSettings&) = default;
 };
 
 struct StartupParseResult
 {
     bool success = false;
-    RuntimeSettings runtime_settings;
+    StartupSettings startup_settings;
     std::filesystem::path i18n_manifest_path;
     std::string error;
     std::string warning;
+    bool migrated_user_config = false;
+    bool recovered_user_config = false;
     bool rebuilt_user_config = false;
 
     explicit operator bool() const { return success; }

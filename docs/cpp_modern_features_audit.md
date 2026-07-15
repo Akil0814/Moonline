@@ -82,8 +82,8 @@
 
 ### `std::string_view` 与 `std::filesystem`
 
-- `std::string_view`：在 60 个文件中出现；例如 `engine/config/user_settings.cpp:23-25` 以非拥有字符串视图传递语言/配置键，减少不必要的复制。
-- `std::filesystem`：在 73 个文件中出现；例如 `engine/config/user_settings_store.cpp:119` 处理设置文件，测试中用其创建和清理临时资源目录（`tests/animation_manifest_tests.cpp:36-40`）。
+- `std::string_view`：在配置与资源模块中用于非拥有的语言和配置 key 参数，减少不必要的复制。
+- `std::filesystem`：例如 `engine/config/user_config_store.cpp` 处理设置文件，测试中用其创建和清理临时资源目录。
 
 ### 编译期分支与折叠表达式
 
@@ -92,7 +92,7 @@
 
 ### if 初始化语句、内联变量、标准属性和算法
 
-- if 初始化语句：`engine/config/user_settings.cpp:35` 的 `if (const auto handler = ...; !handler)` 将结果作用域限制在判断语句中。
+- if 初始化语句：`engine/config/user_config.cpp` 使用 `if (const auto handler = ...; !handler)` 将结果作用域限制在判断语句中。
 - 内联变量：`application/scene/scene_keys.h:7-13` 的 `inline constexpr` 场景键可安全放在头文件中。
 - `[[nodiscard]]`：大量用于查询/计算接口，例如 `engine/core/time.h:18-23`，降低忽略返回值的风险。
 - `std::clamp`：例如 `engine/input/translator/gamepad_input_translator.cpp:243` 对手柄轴值做范围限制。
@@ -133,8 +133,8 @@
 
 项目的设置与初始化路径使用值语义错误处理，而不是用异常承载可预期业务失败。
 
-- `engine/config/user_settings_store.h:22-27`：用户设置加载/保存返回 `std::expected`。
-- `engine/config/user_settings.cpp:25-103`：设置校验或运行时应用失败时返回 `std::unexpected<UserSettingsFailure>`；调用端通过 `if (...; !result)` 传播错误。
+- `engine/config/user_config_store.h`：用户设置加载/保存返回 `std::expected`。
+- `engine/config/user_config.cpp`：设置校验或运行时应用失败时返回 `std::unexpected<UserConfigFailure>`；调用端通过 `if (...; !result)` 传播错误。
 - `engine/config/config_service.cpp:5-24`：配置服务初始化和保存将底层错误逐层封装/返回。
 - `application/application.h:30-36`、`application/application.cpp:339-380`：应用层实现运行时设置变更，并向配置层返回可诊断失败。
 

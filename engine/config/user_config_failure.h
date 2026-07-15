@@ -4,7 +4,7 @@
 
 namespace elysia::config
 {
-enum class UserSettingsError
+enum class UserConfigError
 {
     InvalidValue,
     ChangeHandlerUnavailable,
@@ -13,9 +13,9 @@ enum class UserSettingsError
     LoadFailed
 };
 
-struct UserSettingsFailure
+struct UserConfigFailure
 {
-    UserSettingsError error = UserSettingsError::InvalidValue;
+    UserConfigError error = UserConfigError::InvalidValue;
     std::string setting_name;
     std::string message;
 };

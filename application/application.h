@@ -4,7 +4,7 @@
 #include "../engine/tools/singleton.h"
 #include "../engine/input/input_system.h"
 #include "../engine/bootstrap/runtime_settings.h"
-#include "../engine/config/i_settings_change_handler.h"
+#include "../engine/config/i_user_config_change_handler.h"
 
 #include <SDL.h>
 
@@ -16,7 +16,7 @@
 class Application
     : public elysia::tools::Singleton<Application>
     , public elysia::scene::SceneManagerObserver
-    , public elysia::config::ISettingsChangeHandler
+    , public elysia::config::IUserConfigChangeHandler
 {
     friend elysia::tools::Singleton<Application>;
 public:
@@ -27,16 +27,16 @@ public:
     int run(int argc, char** argv);
     SDL_Renderer* renderer() const { return _renderer; }
 
-    std::expected<void,elysia::config::UserSettingsFailure> apply_master_volume(int value) override;
-    std::expected<void,elysia::config::UserSettingsFailure> apply_music_volume(int value) override;
-    std::expected<void,elysia::config::UserSettingsFailure> apply_sound_volume(int value) override;
-    std::expected<void,elysia::config::UserSettingsFailure> apply_language(std::string_view language) override;
-    std::expected<void,elysia::config::UserSettingsFailure> apply_target_fps(double value) override;
-    std::expected<void,elysia::config::UserSettingsFailure> apply_window_size(int width,int height) override;
-    std::expected<void,elysia::config::UserSettingsFailure> apply_fullscreen(bool value) override;
+    std::expected<void,elysia::config::UserConfigFailure> apply_master_volume(int value) override;
+    std::expected<void,elysia::config::UserConfigFailure> apply_music_volume(int value) override;
+    std::expected<void,elysia::config::UserConfigFailure> apply_sound_volume(int value) override;
+    std::expected<void,elysia::config::UserConfigFailure> apply_language(std::string_view language) override;
+    std::expected<void,elysia::config::UserConfigFailure> apply_target_fps(double value) override;
+    std::expected<void,elysia::config::UserConfigFailure> apply_window_size(int width,int height) override;
+    std::expected<void,elysia::config::UserConfigFailure> apply_fullscreen(bool value) override;
 
 private:
-    bool init_runtime(const elysia::bootstrap::RuntimeSettings& settings);
+    bool init_runtime(const elysia::bootstrap::StartupSettings& settings);
     void enter_startup_scene();
 
     void shutdown();
@@ -71,6 +71,6 @@ private:
     bool _active = { true };
     bool _normal_exit_requested = false;
     bool _has_shutdown = false;
-    bool _settings_handler_registered = false;
+    bool _user_config_handler_registered = false;
 
 };

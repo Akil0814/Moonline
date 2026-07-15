@@ -108,3 +108,12 @@ add_moonline_test(logging_tests
     LIBRARIES ${SDL2_LIBRARIES}
     SDL
 )
+
+foreach(CONFIG_TEST_TARGET IN ITEMS app_config_tests user_config_tests config_service_tests)
+    add_moonline_test(${CONFIG_TEST_TARGET}
+        LABEL config
+        SOURCES config/${CONFIG_TEST_TARGET}.cpp
+        LIBRARIES ${SDL2_LIBRARIES}
+        SDL
+    )
+endforeach()

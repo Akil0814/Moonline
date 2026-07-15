@@ -1,6 +1,6 @@
 {
+  "schema_version": 1,
   "configs": {
-    "input": "configs/global/input_config.json",
     "game": "configs/global/game_config.json"
   }
 }

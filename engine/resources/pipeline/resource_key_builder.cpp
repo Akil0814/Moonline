@@ -1,4 +1,5 @@
 #include "resource_key_builder.h"
+#include "../../core/validation/dotted_key_validator.h"
 
 #include <utility>
 
@@ -6,42 +7,12 @@ namespace elysia::resources
 {
 bool ResourceKeyBuilder::validate_component(std::string_view component, std::string& error)
 {
-	if (component.empty())
-	{
-		error = "resource key component is empty";
-		return false;
-	}
-	for (const unsigned char character : component)
-	{
-		const bool ascii_alpha = (character >= 'A' && character <= 'Z')
-			|| (character >= 'a' && character <= 'z');
-		const bool ascii_digit = character >= '0' && character <= '9';
-		if (!(ascii_alpha || ascii_digit || character == '_'))
-		{
-			error = "invalid resource key component: " + std::string(component);
-			return false;
-		}
-	}
-	return true;
+	return elysia::core::DottedKeyValidator::validate_component(component,error);
 }
 
 bool ResourceKeyBuilder::validate_key(std::string_view key, std::string& error)
 {
-	if (key.empty())
-	{
-		error = "resource key is empty";
-		return false;
-	}
-	size_t begin = 0;
-	while (begin <= key.size())
-	{
-		const size_t end = key.find('.', begin);
-		const auto component = key.substr(begin, end == std::string_view::npos ? key.size() - begin : end - begin);
-		if (!validate_component(component, error)) return false;
-		if (end == std::string_view::npos) break;
-		begin = end + 1;
-	}
-	return true;
+	return elysia::core::DottedKeyValidator::validate_key(key,error);
 }
 
 bool ResourceKeyBuilder::build(

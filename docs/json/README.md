@@ -8,6 +8,7 @@
 - [核心资源 manifest](core-resource-manifests.md)：字体、音频、纹理和国际化。
 - [实体内容 module](entity-content.md)：任意命名的 additional module、entity manifest、纹理和音频 layout。
 - [动画与特效](animation-and-effects.md)：核心/实体 Animation、Atlas 来源、分段编号和 EffectDefinition。
+- [运行时配置模块](../runtime-config.md)：AppConfig、UserConfig 与尚未接入启动流程的通用 ConfigService。
 
 ## 总加载链路
 

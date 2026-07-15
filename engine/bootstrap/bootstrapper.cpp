@@ -1,7 +1,7 @@
 #include "bootstrapper.h"
 
 #include "bootstrap_error_utils.h"
-#include "../config/config_service.h"
+#include "../config/user_config_service.h"
 #include "../io/loaders/content_registry_loader.h"
 #include "../io/path/path_manager.h"
 
@@ -15,7 +15,7 @@ constexpr const char* USER_CONFIG_FILE_NAME = "user_config.json";
 StartupParseResult Bootstrapper::parse_runtime_settings()
 {
     _startup_preload_loader.reset();
-    elysia::config::ConfigService::instance()->shutdown();
+    elysia::config::UserConfigService::instance()->shutdown();
 
     StartupParseResult result;
 
@@ -43,11 +43,10 @@ StartupParseResult Bootstrapper::parse_runtime_settings()
 		return result;
 	}
 
-	const AppConfigLoader::Result app_config_result =
-		_app_config_loader.load(content_registry.bootstrap.app_config);
-	if (!app_config_result.success)
+	const auto app_config_result = _app_config_loader.load(content_registry.bootstrap.app_config);
+	if (!app_config_result)
 	{
-		result.error = app_config_result.error;
+		result.error = app_config_result.error().message;
 		return result;
 	}
 
@@ -55,8 +54,8 @@ StartupParseResult Bootstrapper::parse_runtime_settings()
         path_manager->player_data() / USER_CONFIG_FILE_NAME;
 
     const auto config_result =
-        elysia::config::ConfigService::instance()->initialize(
-            app_config_result.runtime_settings,
+        elysia::config::UserConfigService::instance()->initialize(
+            app_config_result->user_defaults,
             user_config_path
         );
     if (!config_result)
@@ -70,9 +69,12 @@ StartupParseResult Bootstrapper::parse_runtime_settings()
         result.warning = config_result->warning;
     }
 
-    result.runtime_settings = config_result->settings;
+    static_cast<UserConfigData&>(result.startup_settings) = config_result->settings;
+    result.startup_settings.window_title = app_config_result->window_title;
     result.i18n_manifest_path = content_registry.required.i18n;
     result.rebuilt_user_config = config_result->rebuilt_user_config;
+    result.migrated_user_config = config_result->migrated;
+    result.recovered_user_config = config_result->recovered;
 	_startup_preload_loader.set_manifest_path(content_registry.bootstrap.preload_manifest);
     result.success = true;
     return result;

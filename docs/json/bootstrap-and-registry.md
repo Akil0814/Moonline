@@ -54,7 +54,7 @@ registry 会在解析前拒绝重复 JSON 对象属性。
 | `effects` | 核心 EffectDefinition manifest |
 | `configs` | 通用配置入口 manifest |
 
-每个值必须是字符串，按 `assets/` 解析后必须是普通文件；未知 required 字段失败。资源管线会解析字体、音频、纹理、动画和 effect manifest；i18n 路径交给 `LocalizationManager`。`configs` 对应文件当前只要求存在，资源管线尚不解析其中内容。
+每个值必须是字符串，按 `assets/` 解析后必须是普通文件；未知 required 字段失败。资源管线会解析字体、音频、纹理、动画和 effect manifest；i18n 路径交给 `LocalizationManager`。`configs` 对应文件在资源管线中仍只要求存在。其 version 1 schema 已建立，并可由独立的通用 `ConfigService` 解析，但该服务尚未接入 Bootstrapper、GameContentLoader 或场景加载流程，详见[运行时配置模块](../runtime-config.md)。
 
 ### `manifests.additional`
 

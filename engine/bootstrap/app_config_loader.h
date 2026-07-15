@@ -3,6 +3,7 @@
 #include "runtime_settings.h"
 
 #include <filesystem>
+#include <expected>
 #include <string>
 
 namespace elysia::bootstrap
@@ -10,16 +11,13 @@ namespace elysia::bootstrap
 class AppConfigLoader
 {
 public:
-    struct Result
+    struct Failure
     {
-        bool success = false;
-        RuntimeSettings runtime_settings;
-		std::string error;
-
-        explicit operator bool() const { return success; }
+        std::string message;
     };
 
-    Result load(const std::filesystem::path& app_config_path) const;
+    [[nodiscard]] std::expected<AppConfig,Failure> load(
+        const std::filesystem::path& app_config_path) const;
 };
 
 }

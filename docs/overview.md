@@ -35,6 +35,9 @@ The current resource-loading JSON chain, manifest schemas, entity content rules,
 and failure behavior are documented in Chinese in
 [`docs/json/`](json/README.md).
 
+AppConfig、用户持久化设置与通用游戏 ConfigService 的职责和现行 schema 见
+[`docs/runtime-config.md`](runtime-config.md)。
+
 
 ## Planned Game Features
 

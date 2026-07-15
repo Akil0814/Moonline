@@ -1,137 +1,92 @@
 #include "app_config_loader.h"
 
-#include "bootstrap_error_utils.h"
-#include "../io/json/json_loader.h"
+#include "../io/json/strict_json.h"
+
+#include <cmath>
+#include <limits>
+#include <set>
 
 namespace elysia::bootstrap
 {
 namespace
 {
-bool read_volume_setting(
-    const elysia::io::JsonLoader& loader,
-    const elysia::io::json& node,
-    const char* key,
-    int& out,
-    std::string& error
-)
-{
-    if (!loader.get(node, key, out) || out < 0 || out > 100)
-    {
-        append_bootstrap_error(
-            error,
-            std::string("App config ") + key + " is missing or invalid."
-        );
-        return false;
-    }
+using Json = elysia::io::json;
 
+bool exact_fields(const Json& node,std::initializer_list<std::string_view> expected,
+    std::string_view path,std::string& error)
+{
+    if (!node.is_object()) { error = std::string(path) + " must be an object."; return false; }
+    std::set<std::string> allowed;
+    for (const auto key : expected) allowed.emplace(key);
+    for (const auto& [key,value] : node.items())
+        if (!allowed.contains(key)) { error = "Unknown AppConfig field: " + std::string(path) + "." + key; return false; }
+    for (const auto& key : allowed)
+        if (!node.contains(key)) { error = "Missing AppConfig field: " + std::string(path) + "." + key; return false; }
     return true;
 }
+
+bool positive_int(const Json& node,const char* key,int& value,std::string& error)
+{
+    const Json& item = node.at(key);
+    if (!item.is_number_integer()) { error = std::string("AppConfig field must be an integer: ") + key; return false; }
+    const auto parsed = item.get<std::int64_t>();
+    if (parsed <= 0 || parsed > std::numeric_limits<int>::max()) { error = std::string("AppConfig field is out of range: ") + key; return false; }
+    value = static_cast<int>(parsed); return true;
 }
 
-AppConfigLoader::Result AppConfigLoader::load(const std::filesystem::path& app_config_path) const
+bool volume(const Json& node,const char* key,int& value,std::string& error)
 {
-    AppConfigLoader::Result result;
+    if (!node.at(key).is_number_integer()) { error = std::string("AppConfig volume must be an integer: ") + key; return false; }
+    const auto parsed = node.at(key).get<std::int64_t>();
+    if (parsed < 0 || parsed > 100) { error = std::string("AppConfig volume must be within 0..100: ") + key; return false; }
+    value = static_cast<int>(parsed); return true;
+}
+}
 
-    elysia::io::JsonLoader loader;
-    const elysia::io::JsonReadResult open_result = loader.open_file(app_config_path);
-    if (!open_result.success)
-    {
-        append_bootstrap_error(result.error, open_result.error);
-        return result;
-    }
+std::expected<AppConfig,AppConfigLoader::Failure> AppConfigLoader::load(
+    const std::filesystem::path& path) const
+{
+    const auto parsed = elysia::io::load_strict_json(path);
+    if (!parsed) return std::unexpected(Failure{parsed.error()});
+    const Json& root = *parsed;
+    std::string error;
+    if (!exact_fields(root,{"schema_version","window","render","audio","localization"},"root",error))
+        return std::unexpected(Failure{error});
+    if (!root.at("schema_version").is_number_integer() || root.at("schema_version").get<int>() != 1)
+        return std::unexpected(Failure{"AppConfig schema_version must be 1."});
+    if (!exact_fields(root.at("window"),{"title","width","height","fullscreen"},"window",error)
+        || !exact_fields(root.at("render"),{"fps","vsync"},"render",error)
+        || !exact_fields(root.at("audio"),{"master_volume","music_volume","sound_volume"},"audio",error)
+        || !exact_fields(root.at("localization"),{"language"},"localization",error))
+        return std::unexpected(Failure{error});
 
-    const elysia::io::json* window_node = nullptr;
-    if (!loader.get_object("window", window_node))
-    {
-        append_bootstrap_error(result.error, "App config is missing window object.");
-        return result;
-    }
+    AppConfig result;
+    const Json& window = root.at("window");
+    if (!window.at("title").is_string() || (result.window_title = window.at("title").get<std::string>()).empty())
+        return std::unexpected(Failure{"AppConfig window.title must be a non-empty string."});
+    if (!positive_int(window,"width",result.user_defaults.window_width,error)
+        || !positive_int(window,"height",result.user_defaults.window_height,error))
+        return std::unexpected(Failure{error});
+    if (!window.at("fullscreen").is_boolean()) return std::unexpected(Failure{"AppConfig window.fullscreen must be boolean."});
+    result.user_defaults.fullscreen = window.at("fullscreen").get<bool>();
 
-    if (!loader.get(*window_node, "title", result.runtime_settings.window_title))
-    {
-        append_bootstrap_error(result.error, "App config is missing window.title.");
-        return result;
-    }
+    const Json& render = root.at("render");
+    if (!render.at("fps").is_number()) return std::unexpected(Failure{"AppConfig render.fps must be numeric."});
+    result.user_defaults.target_fps = render.at("fps").get<double>();
+    if (!std::isfinite(result.user_defaults.target_fps) || result.user_defaults.target_fps <= 0.0)
+        return std::unexpected(Failure{"AppConfig render.fps must be finite and positive."});
+    if (!render.at("vsync").is_boolean()) return std::unexpected(Failure{"AppConfig render.vsync must be boolean."});
+    result.user_defaults.vsync = render.at("vsync").get<bool>();
 
-    if (!loader.get(*window_node, "default_width", result.runtime_settings.window_width)
-        || result.runtime_settings.window_width <= 0)
-    {
-        append_bootstrap_error(result.error, "App config default_width is missing or invalid.");
-        return result;
-    }
-
-    if (!loader.get(*window_node, "default_height", result.runtime_settings.window_height)
-        || result.runtime_settings.window_height <= 0)
-    {
-        append_bootstrap_error(result.error, "App config default_height is missing or invalid.");
-        return result;
-    }
-
-    if (!loader.get(*window_node, "fullscreen", result.runtime_settings.fullscreen))
-    {
-        append_bootstrap_error(result.error, "App config fullscreen is missing or invalid.");
-        return result;
-    }
-
-    const elysia::io::json* render_node = nullptr;
-    if (!loader.get_object("render", render_node))
-    {
-        append_bootstrap_error(result.error, "App config is missing render object.");
-        return result;
-    }
-
-    if (!loader.get(*render_node, "default_fps", result.runtime_settings.target_fps)
-        || result.runtime_settings.target_fps <= 0.0)
-    {
-        append_bootstrap_error(result.error, "App config default_fps is missing or invalid.");
-        return result;
-    }
-
-    if (!loader.get(*render_node, "vsync", result.runtime_settings.vsync))
-    {
-        append_bootstrap_error(result.error, "App config vsync is missing or invalid.");
-        return result;
-    }
-
-    const elysia::io::json* audio_node = nullptr;
-    if (!loader.get_object("audio", audio_node))
-    {
-        append_bootstrap_error(result.error, "App config is missing audio object.");
-        return result;
-    }
-
-    if (!read_volume_setting(
-        loader,
-        *audio_node,
-        "master_volume",
-        result.runtime_settings.audio.master_volume,
-        result.error))
-    {
-        return result;
-    }
-
-    if (!read_volume_setting(
-        loader,
-        *audio_node,
-        "music_volume",
-        result.runtime_settings.audio.music_volume,
-        result.error))
-    {
-        return result;
-    }
-
-    if (!read_volume_setting(
-        loader,
-        *audio_node,
-        "sound_volume",
-        result.runtime_settings.audio.sound_volume,
-        result.error))
-    {
-        return result;
-    }
-
-	result.success = true;
+    const Json& audio = root.at("audio");
+    if (!volume(audio,"master_volume",result.user_defaults.audio.master_volume,error)
+        || !volume(audio,"music_volume",result.user_defaults.audio.music_volume,error)
+        || !volume(audio,"sound_volume",result.user_defaults.audio.sound_volume,error))
+        return std::unexpected(Failure{error});
+    const Json& localization = root.at("localization");
+    if (!localization.at("language").is_string()
+        || (result.user_defaults.language = localization.at("language").get<std::string>()).empty())
+        return std::unexpected(Failure{"AppConfig localization.language must be a non-empty string."});
     return result;
 }
-
 }

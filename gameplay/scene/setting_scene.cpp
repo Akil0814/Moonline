@@ -3,7 +3,7 @@
 #include "../../application/scene/scene_keys.h"
 #include "../../application/scene/scene_payloads.h"
 
-#include "../../engine/config/config_service.h"
+#include "../../engine/config/user_config_service.h"
 #include "../../engine/ui/containers/ui_list_container.h"
 #include "../../engine/ui/layout/ui_layout_types.h"
 #include "../../engine/ui/text/ui_text_content.h"
@@ -128,11 +128,11 @@ void SettingScene::build_ui()
 
     auto fullscreen = std::make_unique<elysia::ui::UiCheckbox>(
         elysia::core::Rect{ 0,0,row_height,row_height });
-    fullscreen->set_checked(elysia::config::ConfigService::instance()->user_settings().fullscreen());
+    fullscreen->set_checked(elysia::config::UserConfigService::instance()->user_config().fullscreen());
     page->add_back(make_field_row("Fullscreen",std::move(fullscreen)));
 
     page->add_back(make_label("Audio",field_width,elysia::ui::UiTypographyRole::Subtitle));
-    const auto& settings = elysia::config::ConfigService::instance()->user_settings();
+    const auto& settings = elysia::config::UserConfigService::instance()->user_config();
     page->add_back(make_field_row("Master volume",make_volume_slider(static_cast<float>(settings.master_volume()))));
     page->add_back(make_field_row("Music volume",make_volume_slider(static_cast<float>(settings.music_volume()))));
     page->add_back(make_field_row("Sound volume",make_volume_slider(static_cast<float>(settings.sound_volume()))));
@@ -157,7 +157,7 @@ void SettingScene::build_ui()
     save->set_visual_role(elysia::ui::UiButtonVisualRole::Primary);
     save->set_on_click([]()
     {
-        (void)elysia::config::ConfigService::instance()->save_user_settings();
+        (void)elysia::config::UserConfigService::instance()->save_user_config();
     });
     actions->add_back(std::move(save));
 

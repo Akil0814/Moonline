@@ -1,43 +1,80 @@
 #pragma once
 
-#include "config_initialization_failure.h"
-#include "user_settings.h"
-#include "user_settings_store.h"
+#include "../core/geometry/rect.h"
+#include "../core/geometry/vector2.h"
 #include "../tools/singleton.h"
 
+#include <cstdint>
 #include <expected>
 #include <filesystem>
-
-class Application;
-
-namespace elysia::bootstrap { class Bootstrapper; }
+#include <memory>
+#include <mutex>
+#include <string>
+#include <string_view>
+#include <unordered_set>
+#include <vector>
 
 namespace elysia::config
 {
+struct ConfigOrigin
+{
+    std::string config_path;
+    std::string json_pointer;
+    std::string key_namespace;
+    std::string full_key;
+
+    [[nodiscard]] std::string describe() const;
+};
+
+enum class ConfigLoadError { OpenFailed, InvalidSchema, InvalidKey, InvalidValue, DuplicateKey };
+struct ConfigLoadFailure
+{
+    ConfigLoadError error = ConfigLoadError::InvalidSchema;
+    std::string message;
+    ConfigOrigin first;
+    ConfigOrigin second;
+};
+
+enum class ConfigAccessError { NotInitialized, MissingKey, TypeMismatch, InvalidValue };
+struct ConfigAccessFailure
+{
+    ConfigAccessError error = ConfigAccessError::MissingKey;
+    std::string key;
+    std::string expected_type;
+    std::string actual_type;
+    ConfigOrigin origin;
+    std::string message;
+};
+
 class ConfigService final : public elysia::tools::Singleton<ConfigService>
 {
     friend elysia::tools::Singleton<ConfigService>;
-    friend class elysia::bootstrap::Bootstrapper;
-    friend class ::Application;
-
 public:
-    [[nodiscard]] UserSettings& user_settings() noexcept { return _user_settings; }
-    [[nodiscard]] const UserSettings& user_settings() const noexcept { return _user_settings; }
-    [[nodiscard]] std::expected<void,UserSettingsFailure> save_user_settings();
-    void register_settings_change_handler(ISettingsChangeHandler& handler) noexcept;
-    void unregister_settings_change_handler(ISettingsChangeHandler& handler) noexcept;
-    [[nodiscard]] bool is_initialized() const noexcept { return _initialized; }
+    struct Snapshot;
+    [[nodiscard]] std::expected<void,ConfigLoadFailure> initialize(const std::filesystem::path& manifest_path);
+    void shutdown() noexcept;
+    [[nodiscard]] bool is_initialized() const noexcept;
+    [[nodiscard]] bool contains(std::string_view key) const;
+
+    [[nodiscard]] std::expected<std::int64_t,ConfigAccessFailure> get_int(std::string_view key) const;
+    [[nodiscard]] std::expected<double,ConfigAccessFailure> get_double(std::string_view key) const;
+    [[nodiscard]] std::expected<bool,ConfigAccessFailure> get_bool(std::string_view key) const;
+    [[nodiscard]] std::expected<std::string,ConfigAccessFailure> get_string(std::string_view key) const;
+    [[nodiscard]] std::expected<elysia::core::Vector2,ConfigAccessFailure> get_vector2(std::string_view key) const;
+    [[nodiscard]] std::expected<elysia::core::Rect,ConfigAccessFailure> get_rect(std::string_view key) const;
+
+    [[nodiscard]] std::expected<std::vector<std::int64_t>,ConfigAccessFailure> get_int_array(std::string_view key) const;
+    [[nodiscard]] std::expected<std::vector<double>,ConfigAccessFailure> get_double_array(std::string_view key) const;
+    [[nodiscard]] std::expected<std::vector<bool>,ConfigAccessFailure> get_bool_array(std::string_view key) const;
+    [[nodiscard]] std::expected<std::vector<std::string>,ConfigAccessFailure> get_string_array(std::string_view key) const;
+    [[nodiscard]] std::expected<std::vector<elysia::core::Vector2>,ConfigAccessFailure> get_vector2_array(std::string_view key) const;
+    [[nodiscard]] std::expected<std::vector<elysia::core::Rect>,ConfigAccessFailure> get_rect_array(std::string_view key) const;
 
 private:
     ConfigService() = default;
-    [[nodiscard]] std::expected<UserSettingsLoadResult,ConfigInitializationFailure> initialize(
-        const elysia::bootstrap::RuntimeSettings& default_settings,
-        const std::filesystem::path& user_settings_path);
-    void shutdown() noexcept;
-
-    UserSettings _user_settings;
-    UserSettingsStore _user_settings_store;
-    std::filesystem::path _user_settings_path;
-    bool _initialized = false;
+    void log_once(const ConfigAccessFailure& failure) const;
+    mutable std::mutex _mutex;
+    std::shared_ptr<const Snapshot> _snapshot;
+    mutable std::unordered_set<std::string> _logged_access_errors;
 };
 }

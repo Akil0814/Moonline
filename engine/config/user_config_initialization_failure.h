@@ -4,7 +4,7 @@
 
 namespace elysia::config
 {
-struct ConfigInitializationFailure
+struct UserConfigInitializationFailure
 {
     std::string message;
 };

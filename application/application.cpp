@@ -7,7 +7,7 @@
 
 #include "../engine/audio/audio_service.h"
 #include "../engine/bootstrap/bootstrapper.h"
-#include "../engine/config/config_service.h"
+#include "../engine/config/user_config_service.h"
 #include "../engine/core/time.h"
 #include "../engine/effects/effect_manager.h"
 #include "../engine/localization/localization_manager.h"
@@ -79,7 +79,7 @@ bool Application::init(int argc, char** argv)
 		ELYSIA_LOG_WARN("application","Startup warning: " << parse_result.warning);
 	}
 
-	elysia::bootstrap::RuntimeSettings runtime_settings = parse_result.runtime_settings;
+	elysia::bootstrap::StartupSettings runtime_settings = parse_result.startup_settings;
 
 	if (!init_runtime(runtime_settings))
 	{
@@ -98,20 +98,20 @@ bool Application::init(int argc, char** argv)
 		return false;
 	}
 
-	elysia::config::ConfigService::instance()->register_settings_change_handler(*this);
-	_settings_handler_registered = true;
+	elysia::config::UserConfigService::instance()->register_user_config_change_handler(*this);
+	_user_config_handler_registered = true;
 
-	elysia::config::UserSettings& user_settings = elysia::config::ConfigService::instance()->user_settings();
-	if (user_settings.language() != elysia::localization::LocalizationManager::instance()->current_language())
+	elysia::config::UserConfig& user_config = elysia::config::UserConfigService::instance()->user_config();
+	if (user_config.language() != elysia::localization::LocalizationManager::instance()->current_language())
 	{
-		const auto language_result = user_settings.set_language(
+		const auto language_result = user_config.set_language(
 			elysia::localization::LocalizationManager::instance()->current_language());
 		if (!language_result)
 		{
 			ELYSIA_LOG_WARN("application","Localization warning: normalize language in config failed: "
 				<< language_result.error().message);
 		}
-		else if (const auto save_result = elysia::config::ConfigService::instance()->save_user_settings(); !save_result)
+		else if (const auto save_result = elysia::config::UserConfigService::instance()->save_user_config(); !save_result)
 		{
 			ELYSIA_LOG_WARN("application","Localization warning: save normalized language failed: "
 				<< save_result.error().message);
@@ -133,7 +133,7 @@ bool Application::init(int argc, char** argv)
 	return true;
 }
 
-bool Application::init_runtime(const elysia::bootstrap::RuntimeSettings& settings)
+bool Application::init_runtime(const elysia::bootstrap::StartupSettings& settings)
 {
 	init_assert(!SDL_Init(SDL_INIT_EVERYTHING), "SDL2 Error");
 
@@ -320,12 +320,12 @@ void Application::shutdown()
 	_scene_manager.shutdown();
 	elysia::effects::EffectManager::instance()->reset_digit_caches();
 	elysia::localization::LocalizationManager::instance()->shutdown();
-	if (_settings_handler_registered)
+	if (_user_config_handler_registered)
 	{
-		elysia::config::ConfigService::instance()->unregister_settings_change_handler(*this);
-		_settings_handler_registered = false;
+		elysia::config::UserConfigService::instance()->unregister_user_config_change_handler(*this);
+		_user_config_handler_registered = false;
 	}
-	elysia::config::ConfigService::instance()->shutdown();
+	elysia::config::UserConfigService::instance()->shutdown();
 	elysia::audio::AudioService::instance()->shutdown();
 	elysia::resources::ResourceManager::instance()->clear();
 	elysia::tools::Logger::instance()->info("application","Application shutdown complete");
@@ -339,33 +339,33 @@ void Application::on_scene_manager_quit_requested()
 
 namespace
 {
-std::unexpected<elysia::config::UserSettingsFailure> runtime_apply_failure(
+std::unexpected<elysia::config::UserConfigFailure> runtime_apply_failure(
 	const char* setting,const std::string& message)
 {
-	return std::unexpected(elysia::config::UserSettingsFailure{
-		elysia::config::UserSettingsError::RuntimeApplyFailed,setting,message});
+	return std::unexpected(elysia::config::UserConfigFailure{
+		elysia::config::UserConfigError::RuntimeApplyFailed,setting,message});
 }
 }
 
-std::expected<void,elysia::config::UserSettingsFailure> Application::apply_master_volume(int value)
+std::expected<void,elysia::config::UserConfigFailure> Application::apply_master_volume(int value)
 {
 	elysia::audio::AudioService::instance()->set_master_volume(value);
 	return {};
 }
 
-std::expected<void,elysia::config::UserSettingsFailure> Application::apply_music_volume(int value)
+std::expected<void,elysia::config::UserConfigFailure> Application::apply_music_volume(int value)
 {
 	elysia::audio::AudioService::instance()->set_music_volume(value);
 	return {};
 }
 
-std::expected<void,elysia::config::UserSettingsFailure> Application::apply_sound_volume(int value)
+std::expected<void,elysia::config::UserConfigFailure> Application::apply_sound_volume(int value)
 {
 	elysia::audio::AudioService::instance()->set_sound_volume(value);
 	return {};
 }
 
-std::expected<void,elysia::config::UserSettingsFailure> Application::apply_language(std::string_view language)
+std::expected<void,elysia::config::UserConfigFailure> Application::apply_language(std::string_view language)
 {
 	if (!elysia::localization::LocalizationManager::instance()->set_language(std::string(language)))
 		return runtime_apply_failure("language","Runtime language change failed.");
@@ -373,21 +373,21 @@ std::expected<void,elysia::config::UserSettingsFailure> Application::apply_langu
 	return {};
 }
 
-std::expected<void,elysia::config::UserSettingsFailure> Application::apply_target_fps(double value)
+std::expected<void,elysia::config::UserConfigFailure> Application::apply_target_fps(double value)
 {
 	if (value <= 0.0) return runtime_apply_failure("target_fps","Target FPS must be positive.");
 	FPS = value;
 	return {};
 }
 
-std::expected<void,elysia::config::UserSettingsFailure> Application::apply_window_size(int width,int height)
+std::expected<void,elysia::config::UserConfigFailure> Application::apply_window_size(int width,int height)
 {
 	if (!_window) return runtime_apply_failure("window_size","Application window is unavailable.");
 	SDL_SetWindowSize(_window,width,height);
 	return {};
 }
 
-std::expected<void,elysia::config::UserSettingsFailure> Application::apply_fullscreen(bool value)
+std::expected<void,elysia::config::UserConfigFailure> Application::apply_fullscreen(bool value)
 {
 	if (!_window) return runtime_apply_failure("fullscreen","Application window is unavailable.");
 	const Uint32 flags = value ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0;

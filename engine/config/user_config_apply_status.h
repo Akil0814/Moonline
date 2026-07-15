@@ -2,7 +2,7 @@
 
 namespace elysia::config
 {
-enum class SettingsApplyStatus
+enum class UserConfigApplyStatus
 {
     Applied,
     PendingRestart
