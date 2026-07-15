@@ -1,0 +1,17 @@
+{
+  "entities": "configs/character/characters_manifest.json",
+  "key_namespace": "effect",
+  "capabilities": {
+    "animations": {
+      "texture_root": "textures/character/{asset_key}",
+      "config_template": "configs/character/{asset_key}/effect_animation_info.json",
+      "frame_prefix_template": "{asset_key}_effects_{animation}{segment_suffix}",
+      "layouts": {
+        "fighter": "configs/character/layouts/character_effect_animation_layout.json"
+      }
+    },
+    "effects": {
+      "config_template": "configs/character/{asset_key}/effect_info.json"
+    }
+  }
+}

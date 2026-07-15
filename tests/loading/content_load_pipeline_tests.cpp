@@ -1,233 +1,267 @@
 #define SDL_MAIN_HANDLED
 
-#include "engine/io/json/json_loader.h"
 #include "engine/io/loaders/content_registry_loader.h"
-#include "engine/io/loaders/effect_definition_config_loader.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/loading/animated_entity_content_loader.h"
 #include "engine/loading/config_load_pipeline.h"
-#include "engine/loading/resource_load_plan.h"
-#include "engine/loading/resource_request_assembler.h"
-#include "engine/resources/pipeline/resource_request_builder.h"
 #include "tests/support/test_assertions.h"
 
-#include <algorithm>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <vector>
 
 namespace
 {
 using moonline::tests::require;
 
-void test_registry_and_content_load_pipeline()
+std::string json_path(const std::filesystem::path& path)
 {
-	elysia::io::PathManager* path_manager = elysia::io::PathManager::instance();
+	return path.generic_string();
+}
+
+std::filesystem::path write_file(
+	const std::filesystem::path& root,
+	const std::string& name,
+	const std::string& contents)
+{
+	const auto path = root / name;
+	std::ofstream(path) << contents;
+	return path;
+}
+
+std::string required_manifests()
+{
+	return R"("required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","configs":"configs/manifests/config_manifest.json"})";
+}
+
+std::filesystem::path write_registry(
+	const std::filesystem::path& root,
+	const std::string& name,
+	const std::string& additional = {})
+{
+	std::string manifests = "{" + required_manifests();
+	if (!additional.empty()) manifests += ",\"additional\":" + additional;
+	manifests += "}";
+	return write_file(root, name,
+		R"({"bootstrap":{"app_config":"configs/global/app_config.json","preload_manifest":"configs/manifests/preload_manifest.json"},"manifests":)"
+		+ manifests + "}");
+}
+
+void test_current_modules_load_through_generic_pipeline()
+{
+	auto* path_manager = elysia::io::PathManager::instance();
 	require(path_manager->init(), "path manager must initialize from the project root");
-	const std::filesystem::path registry_test_root =
-		std::filesystem::temp_directory_path() / "moonline_content_registry_tests";
-	std::filesystem::remove_all(registry_test_root);
-	std::filesystem::create_directories(registry_test_root);
-	const auto write_registry = [&registry_test_root](const char* file_name, const std::string& manifests)
-	{
-		const std::filesystem::path path = registry_test_root / file_name;
-		std::ofstream file(path);
-		file << R"({"bootstrap":{"app_config":"configs/global/app_config.json","preload_manifest":"configs/manifests/preload_manifest.json"},"manifests":)"
-			<< manifests << "}";
-		return path;
-	};
-	const auto write_root = [&registry_test_root](const char* file_name, const std::string& root)
-	{
-		const std::filesystem::path path = registry_test_root / file_name;
-		std::ofstream file(path);
-		file << root;
-		return path;
-	};
-	const std::string required_manifests = R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","configs":"configs/manifests/config_manifest.json"}})";
 
-	elysia::io::ContentRegistryLoader content_registry_loader;
-	elysia::io::ContentRegistry content_registry;
-	elysia::io::JsonLoader config_manifest_loader;
-	require(static_cast<bool>(config_manifest_loader.open_file(
-		path_manager->to_config_path("manifests/config_manifest.json"))),
-		"config manifest must be valid JSON");
-	require(config_manifest_loader.root().contains("configs"),
-		"config manifest must declare runtime config paths");
-	elysia::io::JsonLoader input_config_loader;
-	require(static_cast<bool>(input_config_loader.open_file(
-		path_manager->to_config_path("global/input_config.json"))),
-		"input config placeholder must be valid JSON");
-	elysia::io::JsonLoader game_config_loader;
-	require(static_cast<bool>(game_config_loader.open_file(
-		path_manager->to_config_path("global/game_config.json"))),
-		"game config placeholder must be valid JSON");
-	require(content_registry_loader.load(
-		write_registry("without_characters.json", required_manifests), content_registry),
-		"content registry must allow no additional modules");
-	require(content_registry.bootstrap.app_config == path_manager->to_config_path("global/app_config.json")
-		&& content_registry.bootstrap.preload_manifest == path_manager->to_config_path("manifests/preload_manifest.json"),
-		"content registry must resolve bootstrap paths");
-	require(content_registry.additional_module_manifests.empty(),
-		"content registry without additional modules must remain empty");
-	require(!content_registry_loader.load(
-		write_root("missing_bootstrap.json", R"({"manifests":{"required":{}}})"), content_registry),
-		"content registry must reject a missing bootstrap section");
-	require(!content_registry_loader.load(
-		write_root("invalid_bootstrap.json", R"({"bootstrap":"invalid","manifests":{"required":{}}})"), content_registry),
-		"content registry must reject a non-object bootstrap section");
-	require(!content_registry_loader.load(
-		write_root("missing_bootstrap_path.json", R"({"bootstrap":{"app_config":"configs/global/app_config.json"},"manifests":{"required":{}}})"), content_registry),
-		"content registry must reject a missing bootstrap path");
-	require(!content_registry_loader.load(
-		write_root("unknown_bootstrap.json", R"({"bootstrap":{"app_config":"configs/global/app_config.json","preload_manifest":"configs/manifests/preload_manifest.json","unknown":"x"},"manifests":{"required":{}}})"), content_registry),
-		"content registry must reject unknown bootstrap keys");
-	require(!content_registry_loader.load(
-		write_root("missing_bootstrap_file.json", R"({"bootstrap":{"app_config":"configs/global/missing.json","preload_manifest":"configs/manifests/preload_manifest.json"},"manifests":{"required":{}}})"), content_registry),
-		"content registry must reject missing bootstrap files");
-	require(!content_registry_loader.load(
-		write_registry("missing_required.json", R"({"additional":{}})"), content_registry),
-		"content registry must reject a missing required section");
-	require(!content_registry_loader.load(
-		write_registry("unknown_required.json", R"({"required":{"unknown":"x"}})"), content_registry),
-		"content registry must reject unknown required keys");
-	require(!content_registry_loader.load(
-		write_registry("legacy_config_documents.json", R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","config_documents":"configs/manifests/config_documents.json"}})"), content_registry),
-		"content registry must reject the legacy config_documents key");
+	elysia::loading::ConfigLoadPipeline pipeline;
+	elysia::loading::ConfigLoadResult result;
+	require(pipeline.load(path_manager->content_registry(), result),
+		"current content registry must load through the generic additional-module pipeline");
+	require(result.additional_modules.size() == 3
+		&& result.additional_modules.contains("characters")
+		&& result.additional_modules.contains("character_effects")
+		&& result.additional_modules.contains("enemies"),
+		"additional modules must be stored deterministically by arbitrary manifest name");
 
-	elysia::loading::ConfigLoadResult config_result;
-	elysia::loading::ConfigLoadPipeline config_load_pipeline;
-	require(config_load_pipeline.load(path_manager->content_registry(), config_result),
-		"config pipeline must load the generic animation manifest");
-	require(config_result.characters.has_value(),
-		"configured characters module must be loaded");
-	require(config_result.enemies.has_value()
-		&& config_result.enemies->content.animation_entries.size() == 5,
-		"configured enemies module must load the normal enemy animations");
+	const auto& characters = result.additional_modules.at("characters");
+	require(characters.name == "characters"
+		&& characters.key_namespace.empty()
+		&& characters.animation_entries.size() == 3
+		&& characters.effect_entries.empty()
+		&& characters.texture_entries.size() == 3
+		&& characters.audio_entries.size() == 3,
+		"characters module must independently expose its optional animation, texture and audio capabilities");
 
-	elysia::loading::ConfigLoadResult core_only_config_result;
-	require(config_load_pipeline.load(
-		write_registry("core_only.json", required_manifests), core_only_config_result),
-		"config pipeline must load without the characters module");
-	require(!core_only_config_result.characters.has_value(),
-		"omitted characters module must not produce character content");
-	require(!core_only_config_result.enemies.has_value(),
-		"omitted enemies module must not produce enemy content");
-	elysia::loading::ResourceLoadPlan core_only_load_plan;
-	elysia::loading::ResourceRequestAssembler core_only_request_assembler;
-	require(core_only_request_assembler.assemble(core_only_config_result, core_only_load_plan),
-		"request assembler must support core-only content");
-	const auto core_only_character_request = std::find_if(
-		core_only_load_plan.atlas_build_requests().begin(),
-		core_only_load_plan.atlas_build_requests().end(),
-		[](const elysia::resources::AtlasBuildRequest& request)
-		{
-			return request.atlas_key.starts_with("ryougi_shiki.");
-		});
-	require(core_only_character_request == core_only_load_plan.atlas_build_requests().end(),
-		"core-only content must not request character atlases");
+	const auto& effects = result.additional_modules.at("character_effects");
+	require(effects.name == "character_effects"
+		&& effects.key_namespace == "effect"
+		&& effects.animation_entries.size() == 3
+		&& effects.effect_entries.size() == 3
+		&& effects.texture_entries.empty()
+		&& effects.audio_entries.empty(),
+		"character effects must be a regular Animation+Effect additional module");
 
-	elysia::loading::ConfigLoadResult invalid_module_config_result;
-	require(!config_load_pipeline.load(
-		write_registry("unknown_module.json", R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","configs":"configs/manifests/config_manifest.json"},"additional":{"unknown":"configs/character/character_content_manifest.json"}})"), invalid_module_config_result),
-		"config pipeline must reject unknown additional modules");
-	require(!config_load_pipeline.load(
-		write_registry("incomplete_characters.json", R"({"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","configs":"configs/manifests/config_manifest.json"},"additional":{"characters":"configs/manifests/config_manifest.json"}})"), invalid_module_config_result),
-		"config pipeline must reject incomplete characters module config");
-	const std::filesystem::path invalid_capability_path = registry_test_root / "effects_without_animations.json";
-	std::ofstream(invalid_capability_path) << R"({"entities":"configs/enemy/enemy_manifest.json","capabilities":{"effects":{"layout":"configs/character/layouts/character_effect_animation_layout.json"}}})";
-	elysia::loading::AnimatedEntityContentLoader animated_entity_content_loader;
-	elysia::io::AnimatedEntityContent invalid_capability_content;
-	std::string invalid_capability_error;
-	require(!animated_entity_content_loader.load(invalid_capability_path, invalid_capability_content, invalid_capability_error),
-		"effects capability must reject the legacy singular layout field");
-	const auto invalid_effect_template_path = write_root("invalid_effect_template.json",
-		R"({"entities":"configs/character/characters_manifest.json","resources":{"texture_root":"textures/character/{asset_key}","effect_animation_config_template":"configs/character/fixed.json","effect_info_template":"configs/character/{asset_key}/effect_info.json"},"capabilities":{"effects":{"layouts":{"fighter":"configs/character/layouts/character_effect_animation_layout.json"}}}})");
-	require(!animated_entity_content_loader.load(invalid_effect_template_path, invalid_capability_content, invalid_capability_error),
-		"effect animation config template must contain the asset key placeholder");
-	const auto unknown_effect_layout_path = write_root("unknown_effect_layout.json",
-		R"({"entities":"configs/character/characters_manifest.json","resources":{"texture_root":"textures/character/{asset_key}","effect_animation_config_template":"configs/character/{asset_key}/effect_animation_info.json","effect_info_template":"configs/character/{asset_key}/effect_info.json"},"capabilities":{"effects":{"layouts":{"other":"configs/character/layouts/character_effect_animation_layout.json"}}}})");
-	require(!animated_entity_content_loader.load(unknown_effect_layout_path, invalid_capability_content, invalid_capability_error),
-		"entity animation layout key must exist in the effect animation layouts mapping");
-	const std::filesystem::path roster_only_characters_path = registry_test_root / "roster_only_characters.json";
-	std::ofstream(roster_only_characters_path) << R"({"entities":"configs/character/characters_manifest.json"})";
-	elysia::io::AnimatedEntityContent roster_only_characters;
-	std::string roster_only_characters_error;
-	require(animated_entity_content_loader.load(
-		roster_only_characters_path, roster_only_characters, roster_only_characters_error)
-		&& roster_only_characters.entities.size() == 3
-		&& roster_only_characters.animation_entries.empty()
-		&& roster_only_characters.effect_entries.empty()
-		&& !roster_only_characters.texture_layout.has_value()
-		&& !roster_only_characters.audio_layout.has_value(),
-		"a characters module without capabilities must load its roster and skip resource requests");
-	require(config_result.characters->content.effect_entries.size() == 3,
-		"configured characters must load one effect animation and definition config per entity");
-	require(config_result.characters->content.effect_entries[0].animation_config.clips.size() == 7
-		&& config_result.characters->content.effect_entries[1].animation_config.clips.size() == 2
-		&& config_result.characters->content.effect_entries[2].animation_config.clips.size() == 10,
-		"per-character effect animation configs must preserve their actual configured clips");
+	const auto& enemies = result.additional_modules.at("enemies");
+	require(enemies.animation_entries.size() == 5
+		&& enemies.effect_entries.empty()
+		&& enemies.texture_entries.empty()
+		&& enemies.audio_entries.empty(),
+		"an animation-only additional module must load without unrelated capabilities");
+}
 
-	elysia::io::AnimationConfig synthetic_animations;
-	synthetic_animations.clips.push_back({"source_animation", "unused", 1, 10.0, false, false, 0});
-	elysia::io::EffectDefinitionConfigLoader definition_loader;
-	elysia::io::EffectDefinitionConfig definition_config;
-	const auto valid_effect_info = write_root("valid_effect_info.json",
-		R"({"effects":{"logical_effect":{"animation":"source_animation","default_width":0,"default_height":0,"default_angle_degrees":15}}})");
-	require(definition_loader.load(valid_effect_info, synthetic_animations, definition_config)
-		&& definition_config.effects.size() == 1
-		&& definition_config.effects[0].effect_name == "logical_effect"
-		&& definition_config.effects[0].animation_name == "source_animation",
-		"effect info must allow a logical effect name to map to an existing animation name");
-	require(!definition_loader.load(write_root("missing_effect_animation.json",
-		R"({"effects":{"bad":{"animation":"missing"}}})"), synthetic_animations, definition_config),
-		"effect info must reject mappings to missing animations");
-	require(!definition_loader.load(write_root("invalid_effect_size.json",
-		R"({"effects":{"bad":{"animation":"source_animation","default_width":32}}})"), synthetic_animations, definition_config),
-		"effect info must require default width and height together");
-	require(!definition_loader.load(write_root("duplicate_effect_name.json",
-		R"({"effects":{"same":{"animation":"source_animation"},"same":{"animation":"source_animation"}}})"), synthetic_animations, definition_config),
-		"effect info must reject duplicate logical effect names");
+void test_arbitrary_and_empty_additional_module()
+{
+	const auto root = std::filesystem::temp_directory_path() / "moonline_generic_module_tests";
+	std::filesystem::remove_all(root);
+	std::filesystem::create_directories(root);
+	const auto entities = write_file(root, "npcs.json",
+		R"({"entities":[{"id":"npc_1","asset_key":"Npc_1"}]})");
+	const auto module = write_file(root, "npc_module.json",
+		"{\"entities\":\"" + json_path(entities)
+		+ "\",\"key_namespace\":\"\",\"capabilities\":{}}");
 
-	elysia::io::AnimatedEntityContent enemy_content;
-	std::string enemy_error;
-	require(animated_entity_content_loader.load(
-		path_manager->to_config_path("enemy/enemy_content_manifest.json"), enemy_content, enemy_error),
-		"normal enemy content manifest must load through the generic entity loader");
-	require(enemy_content.animation_entries.size() == 5, "normal enemies must produce five animation entries");
-	elysia::resources::ResourceRequestBuilder generic_request_builder;
-	std::vector<elysia::resources::AtlasBuildRequest> enemy_atlas_requests;
-	std::vector<elysia::resources::AnimationBuildRequest> enemy_animation_requests;
-	for (const elysia::io::AnimatedEntityAnimationContentEntry& entry : enemy_content.animation_entries)
-		require(generic_request_builder.append_animated_entity_animation_requests(
-			entry.entity_config, entry.animation_config, enemy_atlas_requests, enemy_animation_requests),
-			"normal enemy animation requests must build through the generic entity API");
-	require(enemy_atlas_requests.size() == 25 && enemy_animation_requests.size() == 25,
-		"normal enemies must create five animations each");
-	const auto slime_attack = std::find_if(enemy_atlas_requests.begin(), enemy_atlas_requests.end(),
-		[](const elysia::resources::AtlasBuildRequest& request) { return request.atlas_key == "slime.attack"; });
-	require(slime_attack != enemy_atlas_requests.end()
-		&& slime_attack->frame_count == 19
-		&& slime_attack->frame_filename_prefix == "Slime_attack"
-		&& slime_attack->source_path == path_manager->textures() / "enemy" / "normal" / "Slime" / "attack"
-		&& slime_attack->source_type == elysia::resources::AtlasSourceType::FrameDirectory,
-		"enemy animation requests must infer their directory, frame count, and prefix");
-	const auto flying_demon_death = std::find_if(enemy_atlas_requests.begin(), enemy_atlas_requests.end(),
-		[](const elysia::resources::AtlasBuildRequest& request) { return request.atlas_key == "flying_demon.death"; });
-	require(flying_demon_death != enemy_atlas_requests.end()
-		&& flying_demon_death->frame_count == 7
-		&& flying_demon_death->source_type == elysia::resources::AtlasSourceType::HorizontalStrip
-		&& flying_demon_death->source_path.filename() == "death.png",
-		"entity-wide strip configuration must produce FlyingDemon strip requests");
-	std::filesystem::remove_all(registry_test_root);
+	elysia::loading::AnimatedEntityContentLoader loader;
+	elysia::io::EntityContentModule content;
+	std::string error;
+	require(loader.load("npcs", module, content, error)
+		&& content.name == "npcs"
+		&& content.entities.size() == 1
+		&& content.entities.front().id == "npc_1"
+		&& content.animation_entries.empty()
+		&& content.effect_entries.empty()
+		&& content.texture_entries.empty()
+		&& content.audio_entries.empty(),
+		"an arbitrary module name with an empty capability object must be valid");
+	require(loader.load("", module, content, error)
+		&& content.entities.front().origin.scope == elysia::resources::ResourceOriginScope::AdditionalModule
+		&& content.entities.front().origin.module.empty(),
+		"an empty additional module name must remain distinguishable from core origin scope");
+	require(loader.load("core", module, content, error)
+		&& content.entities.front().origin.scope == elysia::resources::ResourceOriginScope::AdditionalModule
+		&& content.entities.front().origin.module == "core",
+		"an additional module literally named core must remain distinguishable from core origin scope");
+
+	elysia::loading::ConfigLoadPipeline pipeline;
+	elysia::loading::ConfigLoadResult result;
+	const auto registry = write_registry(root, "registry.json",
+		"{\"npcs\":\"" + json_path(module) + "\"}");
+	require(pipeline.load(registry, result)
+		&& result.additional_modules.size() == 1
+		&& result.additional_modules.contains("npcs")
+		&& result.additional_modules.at("npcs").entities.size() == 1,
+		"ConfigLoadPipeline must dispatch arbitrary additional names through the same loader");
+
+	std::filesystem::remove_all(root);
+}
+
+void test_module_schema_rejections()
+{
+	const auto root = std::filesystem::temp_directory_path() / "moonline_module_schema_tests";
+	std::filesystem::remove_all(root);
+	std::filesystem::create_directories(root);
+	const auto entities = write_file(root, "entities.json",
+		R"({"entities":[{"id":"npc","asset_key":"Npc"}]})");
+	const std::string prefix = "{\"entities\":\"" + json_path(entities) + "\",\"key_namespace\":\"\",";
+
+	elysia::loading::AnimatedEntityContentLoader loader;
+	elysia::io::EntityContentModule content;
+	std::string error;
+	require(!loader.load("effects_only", write_file(root, "effects_only.json",
+		prefix + R"("capabilities":{"effects":{"config_template":"configs/{asset_key}/effects.json"}}})"), content, error)
+		&& error.find("effects requires animations") != std::string::npos,
+		"effects capability must require animations in the same module");
+	require(!loader.load("unknown", write_file(root, "unknown_capability.json",
+		prefix + R"("capabilities":{"particles":{}}})"), content, error)
+		&& error.find("unknown capability") != std::string::npos,
+		"module manifests must reject capabilities outside animations/effects/textures/audio");
+	require(!loader.load("legacy", write_file(root, "legacy_resources.json",
+		prefix + R"("resources":{},"capabilities":{}})"), content, error),
+		"module manifests must reject the removed shared resources object");
+	require(!loader.load("missing_namespace", write_file(root, "missing_namespace.json",
+		"{\"entities\":\"" + json_path(entities) + "\",\"capabilities\":{}}"), content, error),
+		"module manifests must require key_namespace even when it is empty");
+	require(!loader.load("unknown_field", write_file(root, "unknown_animation_field.json",
+		prefix + R"("capabilities":{"animations":{"texture_root":"textures/{asset_key}","config_template":"configs/{asset_key}.json","layouts":{},"legacy":true}}})"), content, error)
+		&& error.find("unknown animations capability field") != std::string::npos,
+		"capability objects must reject unknown fields");
+
+	std::filesystem::remove_all(root);
+}
+
+void test_texture_only_and_audio_only_modules()
+{
+	const auto root = std::filesystem::temp_directory_path() / "moonline_single_capability_module_tests";
+	std::filesystem::remove_all(root);
+	std::filesystem::create_directories(root);
+	elysia::loading::AnimatedEntityContentLoader loader;
+	elysia::io::EntityContentModule content;
+	std::string error;
+
+	const auto texture_module = write_file(root, "textures.json",
+		R"({"entities":"configs/character/characters_manifest.json","key_namespace":"portrait","capabilities":{"textures":{"texture_root":"textures/character/{asset_key}","layout":"configs/character/layouts/character_texture_layout.json"}}})");
+	require(loader.load("portraits", texture_module, content, error)
+		&& content.animation_entries.empty() && content.effect_entries.empty()
+		&& content.texture_entries.size() == 3 && content.audio_entries.empty(),
+		"a texture-only module must load without Animation, Effect, or Audio capabilities");
+
+	const auto audio_module = write_file(root, "audio.json",
+		R"({"entities":"configs/character/characters_manifest.json","key_namespace":"voice","capabilities":{"audio":{"audio_root":"audio/character/{asset_key}","layout":"configs/character/layouts/character_audio_layout.json"}}})");
+	require(loader.load("voices", audio_module, content, error)
+		&& content.animation_entries.empty() && content.effect_entries.empty()
+		&& content.texture_entries.empty() && content.audio_entries.size() == 3,
+		"an audio-only module must load without Animation, Effect, or Texture capabilities");
+
+	std::filesystem::remove_all(root);
+}
+
+void test_animation_frame_prefix_template_rules()
+{
+	const auto root = std::filesystem::temp_directory_path()
+		/ "moonline_animation_prefix_module_tests";
+	std::filesystem::remove_all(root);
+	std::filesystem::create_directories(root);
+	elysia::loading::AnimatedEntityContentLoader loader;
+	elysia::io::EntityContentModule content;
+	std::string error;
+
+	const std::string enemy_animation_fields =
+		R"("texture_root":"textures/enemy/normal/{asset_key}","config_template":"configs/enemy/normal/{asset_key}_animation_info.json","layouts":{"normal":"configs/enemy/enemy_general_animation_layout.json"})";
+	require(!loader.load("missing_prefix", write_file(root, "missing_prefix.json",
+		R"({"entities":"configs/enemy/enemy_manifest.json","key_namespace":"","capabilities":{"animations":{)"
+		+ enemy_animation_fields + "}}}"), content, error),
+		"a module containing frame-directory configs must require frame_prefix_template");
+	require(!loader.load("invalid_token", write_file(root, "invalid_token.json",
+		R"({"entities":"configs/enemy/enemy_manifest.json","key_namespace":"","capabilities":{"animations":{)"
+		+ enemy_animation_fields + R"(,"frame_prefix_template":"{asset_key}_{animation}_{unknown}"}}})"),
+		content, error),
+		"frame_prefix_template must reject tokens outside the documented three-token set");
+
+	const std::string character_animation_fields =
+		R"("texture_root":"textures/character/{asset_key}","config_template":"configs/character/{asset_key}/animation_info.json","layouts":{"fighter":"configs/character/layouts/character_animation_layout.json"})";
+	require(!loader.load("missing_segment_suffix", write_file(root, "missing_segment_suffix.json",
+		R"({"entities":"configs/character/characters_manifest.json","key_namespace":"","capabilities":{"animations":{)"
+		+ character_animation_fields + R"(,"frame_prefix_template":"{asset_key}_{animation}"}}})"),
+		content, error),
+		"a module with segmented animations must include segment_suffix in its frame prefix template");
+
+	const auto strip_entities = write_file(root, "strip_entities.json",
+		R"({"entities":[{"id":"flying_demon","asset_key":"FlyingDemon","animation_layout":"normal"}]})");
+	require(loader.load("strip_only", write_file(root, "strip_only.json",
+		"{\"entities\":\"" + json_path(strip_entities)
+		+ R"(","key_namespace":"","capabilities":{"animations":{"texture_root":"textures/enemy/normal/{asset_key}","config_template":"configs/enemy/normal/{asset_key}_animation_info.json","layouts":{"normal":"configs/enemy/enemy_general_animation_layout.json"}}}})"),
+		content, error)
+		&& content.animation_entries.size() == 1
+		&& content.animation_entries.front().frame_prefix_template.empty()
+		&& content.animation_entries.front().animation_config.source_type
+			== elysia::io::AnimationSourceType::HorizontalStrip,
+		"a horizontal-strip-only module must not require an unused frame prefix template");
+
+	std::filesystem::remove_all(root);
+}
+
+void test_content_registry_still_allows_core_only()
+{
+	const auto root = std::filesystem::temp_directory_path() / "moonline_core_only_registry_tests";
+	std::filesystem::remove_all(root);
+	std::filesystem::create_directories(root);
+	elysia::loading::ConfigLoadPipeline pipeline;
+	elysia::loading::ConfigLoadResult result;
+	require(pipeline.load(write_registry(root, "core_only.json"), result)
+		&& result.additional_modules.empty(),
+		"content registry must continue to allow no additional modules");
+	std::filesystem::remove_all(root);
 }
 }
 
 int main()
 {
-    test_registry_and_content_load_pipeline();
-    std::cout << "content load pipeline tests passed\n";
-    return EXIT_SUCCESS;
+	test_current_modules_load_through_generic_pipeline();
+	test_arbitrary_and_empty_additional_module();
+	test_module_schema_rejections();
+	test_texture_only_and_audio_only_modules();
+	test_animation_frame_prefix_template_rules();
+	test_content_registry_still_allows_core_only();
+	std::cout << "content load pipeline tests passed\n";
+	return EXIT_SUCCESS;
 }

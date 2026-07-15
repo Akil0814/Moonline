@@ -1,11 +1,11 @@
 {
   "entities": "configs/enemy/enemy_manifest.json",
-  "resources": {
-    "texture_root": "textures/enemy/normal",
-    "animation_config_template": "configs/enemy/normal/{asset_key}_animation_info.json"
-  },
+  "key_namespace": "",
   "capabilities": {
     "animations": {
+      "texture_root": "textures/enemy/normal/{asset_key}",
+      "config_template": "configs/enemy/normal/{asset_key}_animation_info.json",
+      "frame_prefix_template": "{asset_key}_{animation}{segment_suffix}",
       "layouts": {
         "normal": "configs/enemy/enemy_general_animation_layout.json"
       }

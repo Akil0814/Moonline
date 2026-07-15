@@ -7,253 +7,361 @@
 #include "../io/loaders/entity_manifest_loader.h"
 #include "../io/loaders/entity_texture_layout_loader.h"
 #include "../io/json/json_loader.h"
+#include "../io/json/json_duplicate_key_checker.h"
 #include "../io/path/path_manager.h"
+#include "../resources/pipeline/resource_key_builder.h"
 
+#include <algorithm>
+#include <array>
 #include <string_view>
 #include <unordered_map>
+#include <utility>
 
 namespace elysia::loading
 {
 namespace
 {
-bool read_path(const elysia::io::json& node, std::string_view key, std::filesystem::path& out, std::string& error)
+bool fail(std::string& error, std::string message)
 {
-	if (!node.contains(std::string(key)) || !node.at(std::string(key)).is_string())
-	{
-		error = "Animated entity content failed: missing or invalid " + std::string(key) + ".";
-		return false;
-	}
-	out = elysia::io::PathManager::instance()->to_asset_path(node.at(std::string(key)).get<std::string>());
-	return true;
+	error = "Entity content module failed: " + std::move(message);
+	return false;
 }
 
-bool resolve_template(
-	const std::filesystem::path& pattern,
-	std::string_view field_name,
-	const std::string& asset_key,
-	std::filesystem::path& out,
+bool has_only_fields(
+	const elysia::io::json& node,
+	std::initializer_list<std::string_view> fields,
+	std::string_view label,
 	std::string& error)
 {
-	std::string value = pattern.string();
-	const size_t marker = value.find("{asset_key}");
-	if (marker == std::string::npos)
+	for (auto item = node.begin(); item != node.end(); ++item)
 	{
-		error = "Animated entity content failed: " + std::string(field_name) + " must contain {asset_key}.";
-		return false;
-	}
-	value.replace(marker, std::string("{asset_key}").size(), asset_key);
-	out = elysia::io::PathManager::instance()->to_config_path(value);
-	if (!std::filesystem::is_regular_file(out))
-	{
-		error = "Animated entity content failed: configured file does not exist: " + out.string();
-		return false;
+		bool known = false;
+		for (const auto field : fields) known = known || item.key() == field;
+		if (!known) return fail(error, "unknown " + std::string(label) + " field: " + item.key());
 	}
 	return true;
 }
 
-bool resolve_entity_texture_root(const std::string& pattern, const std::string& asset_key,
-	std::filesystem::path& out, std::string& error)
+bool read_required_string(
+	const elysia::io::json& node,
+	std::string_view field,
+	std::string& value,
+	std::string& error)
 {
+	const std::string name(field);
+	if (!node.contains(name) || !node.at(name).is_string())
+		return fail(error, name + " is missing or invalid");
+	value = node.at(name).get<std::string>();
+	if (value.empty() && field != "key_namespace") return fail(error, name + " is empty");
+	return true;
+}
+
+bool validate_template_tokens(
+	std::string_view value,
+	std::initializer_list<std::string_view> allowed,
+	std::string& error)
+{
+	size_t position = 0;
+	while (position < value.size())
+	{
+		const size_t begin = value.find_first_of("{}", position);
+		if (begin == std::string_view::npos) break;
+		if (value[begin] == '}') return fail(error, "template has an unmatched brace");
+		const size_t end = value.find('}', begin + 1);
+		if (end == std::string_view::npos) return fail(error, "template has an unterminated token");
+		if (value.find('{', begin + 1) < end) return fail(error, "template has a nested token");
+		const auto token = value.substr(begin, end - begin + 1);
+		bool known = false;
+		for (const auto candidate : allowed) known = known || token == candidate;
+		if (!known) return fail(error, "template contains unsupported token: " + std::string(token));
+		position = end + 1;
+	}
+	return true;
+}
+
+void replace_all(std::string& value, std::string_view marker, std::string_view replacement)
+{
+	size_t position = 0;
+	while ((position = value.find(marker, position)) != std::string::npos)
+	{
+		value.replace(position, marker.size(), replacement);
+		position += replacement.size();
+	}
+}
+
+bool resolve_entity_root(
+	const std::string& pattern,
+	const std::string& asset_key,
+	std::filesystem::path& result,
+	std::string& error)
+{
+	if (!validate_template_tokens(pattern, {"{asset_key}"}, error)) return false;
 	std::string value = pattern;
-	const size_t marker = value.find("{asset_key}");
-	if (marker == std::string::npos)
+	if (value.find("{asset_key}") == std::string::npos)
 		value = (std::filesystem::path(value) / asset_key).generic_string();
 	else
-		value.replace(marker, std::string("{asset_key}").size(), asset_key);
-	out = elysia::io::PathManager::instance()->to_asset_path(value);
-	if (!std::filesystem::is_directory(out))
-	{
-		error = "Animated entity content failed: entity texture root does not exist: " + out.string();
-		return false;
-	}
+		replace_all(value, "{asset_key}", asset_key);
+	result = elysia::io::PathManager::instance()->to_asset_path(value);
+	if (!std::filesystem::is_directory(result))
+		return fail(error, "entity resource root does not exist: " + result.generic_string());
 	return true;
 }
 
-bool load_layouts(const elysia::io::json& capability, std::unordered_map<std::string, elysia::io::AnimationLayout>& layouts,
-	std::string_view label, std::string& error)
+bool resolve_config_template(
+	const std::string& pattern,
+	const std::string& asset_key,
+	std::filesystem::path& result,
+	std::string& error)
 {
-	if (!capability.contains("layouts") || !capability.at("layouts").is_object())
-	{
-		error = "Animated entity content failed: " + std::string(label) + " requires layouts.";
-		return false;
-	}
+	if (!validate_template_tokens(pattern, {"{asset_key}"}, error)) return false;
+	if (pattern.find("{asset_key}") == std::string::npos)
+		return fail(error, "config_template must contain {asset_key}");
+	std::string value = pattern;
+	replace_all(value, "{asset_key}", asset_key);
+	result = elysia::io::PathManager::instance()->to_config_path(value);
+	if (!std::filesystem::is_regular_file(result))
+		return fail(error, "configured file does not exist: " + result.generic_string());
+	return true;
+}
+
+bool load_animation_layouts(
+	const elysia::io::json& capability,
+	std::unordered_map<std::string, elysia::io::AnimationLayout>& layouts,
+	std::string& error)
+{
+	if (!capability.contains("layouts") || !capability.at("layouts").is_object()
+		|| capability.at("layouts").empty()) return fail(error, "animations.layouts is missing or empty");
+	std::string key_error;
 	elysia::io::AnimationLayoutLoader loader;
 	for (auto item = capability.at("layouts").begin(); item != capability.at("layouts").end(); ++item)
 	{
-		if (!item.value().is_string())
-		{
-			error = "Animated entity content failed: " + std::string(label) + " layout path is invalid.";
-			return false;
-		}
+		if (!elysia::resources::ResourceKeyBuilder::validate_component(item.key(), key_error)
+			|| !item.value().is_string()) return fail(error, "invalid animation layout entry: " + item.key());
 		const auto path = elysia::io::PathManager::instance()->to_asset_path(item.value().get<std::string>());
 		elysia::io::AnimationLayout layout;
 		if (!std::filesystem::is_regular_file(path) || !loader.load(path, layout))
-		{
-			error = "Animated entity content failed: " + std::string(label) + " layout load failed.";
-			return false;
-		}
+			return fail(error, "animation layout load failed: " + path.generic_string());
 		layouts.emplace(item.key(), std::move(layout));
 	}
 	return true;
 }
+
+bool validate_frame_prefix_template(
+	const std::string& value,
+	bool has_segments,
+	std::string& error)
+{
+	if (value.find('/') != std::string::npos || value.find('\\') != std::string::npos
+		|| value.find("..") != std::string::npos)
+		return fail(error, "frame_prefix_template must be a filename prefix, not a path");
+	if (!validate_template_tokens(value,
+		{"{asset_key}", "{animation}", "{segment_suffix}"}, error)) return false;
+	if (value.find("{asset_key}") == std::string::npos
+		|| value.find("{animation}") == std::string::npos)
+		return fail(error, "frame_prefix_template must contain {asset_key} and {animation}");
+	if (has_segments && value.find("{segment_suffix}") == std::string::npos)
+		return fail(error, "segmented animations require {segment_suffix} in frame_prefix_template");
+	return true;
 }
 
-bool AnimatedEntityContentLoader::load(const std::filesystem::path& path, elysia::io::AnimatedEntityContent& content, std::string& error) const
+elysia::io::EntityResourceIdentity make_identity(
+	const elysia::io::EntityManifestEntry& entity,
+	const std::string& module_name)
+{
+	auto identity = elysia::io::EntityResourceIdentity{
+		entity.id, entity.asset_key, entity.animation_layout, entity.origin};
+	identity.origin.module = module_name;
+	identity.origin.scope = elysia::resources::ResourceOriginScope::AdditionalModule;
+	return identity;
+}
+
+void enrich_animation_origins(
+	elysia::io::AnimationConfig& config,
+	const std::string& module_name,
+	const std::string& entity_id)
+{
+	for (auto& clip : config.clips)
+	{
+		clip.origin.module = module_name;
+		clip.origin.scope = elysia::resources::ResourceOriginScope::AdditionalModule;
+		clip.origin.capability = "animations";
+		clip.origin.entity_id = entity_id;
+	}
+}
+
+void enrich_effect_origins(
+	elysia::io::EffectDefinitionConfig& config,
+	const std::string& module_name,
+	const std::string& entity_id)
+{
+	for (auto& effect : config.effects)
+	{
+		effect.origin.module = module_name;
+		effect.origin.scope = elysia::resources::ResourceOriginScope::AdditionalModule;
+		effect.origin.capability = "effects";
+		effect.origin.entity_id = entity_id;
+	}
+}
+}
+
+bool AnimatedEntityContentLoader::load(
+	const std::string& module_name,
+	const std::filesystem::path& manifest_path,
+	elysia::io::EntityContentModule& content,
+	std::string& error) const
 {
 	content = {};
-	elysia::io::JsonLoader json_loader;
-	if (!json_loader.open_file(path) || !json_loader.root().is_object())
-	{
-		error = "Animated entity content failed: module manifest is invalid.";
-		return false;
-	}
-	const elysia::io::json& root = json_loader.root();
-	for (auto item = root.begin(); item != root.end(); ++item)
-		if (item.key() != "entities" && item.key() != "resources" && item.key() != "capabilities")
-		{
-			error = "Animated entity content failed: unknown manifest key: " + item.key();
-			return false;
-		}
+	content.name = module_name;
+	if (elysia::io::has_duplicate_json_object_key(manifest_path))
+		return fail(error, "module manifest contains duplicate object keys");
+	elysia::io::JsonLoader loader;
+	if (!loader.open_file(manifest_path) || !loader.root().is_object())
+		return fail(error, "module manifest is invalid: " + manifest_path.generic_string());
+	const elysia::io::json& root = loader.root();
+	if (!has_only_fields(root, {"entities", "key_namespace", "capabilities"}, "root", error)
+		|| root.size() != 3) return fail(error, "entities, key_namespace and capabilities are required");
 
-	std::filesystem::path entities_path;
-	if (!read_path(root, "entities", entities_path, error) || !std::filesystem::is_regular_file(entities_path))
+	std::string entities_value;
+	if (!read_required_string(root, "entities", entities_value, error)
+		|| !read_required_string(root, "key_namespace", content.key_namespace, error)) return false;
+	std::string key_error;
+	if (!content.key_namespace.empty()
+		&& !elysia::resources::ResourceKeyBuilder::validate_component(content.key_namespace, key_error))
+		return fail(error, key_error);
+	if (!root.contains("capabilities") || !root.at("capabilities").is_object())
+		return fail(error, "capabilities is missing or invalid");
+	const elysia::io::json& capabilities = root.at("capabilities");
+	for (auto item = capabilities.begin(); item != capabilities.end(); ++item)
 	{
-		if (error.empty()) error = "Animated entity content failed: entities manifest does not exist.";
-		return false;
+		if (item.key() != "animations" && item.key() != "effects"
+			&& item.key() != "textures" && item.key() != "audio")
+			return fail(error, "unknown capability: " + item.key());
+		if (!item.value().is_object()) return fail(error, "capability is not an object: " + item.key());
 	}
+	if (capabilities.contains("effects") && !capabilities.contains("animations"))
+		return fail(error, "effects requires animations in the same module");
+
+	const auto entities_path = elysia::io::PathManager::instance()->to_asset_path(entities_value);
 	elysia::io::EntityManifest entity_manifest;
 	elysia::io::EntityManifestLoader entity_loader;
-	if (!entity_loader.load(entities_path, entity_manifest))
-	{
-		error = "Animated entity content failed: entity manifest load failed.";
-		return false;
-	}
-
-	const elysia::io::json* resources = nullptr;
-	if (root.contains("resources"))
-	{
-		if (!root.at("resources").is_object()) { error = "Animated entity content failed: resources is not an object."; return false; }
-		resources = &root.at("resources");
-		for (auto item = resources->begin(); item != resources->end(); ++item)
-			if (item.key() != "texture_root" && item.key() != "animation_config_template" && item.key() != "audio_root"
-				&& item.key() != "effect_animation_config_template" && item.key() != "effect_info_template")
-			{
-				error = "Animated entity content failed: unknown resource field: " + item.key();
-				return false;
-			}
-	}
-	const elysia::io::json* capabilities = nullptr;
-	if (root.contains("capabilities"))
-	{
-		if (!root.at("capabilities").is_object()) { error = "Animated entity content failed: capabilities is not an object."; return false; }
-		capabilities = &root.at("capabilities");
-	}
-	if (!capabilities)
-	{
-		for (const auto& entity : entity_manifest.entities)
-			content.entities.push_back({entity.id, entity.asset_key, {}, {}, entity.horizontal_strip});
-		return true;
-	}
-	for (auto item = capabilities->begin(); item != capabilities->end(); ++item)
-	{
-		if (item.key() != "animations" && item.key() != "textures" && item.key() != "audio" && item.key() != "effects")
-		{
-			error = "Animated entity content failed: unknown capability: " + item.key(); return false;
-		}
-		if (!item.value().is_object()) { error = "Animated entity content failed: capability is not an object: " + item.key(); return false; }
-		const std::string expected = (item.key() == "animations" || item.key() == "effects") ? "layouts" : "layout";
-		for (auto field = item.value().begin(); field != item.value().end(); ++field)
-			if (field.key() != expected) { error = "Animated entity content failed: unknown capability field: " + field.key(); return false; }
-	}
-
-	std::string texture_root_template;
-	std::filesystem::path animation_template, effect_animation_template, effect_info_template, audio_root;
-	if (resources)
-	{
-		for (const char* key : {"texture_root", "animation_config_template", "effect_animation_config_template", "effect_info_template"})
-			if (resources->contains(key) && !resources->at(key).is_string()) { error = "Animated entity content failed: invalid " + std::string(key) + "."; return false; }
-		if (resources->contains("texture_root")) texture_root_template = resources->at("texture_root").get<std::string>();
-		if (resources->contains("animation_config_template")) animation_template = resources->at("animation_config_template").get<std::string>();
-		if (resources->contains("effect_animation_config_template")) effect_animation_template = resources->at("effect_animation_config_template").get<std::string>();
-		if (resources->contains("effect_info_template")) effect_info_template = resources->at("effect_info_template").get<std::string>();
-		if (resources->contains("audio_root") && !read_path(*resources, "audio_root", audio_root, error)) return false;
-	}
-	const bool has_animations = capabilities->contains("animations");
-	const bool has_effects = capabilities->contains("effects");
-	if ((has_animations || has_effects || capabilities->contains("textures")) && texture_root_template.empty())
-	{
-		error = "Animated entity content failed: texture_root is required."; return false;
-	}
-	if (has_animations && animation_template.empty()) { error = "Animated entity content failed: animation_config_template is required."; return false; }
-	if (has_effects && (effect_animation_template.empty() || effect_info_template.empty()))
-	{
-		error = "Animated entity content failed: effects requires effect animation and effect info templates."; return false;
-	}
-	if (capabilities->contains("audio") && (audio_root.empty() || !std::filesystem::is_directory(audio_root)))
-	{
-		error = "Animated entity content failed: audio_root is required and must exist."; return false;
-	}
-
+	if (!std::filesystem::is_regular_file(entities_path) || !entity_loader.load(entities_path, entity_manifest))
+		return fail(error, "entity manifest load failed: " + entities_path.generic_string());
 	for (const auto& entity : entity_manifest.entities)
-	{
-		std::filesystem::path entity_texture_root;
-		if ((has_animations || has_effects || capabilities->contains("textures"))
-			&& !resolve_entity_texture_root(texture_root_template, entity.asset_key, entity_texture_root, error)) return false;
-		content.entities.push_back({entity.id, entity.asset_key, std::move(entity_texture_root), audio_root, entity.horizontal_strip});
-	}
+		content.entities.push_back(make_identity(entity, module_name));
 
-	if (capabilities->contains("textures"))
+	if (capabilities.contains("animations"))
 	{
-		std::filesystem::path layout_path;
-		if (!read_path(capabilities->at("textures"), "layout", layout_path, error) || !std::filesystem::is_regular_file(layout_path)) return false;
-		elysia::io::EntityTextureLayout layout; elysia::io::EntityTextureLayoutLoader loader;
-		if (!loader.load(layout_path, layout)) { error = "Animated entity content failed: texture layout load failed."; return false; }
-		content.texture_layout = std::move(layout);
-	}
-	if (capabilities->contains("audio"))
-	{
-		std::filesystem::path layout_path;
-		if (!read_path(capabilities->at("audio"), "layout", layout_path, error) || !std::filesystem::is_regular_file(layout_path)) return false;
-		elysia::io::EntityAudioLayout layout; elysia::io::EntityAudioLayoutLoader loader;
-		if (!loader.load(layout_path, layout)) { error = "Animated entity content failed: audio layout load failed."; return false; }
-		content.audio_layout = std::move(layout);
-	}
-
-	std::unordered_map<std::string, elysia::io::AnimationLayout> animation_layouts, effect_layouts;
-	if (has_animations && !load_layouts(capabilities->at("animations"), animation_layouts, "animation", error)) return false;
-	if (has_effects && !load_layouts(capabilities->at("effects"), effect_layouts, "effect animation", error)) return false;
-	elysia::io::AnimationConfigLoader animation_loader;
-	elysia::io::EffectDefinitionConfigLoader effect_loader;
-	for (size_t index = 0; index < entity_manifest.entities.size(); ++index)
-	{
-		const auto& entity = entity_manifest.entities[index];
-		if ((has_animations || has_effects) && entity.animation_layout.empty())
+		const auto& capability = capabilities.at("animations");
+		if (!has_only_fields(capability,
+			{"texture_root", "config_template", "frame_prefix_template", "layouts"},
+			"animations capability", error)) return false;
+		std::string texture_template, config_template, frame_prefix_template;
+		if (!read_required_string(capability, "texture_root", texture_template, error)
+			|| !read_required_string(capability, "config_template", config_template, error)) return false;
+		if (capability.contains("frame_prefix_template"))
 		{
-			error = "Animated entity content failed: entity animation_layout is missing: " + entity.id;
-			return false;
+			if (!capability.at("frame_prefix_template").is_string()) return fail(error, "frame_prefix_template is invalid");
+			frame_prefix_template = capability.at("frame_prefix_template").get<std::string>();
+			if (frame_prefix_template.empty()
+				|| !validate_frame_prefix_template(frame_prefix_template, false, error)) return false;
 		}
-		if (has_animations)
+		std::unordered_map<std::string, elysia::io::AnimationLayout> layouts;
+		if (!load_animation_layouts(capability, layouts, error)) return false;
+		elysia::io::AnimationConfigLoader config_loader;
+		for (const auto& entity : entity_manifest.entities)
 		{
-			const auto layout = animation_layouts.find(entity.animation_layout);
-			if (layout == animation_layouts.end()) { error = "Animated entity content failed: unknown animation layout: " + entity.id; return false; }
-			std::filesystem::path config_path;
-			if (!resolve_template(animation_template, "animation_config_template", entity.asset_key, config_path, error)) return false;
+			const auto layout = layouts.find(entity.animation_layout);
+			if (entity.animation_layout.empty() || layout == layouts.end())
+				return fail(error, "unknown animation layout for entity: " + entity.id);
+			std::filesystem::path texture_root, config_path;
+			if (!resolve_entity_root(texture_template, entity.asset_key, texture_root, error)
+				|| !resolve_config_template(config_template, entity.asset_key, config_path, error)) return false;
 			elysia::io::AnimationConfig config;
-			if (!animation_loader.load(config_path, layout->second, config)) { error = "Animated entity content failed: animation config load failed."; return false; }
-			content.animation_entries.push_back({content.entities[index], std::move(config)});
+			if (!config_loader.load(config_path, layout->second, config))
+				return fail(error, "animation config load failed: " + config_path.generic_string());
+			const bool has_segments = std::any_of(config.clips.begin(), config.clips.end(),
+				[](const auto& clip) { return clip.is_segment; });
+			if (config.source_type == elysia::io::AnimationSourceType::FrameDirectory)
+			{
+				if (frame_prefix_template.empty()
+					|| !validate_frame_prefix_template(frame_prefix_template, has_segments, error)) return false;
+			}
+			enrich_animation_origins(config, module_name, entity.id);
+			content.animation_entries.push_back({
+				make_identity(entity, module_name), std::move(texture_root), frame_prefix_template, std::move(config)});
 		}
-		if (has_effects)
+	}
+
+	if (capabilities.contains("effects"))
+	{
+		const auto& capability = capabilities.at("effects");
+		if (!has_only_fields(capability, {"config_template"}, "effects capability", error)) return false;
+		std::string config_template;
+		if (!read_required_string(capability, "config_template", config_template, error)) return false;
+		elysia::io::EffectDefinitionConfigLoader effect_loader;
+		for (const auto& animation_entry : content.animation_entries)
 		{
-			const auto layout = effect_layouts.find(entity.animation_layout);
-			if (layout == effect_layouts.end()) { error = "Animated entity content failed: unknown effect animation layout: " + entity.id; return false; }
-			std::filesystem::path animation_path, effect_path;
-			if (!resolve_template(effect_animation_template, "effect_animation_config_template", entity.asset_key, animation_path, error)
-				|| !resolve_template(effect_info_template, "effect_info_template", entity.asset_key, effect_path, error)) return false;
-			elysia::io::AnimationConfig animation_config;
-			if (!animation_loader.load(animation_path, layout->second, animation_config)) { error = "Animated entity content failed: effect animation config load failed."; return false; }
-			elysia::io::EffectDefinitionConfig effect_config;
-			if (!effect_loader.load(effect_path, animation_config, effect_config)) { error = "Animated entity content failed: effect info load failed."; return false; }
-			content.effect_entries.push_back({content.entities[index], std::move(animation_config), std::move(effect_config)});
+			std::filesystem::path config_path;
+			if (!resolve_config_template(config_template, animation_entry.entity.asset_key, config_path, error)) return false;
+			elysia::io::EffectDefinitionConfig config;
+			if (!effect_loader.load(config_path, animation_entry.animation_config, config))
+				return fail(error, "effect config load failed: " + config_path.generic_string());
+			enrich_effect_origins(config, module_name, animation_entry.entity.id);
+			content.effect_entries.push_back({animation_entry.entity, std::move(config)});
+		}
+	}
+
+	if (capabilities.contains("textures"))
+	{
+		const auto& capability = capabilities.at("textures");
+		if (!has_only_fields(capability, {"texture_root", "layout"}, "textures capability", error)) return false;
+		std::string texture_template, layout_value;
+		if (!read_required_string(capability, "texture_root", texture_template, error)
+			|| !read_required_string(capability, "layout", layout_value, error)) return false;
+		const auto layout_path = elysia::io::PathManager::instance()->to_asset_path(layout_value);
+		elysia::io::EntityTextureLayout layout;
+		elysia::io::EntityTextureLayoutLoader layout_loader;
+		if (!std::filesystem::is_regular_file(layout_path) || !layout_loader.load(layout_path, layout))
+			return fail(error, "texture layout load failed");
+		for (const auto& entity : entity_manifest.entities)
+		{
+			std::filesystem::path root_path;
+			if (!resolve_entity_root(texture_template, entity.asset_key, root_path, error)) return false;
+			auto entity_layout = layout;
+			for (auto& item : entity_layout.textures)
+			{
+				item.origin.module = module_name;
+				item.origin.scope = elysia::resources::ResourceOriginScope::AdditionalModule;
+				item.origin.entity_id = entity.id;
+			}
+			content.texture_entries.push_back({make_identity(entity, module_name), std::move(root_path), std::move(entity_layout)});
+		}
+	}
+
+	if (capabilities.contains("audio"))
+	{
+		const auto& capability = capabilities.at("audio");
+		if (!has_only_fields(capability, {"audio_root", "layout"}, "audio capability", error)) return false;
+		std::string audio_template, layout_value;
+		if (!read_required_string(capability, "audio_root", audio_template, error)
+			|| !read_required_string(capability, "layout", layout_value, error)) return false;
+		const auto layout_path = elysia::io::PathManager::instance()->to_asset_path(layout_value);
+		elysia::io::EntityAudioLayout layout;
+		elysia::io::EntityAudioLayoutLoader layout_loader;
+		if (!std::filesystem::is_regular_file(layout_path) || !layout_loader.load(layout_path, layout))
+			return fail(error, "audio layout load failed");
+		for (const auto& entity : entity_manifest.entities)
+		{
+			std::filesystem::path root_path;
+			if (!resolve_entity_root(audio_template, entity.asset_key, root_path, error)) return false;
+			auto entity_layout = layout;
+			for (auto& item : entity_layout.sounds)
+			{
+				item.origin.module = module_name;
+				item.origin.scope = elysia::resources::ResourceOriginScope::AdditionalModule;
+				item.origin.entity_id = entity.id;
+			}
+			content.audio_entries.push_back({make_identity(entity, module_name), std::move(root_path), std::move(entity_layout)});
 		}
 	}
 	return true;

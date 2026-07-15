@@ -1,8 +1,11 @@
 #define SDL_MAIN_HANDLED
 
 #include "engine/animation/animation_manager.h"
+#include "engine/io/loaders/animation_effect_manifest_loader.h"
 #include "engine/io/loaders/animation_manifest_loader.h"
 #include "engine/io/loaders/entity_manifest_loader.h"
+#include "engine/io/loaders/fonts_manifest_loader.h"
+#include "engine/io/loaders/i18n_manifest_loader.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/resources/atlas/atlas_build_preparer.h"
 #include "engine/resources/resource_manager.h"
@@ -16,13 +19,14 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <vector>
 
 namespace
 {
 using moonline::tests::require;
 
-void test_horizontal_strip_json_flags_are_boolean()
+void test_horizontal_strip_manifest_schema()
 {
 	const std::filesystem::path test_root =
 		std::filesystem::temp_directory_path() / "moonline_horizontal_strip_json_tests";
@@ -36,12 +40,94 @@ void test_horizontal_strip_json_flags_are_boolean()
 	require(!elysia::io::AnimationManifestLoader{}.load(animation_manifest_path, animation_manifest),
 		"animation manifest horizontal_strip must reject non-boolean values");
 
+	const std::filesystem::path directory_without_prefix_path = test_root / "directory_without_prefix.json";
+	std::ofstream(directory_without_prefix_path)
+		<< R"({"animations":[{"key":"core.idle","path":"idle","frame_count":2,"fps":10,"loop":true}]})";
+	require(!elysia::io::AnimationManifestLoader{}.load(directory_without_prefix_path, animation_manifest),
+		"core frame-directory animations must require frame_prefix");
+
+	const std::filesystem::path strip_with_prefix_path = test_root / "strip_with_prefix.json";
+	std::ofstream(strip_with_prefix_path)
+		<< R"({"animations":[{"key":"core.strip","path":"strip.png","frame_count":2,"fps":10,"loop":true,"horizontal_strip":true,"frame_prefix":"strip"}]})";
+	require(!elysia::io::AnimationManifestLoader{}.load(strip_with_prefix_path, animation_manifest),
+		"core horizontal-strip animations must reject frame_prefix");
+	const std::filesystem::path strip_with_empty_prefix_path = test_root / "strip_with_empty_prefix.json";
+	std::ofstream(strip_with_empty_prefix_path)
+		<< R"({"animations":[{"key":"core.strip","path":"strip.png","frame_count":2,"fps":10,"loop":true,"horizontal_strip":true,"frame_prefix":""}]})";
+	require(!elysia::io::AnimationManifestLoader{}.load(strip_with_empty_prefix_path, animation_manifest),
+		"core horizontal-strip animations must reject even an explicitly empty frame_prefix field");
+
+	const std::filesystem::path valid_directory_path = test_root / "valid_directory.json";
+	std::ofstream(valid_directory_path)
+		<< R"({"animations":[{"key":"core.idle","path":"idle","frame_count":2,"fps":10,"loop":true,"frame_prefix":"core_idle"}]})";
+	require(elysia::io::AnimationManifestLoader{}.load(valid_directory_path, animation_manifest)
+		&& animation_manifest.animations.size() == 1
+		&& animation_manifest.animations.front().frame_prefix == "core_idle"
+		&& !animation_manifest.animations.front().horizontal_strip,
+		"core frame-directory animations must accept an explicit frame_prefix");
+
+	const std::filesystem::path valid_strip_path = test_root / "valid_strip.json";
+	std::ofstream(valid_strip_path)
+		<< R"({"animations":[{"key":"core.strip","path":"strip.png","frame_count":2,"fps":10,"loop":true,"horizontal_strip":true}]})";
+	require(elysia::io::AnimationManifestLoader{}.load(valid_strip_path, animation_manifest)
+		&& animation_manifest.animations.size() == 1
+		&& animation_manifest.animations.front().frame_prefix.empty()
+		&& animation_manifest.animations.front().horizontal_strip,
+		"core horizontal-strip animations must load without a frame_prefix");
+
 	const std::filesystem::path entity_manifest_path = test_root / "entities.json";
 	std::ofstream(entity_manifest_path)
-		<< R"({"entities":[{"id":"bad","asset_key":"Bad","horizontal_strip":1}]})";
+		<< R"({"entities":[{"id":"bad","asset_key":"Bad","horizontal_strip":true}]})";
 	elysia::io::EntityManifest entity_manifest;
 	require(!elysia::io::EntityManifestLoader{}.load(entity_manifest_path, entity_manifest),
-		"entity manifest horizontal_strip must reject non-boolean values");
+		"entity manifests must reject the removed horizontal_strip field");
+	const std::filesystem::path disabled_invalid_entity_path = test_root / "disabled_invalid_entity.json";
+	std::ofstream(disabled_invalid_entity_path)
+		<< R"({"entities":[{"id":"bad-id","asset_key":"Bad","animation_layout":1,"enabled":false}]})";
+	require(!elysia::io::EntityManifestLoader{}.load(disabled_invalid_entity_path, entity_manifest),
+		"disabled entities must still validate all configured fields and key components");
+	const std::filesystem::path duplicate_entity_path = test_root / "duplicate_entity.json";
+	std::ofstream(duplicate_entity_path)
+		<< R"({"entities":[{"id":"duplicate","asset_key":"First"},{"id":"duplicate","asset_key":"Second"}]})";
+	std::ostringstream duplicate_entity_log;
+	std::streambuf* previous_log_buffer = std::clog.rdbuf(duplicate_entity_log.rdbuf());
+	const bool duplicate_entity_loaded =
+		elysia::io::EntityManifestLoader{}.load(duplicate_entity_path, entity_manifest);
+	std::clog.rdbuf(previous_log_buffer);
+	require(!duplicate_entity_loaded
+		&& duplicate_entity_log.str().find("duplicate entity id: duplicate") != std::string::npos
+		&& duplicate_entity_log.str().find("first:") != std::string::npos
+		&& duplicate_entity_log.str().find("#/entities/0") != std::string::npos
+		&& duplicate_entity_log.str().find("second:") != std::string::npos
+		&& duplicate_entity_log.str().find("#/entities/1") != std::string::npos,
+		"duplicate entity ids must be rejected with both manifest indices in the diagnostic");
+
+	const std::filesystem::path duplicate_animation_property_path = test_root / "duplicate_animation_property.json";
+	std::ofstream(duplicate_animation_property_path)
+		<< R"({"animations":[{"key":"core.strip","key":"core.other","path":"strip.png","frame_count":2,"fps":10,"loop":true,"horizontal_strip":true}]})";
+	require(!elysia::io::AnimationManifestLoader{}.load(duplicate_animation_property_path, animation_manifest),
+		"core animation manifests must reject duplicate JSON object properties before parsing");
+
+	const std::filesystem::path duplicate_effect_property_path = test_root / "duplicate_effect_property.json";
+	std::ofstream(duplicate_effect_property_path)
+		<< R"({"effects":[{"key":"effect.test","animation_key":"core.strip","animation_key":"core.other"}]})";
+	elysia::io::AnimationEffectManifest effect_manifest;
+	require(!elysia::io::AnimationEffectManifestLoader{}.load(duplicate_effect_property_path, effect_manifest),
+		"core effect manifests must reject duplicate JSON object properties before parsing");
+
+	const std::filesystem::path duplicate_font_property_path = test_root / "duplicate_font_property.json";
+	std::ofstream(duplicate_font_property_path)
+		<< R"({"sizes":[10,20,30,40,50,60,70],"fonts":[{"key":"ui.test","file":"first.ttf","file":"second.ttf"}]})";
+	elysia::io::FontManifest font_manifest;
+	require(!elysia::io::FontsManifestLoader{}.load(duplicate_font_property_path, font_manifest),
+		"font manifests must reject duplicate JSON object properties before parsing");
+
+	const std::filesystem::path duplicate_i18n_property_path = test_root / "duplicate_i18n_property.json";
+	std::ofstream(duplicate_i18n_property_path)
+		<< R"({"default_language":"en","default_language":"zh_cn","languages":["en"],"file":["base.json"]})";
+	elysia::io::I18nManifest i18n_manifest;
+	require(!elysia::io::I18nManifestLoader{}.load(duplicate_i18n_property_path, i18n_manifest),
+		"i18n manifests must reject duplicate JSON object properties before parsing");
 
 	std::filesystem::remove_all(test_root);
 }
@@ -196,7 +282,7 @@ void test_horizontal_strip_rejects_non_divisible_width()
 
 int main()
 {
-	test_horizontal_strip_json_flags_are_boolean();
+	test_horizontal_strip_manifest_schema();
 	test_horizontal_strip_build_and_render_commands();
 	test_horizontal_strip_rejects_non_divisible_width();
 	std::cout << "horizontal strip animation tests passed\n";

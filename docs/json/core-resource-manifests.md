@@ -1,6 +1,8 @@
-# 核心资源 Manifest
+# 核心资源 manifest
 
-核心资源 manifest 由 `content_registry.json` 的 `manifests.required` 引用。动画和 effect 单独见[动画与特效](animation-and-effects.md)。
+核心资源由 `content_registry.json` 的 `manifests.required` 引用。动画和 Effect 见[动画与特效](animation-and-effects.md)。
+
+所有核心显式资源 key 都按点 `.` 拆分，每个 component 必须匹配 `[A-Za-z0-9_]+`。例如 `ui.moon` 合法，`ui..moon`、`.ui`、`ui-moon` 和 `界面.moon` 非法。
 
 ## 字体
 
@@ -13,14 +15,16 @@
 }
 ```
 
-| 字段 | 类型 | 当前规则 |
+| 字段 | 类型 | 规则 |
 | --- | --- | --- |
-| `sizes` | array<integer> | 必须严格等于 `[10,20,30,40,50,60,70]`，顺序和数量都不能改变 |
-| `fonts` | array<object> | 必填且不能为空 |
-| `fonts[].key` | string | 必填、非空，在数组内不可重复 |
+| `sizes` | array<integer> | 必须严格等于 `[10,20,30,40,50,60,70]` |
+| `fonts` | array<object> | 必填且非空 |
+| `fonts[].key` | string | 必填、非空、合法点分 key |
 | `fonts[].file` | string | 必填、非空，基于 `assets/fonts/` |
 
-每个字体会为七个尺寸分别生成请求，运行时 key 为 `<key>.<size>`，例如 `ui.latin.30`。manifest loader 不检查字体文件存在性，实际字体加载失败会在后续资源提交阶段报告。
+每个字体条目为七个固定尺寸各生成一个 Font 请求，key 为 `<font key>.<size>`，例如 `ui.latin.30`。派生的数字尺寸也通过统一 key builder 校验。字体文件的读取与字体创建在资源提交阶段完成。
+
+字体条目在数组中的 JSON pointer 会进入 `ResourceOrigin`。相同派生 Font key 即使来自不同字体条目，也会在请求计划的 Font registry 查重阶段报告 first/second 两个来源。
 
 ## 音频
 
@@ -35,13 +39,15 @@
 }
 ```
 
-| 字段 | 类型 | 当前规则 |
+| 字段 | 类型 | 规则 |
 | --- | --- | --- |
 | `sounds` | object | 必填；属性名成为 Sound key |
 | `music` | object | 必填；属性名成为 Music key |
-| 条目 `path` | string | 必填，基于 `assets/audio/` |
+| 条目 `path` | string | 必填；基于 `assets/audio/` |
 
-两个对象都可以为空。请求生成阶段会拒绝空 key 和空路径，但不检查音频文件是否存在；文件读取和解码错误由后续音频加载阶段报告。对象属性应保持唯一，避免重复 JSON 属性在解析时被覆盖。
+两个对象都可为空。每个属性名必须是合法点分 key，条目对象只接受 `path`。manifest 会拒绝重复 JSON 对象属性；文件读取和解码错误由后续音频加载阶段报告。
+
+Sound 与 Music 是不同 registry，因此二者使用相同字符串 key 合法；同一 registry 内与 module Audio 冲突则失败，并报告两个完整来源。
 
 ## 纹理
 
@@ -53,13 +59,15 @@
 }
 ```
 
-| 字段 | 类型 | 当前规则 |
+| 字段 | 类型 | 规则 |
 | --- | --- | --- |
 | `textures` | object | 必填 |
-| 属性名 | string | 直接成为 texture key |
-| 条目 `path` | string | 必填，基于 `assets/textures/` |
+| 属性名 | string | 合法点分 key，直接成为 Texture key |
+| 条目 `path` | string | 必填；基于 `assets/textures/` |
 
-请求生成阶段要求 key 和路径非空，并要求解析结果是普通文件。目录不能作为核心 texture 条目。对象属性天然作为唯一 key；重复 JSON 属性不应使用。
+条目对象只接受 `path`。请求生成要求解析结果是普通文件，目录不能作为核心 Texture 条目。manifest 会拒绝重复 JSON 对象属性。
+
+核心 Texture 与所有 module Texture 进入同一个 Texture registry 查重；冲突错误包含两边的配置路径、JSON pointer、core/module、capability、entity 和逻辑名。
 
 ## 国际化 manifest
 
@@ -71,21 +79,26 @@
 }
 ```
 
-| 字段 | 类型 | 当前规则 |
+| 字段 | 类型 | 规则 |
 | --- | --- | --- |
 | `default_language` | string | 必填、非空 |
-| `languages` | array<string> | 必填且不能为空 |
-| `file` | array<string> | 必填且不能为空，每项必须非空 |
+| `languages` | array<string> | 必填且非空 |
+| `file` | array<string> | 必填且非空，每项非空 |
 
-语言文件按 `assets/i18n/<language>/<file>` 查找；如果 `<language>` 目录不存在，还会尝试把语言名中的下划线替换为连字符。默认语言不在 `languages` 时，运行时会把它追加为受支持语言。
+语言文件按 `assets/i18n/<language>/<file>` 查找；若语言目录不存在，还会尝试把语言名中的下划线替换为连字符。默认语言不在 `languages` 时，运行时会把它追加为受支持语言。
 
-每个语言目录会依次加载 `file` 中的全部 JSON 并合并翻译表。文件不存在、JSON 无效或翻译数据形状不受支持都会使该语言加载失败。
+每个语言目录依次加载 `file` 中的 JSON 并合并翻译表。文件不存在、JSON 无效或翻译数据结构不受支持都会使该语言加载失败。i18n 不进入 Atlas/Animation/Effect/Texture/Font/Sound/Music 的资源 key registry。
 
-## 校验时机摘要
+## Registry 查重摘要
 
-| 类别 | manifest 阶段 | 请求/运行时阶段 |
+| 核心配置 | registry | 与 module 合并查重 |
 | --- | --- | --- |
-| 字体 | 固定尺寸、条目类型、非空/重复 key | 字体文件读取与字体创建 |
-| 音频 | 分组、条目和 `path` 类型 | 音频文件读取与解码 |
-| 纹理 | `textures` 和条目结构 | 非空 key/path、文件存在、图片解码和 texture 创建 |
-| i18n | manifest 字段和列表类型 | 语言目录、翻译文件与翻译数据内容 |
+| 字体 + 固定尺寸 | Font | 是 |
+| `sounds` | Sound | 是 |
+| `music` | Music | 是 |
+| 纹理 | Texture | 是 |
+| 动画 Atlas | Atlas | 是 |
+| 动画 | Animation | 是 |
+| EffectDefinition | Effect | 是 |
+
+同一字符串跨 registry 合法，例如 Atlas 与 Animation 通常故意共用动画 key。只有同一个 registry 内重复才失败。

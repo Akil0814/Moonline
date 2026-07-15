@@ -11,8 +11,9 @@ class AnimatedEntityContentLoader
 {
 public:
 	bool load(
+		const std::string& module_name,
 		const std::filesystem::path& module_manifest_path,
-		elysia::io::AnimatedEntityContent& content,
+		elysia::io::EntityContentModule& content,
 		std::string& error_message
 	) const;
 };

@@ -1,7 +1,10 @@
 {
+  "defaults": { "source_type": "frame_directory" },
+  "animations": {
   "idle": { "frame_count": 14, "fps": 10, "loop": true },
   "move": { "frame_count": 6, "fps": 10, "loop": true },
   "attack": { "frame_count": 19, "fps": 10, "loop": false },
   "hurt": { "frame_count": 3, "fps": 10, "loop": false },
   "death": { "frame_count": 11, "fps": 10, "loop": false }
+  }
 }

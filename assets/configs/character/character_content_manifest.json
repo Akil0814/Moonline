@@ -1,24 +1,22 @@
 {
   "entities": "configs/character/characters_manifest.json",
-  "resources": {
-    "texture_root": "textures/character/{asset_key}",
-    "animation_config_template": "configs/character/{asset_key}/animation_info.json",
-    "effect_animation_config_template": "configs/character/{asset_key}/effect_animation_info.json",
-    "effect_info_template": "configs/character/{asset_key}/effect_info.json",
-    "audio_root": "audio/character"
-  },
+  "key_namespace": "",
   "capabilities": {
     "animations": {
+      "texture_root": "textures/character/{asset_key}",
+      "config_template": "configs/character/{asset_key}/animation_info.json",
+      "frame_prefix_template": "{asset_key}_{animation}{segment_suffix}",
       "layouts": {
         "fighter": "configs/character/layouts/character_animation_layout.json"
       }
     },
-    "textures": { "layout": "configs/character/layouts/character_texture_layout.json" },
-    "audio": { "layout": "configs/character/layouts/character_audio_layout.json" },
-    "effects": {
-      "layouts": {
-        "fighter": "configs/character/layouts/character_effect_animation_layout.json"
-      }
+    "textures": {
+      "texture_root": "textures/character/{asset_key}",
+      "layout": "configs/character/layouts/character_texture_layout.json"
+    },
+    "audio": {
+      "audio_root": "audio/character/{asset_key}",
+      "layout": "configs/character/layouts/character_audio_layout.json"
     }
   }
 }

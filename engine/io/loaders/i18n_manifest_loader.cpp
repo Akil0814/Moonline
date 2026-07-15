@@ -1,6 +1,7 @@
 #include "../../tools/logger.h"
 #include "i18n_manifest_loader.h"
 
+#include "../json/json_duplicate_key_checker.h"
 #include "../json/json_loader.h"
 #include <utility>
 
@@ -12,6 +13,11 @@ bool I18nManifestLoader::load(
 ) const
 {
 	manifest = I18nManifest{};
+	if (has_duplicate_json_object_key(manifest_path))
+	{
+		ELYSIA_LOG_WARN("io", "Load i18n manifest failed: duplicate JSON object key: " << manifest_path);
+		return false;
+	}
 
 	JsonLoader loader;
 	const JsonReadResult open_result = loader.open_file(manifest_path);

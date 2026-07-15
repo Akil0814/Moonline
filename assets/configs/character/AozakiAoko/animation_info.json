@@ -1,4 +1,6 @@
 {
+    "defaults": { "source_type": "frame_directory" },
+    "animations": {
     "idle":  {
                  "frame_count":  16,
                  "fps":  10,
@@ -222,4 +224,5 @@
                                 "fps":  10,
                                 "loop":  true
                             }
+    }
 }

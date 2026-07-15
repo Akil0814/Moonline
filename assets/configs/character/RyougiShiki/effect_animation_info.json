@@ -1,4 +1,6 @@
 {
+  "defaults": { "source_type": "frame_directory" },
+  "animations": {
   "attack_normal": {
     "segments": [
       { "frame_count": 3, "fps": 10, "loop": false },
@@ -13,5 +15,6 @@
       { "frame_count": 3, "fps": 10, "loop": false },
       { "frame_count": 3, "fps": 10, "loop": false }
     ]
+  }
   }
 }

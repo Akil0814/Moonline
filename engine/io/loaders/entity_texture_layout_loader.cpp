@@ -1,4 +1,29 @@
+#include "../../resources/pipeline/resource_key_builder.h"
 #include "../../tools/logger.h"
 #include "entity_texture_layout_loader.h"
 #include "../json/json_loader.h"
-namespace elysia::io { bool EntityTextureLayoutLoader::load(const std::filesystem::path& path, EntityTextureLayout& layout) const { layout={}; JsonLoader loader; if(!loader.open_file(path)||!loader.root().is_object()){ ELYSIA_LOG_WARN("io","Load entity texture layout failed: "<<path); return false;} for(auto it=loader.root().begin();it!=loader.root().end();++it){if(!it.value().is_string())return false; layout.textures.push_back({it.key(),it.value().get<std::string>()});} return true; } }
+#include "../json/json_duplicate_key_checker.h"
+
+namespace elysia::io
+{
+bool EntityTextureLayoutLoader::load(const std::filesystem::path& path, EntityTextureLayout& layout) const
+{
+	layout = {};
+	if (has_duplicate_json_object_key(path)) return false;
+	JsonLoader loader;
+	if (!loader.open_file(path) || !loader.root().is_object())
+	{
+		ELYSIA_LOG_WARN("io", "Load entity texture layout failed: " << path);
+		return false;
+	}
+	std::string error;
+	for (auto item = loader.root().begin(); item != loader.root().end(); ++item)
+	{
+		if (!elysia::resources::ResourceKeyBuilder::validate_component(item.key(), error)
+			|| !item.value().is_string() || item.value().get<std::string>().empty()) return false;
+		layout.textures.push_back({item.key(), item.value().get<std::string>(),
+			elysia::resources::make_resource_origin(path, "/" + item.key(), {}, "textures", {}, item.key())});
+	}
+	return true;
+}
+}

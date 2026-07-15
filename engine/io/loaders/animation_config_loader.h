@@ -1,4 +1,5 @@
 #pragma once
+
 #include "asset_config_types.h"
 #include "../json/json_loader.h"
 
@@ -22,16 +23,12 @@ private:
 		const std::string& animation_name,
 		bool is_segment,
 		size_t segment_index,
-		const json& clip_node,
 		const AnimationLayout& layout
 	) const;
 
-	std::filesystem::path resolve_segment_path(
-		const std::filesystem::path& segment_path,
-		size_t segment_index
-	) const;
-
 	bool append_clip(
+		const std::filesystem::path& config_path,
+		const std::string& json_pointer,
 		const std::string& animation_name,
 		bool is_segment,
 		size_t segment_index,
@@ -40,5 +37,4 @@ private:
 		AnimationConfig& config
 	) const;
 };
-
 }

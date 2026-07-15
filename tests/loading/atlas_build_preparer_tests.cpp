@@ -13,44 +13,42 @@ namespace
 {
 using moonline::tests::require;
 
-void test_named_and_legacy_frame_expansion()
+void test_explicit_frame_directory_expansion()
 {
 	const std::filesystem::path atlas_test_root =
 		std::filesystem::temp_directory_path() / "moonline_atlas_build_preparer_tests";
 	std::filesystem::remove_all(atlas_test_root);
-	std::filesystem::create_directories(atlas_test_root / "named");
-	std::filesystem::create_directories(atlas_test_root / "legacy");
-	std::ofstream(atlas_test_root / "named" / "RyougiShiki_idle_000.png").put('\0');
-	std::ofstream(atlas_test_root / "named" / "RyougiShiki_idle_001.png").put('\0');
-	std::ofstream(atlas_test_root / "legacy" / "frame_002.png").put('\0');
-	std::ofstream(atlas_test_root / "legacy" / "frame_001.png").put('\0');
+	std::filesystem::create_directories(atlas_test_root / "frames");
+	std::ofstream(atlas_test_root / "frames" / "RyougiShiki_idle_000.png").put('\0');
+	std::ofstream(atlas_test_root / "frames" / "RyougiShiki_idle_001.png").put('\0');
+	std::ofstream(atlas_test_root / "frames" / "unconfigured_extra.png").put('\0');
 
 	elysia::resources::AtlasBuildPreparer atlas_build_preparer;
 	std::vector<elysia::resources::AtlasFramePrepareTask> atlas_tasks;
-	elysia::resources::AtlasBuildRequest named_request;
-	named_request.atlas_key = "ryougi_shiki.idle";
-	named_request.source_path = atlas_test_root / "named";
-	named_request.frame_count = 2;
-	named_request.frame_filename_prefix = "RyougiShiki_idle";
-	require(atlas_build_preparer.expand_build_request(named_request, atlas_tasks),
-		"named atlas frames must be inferred from the request prefix");
+	elysia::resources::AtlasBuildRequest request;
+	request.atlas_key = "ryougi_shiki.idle";
+	request.source_path = atlas_test_root / "frames";
+	request.frame_count = 2;
+	request.frame_filename_prefix = "RyougiShiki_idle";
+	require(atlas_build_preparer.expand_build_request(request, atlas_tasks),
+		"frame-directory atlas loading must expand its explicit prefix and frame count");
 	require(atlas_tasks.size() == 2
 		&& atlas_tasks[0].frame_path.filename() == "RyougiShiki_idle_000.png"
-		&& atlas_tasks[1].frame_path.filename() == "RyougiShiki_idle_001.png",
-		"named atlas frames must retain generated numeric order");
-	named_request.frame_count = 3;
-	require(!atlas_build_preparer.expand_build_request(named_request, atlas_tasks),
-		"named atlas loading must fail when an inferred frame is missing");
+		&& atlas_tasks[1].frame_path.filename() == "RyougiShiki_idle_001.png"
+		&& atlas_tasks[0].frame_index == 0
+		&& atlas_tasks[1].frame_index == 1,
+		"frame-directory tasks must use exact _000/_001 paths in configured order");
+	require(atlas_tasks.size() == 2,
+		"unconfigured extra PNG files must not be scanned into the atlas");
 
-	elysia::resources::AtlasBuildRequest legacy_request;
-	legacy_request.atlas_key = "legacy";
-	legacy_request.source_path = atlas_test_root / "legacy";
-	legacy_request.frame_count = 2;
-	require(atlas_build_preparer.expand_build_request(legacy_request, atlas_tasks),
-		"legacy atlas loading must retain directory-scan compatibility");
-	require(atlas_tasks[0].frame_path.filename() == "frame_001.png"
-		&& atlas_tasks[1].frame_path.filename() == "frame_002.png",
-		"legacy atlas frames must remain filename-sorted");
+	elysia::resources::AtlasBuildRequest no_prefix = request;
+	no_prefix.frame_filename_prefix.clear();
+	require(!atlas_build_preparer.expand_build_request(no_prefix, atlas_tasks),
+		"frame-directory requests without an explicit prefix must fail");
+
+	request.frame_count = 3;
+	require(!atlas_build_preparer.expand_build_request(request, atlas_tasks),
+		"frame-directory loading must fail when an explicitly configured frame is missing");
 
 	const std::filesystem::path strip_path = atlas_test_root / "strip.png";
 	std::ofstream(strip_path).put('\0');
@@ -72,7 +70,7 @@ void test_named_and_legacy_frame_expansion()
 
 int main()
 {
-    test_named_and_legacy_frame_expansion();
+    test_explicit_frame_directory_expansion();
     std::cout << "atlas build preparer tests passed\n";
     return EXIT_SUCCESS;
 }

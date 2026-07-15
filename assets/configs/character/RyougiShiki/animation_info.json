@@ -1,4 +1,6 @@
 {
+  "defaults": { "source_type": "frame_directory" },
+  "animations": {
   "idle": { "frame_count": 7, "fps": 10, "loop": true },
   "select": { "frame_count": 4, "fps": 10, "loop": false },
   "start": { "frame_count": 18, "fps": 10, "loop": false },
@@ -47,4 +49,5 @@
   "getup": { "frame_count": 7, "fps": 10, "loop": false },
   "getup_air": { "frame_count": 9, "fps": 10, "loop": false },
   "selected_background": { "frame_count": 6, "fps": 10, "loop": true }
+  }
 }

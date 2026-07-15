@@ -2,6 +2,8 @@
 #include "texture_manifest_loader.h"
 
 #include "../json/json_loader.h"
+#include "../json/json_duplicate_key_checker.h"
+#include "../../resources/pipeline/resource_key_builder.h"
 #include <utility>
 
 namespace elysia::io
@@ -12,6 +14,7 @@ bool TextureManifestLoader::load(
 ) const
 {
 	manifest = TextureManifest{};
+	if (has_duplicate_json_object_key(manifest_path)) return false;
 
 	JsonLoader loader;
 	JsonReadResult result = loader.open_file(manifest_path);
@@ -41,6 +44,12 @@ bool TextureManifestLoader::load(
 		texture != textures.end();
 		++texture)
 	{
+		std::string key_error;
+		if (!elysia::resources::ResourceKeyBuilder::validate_key(texture.key(), key_error))
+		{
+			ELYSIA_LOG_WARN("io", "Load texture manifest failed: " << key_error);
+			return false;
+		}
 		if (!texture.value().is_object())
 		{
 			ELYSIA_LOG_WARN("io","Load texture manifest failed: texture entry is not an object: "
@@ -59,6 +68,10 @@ bool TextureManifestLoader::load(
 		TextureManifestEntry entry;
 		entry.key = texture.key();
 		entry.file_path = texture_node.at("path").get<std::string>();
+		for (auto field = texture_node.begin(); field != texture_node.end(); ++field)
+			if (field.key() != "path") return false;
+		entry.origin = elysia::resources::make_resource_origin(
+			manifest_path, "/textures/" + texture.key(), {}, "textures", {}, texture.key());
 		parsed_manifest.textures.push_back(std::move(entry));
 	}
 

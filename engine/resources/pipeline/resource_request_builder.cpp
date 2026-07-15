@@ -1,609 +1,354 @@
-#include "../../tools/logger.h"
 #include "resource_request_builder.h"
 
+#include "filesystem_segment_formatter.h"
+#include "resource_key_builder.h"
 #include "../../io/path/path_manager.h"
+#include "../../tools/logger.h"
 
 #include <algorithm>
-#include <string>
+#include <iomanip>
+#include <sstream>
 #include <utility>
-#include <vector>
 
 namespace elysia::resources
 {
 namespace
 {
-std::string make_animated_entity_frame_prefix(
-	const std::string& asset_key,
-	const std::string& animation_name,
-	bool is_segment,
-	size_t segment_index,
-	bool is_effect
-)
+bool log_key_error(const char* operation, const std::string& error)
 {
-	std::string prefix = asset_key + (is_effect ? "_effects_" : "_") + animation_name;
-	if (is_segment)
-		prefix += "_" + std::to_string(segment_index + 1);
-	return prefix;
-}
-
-bool has_inferred_frame_sequence(
-	const std::filesystem::path& directory_path,
-	const std::string& filename_prefix
-)
-{
-	return std::filesystem::is_regular_file(
-		directory_path / (filename_prefix + "_000.png")
-	);
+	ELYSIA_LOG_WARN("resource", operation << ": " << error);
+	return false;
 }
 
 bool append_texture_request(
-	const std::string& key,
-	const std::filesystem::path& file_path,
-	std::vector<TextureLoadRequest>& texture_load_requests,
-	const char* error_prefix
-)
+	std::string key,
+	std::filesystem::path file_path,
+	ResourceOrigin origin,
+	std::vector<TextureLoadRequest>& requests)
 {
-	if (key.empty())
-	{
-		ELYSIA_LOG_WARN("resource",error_prefix << ": key is empty.");
-		return false;
-	}
-
-	if (file_path.empty())
-	{
-		ELYSIA_LOG_WARN("resource",error_prefix << ": file path is empty: " << key);
-		return false;
-	}
-
 	if (!std::filesystem::is_regular_file(file_path))
 	{
-		ELYSIA_LOG_WARN("resource",error_prefix << ": file does not exist: " << file_path);
+		ELYSIA_LOG_WARN("resource", "Build texture request failed: file does not exist: " << file_path);
 		return false;
 	}
-
-	TextureLoadRequest request;
-	request.key = key;
-	request.file_path = file_path;
-	texture_load_requests.push_back(std::move(request));
+	requests.push_back({std::move(key), std::move(file_path), std::move(origin)});
 	return true;
 }
 
-bool append_directory_texture_requests(
-	const std::string& base_key,
-	const std::filesystem::path& directory_path,
-	std::vector<TextureLoadRequest>& texture_load_requests,
-	const char* error_prefix
-)
+void replace_all(std::string& value, std::string_view marker, std::string_view replacement)
 {
-	if (base_key.empty())
+	size_t position = 0;
+	while ((position = value.find(marker, position)) != std::string::npos)
 	{
-		ELYSIA_LOG_WARN("resource",error_prefix << ": base key is empty.");
-		return false;
+		value.replace(position, marker.size(), replacement);
+		position += replacement.size();
 	}
+}
 
-	if (!std::filesystem::is_directory(directory_path))
+bool make_frame_prefix(
+	const std::string& pattern,
+	const elysia::io::EntityAnimationContentEntry& entry,
+	const elysia::io::AnimationClipConfig& clip,
+	std::string& prefix)
+{
+	prefix = pattern;
+	replace_all(prefix, "{asset_key}", entry.entity.asset_key);
+	replace_all(prefix, "{animation}", clip.animation_name);
+	std::string suffix;
+	if (clip.is_segment)
 	{
-		ELYSIA_LOG_WARN("resource",error_prefix << ": directory does not exist: " << directory_path);
-		return false;
+		std::string segment;
+		if (!format_filesystem_segment(clip.segment_index, segment)) return false;
+		suffix = "_" + segment;
 	}
+	replace_all(prefix, "{segment_suffix}", suffix);
+	return !prefix.empty() && prefix.find('{') == std::string::npos && prefix.find('}') == std::string::npos;
+}
 
-	std::vector<std::filesystem::path> file_paths;
-	for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(directory_path))
-	{
-		if (entry.is_regular_file())
-			file_paths.push_back(entry.path());
-	}
+std::optional<size_t> clip_segment(const elysia::io::AnimationClipConfig& clip)
+{
+	return clip.is_segment ? std::optional<size_t>(clip.segment_index) : std::nullopt;
+}
 
-	std::sort(file_paths.begin(), file_paths.end());
-	if (file_paths.empty())
-	{
-		ELYSIA_LOG_WARN("resource",error_prefix << ": directory has no regular files: "
-			<< directory_path);
-		return false;
-	}
-
-	for (const std::filesystem::path& file_path : file_paths)
-	{
-		const std::string key = base_key + "." + file_path.stem().string();
-		if (!append_texture_request(key, file_path, texture_load_requests, error_prefix))
-			return false;
-	}
-
-	return true;
+std::optional<size_t> effect_segment(const elysia::io::EffectDefinitionConfigEntry& effect)
+{
+	return effect.is_segment ? std::optional<size_t>(effect.segment_index) : std::nullopt;
 }
 }
 
 bool ResourceRequestBuilder::append_font_requests(
-	const elysia::io::FontManifest& font_manifest,
-	std::vector<FontLoadRequest>& font_load_requests
-) const
+	const elysia::io::FontManifest& manifest,
+	std::vector<FontLoadRequest>& requests) const
 {
-	const std::filesystem::path font_root = elysia::io::PathManager::instance()->fonts();
-
-	for (const elysia::io::FontManifestEntry& entry : font_manifest.fonts)
+	const auto root = elysia::io::PathManager::instance()->fonts();
+	for (const auto& entry : manifest.fonts)
 	{
-		if (entry.key.empty())
+		std::string error;
+		if (!ResourceKeyBuilder::validate_key(entry.key, error)) return log_key_error("Build font requests failed", error);
+		for (const int size : manifest.point_sizes)
 		{
-			ELYSIA_LOG_WARN("resource","Build font requests failed: key is empty.");
-			return false;
-		}
-
-		if (entry.file_path.empty())
-		{
-			ELYSIA_LOG_WARN("resource","Build font requests failed: file path is empty: "
-				<< entry.key);
-			return false;
-		}
-
-		std::filesystem::path file_path = (font_root / entry.file_path).lexically_normal();
-		if (file_path.empty())
-		{
-			ELYSIA_LOG_WARN("resource","Build font requests failed: resolved file path is empty: "
-				<< entry.key);
-			return false;
-		}
-
-		for (const int point_size : font_manifest.point_sizes)
-		{
-			if (point_size <= 0)
-			{
-				ELYSIA_LOG_WARN("resource","Build font requests failed: point size is invalid: "
-					<< point_size);
-				return false;
-			}
-
-			FontLoadRequest request;
-			request.key = entry.key + "." + std::to_string(point_size);
-			request.file_path = file_path;
-			request.point_size = point_size;
-			font_load_requests.push_back(std::move(request));
+			if (size <= 0) return false;
+			std::string key;
+			if (!ResourceKeyBuilder::append_component(entry.key, std::to_string(size), key, error))
+				return log_key_error("Build font requests failed", error);
+			auto origin = entry.origin;
+			origin.logical_name = key;
+			requests.push_back({std::move(key), (root / entry.file_path).lexically_normal(), size, std::move(origin)});
 		}
 	}
-
 	return true;
 }
 
 bool ResourceRequestBuilder::append_audio_requests(
-	const elysia::io::AudioManifest& audio_manifest,
-	std::vector<SoundLoadRequest>& sound_load_requests,
-	std::vector<MusicLoadRequest>& music_load_requests
-) const
+	const elysia::io::AudioManifest& manifest,
+	std::vector<SoundLoadRequest>& sounds,
+	std::vector<MusicLoadRequest>& music) const
 {
-	const std::filesystem::path audio_root = elysia::io::PathManager::instance()->audio();
-
-	for (const elysia::io::AudioManifestEntry& entry : audio_manifest.sounds)
+	const auto root = elysia::io::PathManager::instance()->audio();
+	for (const auto& entry : manifest.sounds)
 	{
-		if (entry.key.empty())
-		{
-			ELYSIA_LOG_WARN("resource","Build sound requests failed: key is empty.");
-			return false;
-		}
-
-		if (entry.file_path.empty())
-		{
-			ELYSIA_LOG_WARN("resource","Build sound requests failed: file path is empty: "
-				<< entry.key);
-			return false;
-		}
-
-		std::filesystem::path file_path = (audio_root / entry.file_path).lexically_normal();
-		if (file_path.empty())
-		{
-			ELYSIA_LOG_WARN("resource","Build sound requests failed: resolved file path is empty: "
-				<< entry.key);
-			return false;
-		}
-
-		SoundLoadRequest request;
-		request.key = entry.key;
-		request.file_path = std::move(file_path);
-		sound_load_requests.push_back(std::move(request));
+		std::string error;
+		if (!ResourceKeyBuilder::validate_key(entry.key, error)) return log_key_error("Build sound requests failed", error);
+		sounds.push_back({entry.key, (root / entry.file_path).lexically_normal(), entry.origin});
 	}
-
-	for (const elysia::io::AudioManifestEntry& entry : audio_manifest.music)
+	for (const auto& entry : manifest.music)
 	{
-		if (entry.key.empty())
-		{
-			ELYSIA_LOG_WARN("resource","Build music requests failed: key is empty.");
-			return false;
-		}
-
-		if (entry.file_path.empty())
-		{
-			ELYSIA_LOG_WARN("resource","Build music requests failed: file path is empty: "
-				<< entry.key);
-			return false;
-		}
-
-		std::filesystem::path file_path = (audio_root / entry.file_path).lexically_normal();
-		if (file_path.empty())
-		{
-			ELYSIA_LOG_WARN("resource","Build music requests failed: resolved file path is empty: "
-				<< entry.key);
-			return false;
-		}
-
-		MusicLoadRequest request;
-		request.key = entry.key;
-		request.file_path = std::move(file_path);
-		music_load_requests.push_back(std::move(request));
+		std::string error;
+		if (!ResourceKeyBuilder::validate_key(entry.key, error)) return log_key_error("Build music requests failed", error);
+		music.push_back({entry.key, (root / entry.file_path).lexically_normal(), entry.origin});
 	}
-
 	return true;
 }
 
 bool ResourceRequestBuilder::append_texture_manifest_requests(
-	const elysia::io::TextureManifest& texture_manifest,
-	const std::filesystem::path& texture_root,
-	std::vector<TextureLoadRequest>& texture_load_requests
-) const
+	const elysia::io::TextureManifest& manifest,
+	const std::filesystem::path& root,
+	std::vector<TextureLoadRequest>& requests) const
 {
-	if (texture_root.empty())
+	if (root.empty())
 	{
-		ELYSIA_LOG_WARN("resource","Build texture requests failed: texture root is empty.");
+		ELYSIA_LOG_WARN("resource", "Build texture requests failed: texture root is empty.");
 		return false;
 	}
-
-	for (const elysia::io::TextureManifestEntry& entry : texture_manifest.textures)
+	for (const auto& entry : manifest.textures)
 	{
-		const std::filesystem::path file_path = (texture_root / entry.file_path).lexically_normal();
-		if (!append_texture_request(
-			entry.key,
-			file_path,
-			texture_load_requests,
-			"Build texture requests failed"))
-		{
-			return false;
-		}
+		std::string error;
+		if (!ResourceKeyBuilder::validate_key(entry.key, error)) return log_key_error("Build texture requests failed", error);
+		if (!append_texture_request(entry.key, (root / entry.file_path).lexically_normal(), entry.origin, requests)) return false;
 	}
-
 	return true;
 }
 
 bool ResourceRequestBuilder::append_animation_manifest_requests(
-	const elysia::io::AnimationManifest& animation_manifest,
-	const std::filesystem::path& textures_root,
-	std::vector<AtlasBuildRequest>& atlas_build_requests,
-	std::vector<AnimationBuildRequest>& animation_build_requests
-) const
+	const elysia::io::AnimationManifest& manifest,
+	const std::filesystem::path& root,
+	std::vector<AtlasBuildRequest>& atlases,
+	std::vector<AnimationBuildRequest>& animations) const
 {
-	if (textures_root.empty())
+	for (const auto& entry : manifest.animations)
 	{
-		ELYSIA_LOG_WARN("resource","Build animation requests failed: textures root is empty.");
-		return false;
-	}
-
-	for (const elysia::io::AnimationManifestEntry& entry : animation_manifest.animations)
-	{
-		if (entry.key.empty() || entry.source_path.empty()
-			|| entry.frame_count == 0 || entry.fps <= 0.0)
+		std::string error;
+		if (!ResourceKeyBuilder::validate_key(entry.key, error)) return log_key_error("Build animation requests failed", error);
+		const auto source = (root / entry.source_path).lexically_normal();
+		const bool exists = entry.horizontal_strip ? std::filesystem::is_regular_file(source) : std::filesystem::is_directory(source);
+		if (!exists)
 		{
-			ELYSIA_LOG_WARN("resource","Build animation requests failed: invalid animation entry: "
-				<< entry.key);
+			ELYSIA_LOG_WARN("resource", "Build animation requests failed: source is missing or has the wrong type: key="
+				<< entry.key << ", path=" << source);
 			return false;
 		}
-
-		const std::filesystem::path source_path =
-			(textures_root / entry.source_path).lexically_normal();
-		const bool source_exists = entry.horizontal_strip
-			? std::filesystem::is_regular_file(source_path)
-			: std::filesystem::is_directory(source_path);
-		if (!source_exists)
+		if (entry.frame_count == 0 || entry.fps <= 0.0)
 		{
-			ELYSIA_LOG_WARN("resource","Build animation requests failed: source does not exist or has the wrong type: "
-				<< source_path);
+			ELYSIA_LOG_WARN("resource", "Build animation requests failed: invalid frame count or FPS: " << entry.key);
 			return false;
 		}
-
-		AtlasBuildRequest atlas_request;
-		atlas_request.atlas_key = entry.key;
-		atlas_request.source_path = source_path;
-		atlas_request.frame_count = entry.frame_count;
-		atlas_request.source_type = entry.horizontal_strip
-			? AtlasSourceType::HorizontalStrip
-			: AtlasSourceType::FrameDirectory;
-
-		AnimationBuildRequest animation_request;
-		animation_request.animation_key = entry.key;
-		animation_request.atlas_key = entry.key;
-		animation_request.fps = entry.fps;
-		animation_request.loop = entry.loop;
-
-		atlas_build_requests.push_back(std::move(atlas_request));
-		animation_build_requests.push_back(std::move(animation_request));
+		AtlasBuildRequest atlas;
+		atlas.atlas_key = entry.key;
+		atlas.source_path = source;
+		atlas.frame_count = entry.frame_count;
+		atlas.frame_filename_prefix = entry.frame_prefix;
+		atlas.source_type = entry.horizontal_strip ? AtlasSourceType::HorizontalStrip : AtlasSourceType::FrameDirectory;
+		atlas.origin = entry.origin;
+		AnimationBuildRequest animation;
+		animation.animation_key = entry.key;
+		animation.atlas_key = entry.key;
+		animation.fps = entry.fps;
+		animation.loop = entry.loop;
+		animation.origin = entry.origin;
+		atlases.push_back(std::move(atlas));
+		animations.push_back(std::move(animation));
 	}
-
 	return true;
 }
 
 bool ResourceRequestBuilder::append_animation_effect_manifest_requests(
-	const elysia::io::AnimationEffectManifest& animation_effect_manifest,
-	std::vector<AnimationEffectBuildRequest>& animation_effect_build_requests
-) const
+	const elysia::io::AnimationEffectManifest& manifest,
+	std::vector<AnimationEffectBuildRequest>& requests) const
 {
-	for (const elysia::io::AnimationEffectManifestEntry& entry : animation_effect_manifest.effects)
+	for (const auto& entry : manifest.effects)
 	{
-		if (entry.key.empty() || entry.animation_key.empty())
-		{
-			ELYSIA_LOG_WARN("resource","Build effect requests failed: invalid effect entry: "
-				<< entry.key);
-			return false;
-		}
-
-		AnimationEffectBuildRequest request;
-		request.effect_key = entry.key;
-		request.animation_key = entry.animation_key;
-		request.default_size = elysia::core::Vector2(entry.default_width, entry.default_height);
-		request.default_angle_degrees = entry.default_angle_degrees;
-		animation_effect_build_requests.push_back(std::move(request));
+		std::string error;
+		if (!ResourceKeyBuilder::validate_key(entry.key, error)
+			|| !ResourceKeyBuilder::validate_key(entry.animation_key, error))
+			return log_key_error("Build effect requests failed", error);
+		requests.push_back({entry.key, entry.animation_key,
+			elysia::core::Vector2(entry.default_width, entry.default_height),
+			entry.default_angle_degrees, entry.origin});
 	}
-
 	return true;
 }
 
-bool ResourceRequestBuilder::append_animated_entity_texture_requests(
-	const elysia::io::AnimatedEntityResourceConfig& character_config,
-	const elysia::io::EntityTextureLayout& texture_layout,
-	std::vector<TextureLoadRequest>& texture_load_requests
-) const
+bool ResourceRequestBuilder::append_entity_animation_requests(
+	const std::string& key_namespace,
+	const elysia::io::EntityAnimationContentEntry& entry,
+	std::vector<AtlasBuildRequest>& atlases,
+	std::vector<AnimationBuildRequest>& animations) const
 {
-	if (character_config.id.empty())
+	for (const auto& clip : entry.animation_config.clips)
 	{
-		ELYSIA_LOG_WARN("resource","Build character texture requests failed: character id is empty.");
-		return false;
-	}
-
-	if (character_config.texture_root.empty())
-	{
-		ELYSIA_LOG_WARN("resource","Build character texture requests failed: texture root is empty: "
-			<< character_config.id);
-		return false;
-	}
-
-	for (const elysia::io::EntityTextureLayoutEntry& entry : texture_layout.textures)
-	{
-		const std::string base_key = character_config.id + "." + entry.key;
-		const std::filesystem::path resolved_path =
-			(character_config.texture_root / entry.path).lexically_normal();
-
-		if (std::filesystem::is_regular_file(resolved_path))
+		std::string key, error;
+		if (!ResourceKeyBuilder::build(entry.entity.id, key_namespace, {clip.animation_name},
+			clip_segment(clip), key, error)) return log_key_error("Build entity animation requests failed", error);
+		AtlasBuildRequest atlas;
+		atlas.atlas_key = key;
+		atlas.frame_count = clip.frame_count;
+		atlas.origin = clip.origin;
+		const auto resolved = (entry.texture_root / clip.path).lexically_normal();
+		if (entry.animation_config.source_type == elysia::io::AnimationSourceType::HorizontalStrip)
 		{
-			if (!append_texture_request(
-				base_key,
-				resolved_path,
-				texture_load_requests,
-				"Build character texture requests failed"))
+			atlas.source_type = AtlasSourceType::HorizontalStrip;
+			atlas.source_path = (resolved / (clip.animation_name + ".png")).lexically_normal();
+			if (!std::filesystem::is_regular_file(atlas.source_path))
 			{
-				return false;
-			}
-
-			continue;
-		}
-
-		if (std::filesystem::is_directory(resolved_path))
-		{
-			if (!append_directory_texture_requests(
-				base_key,
-				resolved_path,
-				texture_load_requests,
-				"Build character texture requests failed"))
-			{
-				return false;
-			}
-
-			continue;
-		}
-
-		ELYSIA_LOG_WARN("resource","Build character texture requests failed: target does not exist: "
-			<< resolved_path);
-		return false;
-	}
-
-	return true;
-}
-
-bool ResourceRequestBuilder::append_animated_entity_audio_requests(
-	const elysia::io::AnimatedEntityResourceConfig& character_config,
-	const elysia::io::EntityAudioLayout& audio_layout,
-	std::vector<SoundLoadRequest>& sound_load_requests
-) const
-{
-	if (character_config.id.empty())
-	{
-		ELYSIA_LOG_WARN("resource","Build character audio requests failed: character id is empty.");
-		return false;
-	}
-
-	if (character_config.asset_key.empty())
-	{
-		ELYSIA_LOG_WARN("resource","Build character audio requests failed: asset key is empty: "
-			<< character_config.id);
-		return false;
-	}
-
-	const std::filesystem::path audio_root = character_config.audio_root / character_config.asset_key;
-	for (const elysia::io::EntityAudioLayoutEntry& entry : audio_layout.sounds)
-	{
-		if (entry.key.empty())
-		{
-			ELYSIA_LOG_WARN("resource","Build character audio requests failed: sound key is empty.");
-			return false;
-		}
-
-		if (entry.path.empty())
-		{
-			ELYSIA_LOG_WARN("resource","Build character audio requests failed: sound path is empty: "
-				<< entry.key);
-			return false;
-		}
-
-		const std::filesystem::path file_path = (audio_root / entry.path).lexically_normal();
-		if (!std::filesystem::is_regular_file(file_path))
-		{
-			ELYSIA_LOG_WARN("resource","Build character audio requests failed: file does not exist: "
-				<< file_path);
-			return false;
-		}
-
-		SoundLoadRequest request;
-		request.key = character_config.id + "." + entry.key;
-		request.file_path = file_path;
-		sound_load_requests.push_back(std::move(request));
-	}
-
-	return true;
-}
-bool ResourceRequestBuilder::append_animated_entity_animation_requests(
-	const elysia::io::AnimatedEntityResourceConfig& character_config,
-	const elysia::io::AnimationConfig& animation_config,
-	std::vector<AtlasBuildRequest>& atlas_build_requests,
-	std::vector<AnimationBuildRequest>& animation_build_requests,
-	AnimatedEntityAnimationKind kind
-) const
-{
-	const bool is_effect = kind == AnimatedEntityAnimationKind::Effect;
-	if (character_config.id.empty() || character_config.asset_key.empty())
-	{
-		ELYSIA_LOG_WARN("resource","Build resource requests failed: character id or asset key is empty.");
-		return false;
-	}
-
-	for (const elysia::io::AnimationClipConfig& clip_config : animation_config.clips)
-	{
-		if (clip_config.animation_name.empty())
-		{
-			ELYSIA_LOG_WARN("resource","Build resource requests failed: animation name is empty: "
-				<< character_config.id);
-			return false;
-		}
-
-		if (clip_config.frame_count == 0 || clip_config.fps <= 0.0)
-		{
-			ELYSIA_LOG_WARN("resource","Build resource requests failed: animation clip timing is invalid: "
-				<< character_config.id << "." << clip_config.animation_name);
-			return false;
-		}
-
-		std::filesystem::path directory_path =
-			(character_config.texture_root / clip_config.path).lexically_normal();
-		if (directory_path.empty())
-		{
-			ELYSIA_LOG_WARN("resource","Build resource requests failed: animation directory is empty: "
-				<< character_config.id << "." << clip_config.animation_name);
-			return false;
-		}
-
-		std::string animation_key = character_config.id
-			+ (is_effect ? ".effect." : ".") + clip_config.animation_name;
-		if (clip_config.is_segment)
-			animation_key += "." + std::to_string(clip_config.segment_index);
-
-		AtlasBuildRequest atlas_request;
-		atlas_request.atlas_key = animation_key;
-		atlas_request.frame_count = clip_config.frame_count;
-		if (!is_effect && character_config.horizontal_strip)
-		{
-			atlas_request.source_type = AtlasSourceType::HorizontalStrip;
-			atlas_request.source_path = (
-				directory_path / (clip_config.animation_name + ".png")
-			).lexically_normal();
-			if (!std::filesystem::is_regular_file(atlas_request.source_path))
-			{
-				ELYSIA_LOG_WARN("resource","Build resource requests failed: horizontal strip does not exist: "
-					<< atlas_request.source_path);
+				ELYSIA_LOG_WARN("resource", "Build entity animation requests failed: horizontal strip does not exist: key="
+					<< key << ", path=" << atlas.source_path);
 				return false;
 			}
 		}
 		else
 		{
-			atlas_request.source_path = directory_path;
-			const std::string frame_filename_prefix = make_animated_entity_frame_prefix(
-				character_config.asset_key,
-				clip_config.animation_name,
-				clip_config.is_segment,
-				clip_config.segment_index,
-				is_effect
-			);
-			if (has_inferred_frame_sequence(directory_path, frame_filename_prefix))
-				atlas_request.frame_filename_prefix = frame_filename_prefix;
-		}
-
-		AnimationBuildRequest animation_request;
-		animation_request.animation_key = animation_key;
-		animation_request.atlas_key = atlas_request.atlas_key;
-		animation_request.fps = clip_config.fps;
-		animation_request.loop = clip_config.loop;
-		animation_request.segment_index = clip_config.segment_index;
-
-		atlas_build_requests.push_back(std::move(atlas_request));
-		animation_build_requests.push_back(std::move(animation_request));
-	}
-
-	return true;
-}
-
-bool ResourceRequestBuilder::append_animated_entity_effect_definition_requests(
-	const elysia::io::AnimatedEntityResourceConfig& character_config,
-	const elysia::io::AnimationConfig& animation_config,
-	const elysia::io::EffectDefinitionConfig& effect_config,
-	const std::vector<AnimationBuildRequest>& animation_build_requests,
-	std::vector<AnimationEffectBuildRequest>& animation_effect_build_requests
-) const
-{
-	if (character_config.id.empty() || character_config.asset_key.empty())
-	{
-		ELYSIA_LOG_WARN("resource","Build effect requests failed: character id or asset key is empty.");
-		return false;
-	}
-
-	for (const elysia::io::EffectDefinitionConfigEntry& definition : effect_config.effects)
-	{
-		if (definition.effect_name.empty() || definition.animation_name.empty())
-		{
-			ELYSIA_LOG_WARN("resource","Build effect requests failed: effect or animation name is empty: "
-				<< character_config.id);
-			return false;
-		}
-		bool matched_animation = false;
-		for (const elysia::io::AnimationClipConfig& clip_config : animation_config.clips)
-		{
-			if (clip_config.animation_name != definition.animation_name) continue;
-			matched_animation = true;
-			std::string suffix = definition.animation_name;
-			std::string effect_suffix = definition.effect_name;
-			if (clip_config.is_segment)
+			atlas.source_type = AtlasSourceType::FrameDirectory;
+			atlas.source_path = resolved;
+			if (!std::filesystem::is_directory(atlas.source_path))
 			{
-				suffix += "." + std::to_string(clip_config.segment_index);
-				effect_suffix += "." + std::to_string(clip_config.segment_index);
-			}
-			const std::string animation_key = character_config.id + ".effect." + suffix;
-			const bool request_exists = std::any_of(
-				animation_build_requests.begin(), animation_build_requests.end(),
-				[&animation_key](const AnimationBuildRequest& request) { return request.animation_key == animation_key; });
-			if (!request_exists)
-			{
-				ELYSIA_LOG_WARN("resource", "Build effect requests failed: animation request does not exist: " << animation_key);
+				ELYSIA_LOG_WARN("resource", "Build entity animation requests failed: frame directory does not exist: key="
+					<< key << ", path=" << atlas.source_path);
 				return false;
 			}
-			AnimationEffectBuildRequest request;
-			request.effect_key = character_config.id + ".effect." + effect_suffix;
-			request.animation_key = animation_key;
-			request.default_size = elysia::core::Vector2(definition.default_width, definition.default_height);
-			request.default_angle_degrees = definition.default_angle_degrees;
-			animation_effect_build_requests.push_back(std::move(request));
+			if (!make_frame_prefix(entry.frame_prefix_template, entry, clip, atlas.frame_filename_prefix))
+			{
+				ELYSIA_LOG_WARN("resource", "Build entity animation requests failed: frame prefix template expansion failed: key="
+					<< key << ", template=" << entry.frame_prefix_template);
+				return false;
+			}
 		}
-		if (!matched_animation)
-		{
-			ELYSIA_LOG_WARN("resource", "Build effect requests failed: configured animation is missing: " << definition.animation_name);
-			return false;
-		}
+		AnimationBuildRequest animation;
+		animation.animation_key = key;
+		animation.atlas_key = key;
+		animation.fps = clip.fps;
+		animation.loop = clip.loop;
+		animation.segment_index = clip.segment_index;
+		animation.origin = clip.origin;
+		atlases.push_back(std::move(atlas));
+		animations.push_back(std::move(animation));
 	}
-
 	return true;
 }
 
+bool ResourceRequestBuilder::append_entity_effect_requests(
+	const std::string& key_namespace,
+	const elysia::io::EntityEffectContentEntry& entry,
+	const std::vector<AnimationBuildRequest>& animations,
+	std::vector<AnimationEffectBuildRequest>& effects) const
+{
+	for (const auto& definition : entry.effect_config.effects)
+	{
+		std::string effect_key, animation_key, error;
+		if (!ResourceKeyBuilder::build(entry.entity.id, key_namespace, {definition.effect_name},
+			effect_segment(definition), effect_key, error)
+			|| !ResourceKeyBuilder::build(entry.entity.id, key_namespace, {definition.animation_name},
+				effect_segment(definition), animation_key, error))
+			return log_key_error("Build entity effect requests failed", error);
+		const bool exists = std::any_of(animations.begin(), animations.end(),
+			[&animation_key](const auto& request) { return request.animation_key == animation_key; });
+		if (!exists)
+		{
+			ELYSIA_LOG_WARN("resource", "Build entity effect requests failed: animation request does not exist: " << animation_key);
+			return false;
+		}
+		effects.push_back({std::move(effect_key), std::move(animation_key),
+			elysia::core::Vector2(definition.default_width, definition.default_height),
+			definition.default_angle_degrees, definition.origin});
+	}
+	return true;
+}
 
+bool ResourceRequestBuilder::append_entity_texture_requests(
+	const std::string& key_namespace,
+	const elysia::io::EntityTextureContentEntry& content,
+	std::vector<TextureLoadRequest>& requests) const
+{
+	for (const auto& entry : content.layout.textures)
+	{
+		std::string base_key, error;
+		if (!ResourceKeyBuilder::build(content.entity.id, key_namespace, {entry.key}, std::nullopt, base_key, error))
+			return log_key_error("Build entity texture requests failed", error);
+		const auto resolved = (content.texture_root / entry.path).lexically_normal();
+		if (std::filesystem::is_regular_file(resolved))
+		{
+			if (!append_texture_request(base_key, resolved, entry.origin, requests)) return false;
+			continue;
+		}
+		if (!std::filesystem::is_directory(resolved))
+		{
+			ELYSIA_LOG_WARN("resource", "Build entity texture requests failed: target is neither a file nor directory: key="
+				<< base_key << ", path=" << resolved);
+			return false;
+		}
+		std::vector<std::filesystem::path> files;
+		for (const auto& directory_entry : std::filesystem::directory_iterator(resolved))
+			if (directory_entry.is_regular_file()) files.push_back(directory_entry.path());
+		std::sort(files.begin(), files.end());
+		if (files.empty())
+		{
+			ELYSIA_LOG_WARN("resource", "Build entity texture requests failed: directory contains no regular files: key="
+				<< base_key << ", path=" << resolved);
+			return false;
+		}
+		for (const auto& file : files)
+		{
+			const std::string stem = file.stem().string();
+			std::string key;
+			if (!ResourceKeyBuilder::append_component(base_key, stem, key, error))
+				return log_key_error("Build entity texture requests failed", error);
+			auto origin = entry.origin;
+			origin.json_pointer += "/files/" + file.filename().generic_string();
+			origin.logical_name = entry.key + "." + stem;
+			if (!append_texture_request(std::move(key), file, std::move(origin), requests)) return false;
+		}
+	}
+	return true;
+}
 
-
-
+bool ResourceRequestBuilder::append_entity_audio_requests(
+	const std::string& key_namespace,
+	const elysia::io::EntityAudioContentEntry& content,
+	std::vector<SoundLoadRequest>& requests) const
+{
+	for (const auto& entry : content.layout.sounds)
+	{
+		std::string key, error;
+		if (!ResourceKeyBuilder::build(content.entity.id, key_namespace, {entry.key}, std::nullopt, key, error))
+			return log_key_error("Build entity audio requests failed", error);
+		const auto path = (content.audio_root / entry.path).lexically_normal();
+		if (!std::filesystem::is_regular_file(path))
+		{
+			ELYSIA_LOG_WARN("resource", "Build entity audio requests failed: sound file does not exist: key="
+				<< key << ", path=" << path);
+			return false;
+		}
+		requests.push_back({std::move(key), path, entry.origin});
+	}
+	return true;
+}
 }

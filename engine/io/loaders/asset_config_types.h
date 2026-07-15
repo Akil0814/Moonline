@@ -1,9 +1,11 @@
 #pragma once
 
+#include "../../resources/resource_origin.h"
 #include "../json/json_loader.h"
 
 #include <cstddef>
 #include <filesystem>
+#include <map>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -14,16 +16,12 @@ namespace elysia::io
 struct CoreManifestPaths
 {
 	std::filesystem::path audio;
-
 	std::filesystem::path fonts;
-
 	std::filesystem::path i18n;
-
 	std::filesystem::path textures;
 	std::filesystem::path animations;
 	std::filesystem::path effects;
 	std::filesystem::path configs;
-
 };
 
 struct BootstrapPaths
@@ -36,13 +34,14 @@ struct ContentRegistry
 {
 	BootstrapPaths bootstrap;
 	CoreManifestPaths required;
-std::unordered_map<std::string, std::filesystem::path> additional_module_manifests;
+	std::map<std::string, std::filesystem::path> additional_module_manifests;
 };
 
 struct FontManifestEntry
 {
 	std::string key;
 	std::filesystem::path file_path;
+	elysia::resources::ResourceOrigin origin;
 };
 
 struct FontManifest
@@ -62,6 +61,7 @@ struct AudioManifestEntry
 {
 	std::string key;
 	std::filesystem::path file_path;
+	elysia::resources::ResourceOrigin origin;
 };
 
 struct AudioManifest
@@ -74,6 +74,7 @@ struct TextureManifestEntry
 {
 	std::string key;
 	std::filesystem::path file_path;
+	elysia::resources::ResourceOrigin origin;
 };
 
 struct TextureManifest
@@ -85,10 +86,12 @@ struct AnimationManifestEntry
 {
 	std::string key;
 	std::filesystem::path source_path;
+	std::string frame_prefix;
 	size_t frame_count = 0;
 	double fps = 10.0;
 	bool loop = true;
 	bool horizontal_strip = false;
+	elysia::resources::ResourceOrigin origin;
 };
 
 struct AnimationManifest
@@ -103,6 +106,7 @@ struct AnimationEffectManifestEntry
 	float default_width = 0.0f;
 	float default_height = 0.0f;
 	double default_angle_degrees = 0.0;
+	elysia::resources::ResourceOrigin origin;
 };
 
 struct AnimationEffectManifest
@@ -115,21 +119,12 @@ struct EntityManifestEntry
 	std::string id;
 	std::string asset_key;
 	std::string animation_layout;
-	bool horizontal_strip = false;
+	elysia::resources::ResourceOrigin origin;
 };
 
 struct EntityManifest
 {
 	std::vector<EntityManifestEntry> entities;
-};
-
-struct AnimatedEntityResourceConfig
-{
-	std::string id;
-	std::string asset_key;
-	std::filesystem::path texture_root;
-	std::filesystem::path audio_root;
-	bool horizontal_strip = false;
 };
 
 struct AnimationLayoutEntry
@@ -138,6 +133,7 @@ struct AnimationLayoutEntry
 	std::filesystem::path segment_path;
 	bool has_path = false;
 	bool has_segment_path = false;
+	elysia::resources::ResourceOrigin origin;
 };
 
 struct AnimationLayout
@@ -149,6 +145,7 @@ struct EntityTextureLayoutEntry
 {
 	std::string key;
 	std::filesystem::path path;
+	elysia::resources::ResourceOrigin origin;
 };
 
 struct EntityTextureLayout
@@ -160,11 +157,18 @@ struct EntityAudioLayoutEntry
 {
 	std::string key;
 	std::filesystem::path path;
+	elysia::resources::ResourceOrigin origin;
 };
 
 struct EntityAudioLayout
 {
 	std::vector<EntityAudioLayoutEntry> sounds;
+};
+
+enum class AnimationSourceType
+{
+	FrameDirectory,
+	HorizontalStrip
 };
 
 struct AnimationClipConfig
@@ -176,10 +180,12 @@ struct AnimationClipConfig
 	bool loop = true;
 	bool is_segment = false;
 	size_t segment_index = 0;
+	elysia::resources::ResourceOrigin origin;
 };
 
 struct AnimationConfig
 {
+	AnimationSourceType source_type = AnimationSourceType::FrameDirectory;
 	std::vector<AnimationClipConfig> clips;
 };
 
@@ -187,9 +193,12 @@ struct EffectDefinitionConfigEntry
 {
 	std::string effect_name;
 	std::string animation_name;
+	bool is_segment = false;
+	size_t segment_index = 0;
 	float default_width = 0.0f;
 	float default_height = 0.0f;
 	double default_angle_degrees = 0.0;
+	elysia::resources::ResourceOrigin origin;
 };
 
 struct EffectDefinitionConfig
@@ -197,28 +206,50 @@ struct EffectDefinitionConfig
 	std::vector<EffectDefinitionConfigEntry> effects;
 };
 
-struct AnimatedEntityAnimationContentEntry
+struct EntityResourceIdentity
 {
-	AnimatedEntityResourceConfig entity_config;
+	std::string id;
+	std::string asset_key;
+	std::string animation_layout;
+	elysia::resources::ResourceOrigin origin;
+};
+
+struct EntityAnimationContentEntry
+{
+	EntityResourceIdentity entity;
+	std::filesystem::path texture_root;
+	std::string frame_prefix_template;
 	AnimationConfig animation_config;
 };
 
-struct AnimatedEntityEffectContentEntry
+struct EntityEffectContentEntry
 {
-	AnimatedEntityResourceConfig entity_config;
-	AnimationConfig animation_config;
+	EntityResourceIdentity entity;
 	EffectDefinitionConfig effect_config;
 };
 
-struct AnimatedEntityContent
+struct EntityTextureContentEntry
 {
-	std::vector<AnimatedEntityResourceConfig> entities;
-	std::vector<AnimatedEntityAnimationContentEntry> animation_entries;
-	std::vector<AnimatedEntityEffectContentEntry> effect_entries;
-	std::optional<EntityTextureLayout> texture_layout;
-	std::optional<EntityAudioLayout> audio_layout;
+	EntityResourceIdentity entity;
+	std::filesystem::path texture_root;
+	EntityTextureLayout layout;
 };
 
+struct EntityAudioContentEntry
+{
+	EntityResourceIdentity entity;
+	std::filesystem::path audio_root;
+	EntityAudioLayout layout;
+};
 
-
+struct EntityContentModule
+{
+	std::string name;
+	std::string key_namespace;
+	std::vector<EntityResourceIdentity> entities;
+	std::vector<EntityAnimationContentEntry> animation_entries;
+	std::vector<EntityEffectContentEntry> effect_entries;
+	std::vector<EntityTextureContentEntry> texture_entries;
+	std::vector<EntityAudioContentEntry> audio_entries;
+};
 }

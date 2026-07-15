@@ -1,9 +1,10 @@
 #include "../../tools/logger.h"
 #include "fonts_manifest_loader.h"
 
+#include "../json/json_duplicate_key_checker.h"
 #include "../json/json_loader.h"
+#include "../../resources/pipeline/resource_key_builder.h"
 #include <array>
-#include <unordered_set>
 #include <utility>
 
 namespace elysia::io
@@ -14,6 +15,11 @@ bool FontsManifestLoader::load(
 ) const
 {
 	manifest = FontManifest{};
+	if (has_duplicate_json_object_key(manifest_path))
+	{
+		ELYSIA_LOG_WARN("io", "Load fonts manifest failed: duplicate JSON object key: " << manifest_path);
+		return false;
+	}
 
 	JsonLoader loader;
 	JsonReadResult result = loader.open_file(manifest_path);
@@ -64,9 +70,10 @@ bool FontsManifestLoader::load(
 	}
 
 	const json& fonts = loader.root().at("fonts");
-	std::unordered_set<std::string> font_keys;
+	size_t font_index = 0;
 	for (const json& font : fonts)
 	{
+		const size_t current_index = font_index++;
 		if (!font.is_object())
 		{
 			ELYSIA_LOG_WARN("io","Load fonts manifest failed: font entry is not an object.");
@@ -93,11 +100,16 @@ bool FontsManifestLoader::load(
 			ELYSIA_LOG_WARN("io","Load fonts manifest failed: font key and file must not be empty.");
 			return false;
 		}
-		if (!font_keys.insert(entry.key).second)
+		for (auto field = font.begin(); field != font.end(); ++field)
+			if (field.key() != "key" && field.key() != "file") return false;
+		std::string key_error;
+		if (!elysia::resources::ResourceKeyBuilder::validate_key(entry.key, key_error))
 		{
-			ELYSIA_LOG_WARN("io","Load fonts manifest failed: duplicate font key: " << entry.key);
+			ELYSIA_LOG_WARN("io", "Load fonts manifest failed: " << key_error);
 			return false;
 		}
+		entry.origin = elysia::resources::make_resource_origin(
+			manifest_path, "/fonts/" + std::to_string(current_index), {}, "fonts", {}, entry.key);
 		parsed_manifest.fonts.push_back(std::move(entry));
 	}
 	if (parsed_manifest.fonts.empty())

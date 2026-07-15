@@ -3,7 +3,7 @@
 #include "../io/loaders/asset_config_types.h"
 
 #include <filesystem>
-#include <optional>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -17,17 +17,7 @@ struct ConfigLoadResult
 	elysia::io::AnimationManifest animation_manifest;
 	elysia::io::AnimationEffectManifest animation_effect_manifest;
 
-	struct CharactersContent
-	{
-		elysia::io::AnimatedEntityContent content;
-	};
-	struct EnemiesContent
-	{
-		elysia::io::AnimatedEntityContent content;
-	};
-
-	std::optional<CharactersContent> characters;
-	std::optional<EnemiesContent> enemies;
+	std::map<std::string, elysia::io::EntityContentModule> additional_modules;
 };
 
 class ConfigLoadPipeline

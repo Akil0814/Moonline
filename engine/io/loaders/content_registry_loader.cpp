@@ -2,6 +2,7 @@
 #include "content_registry_loader.h"
 
 #include "../path/path_manager.h"
+#include "../json/json_duplicate_key_checker.h"
 
 #include <array>
 #include <string>
@@ -97,6 +98,7 @@ bool ContentRegistryLoader::load(
 ) const
 {
 	content_registry = ContentRegistry{};
+	if (has_duplicate_json_object_key(content_registry_path)) return false;
 
 	JsonLoader loader;
 	const JsonReadResult result = loader.open_file(content_registry_path);

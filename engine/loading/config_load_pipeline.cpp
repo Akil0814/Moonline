@@ -7,7 +7,7 @@
 #include "../io/loaders/animation_effect_manifest_loader.h"
 #include "../io/loaders/fonts_manifest_loader.h"
 #include "../io/loaders/texture_manifest_loader.h"
-#include "content_module_registry.h"
+#include "animated_entity_content_loader.h"
 
 namespace elysia::loading
 {
@@ -64,12 +64,17 @@ bool ConfigLoadPipeline::load(
 	}
 
 
-	ContentModuleRegistry content_module_registry;
-	std::string module_error;
-	if (!content_module_registry.load_additional_modules(content_registry, result, module_error))
+	AnimatedEntityContentLoader module_loader;
+	for (const auto& [module_name, module_manifest_path] : content_registry.additional_module_manifests)
 	{
-		fail(module_error);
-		return false;
+		elysia::io::EntityContentModule module;
+		std::string module_error;
+		if (!module_loader.load(module_name, module_manifest_path, module, module_error))
+		{
+			fail("Config load pipeline failed: " + module_error);
+			return false;
+		}
+		result.additional_modules.emplace(module_name, std::move(module));
 	}
 
 	return true;

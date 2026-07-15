@@ -3,27 +3,12 @@
 
 #include "../texture/surface_loader.h"
 
-#include <algorithm>
-#include <cctype>
 #include <iomanip>
 #include <sstream>
 namespace elysia::resources
 {
 namespace
 {
-bool is_png_file(const std::filesystem::path& file_path)
-{
-	std::string extension = file_path.extension().string();
-	for (char& character : extension)
-	{
-		character = static_cast<char>(
-			std::tolower(static_cast<unsigned char>(character))
-		);
-	}
-
-	return extension == ".png";
-}
-
 std::filesystem::path make_frame_path(
 	const std::filesystem::path& directory_path,
 	const std::string& filename_prefix,
@@ -78,53 +63,21 @@ bool AtlasBuildPreparer::expand_build_request(
 	}
 
 	std::vector<std::filesystem::path> frame_paths;
-	if (!request.frame_filename_prefix.empty())
+	frame_paths.reserve(request.frame_count);
+	for (size_t index = 0; index < request.frame_count; ++index)
 	{
-		frame_paths.reserve(request.frame_count);
-		for (size_t index = 0; index < request.frame_count; ++index)
-		{
-			std::filesystem::path frame_path = make_frame_path(
-				request.source_path,
-				request.frame_filename_prefix,
-				index
-			);
-			if (!std::filesystem::is_regular_file(frame_path))
-			{
-				ELYSIA_LOG_WARN("resource","Expand atlas build request failed: expected frame is missing: "
-					<< frame_path);
-				return false;
-			}
-
-			frame_paths.push_back(std::move(frame_path));
-		}
-	}
-	else
-	{
-		for (const std::filesystem::directory_entry& entry :
-			std::filesystem::directory_iterator(request.source_path))
-		{
-			if (!entry.is_regular_file() || !is_png_file(entry.path()))
-				continue;
-
-			frame_paths.push_back(entry.path());
-		}
-
-		std::sort(
-			frame_paths.begin(),
-			frame_paths.end(),
-			[](const std::filesystem::path& lhs, const std::filesystem::path& rhs)
-			{
-				return lhs.filename().string() < rhs.filename().string();
-			}
+		std::filesystem::path frame_path = make_frame_path(
+			request.source_path,
+			request.frame_filename_prefix,
+			index
 		);
-	}
-
-	if (frame_paths.size() != request.frame_count)
-	{
-		ELYSIA_LOG_WARN("resource","Expand atlas build request failed: frame count mismatch: "
-			<< request.atlas_key << ", expected " << request.frame_count
-			<< ", actual " << frame_paths.size());
-		return false;
+		if (!std::filesystem::is_regular_file(frame_path))
+		{
+			ELYSIA_LOG_WARN("resource","Expand atlas build request failed: expected frame is missing: "
+				<< frame_path);
+			return false;
+		}
+		frame_paths.push_back(std::move(frame_path));
 	}
 
 	out_tasks.reserve(frame_paths.size());

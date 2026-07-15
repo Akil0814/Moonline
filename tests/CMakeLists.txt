@@ -65,9 +65,13 @@ add_moonline_test(floating_number_effect_tests
 )
 
 foreach(LOADING_TEST_TARGET IN ITEMS
+	animation_config_loader_tests
     atlas_build_preparer_tests
     content_load_pipeline_tests
+    effect_definition_config_loader_tests
     horizontal_strip_animation_tests
+    resource_key_builder_tests
+    resource_load_plan_validator_tests
     resource_request_assembler_tests
 )
     add_moonline_test(${LOADING_TEST_TARGET}

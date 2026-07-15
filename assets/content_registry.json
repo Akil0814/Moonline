@@ -15,6 +15,7 @@
     },
     "additional": {
       "characters": "configs/character/character_content_manifest.json",
+      "character_effects": "configs/character/character_effect_content_manifest.json",
       "enemies": "configs/enemy/enemy_content_manifest.json"
     }
   }

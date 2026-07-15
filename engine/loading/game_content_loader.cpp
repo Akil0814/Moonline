@@ -87,7 +87,7 @@ bool GameContentLoader::start(SDL_Renderer* renderer)
 	ResourceRequestAssembler assembler;
 	if (!assembler.assemble(config_result, _load_plan))
 	{
-		fail("GameContentLoader start failed: resource request assembly failed.");
+		fail("GameContentLoader start failed: " + assembler.error_message());
 		return false;
 	}
 

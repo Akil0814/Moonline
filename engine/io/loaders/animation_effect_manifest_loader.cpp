@@ -1,9 +1,10 @@
 #include "../../tools/logger.h"
 #include "animation_effect_manifest_loader.h"
 
+#include "../json/json_duplicate_key_checker.h"
 #include "../json/json_loader.h"
+#include "../../resources/pipeline/resource_key_builder.h"
 
-#include <unordered_set>
 #include <utility>
 
 namespace elysia::io
@@ -14,6 +15,11 @@ bool AnimationEffectManifestLoader::load(
 ) const
 {
 	manifest = AnimationEffectManifest{};
+	if (has_duplicate_json_object_key(manifest_path))
+	{
+		ELYSIA_LOG_WARN("io", "Load effect manifest failed: duplicate JSON object key: " << manifest_path);
+		return false;
+	}
 
 	JsonLoader loader;
 	JsonReadResult result = loader.open_file(manifest_path);
@@ -33,9 +39,10 @@ bool AnimationEffectManifestLoader::load(
 	}
 
 	AnimationEffectManifest parsed_manifest;
-	std::unordered_set<std::string> keys;
+	size_t effect_index = 0;
 	for (const json& effect_node : loader.root().at("effects"))
 	{
+		const size_t current_index = effect_index++;
 		if (!effect_node.is_object()
 			|| !effect_node.contains("key") || !effect_node.at("key").is_string()
 			|| !effect_node.contains("animation_key") || !effect_node.at("animation_key").is_string())
@@ -70,6 +77,10 @@ bool AnimationEffectManifestLoader::load(
 				<< manifest_path);
 			return false;
 		}
+		for (auto field = effect_node.begin(); field != effect_node.end(); ++field)
+			if (field.key() != "key" && field.key() != "animation_key"
+				&& field.key() != "default_width" && field.key() != "default_height"
+				&& field.key() != "default_angle_degrees") return false;
 		if (entry.key.empty() || entry.animation_key.empty())
 		{
 			ELYSIA_LOG_WARN("io","Load effect manifest failed: empty effect values: "
@@ -77,12 +88,15 @@ bool AnimationEffectManifestLoader::load(
 			return false;
 		}
 
-		if (!keys.insert(entry.key).second)
+		std::string key_error;
+		if (!elysia::resources::ResourceKeyBuilder::validate_key(entry.key, key_error)
+			|| !elysia::resources::ResourceKeyBuilder::validate_key(entry.animation_key, key_error))
 		{
-			ELYSIA_LOG_WARN("io","Load effect manifest failed: duplicate effect key: "
-				<< entry.key);
+			ELYSIA_LOG_WARN("io", "Load effect manifest failed: " << key_error);
 			return false;
 		}
+		entry.origin = elysia::resources::make_resource_origin(
+			manifest_path, "/effects/" + std::to_string(current_index), {}, "effects", {}, entry.key);
 
 		parsed_manifest.effects.push_back(std::move(entry));
 	}

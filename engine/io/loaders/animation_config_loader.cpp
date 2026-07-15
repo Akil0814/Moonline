@@ -1,93 +1,110 @@
+#include "../../resources/pipeline/filesystem_segment_formatter.h"
+#include "../../resources/pipeline/resource_key_builder.h"
 #include "../../tools/logger.h"
 #include "animation_config_loader.h"
+#include "../json/json_duplicate_key_checker.h"
+
 #include <string>
-#include <unordered_map>
 #include <utility>
 
 namespace elysia::io
 {
+namespace
+{
+bool has_only_fields(const json& node, std::initializer_list<const char*> fields, const std::string& label)
+{
+	for (auto item = node.begin(); item != node.end(); ++item)
+	{
+		bool known = false;
+		for (const char* field : fields) known = known || item.key() == field;
+		if (!known)
+		{
+			ELYSIA_LOG_WARN("io", "Load animation config failed: unknown " << label << " field: " << item.key());
+			return false;
+		}
+	}
+	return true;
+}
+
+std::string escape_json_pointer(std::string value)
+{
+	size_t position = 0;
+	while ((position = value.find('~', position)) != std::string::npos) { value.replace(position, 1, "~0"); position += 2; }
+	position = 0;
+	while ((position = value.find('/', position)) != std::string::npos) { value.replace(position, 1, "~1"); position += 2; }
+	return value;
+}
+}
+
 bool AnimationConfigLoader::load(
 	const std::filesystem::path& animation_config_path,
 	const AnimationLayout& layout,
-	AnimationConfig& config
-) const
+	AnimationConfig& config) const
 {
-	config = AnimationConfig{};
-
+	config = {};
+	if (has_duplicate_json_object_key(animation_config_path)) return false;
 	JsonLoader loader;
-	JsonReadResult result = loader.open_file(animation_config_path);
-	if (!result)
+	const JsonReadResult result = loader.open_file(animation_config_path);
+	if (!result || !loader.root().is_object())
 	{
-		ELYSIA_LOG_WARN("io","Load animation config failed: " << result.error);
+		ELYSIA_LOG_WARN("io", "Load animation config failed: " << (result ? "root is not an object" : result.error));
+		return false;
+	}
+	const json& root = loader.root();
+	if (!has_only_fields(root, {"defaults", "animations"}, "root")
+		|| root.size() != 2
+		|| !root.contains("defaults") || !root.at("defaults").is_object()
+		|| !root.contains("animations") || !root.at("animations").is_object())
+	{
+		ELYSIA_LOG_WARN("io", "Load animation config failed: defaults and animations are required: " << animation_config_path);
+		return false;
+	}
+	const json& defaults = root.at("defaults");
+	if (!has_only_fields(defaults, {"source_type"}, "defaults")
+		|| defaults.size() != 1 || !defaults.contains("source_type") || !defaults.at("source_type").is_string())
+	{
+		ELYSIA_LOG_WARN("io", "Load animation config failed: defaults.source_type is required.");
+		return false;
+	}
+	const std::string source_type = defaults.at("source_type").get<std::string>();
+	if (source_type == "frame_directory") config.source_type = AnimationSourceType::FrameDirectory;
+	else if (source_type == "horizontal_strip") config.source_type = AnimationSourceType::HorizontalStrip;
+	else
+	{
+		ELYSIA_LOG_WARN("io", "Load animation config failed: unsupported source_type: " << source_type);
 		return false;
 	}
 
-	if (!loader.root().is_object())
+	std::string key_error;
+	for (auto animation = root.at("animations").begin(); animation != root.at("animations").end(); ++animation)
 	{
-		ELYSIA_LOG_WARN("io","Load animation config failed: root is not an object: "
-			<< animation_config_path);
-		return false;
-	}
-
-	AnimationConfig parsed_config;
-	for (json::const_iterator animation = loader.root().begin();
-		animation != loader.root().end();
-		++animation)
-	{
-		if (!animation.value().is_object())
+		if (!elysia::resources::ResourceKeyBuilder::validate_component(animation.key(), key_error)
+			|| !animation.value().is_object())
 		{
-			ELYSIA_LOG_WARN("io","Load animation config failed: animation entry is not an object: "
-				<< animation.key());
+			ELYSIA_LOG_WARN("io", "Load animation config failed: invalid animation name or entry: " << animation.key());
 			return false;
 		}
-
-		const json& animation_node = animation.value();
-		if (animation_node.contains("segments"))
+		const std::string pointer = "/animations/" + escape_json_pointer(animation.key());
+		const json& node = animation.value();
+		if (node.contains("segments"))
 		{
-			if (!animation_node.at("segments").is_array())
+			if (!has_only_fields(node, {"segments"}, "segmented animation")
+				|| !node.at("segments").is_array() || node.at("segments").empty() || node.at("segments").size() > 100)
 			{
-				ELYSIA_LOG_WARN("io","Load animation config failed: segments is not an array: "
-					<< animation.key());
+				ELYSIA_LOG_WARN("io", "Load animation config failed: segments must contain 1-100 entries: " << animation.key());
 				return false;
 			}
-
-			const json& segments = animation_node.at("segments");
-			if (segments.empty())
+			for (size_t index = 0; index < node.at("segments").size(); ++index)
 			{
-				ELYSIA_LOG_WARN("io","Load animation config failed: segments is empty: "
-					<< animation.key());
-				return false;
+				const json& segment = node.at("segments").at(index);
+				if (!segment.is_object() || !append_clip(animation_config_path,
+					pointer + "/segments/" + std::to_string(index), animation.key(), true, index,
+					segment, layout, config)) return false;
 			}
-
-			for (size_t segment_index = 0; segment_index < segments.size(); ++segment_index)
-			{
-				if (!segments[segment_index].is_object())
-				{
-					ELYSIA_LOG_WARN("io","Load animation config failed: segment is not an object: "
-						<< animation.key());
-					return false;
-				}
-
-				if (!append_clip(
-					animation.key(),
-					true,
-					segment_index,
-					segments[segment_index],
-					layout,
-					parsed_config))
-				{
-					return false;
-				}
-			}
-
-			continue;
 		}
-
-		if (!append_clip(animation.key(), false, 0, animation_node, layout, parsed_config))
+		else if (!append_clip(animation_config_path, pointer, animation.key(), false, 0, node, layout, config))
 			return false;
 	}
-
-	config = std::move(parsed_config);
 	return true;
 }
 
@@ -95,127 +112,66 @@ std::filesystem::path AnimationConfigLoader::resolve_clip_path(
 	const std::string& animation_name,
 	bool is_segment,
 	size_t segment_index,
-	const json& clip_node,
-	const AnimationLayout& layout
-) const
+	const AnimationLayout& layout) const
 {
-	if (clip_node.contains("override_path"))
-	{
-		if (!clip_node.at("override_path").is_string())
-		{
-			ELYSIA_LOG_WARN("io","Load animation clip failed: override_path is not a string: "
-				<< animation_name);
-			return {};
-		}
-
-		return clip_node.at("override_path").get<std::string>();
-	}
-
-	std::unordered_map<std::string, AnimationLayoutEntry>::const_iterator iterator =
-		layout.animations.find(animation_name);
+	const auto iterator = layout.animations.find(animation_name);
 	if (iterator == layout.animations.end())
 	{
-		ELYSIA_LOG_WARN("io","Load animation clip failed: layout entry does not exist: "
-			<< animation_name);
+		ELYSIA_LOG_WARN("io", "Load animation clip failed: layout entry does not exist: " << animation_name);
 		return {};
 	}
-
 	const AnimationLayoutEntry& entry = iterator->second;
-	if (is_segment)
+	if (!is_segment)
 	{
-		if (!entry.has_segment_path)
-		{
-			ELYSIA_LOG_WARN("io","Load animation clip failed: segment_path is missing in layout: "
-				<< animation_name);
-			return {};
-		}
-
-		return resolve_segment_path(entry.segment_path, segment_index);
+		if (!entry.has_path) return {};
+		return entry.path;
 	}
-
-	if (!entry.has_path)
-	{
-		ELYSIA_LOG_WARN("io","Load animation clip failed: path is missing in layout: "
-			<< animation_name);
-		return {};
-	}
-
-	return entry.path;
-}
-
-std::filesystem::path AnimationConfigLoader::resolve_segment_path(
-	const std::filesystem::path& segment_path,
-	size_t segment_index
-) const
-{
-	std::string path_string = segment_path.string();
-	std::string segment_number = std::to_string(segment_index + 1);
-
-	size_t marker_position = path_string.find("{segment}");
-	if (marker_position != std::string::npos)
-	{
-		path_string.replace(marker_position, std::string("{segment}").size(), segment_number);
-		return path_string;
-	}
-
-	return (segment_path / segment_number).lexically_normal();
+	if (!entry.has_segment_path) return {};
+	std::string segment;
+	if (!elysia::resources::format_filesystem_segment(segment_index, segment)) return {};
+	std::string path = entry.segment_path.generic_string();
+	const size_t marker = path.find("{segment}");
+	if (marker == std::string::npos) return (entry.segment_path / segment).lexically_normal();
+	path.replace(marker, std::string("{segment}").size(), segment);
+	return std::filesystem::path(path).lexically_normal();
 }
 
 bool AnimationConfigLoader::append_clip(
+	const std::filesystem::path& config_path,
+	const std::string& json_pointer,
 	const std::string& animation_name,
 	bool is_segment,
 	size_t segment_index,
 	const json& clip_node,
 	const AnimationLayout& layout,
-	AnimationConfig& config
-) const
+	AnimationConfig& config) const
 {
-	if (!clip_node.contains("frame_count") || !clip_node.at("frame_count").is_number_integer())
+	if (!has_only_fields(clip_node, {"frame_count", "fps", "loop"}, "clip")
+		|| clip_node.size() != 3
+		|| !clip_node.contains("frame_count") || !clip_node.at("frame_count").is_number_integer()
+		|| !clip_node.contains("fps") || !clip_node.at("fps").is_number()
+		|| !clip_node.contains("loop") || !clip_node.at("loop").is_boolean())
 	{
-		ELYSIA_LOG_WARN("io","Load animation clip failed: frame_count is missing or invalid: "
-			<< animation_name);
+		ELYSIA_LOG_WARN("io", "Load animation clip failed: frame_count, fps and loop are required: " << animation_name);
 		return false;
 	}
-
-	if (!clip_node.contains("fps") || !clip_node.at("fps").is_number())
-	{
-		ELYSIA_LOG_WARN("io","Load animation clip failed: fps is missing or invalid: "
-			<< animation_name);
-		return false;
-	}
-
-	if (!clip_node.contains("loop") || !clip_node.at("loop").is_boolean())
-	{
-		ELYSIA_LOG_WARN("io","Load animation clip failed: loop is missing or invalid: "
-			<< animation_name);
-		return false;
-	}
-
-	const int frame_count_value = clip_node.at("frame_count").get<int>();
+	const int frame_count = clip_node.at("frame_count").get<int>();
 	const double fps = clip_node.at("fps").get<double>();
-	if (frame_count_value <= 0 || fps <= 0.0)
-	{
-		ELYSIA_LOG_WARN("io","Load animation clip failed: frame_count or fps is invalid: "
-			<< animation_name);
-		return false;
-	}
-
-	std::filesystem::path clip_path =
-		resolve_clip_path(animation_name, is_segment, segment_index, clip_node, layout);
-	if (clip_path.empty())
-		return false;
-
-	AnimationClipConfig clip_config;
-	clip_config.animation_name = animation_name;
-	clip_config.path = clip_path;
-	clip_config.frame_count = static_cast<size_t>(frame_count_value);
-	clip_config.fps = fps;
-	clip_config.loop = clip_node.at("loop").get<bool>();
-	clip_config.is_segment = is_segment;
-	clip_config.segment_index = segment_index;
-	config.clips.push_back(std::move(clip_config));
-
+	if (frame_count <= 0 || fps <= 0.0) return false;
+	const auto path = resolve_clip_path(animation_name, is_segment, segment_index, layout);
+	if (path.empty()) return false;
+	AnimationClipConfig clip;
+	clip.animation_name = animation_name;
+	clip.path = path;
+	clip.frame_count = static_cast<size_t>(frame_count);
+	clip.fps = fps;
+	clip.loop = clip_node.at("loop").get<bool>();
+	clip.is_segment = is_segment;
+	clip.segment_index = segment_index;
+	clip.origin = elysia::resources::make_resource_origin(
+		config_path, json_pointer, {}, "animations", {}, animation_name,
+		is_segment ? std::optional<size_t>(segment_index) : std::nullopt);
+	config.clips.push_back(std::move(clip));
 	return true;
 }
-
 }

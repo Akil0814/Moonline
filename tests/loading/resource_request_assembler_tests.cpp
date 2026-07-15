@@ -12,12 +12,252 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <cstdint>
 #include <iostream>
+#include <iomanip>
 #include <memory>
+#include <sstream>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace
 {
 using moonline::tests::require;
+
+std::string make_expected_key(
+	const std::string& entity,
+	const std::string& key_namespace,
+	const std::string& logical,
+	bool segmented,
+	size_t segment)
+{
+	std::string key = entity;
+	if (!key_namespace.empty()) key += "." + key_namespace;
+	key += "." + logical;
+	if (segmented) key += "." + std::to_string(segment);
+	return key;
+}
+
+void replace_all(std::string& value, const std::string& marker, const std::string& replacement)
+{
+	size_t position = 0;
+	while ((position = value.find(marker, position)) != std::string::npos)
+	{
+		value.replace(position, marker.size(), replacement);
+		position += replacement.size();
+	}
+}
+
+std::string make_expected_prefix(
+	const elysia::io::EntityAnimationContentEntry& entry,
+	const elysia::io::AnimationClipConfig& clip)
+{
+	std::string prefix = entry.frame_prefix_template;
+	replace_all(prefix, "{asset_key}", entry.entity.asset_key);
+	replace_all(prefix, "{animation}", clip.animation_name);
+	std::string segment_suffix;
+	if (clip.is_segment)
+	{
+		std::ostringstream stream;
+		stream << '_' << std::setw(2) << std::setfill('0') << clip.segment_index;
+		segment_suffix = stream.str();
+	}
+	replace_all(prefix, "{segment_suffix}", segment_suffix);
+	return prefix;
+}
+
+uint64_t fnv1a64(const std::vector<std::string>& records)
+{
+	uint64_t hash = 14695981039346656037ull;
+	for (const std::string& record : records)
+		for (const unsigned char value : record)
+		{
+			hash ^= value;
+			hash *= 1099511628211ull;
+		}
+	return hash;
+}
+
+std::string canonical_origin(const elysia::resources::ResourceOrigin& origin)
+{
+	return origin.config_path.generic_string() + "#" + origin.json_pointer
+		+ "|" + std::to_string(static_cast<int>(origin.scope)) + "|" + origin.module
+		+ "|" + origin.capability + "|" + origin.entity_id
+		+ "|" + origin.logical_name + "|"
+		+ (origin.segment_index ? std::to_string(*origin.segment_index) : "-");
+}
+
+void verify_repository_mapping_snapshot(const elysia::loading::ResourceLoadPlan& plan)
+{
+	std::vector<std::string> atlas_records;
+	std::vector<std::string> animation_records;
+	std::vector<std::string> effect_records;
+	const auto root = elysia::io::PathManager::instance()->root();
+	for (const auto& request : plan.atlas_build_requests())
+	{
+		std::ostringstream record;
+		record << request.atlas_key << '|'
+			<< request.source_path.lexically_relative(root).generic_string() << '|'
+			<< request.frame_count << '|' << request.frame_filename_prefix << '|'
+			<< static_cast<int>(request.source_type) << '|' << canonical_origin(request.origin) << '\n';
+		atlas_records.push_back(record.str());
+	}
+	for (const auto& request : plan.animation_build_requests())
+	{
+		std::ostringstream record;
+		record << std::setprecision(17) << request.animation_key << '|' << request.atlas_key << '|'
+			<< request.fps << '|' << request.loop << '|' << request.segment_index << '|'
+			<< canonical_origin(request.origin) << '\n';
+		animation_records.push_back(record.str());
+	}
+	for (const auto& request : plan.animation_effect_build_requests())
+	{
+		std::ostringstream record;
+		record << std::setprecision(17) << request.effect_key << '|' << request.animation_key << '|'
+			<< request.default_size.x << '|' << request.default_size.y << '|'
+			<< request.default_angle_degrees << '|' << canonical_origin(request.origin) << '\n';
+		effect_records.push_back(record.str());
+	}
+	std::sort(atlas_records.begin(), atlas_records.end());
+	std::sort(animation_records.begin(), animation_records.end());
+	std::sort(effect_records.begin(), effect_records.end());
+	const uint64_t atlas_hash = fnv1a64(atlas_records);
+	const uint64_t animation_hash = fnv1a64(animation_records);
+	const uint64_t effect_hash = fnv1a64(effect_records);
+	constexpr uint64_t expected_atlas_hash = 17045219784734218663ull;
+	constexpr uint64_t expected_animation_hash = 15573479966319656006ull;
+	constexpr uint64_t expected_effect_hash = 11933629621856248736ull;
+	if (atlas_hash != expected_atlas_hash || animation_hash != expected_animation_hash
+		|| effect_hash != expected_effect_hash)
+		std::cerr << "mapping hashes: atlas=" << atlas_hash << " animation=" << animation_hash
+			<< " effect=" << effect_hash << '\n';
+	require(atlas_hash == expected_atlas_hash,
+		"the complete Atlas key/path/source/frame/prefix/origin mapping must match the reviewed repository snapshot");
+	require(animation_hash == expected_animation_hash,
+		"the complete Animation key/Atlas/FPS/loop/segment/origin mapping must match the reviewed repository snapshot");
+	require(effect_hash == expected_effect_hash,
+		"the complete Effect key/animation/defaults/origin mapping must match the reviewed repository snapshot");
+}
+
+void verify_complete_module_mapping(
+	const elysia::loading::ConfigLoadResult& config,
+	const elysia::loading::ResourceLoadPlan& plan)
+{
+	std::unordered_map<std::string, const elysia::resources::AtlasBuildRequest*> atlases;
+	std::unordered_map<std::string, const elysia::resources::AnimationBuildRequest*> animations;
+	std::unordered_map<std::string, const elysia::resources::AnimationEffectBuildRequest*> effects;
+	for (const auto& request : plan.atlas_build_requests())
+		require(atlases.emplace(request.atlas_key, &request).second, "atlas requests must have unique keys");
+	for (const auto& request : plan.animation_build_requests())
+		require(animations.emplace(request.animation_key, &request).second, "animation requests must have unique keys");
+	for (const auto& request : plan.animation_effect_build_requests())
+		require(effects.emplace(request.effect_key, &request).second, "effect requests must have unique keys");
+
+	std::unordered_set<std::string> expected_atlases{"test.animation"};
+	std::unordered_set<std::string> expected_animations{"test.animation"};
+	std::unordered_set<std::string> expected_effects{"effect.test"};
+	elysia::resources::AtlasBuildPreparer preparer;
+	for (const auto& [module_name, module] : config.additional_modules)
+	{
+		require(module.name == module_name, "module payload name must match its registry name");
+		for (const auto& entry : module.animation_entries)
+		{
+			for (const auto& clip : entry.animation_config.clips)
+			{
+				const std::string key = make_expected_key(
+					entry.entity.id, module.key_namespace, clip.animation_name,
+					clip.is_segment, clip.segment_index);
+				expected_atlases.insert(key);
+				expected_animations.insert(key);
+				const auto atlas_position = atlases.find(key);
+				const auto animation_position = animations.find(key);
+				require(atlas_position != atlases.end(), "every configured module clip must create an Atlas request");
+				require(animation_position != animations.end(), "every configured module clip must create an Animation request");
+				const auto& atlas = *atlas_position->second;
+				const auto& animation = *animation_position->second;
+				const bool strip = entry.animation_config.source_type == elysia::io::AnimationSourceType::HorizontalStrip;
+				const auto base_path = (entry.texture_root / clip.path).lexically_normal();
+				const auto expected_path = strip
+					? (base_path / (clip.animation_name + ".png")).lexically_normal()
+					: base_path;
+				require(atlas.source_path == expected_path
+					&& atlas.frame_count == clip.frame_count
+					&& atlas.source_type == (strip ? elysia::resources::AtlasSourceType::HorizontalStrip
+						: elysia::resources::AtlasSourceType::FrameDirectory),
+					"every module Atlas request must preserve source type, path, and frame count");
+				require(atlas.frame_filename_prefix == (strip ? std::string{} : make_expected_prefix(entry, clip)),
+					"every module frame-directory prefix must use the configured template and two-digit file segment");
+				require(animation.atlas_key == key && animation.fps == clip.fps
+					&& animation.loop == clip.loop && animation.segment_index == clip.segment_index,
+					"every module Animation request must preserve key, FPS, loop, and unpadded segment index");
+				require(atlas.origin.module == module_name && atlas.origin.capability == "animations"
+					&& atlas.origin.scope == elysia::resources::ResourceOriginScope::AdditionalModule
+					&& atlas.origin.entity_id == entry.entity.id
+					&& atlas.origin.logical_name == clip.animation_name
+					&& atlas.origin.segment_index == clip.origin.segment_index
+					&& !atlas.origin.config_path.is_absolute(),
+					"every module request must carry its complete project-relative origin");
+
+				std::vector<elysia::resources::AtlasFramePrepareTask> tasks;
+				require(preparer.expand_build_request(atlas, tasks),
+					"every configured module Atlas request must expand against real assets");
+				if (strip)
+					require(tasks.size() == 1 && tasks.front().frame_path == expected_path,
+						"a horizontal strip must expand to one preparation task");
+				else
+				{
+					require(tasks.size() == clip.frame_count,
+						"a frame directory must expand to exactly the configured frame count");
+					for (size_t frame = 0; frame < tasks.size(); ++frame)
+					{
+						std::ostringstream filename;
+						filename << make_expected_prefix(entry, clip) << '_'
+							<< std::setw(3) << std::setfill('0') << frame << ".png";
+						require(tasks[frame].frame_path == base_path / filename.str(),
+							"each frame task must use the explicit prefix and three-digit frame index");
+					}
+				}
+			}
+		}
+		for (const auto& entry : module.effect_entries)
+		{
+			for (const auto& definition : entry.effect_config.effects)
+			{
+				const std::string effect_key = make_expected_key(entry.entity.id, module.key_namespace,
+					definition.effect_name, definition.is_segment, definition.segment_index);
+				const std::string animation_key = make_expected_key(entry.entity.id, module.key_namespace,
+					definition.animation_name, definition.is_segment, definition.segment_index);
+				expected_effects.insert(effect_key);
+				const auto position = effects.find(effect_key);
+				require(position != effects.end(), "every expanded effect mapping must create an EffectDefinition request");
+				const auto& request = *position->second;
+				require(request.animation_key == animation_key
+					&& request.default_size.x == definition.default_width
+					&& request.default_size.y == definition.default_height
+					&& request.default_angle_degrees == definition.default_angle_degrees,
+					"every EffectDefinition must bind the exact same-module animation and presentation defaults");
+				require(request.origin.module == module_name && request.origin.capability == "effects"
+					&& request.origin.scope == elysia::resources::ResourceOriginScope::AdditionalModule
+					&& request.origin.entity_id == entry.entity.id
+					&& request.origin.logical_name == definition.effect_name
+					&& !request.origin.config_path.is_absolute(),
+					"every EffectDefinition must carry its full project-relative origin");
+			}
+		}
+	}
+
+	require(atlases.size() == 167 && animations.size() == 167 && effects.size() == 20,
+		"the migrated repository must expose the complete 167 Animation and 20 Effect mappings");
+	require(atlases.size() == expected_atlases.size() && animations.size() == expected_animations.size()
+		&& effects.size() == expected_effects.size(),
+		"the request plan must not contain omitted or extra registry keys");
+	for (const auto& [key, request] : atlases)
+		require(expected_atlases.contains(key), "every Atlas key must correspond to a core or module config entry");
+	for (const auto& [key, request] : animations)
+		require(expected_animations.contains(key), "every Animation key must correspond to a core or module config entry");
+	for (const auto& [key, request] : effects)
+		require(expected_effects.contains(key), "every Effect key must correspond to a core or module config entry");
+}
 
 void test_runtime_resource_request_assembly()
 {
@@ -33,6 +273,8 @@ void test_runtime_resource_request_assembly()
 	elysia::loading::ResourceRequestAssembler request_assembler;
 	require(request_assembler.assemble(config_result, load_plan),
 		"request assembler must build generic animation requests");
+	verify_complete_module_mapping(config_result, load_plan);
+	verify_repository_mapping_snapshot(load_plan);
 
 	const auto atlas_request = std::find_if(
 		load_plan.atlas_build_requests().begin(),
@@ -160,20 +402,33 @@ void test_runtime_resource_request_assembly()
 		[](const elysia::resources::AtlasBuildRequest& request) { return request.atlas_key == "arcueid_brunestud.effect.attack_normal.2"; });
 	require(arcueid_segment != load_plan.atlas_build_requests().end()
 		&& arcueid_segment->frame_count == 29
-		&& arcueid_segment->frame_filename_prefix == "ArcueidBrunestud_effects_attack_normal_3",
+		&& arcueid_segment->source_path.filename() == "02"
+		&& arcueid_segment->frame_filename_prefix == "ArcueidBrunestud_effects_attack_normal_02",
 		"Arcueid segmented effect animation must use the effect naming profile");
 	const auto ryougi_ranged = std::find_if(load_plan.atlas_build_requests().begin(), load_plan.atlas_build_requests().end(),
 		[](const elysia::resources::AtlasBuildRequest& request) { return request.atlas_key == "ryougi_shiki.effect.attack_ranged_ground"; });
 	require(ryougi_ranged == load_plan.atlas_build_requests().end(),
 		"omitted Ryougi ranged effect animations must produce no requests");
+	for (const char* omitted_key : {
+		"ryougi_shiki.effect.attack_normal.4",
+		"ryougi_shiki.effect.attack_normal.5",
+		"aozaki_aoko.effect.attack_normal.0",
+		"aozaki_aoko.effect.attack_air.0"})
+	{
+		require(!std::any_of(load_plan.atlas_build_requests().begin(), load_plan.atlas_build_requests().end(),
+			[omitted_key](const auto& request) { return request.atlas_key == omitted_key; }),
+			"omitted or unregistered melee effect segments must produce no Atlas request");
+		require(!std::any_of(load_plan.animation_effect_build_requests().begin(), load_plan.animation_effect_build_requests().end(),
+			[omitted_key](const auto& request) { return request.effect_key == omitted_key; }),
+			"omitted or unregistered melee effect segments must produce no EffectDefinition request");
+	}
 
 	elysia::resources::AtlasBuildPreparer preparer;
 	for (const auto& request : load_plan.atlas_build_requests())
 	{
-		if (request.atlas_key.find(".effect.attack_") == std::string::npos) continue;
 		std::vector<elysia::resources::AtlasFramePrepareTask> tasks;
 		require(preparer.expand_build_request(request, tasks),
-			"every configured character effect atlas must match the real PNG sequence");
+			"every configured atlas must match its explicitly named real frame sequence");
 	}
 	for (const auto& request : load_plan.animation_effect_build_requests())
 	{
