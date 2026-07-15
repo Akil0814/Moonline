@@ -8,11 +8,17 @@
 #include <atomic>
 #include <condition_variable>
 #include <deque>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <thread>
 #include <variant>
 #include <vector>
+
+namespace elysia::config
+{
+class ConfigSnapshot;
+}
 
 namespace elysia::loading
 {
@@ -74,6 +80,7 @@ private:
 private:
 	SDL_Renderer* _renderer = nullptr;
 	ResourceLoadPlan _load_plan;
+	std::shared_ptr<const elysia::config::ConfigSnapshot> _config_snapshot;
 	std::string _error_message;
 	GameContentLoaderState _state = GameContentLoaderState::Idle;
 	float _progress = 0.0f;

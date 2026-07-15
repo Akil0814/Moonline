@@ -70,6 +70,7 @@ foreach(LOADING_TEST_TARGET IN ITEMS
     content_load_pipeline_tests
     effect_definition_config_loader_tests
     horizontal_strip_animation_tests
+	game_content_loader_config_tests
     resource_key_builder_tests
     resource_load_plan_validator_tests
     resource_request_assembler_tests

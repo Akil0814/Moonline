@@ -8,7 +8,7 @@
 - [核心资源 manifest](core-resource-manifests.md)：字体、音频、纹理和国际化。
 - [实体内容 module](entity-content.md)：任意命名的 additional module、entity manifest、纹理和音频 layout。
 - [动画与特效](animation-and-effects.md)：核心/实体 Animation、Atlas 来源、分段编号和 EffectDefinition。
-- [运行时配置模块](../runtime-config.md)：AppConfig、UserConfig 与启动时发布快照的通用 ConfigService。
+- [运行时配置模块](../runtime-config.md)：AppConfig、UserConfig 与内容加载完成后发布快照的通用 ConfigService。
 
 ## 总加载链路
 
@@ -16,8 +16,8 @@
 assets/content_registry.json
   ├─ bootstrap.app_config
   ├─ bootstrap.preload_manifest ─────────────> 启动纹理预加载
-  ├─ bootstrap.game_config_manifest ─────────> 通用 ConfigSnapshot
   ├─ manifests.required
+  │   ├─ configs ────────────────────────────> 通用 ConfigSnapshot（内容加载完成后发布）
   │   ├─ animations ─────────────────────────> 核心 Atlas + Animation
   │   ├─ effects ────────────────────────────> 核心 EffectDefinition
   │   ├─ textures/fonts/audio ───────────────> 核心资源

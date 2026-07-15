@@ -1,18 +1,16 @@
 # 启动注册与预加载
 
-## `content_registry.json`
-
-默认入口是 `assets/content_registry.json`。根对象必须且只能包含 `bootstrap` 与 `manifests`：
+默认入口为 `assets/content_registry.json`。根对象必须且只能包含 `bootstrap` 与 `manifests`；解析前会拒绝重复 JSON 属性，未知字段或目标文件不存在都会失败。
 
 ```json
 {
   "bootstrap": {
     "app_config": "configs/global/app_config.json",
-    "preload_manifest": "configs/manifests/preload_manifest.json",
-    "game_config_manifest": "configs/manifests/config_manifest.json"
+    "preload_manifest": "configs/manifests/preload_manifest.json"
   },
   "manifests": {
     "required": {
+      "configs": "configs/manifests/config_manifest.json",
       "fonts": "configs/manifests/fonts_manifest.json",
       "audio": "configs/manifests/audio_manifest.json",
       "i18n": "configs/manifests/i18n_manifest.json",
@@ -20,89 +18,46 @@
       "animations": "configs/manifests/animations_manifest.json",
       "effects": "configs/manifests/effects_manifest.json"
     },
-    "additional": {
-      "characters": "configs/character/character_content_manifest.json",
-      "character_effects": "configs/character/character_effect_content_manifest.json",
-      "enemies": "configs/enemy/enemy_content_manifest.json"
-    }
+    "additional": {}
   }
 }
 ```
 
-registry 会在解析前拒绝重复 JSON 对象属性。
+## `bootstrap`
 
-### `bootstrap`
+| 字段 | 规则 |
+| --- | --- |
+| `app_config` | 必填 string；按 `assets/` 解析；Bootstrap 读取固定 AppConfig schema。 |
+| `preload_manifest` | 必填 string；按 `assets/` 解析；用于启动纹理预加载。 |
 
-| 字段 | 类型 | 规则 |
-| --- | --- | --- |
-| `app_config` | string | 必填；按 `assets/` 解析后必须是普通文件 |
-| `preload_manifest` | string | 必填；按 `assets/` 解析后必须是普通文件 |
-| `game_config_manifest` | string | 必填；启动时由通用 `ConfigLoadPipeline` 全量构建只读快照 |
+`bootstrap` 不接受其他字段。通用 gameplay 配置不在启动阶段读取。
 
-`bootstrap` 不接受其他字段。本目录只记录 `app_config` 的入口关系，不覆盖其窗口、渲染或音量 schema。
+## `manifests.required`
 
-### `manifests.required`
-
-`required` 必须是对象，且以下六项全部必填：
+`required` 必须是对象，且下列七项全部必填：
 
 | 字段 | 目标 |
 | --- | --- |
-| `fonts` | 核心字体 manifest |
-| `audio` | 核心 Sound/Music manifest |
-| `i18n` | 国际化 manifest |
-| `textures` | 核心纹理 manifest |
-| `animations` | 核心动画 manifest |
-| `effects` | 核心 EffectDefinition manifest |
+| `configs` | 通用 gameplay 配置 manifest；由内容加载阶段构建快照。 |
+| `fonts` | 核心字体 manifest。 |
+| `audio` | 核心 Sound/Music manifest。 |
+| `i18n` | 国际化 manifest。 |
+| `textures` | 核心纹理 manifest。 |
+| `animations` | 核心 Animation manifest。 |
+| `effects` | 核心 EffectDefinition manifest。 |
 
-每个值必须是字符串，按 `assets/` 解析后必须是普通文件；未知 required 字段失败。`ContentManifestPipeline` 解析字体、音频、纹理、动画和 effect manifest；i18n 路径交给 `LocalizationManager`。通用游戏配置不属于 required resources，详见[运行时配置模块](../runtime-config.md)。
+每个值必须是 string，按 `assets/` 解析后必须为普通文件。`ContentManifestPipeline` 读取这些声明；`GameContentLoader` 只在 Atlas、纹理、字体、音频、Animation 与 EffectDefinition 全部成功注册后发布 `configs` 生成的 `ConfigSnapshot`。
 
-### `manifests.additional`
+## `manifests.additional`
 
-`additional` 可省略。存在时必须是“module 名 → module manifest 路径”的对象：
-
-```json
-{
-  "additional": {
-    "character_effects": "configs/character/character_effect_content_manifest.json",
-    "enemies": "configs/enemy/enemy_content_manifest.json"
-  }
-}
-```
-
-- module 名是任意 JSON 属性名，不再有 `characters`/`enemies` 白名单，也不决定 loader 类型。
-- module 名只用于选择配置包、确定遍历顺序和记录 `ResourceOrigin`；它不会自动进入运行时资源 key。
-- 路径必须是字符串，按 `assets/` 解析后必须是普通文件。
-- module 使用统一的实体资源包 schema，见[实体内容 module](entity-content.md)。
-- registry 把 module 保存为按名称排序的确定性集合，因此每次都以稳定顺序加载和组装请求。
-
-同名 JSON 属性会被重复属性检查拒绝。不同 module 可以引用同一 entity manifest，但最终生成的同 registry key 仍必须唯一。
+`additional` 可省略；存在时必须是 “module 名 → module manifest 路径” 的对象。module 名不决定 loader 类型，所有 module 都使用同一实体资源包 schema，并按名称稳定排序。详见[实体内容 module](entity-content.md)。
 
 ## `preload_manifest.json`
 
 启动预加载当前只读取 `textures` 字符串数组：
 
 ```json
-{
-  "textures": [
-    "Akil_icon_1024.png",
-    "start.png"
-  ]
-}
+{ "textures": ["Akil_icon_1024.png", "start.png"] }
 ```
 
-| 字段 | 类型 | 规则 |
-| --- | --- | --- |
-| `textures` | array<string> | 必填；每项必须是非空字符串 |
-
-每项路径基于 `assets/preload/`。运行时 texture key 直接使用数组中的原字符串，例如 `start.png`；它属于启动预加载流程，不经过实体 module 的 `ResourceKeyBuilder`。数组可以为空。当前 preload loader 会忽略根对象中的其他字段。
-
-图片解码、SDL texture 创建或同 key 存储失败都会使启动预加载失败。
-
-## 常见失败原因
-
-- registry 根对象缺少 `bootstrap`/`manifests`，包含未知字段或重复对象属性。
-- `bootstrap`、`required`、`additional` 类型错误。
-- 必填入口缺失、不是字符串或目标文件不存在。
-- `manifests` 或 `required` 含未知字段。
-- additional module manifest 路径不是字符串或文件不存在。
-- preload 的 `textures` 缺失、类型错误、含空字符串，或图片无法加载。
+路径基于 `assets/preload/`，运行时 texture key 直接使用数组中的原字符串。图片解码、SDL texture 创建或重复 key 存储失败都会使预加载失败。

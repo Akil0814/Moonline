@@ -8,10 +8,10 @@
 int main()
 {
     const auto result = elysia::bootstrap::Bootstrapper::instance()->parse_runtime_settings();
-    moonline::tests::require(result.success,"Bootstrapper must load AppConfig, game configs and UserConfig");
+    moonline::tests::require(result.success,"Bootstrapper must load AppConfig and UserConfig");
     auto* configs = elysia::config::ConfigService::instance();
-    moonline::tests::require(configs->is_initialized() && configs->contains("game"),
-        "startup must publish the current empty game config document at its namespace root");
+    moonline::tests::require(!configs->is_initialized(),
+        "Bootstrapper must not publish gameplay configuration before content loading");
     moonline::tests::require(elysia::config::UserConfigService::instance()->is_initialized(),
         "UserConfig startup behavior must remain integrated");
     configs->shutdown();

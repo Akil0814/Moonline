@@ -33,7 +33,7 @@ std::filesystem::path write_file(
 
 std::string required_manifests()
 {
-	return R"("required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json"})";
+	return R"("required":{"configs":"configs/manifests/config_manifest.json","fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json"})";
 }
 
 std::filesystem::path write_registry(
@@ -45,7 +45,7 @@ std::filesystem::path write_registry(
 	if (!additional.empty()) manifests += ",\"additional\":" + additional;
 	manifests += "}";
 	return write_file(root, name,
-		R"({"bootstrap":{"app_config":"configs/global/app_config.json","preload_manifest":"configs/manifests/preload_manifest.json","game_config_manifest":"configs/manifests/config_manifest.json"},"manifests":)"
+		R"({"bootstrap":{"app_config":"configs/global/app_config.json","preload_manifest":"configs/manifests/preload_manifest.json"},"manifests":)"
 		+ manifests + "}");
 }
 
@@ -58,6 +58,8 @@ void test_current_modules_load_through_generic_pipeline()
 	elysia::loading::ContentManifestResult result;
 	require(pipeline.load(path_manager->content_registry(), result),
 		"current content registry must load through the generic additional-module pipeline");
+	require(result.config_snapshot != nullptr,
+		"content manifest loading must build the deferred generic config snapshot");
 	require(result.additional_modules.size() == 3
 		&& result.additional_modules.contains("characters")
 		&& result.additional_modules.contains("character_effects")
@@ -253,27 +255,25 @@ void test_content_registry_still_allows_core_only()
 	std::filesystem::remove_all(root);
 }
 
-void test_game_config_manifest_registry_contract()
+void test_config_manifest_registry_contract()
 {
 	auto* paths = elysia::io::PathManager::instance();
 	require(paths->init(),"PathManager must initialize for registry contract tests");
 	elysia::io::ContentRegistryLoader loader;
 	elysia::io::ContentRegistry registry;
 	require(loader.load(paths->content_registry(),registry)
-		&& registry.bootstrap.game_config_manifest == paths->assets()/"configs/manifests/config_manifest.json",
-		"bootstrap.game_config_manifest must be a required resolved entry");
+		&& registry.required.configs == paths->assets()/"configs/manifests/config_manifest.json",
+		"manifests.required.configs must be a required resolved entry");
 
 	const auto root = std::filesystem::temp_directory_path()/"moonline_config_registry_contract_tests";
 	std::filesystem::remove_all(root); std::filesystem::create_directories(root);
-	const std::string missing_bootstrap = R"({"bootstrap":{"app_config":"configs/global/app_config.json","preload_manifest":"configs/manifests/preload_manifest.json"},"manifests":{)"
+	const std::string missing_configs = R"({"bootstrap":{"app_config":"configs/global/app_config.json","preload_manifest":"configs/manifests/preload_manifest.json"},"manifests":{"required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json"}}})";
+	require(!loader.load(write_file(root,"missing_configs.json",missing_configs),registry),
+		"content registry must reject a missing manifests.required.configs");
+	const std::string legacy_bootstrap = R"({"bootstrap":{"app_config":"configs/global/app_config.json","preload_manifest":"configs/manifests/preload_manifest.json","game_config_manifest":"configs/manifests/config_manifest.json"},"manifests":{)"
 		+ required_manifests()+"}}";
-	require(!loader.load(write_file(root,"missing_game_config.json",missing_bootstrap),registry),
-		"content registry must reject a missing bootstrap.game_config_manifest");
-	const std::string legacy_required = R"({"bootstrap":{"app_config":"configs/global/app_config.json","preload_manifest":"configs/manifests/preload_manifest.json","game_config_manifest":"configs/manifests/config_manifest.json"},"manifests":{)"
-		+ required_manifests().substr(0,required_manifests().size()-1)
-		+ R"(,"configs":"configs/manifests/config_manifest.json"}}})";
-	require(!loader.load(write_file(root,"legacy_required_configs.json",legacy_required),registry),
-		"content registry must reject the removed manifests.required.configs field");
+	require(!loader.load(write_file(root,"legacy_bootstrap.json",legacy_bootstrap),registry),
+		"content registry must reject the removed bootstrap.game_config_manifest field");
 	std::filesystem::remove_all(root);
 }
 }
@@ -286,7 +286,7 @@ int main()
 	test_texture_only_and_audio_only_modules();
 	test_animation_frame_prefix_template_rules();
 	test_content_registry_still_allows_core_only();
-	test_game_config_manifest_registry_contract();
+	test_config_manifest_registry_contract();
 	std::cout << "content load pipeline tests passed\n";
 	return EXIT_SUCCESS;
 }

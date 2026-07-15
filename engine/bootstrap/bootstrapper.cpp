@@ -1,8 +1,6 @@
 #include "bootstrapper.h"
 
 #include "bootstrap_error_utils.h"
-#include "../config/config_load_pipeline.h"
-#include "../config/config_service.h"
 #include "../config/user_config_service.h"
 #include "../io/loaders/content_registry_loader.h"
 #include "../io/path/path_manager.h"
@@ -17,7 +15,6 @@ constexpr const char* USER_CONFIG_FILE_NAME = "user_config.json";
 StartupParseResult Bootstrapper::parse_runtime_settings()
 {
     _startup_preload_loader.reset();
-    elysia::config::ConfigService::instance()->shutdown();
     elysia::config::UserConfigService::instance()->shutdown();
 
     StartupParseResult result;
@@ -52,16 +49,6 @@ StartupParseResult Bootstrapper::parse_runtime_settings()
 		result.error = app_config_result.error().message;
 		return result;
 	}
-
-    const auto game_config_snapshot = elysia::config::ConfigLoadPipeline{}.load(
-        content_registry.bootstrap.game_config_manifest);
-    if (!game_config_snapshot)
-    {
-        append_bootstrap_error(result.error,
-            "Bootstrapper phase1 failed: game config load failed: " + game_config_snapshot.error().message);
-        return result;
-    }
-
     const std::filesystem::path user_config_path =
         path_manager->player_data() / USER_CONFIG_FILE_NAME;
 
@@ -86,8 +73,7 @@ StartupParseResult Bootstrapper::parse_runtime_settings()
     result.i18n_manifest_path = content_registry.required.i18n;
     result.rebuilt_user_config = config_result->rebuilt_user_config;
     result.migrated_user_config = config_result->migrated;
-    result.recovered_user_config = config_result->recovered;
-	elysia::config::ConfigService::instance()->publish(*game_config_snapshot);
+	result.recovered_user_config = config_result->recovered;
 	_startup_preload_loader.set_manifest_path(content_registry.bootstrap.preload_manifest);
     result.success = true;
     return result;

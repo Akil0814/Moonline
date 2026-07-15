@@ -34,6 +34,11 @@ int main()
         +","+entry("text",text)+","+entry("boolean",boolean)+","+entry("decimal",decimal)+"}");
 
     elysia::config::ConfigLoadPipeline pipeline;
+    manifest(dir,"{}");
+    auto empty_snapshot = pipeline.load(dir/"manifest.json");
+    require(empty_snapshot.has_value(),"an empty config manifest must build an empty snapshot");
+    manifest(dir,"{"+entry("game",game)+","+entry("list",list)+","+entry("integer",integer)
+        +","+entry("text",text)+","+entry("boolean",boolean)+","+entry("decimal",decimal)+"}");
     auto snapshot = pipeline.load(dir/"manifest.json");
     require(snapshot.has_value(),"ConfigLoadPipeline must build arbitrary non-null JSON documents");
     auto* service = elysia::config::ConfigService::instance(); service->shutdown(); service->publish(*snapshot);

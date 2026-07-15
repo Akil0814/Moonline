@@ -4,13 +4,20 @@
 
 #include <filesystem>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
+
+namespace elysia::config
+{
+class ConfigSnapshot;
+}
 
 namespace elysia::loading
 {
 struct ContentManifestResult
 {
+	std::shared_ptr<const elysia::config::ConfigSnapshot> config_snapshot;
 	elysia::io::FontManifest font_manifest;
 	elysia::io::AudioManifest audio_manifest;
 	elysia::io::TextureManifest texture_manifest;

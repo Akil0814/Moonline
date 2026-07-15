@@ -15,6 +15,7 @@ namespace elysia::io
 {
 struct CoreManifestPaths
 {
+	std::filesystem::path configs;
 	std::filesystem::path audio;
 	std::filesystem::path fonts;
 	std::filesystem::path i18n;
@@ -27,7 +28,6 @@ struct BootstrapPaths
 {
 	std::filesystem::path app_config;
 	std::filesystem::path preload_manifest;
-	std::filesystem::path game_config_manifest;
 };
 
 struct ContentRegistry

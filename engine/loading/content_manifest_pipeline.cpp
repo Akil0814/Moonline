@@ -7,6 +7,7 @@
 #include "../io/loaders/animation_effect_manifest_loader.h"
 #include "../io/loaders/fonts_manifest_loader.h"
 #include "../io/loaders/texture_manifest_loader.h"
+#include "../config/config_load_pipeline.h"
 #include "animated_entity_content_loader.h"
 
 namespace elysia::loading
@@ -27,6 +28,13 @@ bool ContentManifestPipeline::load(
 		return false;
 	}
 	const elysia::io::CoreManifestPaths& manifest_paths = content_registry.required;
+	const auto config_snapshot = elysia::config::ConfigLoadPipeline{}.load(manifest_paths.configs);
+	if (!config_snapshot)
+	{
+		fail("Content manifest pipeline failed: game config load failed: " + config_snapshot.error().message);
+		return false;
+	}
+	result.config_snapshot = *config_snapshot;
 
 	elysia::io::FontsManifestLoader fonts_manifest_loader;
 	if (!fonts_manifest_loader.load(manifest_paths.fonts, result.font_manifest))

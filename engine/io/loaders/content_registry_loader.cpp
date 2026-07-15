@@ -16,11 +16,11 @@ constexpr std::string_view manifests_key = "manifests";
 constexpr std::string_view bootstrap_key = "bootstrap";
 constexpr std::string_view required_key = "required";
 constexpr std::string_view additional_key = "additional";
-constexpr std::array<std::string_view, 3> bootstrap_path_keys{
-	"app_config", "preload_manifest", "game_config_manifest"
+constexpr std::array<std::string_view, 2> bootstrap_path_keys{
+	"app_config", "preload_manifest"
 };
-constexpr std::array<std::string_view, 6> required_manifest_keys{
-	"fonts", "audio", "i18n", "textures", "animations", "effects"
+constexpr std::array<std::string_view, 7> required_manifest_keys{
+	"configs", "fonts", "audio", "i18n", "textures", "animations", "effects"
 };
 
 bool read_required_manifest_path(
@@ -174,14 +174,14 @@ bool ContentRegistryLoader::load(
 	if (!path_manager)
 		return false;
 	if (!read_bootstrap_path(bootstrap, "app_config", *path_manager, content_registry.bootstrap.app_config)
-		|| !read_bootstrap_path(bootstrap, "preload_manifest", *path_manager, content_registry.bootstrap.preload_manifest)
-		|| !read_bootstrap_path(bootstrap, "game_config_manifest", *path_manager, content_registry.bootstrap.game_config_manifest))
+		|| !read_bootstrap_path(bootstrap, "preload_manifest", *path_manager, content_registry.bootstrap.preload_manifest))
 	{
 		return false;
 	}
 
 	CoreManifestPaths& paths = content_registry.required;
-	if (!read_required_manifest_path(required, "fonts", *path_manager, paths.fonts)
+	if (!read_required_manifest_path(required, "configs", *path_manager, paths.configs)
+		|| !read_required_manifest_path(required, "fonts", *path_manager, paths.fonts)
 		|| !read_required_manifest_path(required, "audio", *path_manager, paths.audio)
 		|| !read_required_manifest_path(required, "i18n", *path_manager, paths.i18n)
 		|| !read_required_manifest_path(required, "textures", *path_manager, paths.textures)

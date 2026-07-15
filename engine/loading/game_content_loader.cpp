@@ -4,6 +4,7 @@
 #include "content_manifest_pipeline.h"
 #include "resource_request_assembler.h"
 #include "../animation/animation_manager.h"
+#include "../config/config_service.h"
 #include "../effects/effect_manager.h"
 #include "../io/path/path_manager.h"
 #include "../resources/resource_manager.h"
@@ -46,8 +47,10 @@ void GameContentLoader::reset()
 {
 	shutdown_worker_threads();
 	reset_streaming_state();
+	elysia::config::ConfigService::instance()->shutdown();
 	_renderer = nullptr;
 	_load_plan.clear();
+	_config_snapshot.reset();
 	_error_message.clear();
 	_state = GameContentLoaderState::Idle;
 	_progress = 0.0f;
@@ -83,6 +86,7 @@ bool GameContentLoader::start(SDL_Renderer* renderer)
 		fail(content_manifest_pipeline.error_message());
 		return false;
 	}
+	_config_snapshot = config_result.config_snapshot;
 
 	ResourceRequestAssembler assembler;
 	if (!assembler.assemble(config_result, _load_plan))
@@ -168,6 +172,12 @@ void GameContentLoader::update()
 	{
 		if (!register_animation_effects())
 			return;
+		if (!_config_snapshot)
+		{
+			fail("GameContentLoader config publish failed: snapshot is missing.");
+			return;
+		}
+		elysia::config::ConfigService::instance()->publish(_config_snapshot);
 
 		_state = GameContentLoaderState::Finished;
 		_progress = 1.0f;
@@ -656,6 +666,8 @@ void GameContentLoader::update_progress_value()
 void GameContentLoader::fail(std::string message)
 {
 	shutdown_worker_threads();
+	elysia::config::ConfigService::instance()->shutdown();
+	_config_snapshot.reset();
 	_error_message = std::move(message);
 	_state = GameContentLoaderState::Failed;
 	update_progress_value();
