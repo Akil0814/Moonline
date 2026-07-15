@@ -3,7 +3,7 @@
 #include "engine/io/loaders/content_registry_loader.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/loading/animated_entity_content_loader.h"
-#include "engine/loading/config_load_pipeline.h"
+#include "engine/loading/content_manifest_pipeline.h"
 #include "tests/support/test_assertions.h"
 
 #include <cstdlib>
@@ -33,7 +33,7 @@ std::filesystem::path write_file(
 
 std::string required_manifests()
 {
-	return R"("required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json","configs":"configs/manifests/config_manifest.json"})";
+	return R"("required":{"fonts":"configs/manifests/fonts_manifest.json","audio":"configs/manifests/audio_manifest.json","i18n":"configs/manifests/i18n_manifest.json","textures":"configs/manifests/textures_manifest.json","animations":"configs/manifests/animations_manifest.json","effects":"configs/manifests/effects_manifest.json"})";
 }
 
 std::filesystem::path write_registry(
@@ -45,7 +45,7 @@ std::filesystem::path write_registry(
 	if (!additional.empty()) manifests += ",\"additional\":" + additional;
 	manifests += "}";
 	return write_file(root, name,
-		R"({"bootstrap":{"app_config":"configs/global/app_config.json","preload_manifest":"configs/manifests/preload_manifest.json"},"manifests":)"
+		R"({"bootstrap":{"app_config":"configs/global/app_config.json","preload_manifest":"configs/manifests/preload_manifest.json","game_config_manifest":"configs/manifests/config_manifest.json"},"manifests":)"
 		+ manifests + "}");
 }
 
@@ -54,8 +54,8 @@ void test_current_modules_load_through_generic_pipeline()
 	auto* path_manager = elysia::io::PathManager::instance();
 	require(path_manager->init(), "path manager must initialize from the project root");
 
-	elysia::loading::ConfigLoadPipeline pipeline;
-	elysia::loading::ConfigLoadResult result;
+	elysia::loading::ContentManifestPipeline pipeline;
+	elysia::loading::ContentManifestResult result;
 	require(pipeline.load(path_manager->content_registry(), result),
 		"current content registry must load through the generic additional-module pipeline");
 	require(result.additional_modules.size() == 3
@@ -122,15 +122,15 @@ void test_arbitrary_and_empty_additional_module()
 		&& content.entities.front().origin.module == "core",
 		"an additional module literally named core must remain distinguishable from core origin scope");
 
-	elysia::loading::ConfigLoadPipeline pipeline;
-	elysia::loading::ConfigLoadResult result;
+	elysia::loading::ContentManifestPipeline pipeline;
+	elysia::loading::ContentManifestResult result;
 	const auto registry = write_registry(root, "registry.json",
 		"{\"npcs\":\"" + json_path(module) + "\"}");
 	require(pipeline.load(registry, result)
 		&& result.additional_modules.size() == 1
 		&& result.additional_modules.contains("npcs")
 		&& result.additional_modules.at("npcs").entities.size() == 1,
-		"ConfigLoadPipeline must dispatch arbitrary additional names through the same loader");
+		"ContentManifestPipeline must dispatch arbitrary additional names through the same loader");
 
 	std::filesystem::remove_all(root);
 }
@@ -245,11 +245,35 @@ void test_content_registry_still_allows_core_only()
 	const auto root = std::filesystem::temp_directory_path() / "moonline_core_only_registry_tests";
 	std::filesystem::remove_all(root);
 	std::filesystem::create_directories(root);
-	elysia::loading::ConfigLoadPipeline pipeline;
-	elysia::loading::ConfigLoadResult result;
+	elysia::loading::ContentManifestPipeline pipeline;
+	elysia::loading::ContentManifestResult result;
 	require(pipeline.load(write_registry(root, "core_only.json"), result)
 		&& result.additional_modules.empty(),
 		"content registry must continue to allow no additional modules");
+	std::filesystem::remove_all(root);
+}
+
+void test_game_config_manifest_registry_contract()
+{
+	auto* paths = elysia::io::PathManager::instance();
+	require(paths->init(),"PathManager must initialize for registry contract tests");
+	elysia::io::ContentRegistryLoader loader;
+	elysia::io::ContentRegistry registry;
+	require(loader.load(paths->content_registry(),registry)
+		&& registry.bootstrap.game_config_manifest == paths->assets()/"configs/manifests/config_manifest.json",
+		"bootstrap.game_config_manifest must be a required resolved entry");
+
+	const auto root = std::filesystem::temp_directory_path()/"moonline_config_registry_contract_tests";
+	std::filesystem::remove_all(root); std::filesystem::create_directories(root);
+	const std::string missing_bootstrap = R"({"bootstrap":{"app_config":"configs/global/app_config.json","preload_manifest":"configs/manifests/preload_manifest.json"},"manifests":{)"
+		+ required_manifests()+"}}";
+	require(!loader.load(write_file(root,"missing_game_config.json",missing_bootstrap),registry),
+		"content registry must reject a missing bootstrap.game_config_manifest");
+	const std::string legacy_required = R"({"bootstrap":{"app_config":"configs/global/app_config.json","preload_manifest":"configs/manifests/preload_manifest.json","game_config_manifest":"configs/manifests/config_manifest.json"},"manifests":{)"
+		+ required_manifests().substr(0,required_manifests().size()-1)
+		+ R"(,"configs":"configs/manifests/config_manifest.json"}}})";
+	require(!loader.load(write_file(root,"legacy_required_configs.json",legacy_required),registry),
+		"content registry must reject the removed manifests.required.configs field");
 	std::filesystem::remove_all(root);
 }
 }
@@ -262,6 +286,7 @@ int main()
 	test_texture_only_and_audio_only_modules();
 	test_animation_frame_prefix_template_rules();
 	test_content_registry_still_allows_core_only();
+	test_game_config_manifest_registry_contract();
 	std::cout << "content load pipeline tests passed\n";
 	return EXIT_SUCCESS;
 }

@@ -1,6 +1,6 @@
 #include "resource_request_assembler.h"
 
-#include "config_load_pipeline.h"
+#include "content_manifest_pipeline.h"
 #include "resource_load_plan.h"
 #include "resource_load_plan_validator.h"
 #include "../io/path/path_manager.h"
@@ -35,7 +35,7 @@ bool append_module_effects(
 }
 
 bool ResourceRequestAssembler::assemble(
-	const ConfigLoadResult& config,
+	const ContentManifestResult& config,
 	ResourceLoadPlan& plan) const
 {
 	plan.clear();

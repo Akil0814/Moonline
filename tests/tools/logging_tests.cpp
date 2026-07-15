@@ -2,7 +2,7 @@
 
 #include "application/application_termination_logging.h"
 #include "engine/io/path/path_manager.h"
-#include "engine/loading/config_load_pipeline.h"
+#include "engine/loading/content_manifest_pipeline.h"
 #include "engine/resources/pipeline/resource_request_builder.h"
 #include "engine/resources/resource_manager.h"
 #include "engine/tools/logger.h"
@@ -189,9 +189,9 @@ void test_logger_console_sink()
     });
 
     captured.messages.clear();
-    loading::ConfigLoadPipeline config_pipeline;
-    loading::ConfigLoadResult config_result;
-    require(!config_pipeline.load(path_manager->assets() / "missing-assets-structure.json",config_result),
+    loading::ContentManifestPipeline content_manifest_pipeline;
+    loading::ContentManifestResult config_result;
+    require(!content_manifest_pipeline.load(path_manager->assets() / "missing-assets-structure.json",config_result),
         "missing top-level config input must fail the load pipeline");
     bool saw_loader_warning = false;
     bool saw_pipeline_error = false;

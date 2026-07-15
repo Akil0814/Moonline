@@ -1,12 +1,13 @@
 #pragma once
 
+#include "config_snapshot.h"
+#include "config_types.h"
 #include "../core/geometry/rect.h"
 #include "../core/geometry/vector2.h"
 #include "../tools/singleton.h"
 
 #include <cstdint>
 #include <expected>
-#include <filesystem>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -16,42 +17,11 @@
 
 namespace elysia::config
 {
-struct ConfigOrigin
-{
-    std::string config_path;
-    std::string json_pointer;
-    std::string key_namespace;
-    std::string full_key;
-
-    [[nodiscard]] std::string describe() const;
-};
-
-enum class ConfigLoadError { OpenFailed, InvalidSchema, InvalidKey, InvalidValue, DuplicateKey };
-struct ConfigLoadFailure
-{
-    ConfigLoadError error = ConfigLoadError::InvalidSchema;
-    std::string message;
-    ConfigOrigin first;
-    ConfigOrigin second;
-};
-
-enum class ConfigAccessError { NotInitialized, MissingKey, TypeMismatch, InvalidValue };
-struct ConfigAccessFailure
-{
-    ConfigAccessError error = ConfigAccessError::MissingKey;
-    std::string key;
-    std::string expected_type;
-    std::string actual_type;
-    ConfigOrigin origin;
-    std::string message;
-};
-
 class ConfigService final : public elysia::tools::Singleton<ConfigService>
 {
     friend elysia::tools::Singleton<ConfigService>;
 public:
-    struct Snapshot;
-    [[nodiscard]] std::expected<void,ConfigLoadFailure> initialize(const std::filesystem::path& manifest_path);
+    void publish(std::shared_ptr<const ConfigSnapshot> snapshot) noexcept;
     void shutdown() noexcept;
     [[nodiscard]] bool is_initialized() const noexcept;
     [[nodiscard]] bool contains(std::string_view key) const;
@@ -74,7 +44,7 @@ private:
     ConfigService() = default;
     void log_once(const ConfigAccessFailure& failure) const;
     mutable std::mutex _mutex;
-    std::shared_ptr<const Snapshot> _snapshot;
+    std::shared_ptr<const ConfigSnapshot> _snapshot;
     mutable std::unordered_set<std::string> _logged_access_errors;
 };
 }

@@ -9,7 +9,7 @@
 
 namespace elysia::loading
 {
-struct ConfigLoadResult
+struct ContentManifestResult
 {
 	elysia::io::FontManifest font_manifest;
 	elysia::io::AudioManifest audio_manifest;
@@ -20,12 +20,12 @@ struct ConfigLoadResult
 	std::map<std::string, elysia::io::EntityContentModule> additional_modules;
 };
 
-class ConfigLoadPipeline
+class ContentManifestPipeline
 {
 public:
 	bool load(
 		const std::filesystem::path& content_registry_path,
-		ConfigLoadResult& result
+		ContentManifestResult& result
 	);
 
 	const std::string& error_message() const;

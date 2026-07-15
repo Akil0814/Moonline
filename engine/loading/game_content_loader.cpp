@@ -1,7 +1,7 @@
 #include "../tools/logger.h"
 #include "game_content_loader.h"
 
-#include "config_load_pipeline.h"
+#include "content_manifest_pipeline.h"
 #include "resource_request_assembler.h"
 #include "../animation/animation_manager.h"
 #include "../effects/effect_manager.h"
@@ -75,12 +75,12 @@ bool GameContentLoader::start(SDL_Renderer* renderer)
 		return false;
 	}
 
-	ConfigLoadPipeline config_load_pipeline;
-	ConfigLoadResult config_result;
+	ContentManifestPipeline content_manifest_pipeline;
+	ContentManifestResult config_result;
 	const std::filesystem::path content_registry_path = path_manager->content_registry();
-	if (!config_load_pipeline.load(content_registry_path, config_result))
+	if (!content_manifest_pipeline.load(content_registry_path, config_result))
 	{
-		fail(config_load_pipeline.error_message());
+		fail(content_manifest_pipeline.error_message());
 		return false;
 	}
 

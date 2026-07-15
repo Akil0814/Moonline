@@ -1,7 +1,8 @@
 {
   "bootstrap": {
     "app_config": "configs/global/app_config.json",
-    "preload_manifest": "configs/manifests/preload_manifest.json"
+    "preload_manifest": "configs/manifests/preload_manifest.json",
+    "game_config_manifest": "configs/manifests/config_manifest.json"
   },
   "manifests": {
     "required": {
@@ -10,8 +11,7 @@
       "i18n": "configs/manifests/i18n_manifest.json",
       "textures": "configs/manifests/textures_manifest.json",
       "animations": "configs/manifests/animations_manifest.json",
-      "effects": "configs/manifests/effects_manifest.json",
-      "configs": "configs/manifests/config_manifest.json"
+      "effects": "configs/manifests/effects_manifest.json"
     },
     "additional": {
       "characters": "configs/character/character_content_manifest.json",

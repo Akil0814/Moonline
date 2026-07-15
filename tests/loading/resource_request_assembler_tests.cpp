@@ -3,7 +3,7 @@
 #include "engine/animation/animation_manager.h"
 #include "engine/effects/effect_manager.h"
 #include "engine/io/path/path_manager.h"
-#include "engine/loading/config_load_pipeline.h"
+#include "engine/loading/content_manifest_pipeline.h"
 #include "engine/loading/resource_load_plan.h"
 #include "engine/loading/resource_request_assembler.h"
 #include "engine/resources/atlas/atlas.h"
@@ -140,7 +140,7 @@ void verify_repository_mapping_snapshot(const elysia::loading::ResourceLoadPlan&
 }
 
 void verify_complete_module_mapping(
-	const elysia::loading::ConfigLoadResult& config,
+	const elysia::loading::ContentManifestResult& config,
 	const elysia::loading::ResourceLoadPlan& plan)
 {
 	std::unordered_map<std::string, const elysia::resources::AtlasBuildRequest*> atlases;
@@ -264,9 +264,9 @@ void test_runtime_resource_request_assembly()
     elysia::io::PathManager* path_manager = elysia::io::PathManager::instance();
     require(path_manager->init(), "path manager must initialize from the project root");
 
-    elysia::loading::ConfigLoadResult config_result;
-    elysia::loading::ConfigLoadPipeline config_load_pipeline;
-    require(config_load_pipeline.load(path_manager->content_registry(), config_result),
+    elysia::loading::ContentManifestResult config_result;
+    elysia::loading::ContentManifestPipeline content_manifest_pipeline;
+    require(content_manifest_pipeline.load(path_manager->content_registry(), config_result),
         "config pipeline must load content before assembling resource requests");
 
 	elysia::loading::ResourceLoadPlan load_plan;

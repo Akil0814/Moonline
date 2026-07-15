@@ -8,6 +8,7 @@
 #include "../engine/audio/audio_service.h"
 #include "../engine/bootstrap/bootstrapper.h"
 #include "../engine/config/user_config_service.h"
+#include "../engine/config/config_service.h"
 #include "../engine/core/time.h"
 #include "../engine/effects/effect_manager.h"
 #include "../engine/localization/localization_manager.h"
@@ -326,6 +327,7 @@ void Application::shutdown()
 		_user_config_handler_registered = false;
 	}
 	elysia::config::UserConfigService::instance()->shutdown();
+	elysia::config::ConfigService::instance()->shutdown();
 	elysia::audio::AudioService::instance()->shutdown();
 	elysia::resources::ResourceManager::instance()->clear();
 	elysia::tools::Logger::instance()->info("application","Application shutdown complete");

@@ -8,7 +8,8 @@
 {
   "bootstrap": {
     "app_config": "configs/global/app_config.json",
-    "preload_manifest": "configs/manifests/preload_manifest.json"
+    "preload_manifest": "configs/manifests/preload_manifest.json",
+    "game_config_manifest": "configs/manifests/config_manifest.json"
   },
   "manifests": {
     "required": {
@@ -17,8 +18,7 @@
       "i18n": "configs/manifests/i18n_manifest.json",
       "textures": "configs/manifests/textures_manifest.json",
       "animations": "configs/manifests/animations_manifest.json",
-      "effects": "configs/manifests/effects_manifest.json",
-      "configs": "configs/manifests/config_manifest.json"
+      "effects": "configs/manifests/effects_manifest.json"
     },
     "additional": {
       "characters": "configs/character/character_content_manifest.json",
@@ -37,12 +37,13 @@ registry 会在解析前拒绝重复 JSON 对象属性。
 | --- | --- | --- |
 | `app_config` | string | 必填；按 `assets/` 解析后必须是普通文件 |
 | `preload_manifest` | string | 必填；按 `assets/` 解析后必须是普通文件 |
+| `game_config_manifest` | string | 必填；启动时由通用 `ConfigLoadPipeline` 全量构建只读快照 |
 
 `bootstrap` 不接受其他字段。本目录只记录 `app_config` 的入口关系，不覆盖其窗口、渲染或音量 schema。
 
 ### `manifests.required`
 
-`required` 必须是对象，且以下七项全部必填：
+`required` 必须是对象，且以下六项全部必填：
 
 | 字段 | 目标 |
 | --- | --- |
@@ -52,9 +53,8 @@ registry 会在解析前拒绝重复 JSON 对象属性。
 | `textures` | 核心纹理 manifest |
 | `animations` | 核心动画 manifest |
 | `effects` | 核心 EffectDefinition manifest |
-| `configs` | 通用配置入口 manifest |
 
-每个值必须是字符串，按 `assets/` 解析后必须是普通文件；未知 required 字段失败。资源管线会解析字体、音频、纹理、动画和 effect manifest；i18n 路径交给 `LocalizationManager`。`configs` 对应文件在资源管线中仍只要求存在。其 version 1 schema 已建立，并可由独立的通用 `ConfigService` 解析，但该服务尚未接入 Bootstrapper、GameContentLoader 或场景加载流程，详见[运行时配置模块](../runtime-config.md)。
+每个值必须是字符串，按 `assets/` 解析后必须是普通文件；未知 required 字段失败。`ContentManifestPipeline` 解析字体、音频、纹理、动画和 effect manifest；i18n 路径交给 `LocalizationManager`。通用游戏配置不属于 required resources，详见[运行时配置模块](../runtime-config.md)。
 
 ### `manifests.additional`
 

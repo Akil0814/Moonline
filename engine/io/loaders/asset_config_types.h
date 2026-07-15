@@ -21,13 +21,13 @@ struct CoreManifestPaths
 	std::filesystem::path textures;
 	std::filesystem::path animations;
 	std::filesystem::path effects;
-	std::filesystem::path configs;
 };
 
 struct BootstrapPaths
 {
 	std::filesystem::path app_config;
 	std::filesystem::path preload_manifest;
+	std::filesystem::path game_config_manifest;
 };
 
 struct ContentRegistry

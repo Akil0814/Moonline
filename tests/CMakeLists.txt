@@ -109,7 +109,7 @@ add_moonline_test(logging_tests
     SDL
 )
 
-foreach(CONFIG_TEST_TARGET IN ITEMS app_config_tests user_config_tests config_service_tests)
+foreach(CONFIG_TEST_TARGET IN ITEMS app_config_tests user_config_tests config_service_tests bootstrap_config_integration_tests)
     add_moonline_test(${CONFIG_TEST_TARGET}
         LABEL config
         SOURCES config/${CONFIG_TEST_TARGET}.cpp

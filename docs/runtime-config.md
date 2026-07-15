@@ -1,16 +1,33 @@
 # 运行时配置模块
 
-Moonline 的运行时配置分为三个职责明确的模块。
+Moonline 的运行时配置分成三个职责独立的模块：
 
-| 模块 | 用途 | 是否可写 | 是否接入启动流程 |
-| --- | --- | --- | --- |
-| `AppConfig` | 程序发布时提供窗口、渲染、音频和默认语言 | 否 | 是 |
-| `UserConfigService` | 玩家全局设置、运行时应用、版本迁移与持久化 | 是 | 是 |
-| `ConfigService` | 按任意 namespace 加载游戏数据，并提供强类型 key 访问 | 否 | 否，本轮只建立接口与 manifest schema |
+| 模块 | 职责 | 启动时行为 |
+| --- | --- | --- |
+| `AppConfig` | 固定 schema 的程序默认值 | `AppConfigLoader` 直接加载 |
+| `UserConfigService` | 玩家全局设置、运行时应用与可靠持久化 | 在 AppConfig 之后加载 |
+| `ConfigService` | 发布通用游戏配置快照并提供强类型访问 | 快照构建成功后由 Bootstrapper 发布 |
+
+## 启动顺序
+
+```text
+content_registry.json
+  ├─ bootstrap.app_config
+  ├─ bootstrap.game_config_manifest
+  │    └─ ConfigLoadPipeline
+  │         ├─ ConfigManifestLoader
+  │         ├─ ConfigDocumentLoader
+  │         └─ ConfigSnapshotBuilder
+  └─ bootstrap.preload_manifest
+
+AppConfig → 构建 ConfigSnapshot → UserConfig → publish ConfigSnapshot
+```
+
+加载器和 builder 只返回 `expected`，不写重复日志。启动失败由 Application/Bootstrap 启动边界统一记录。任何游戏配置失败都会阻止启动，且不会向 `ConfigService` 发布半成品。
 
 ## AppConfig
 
-入口为 `assets/configs/global/app_config.json`，当前 schema version 为 1。根对象及所有子对象均为严格 schema：缺少字段、未知字段、重复属性或类型错误都会使启动失败。
+`assets/configs/global/app_config.json` 使用严格 version 1 schema：
 
 ```json
 {
@@ -31,26 +48,23 @@ Moonline 的运行时配置分为三个职责明确的模块。
 }
 ```
 
-宽高和 FPS 必须为正数，FPS 必须有限；音量范围为 `0..100`；标题和语言不能为空。旧字段 `default_width`、`default_height`、`default_fps` 不再接受。
-
-`AppConfig` 保存窗口标题和一份 `UserConfigData` 默认值。`Bootstrapper` 加载用户设置后，将两者合成为最终只读的 `StartupSettings`。
+缺失、未知、重复或非法字段都会使启动失败。宽高和 FPS 必须为正数，音量范围为 `0..100`，标题和语言不能为空。
 
 ## UserConfig
 
-用户文件默认位于 `player_data/user_config.json`。v1 使用与 AppConfig 相同的 `window`、`render`、`audio`、`localization` 字段，但不保存窗口标题，并且始终保存完整快照。
+用户配置默认为 `player_data/user_config.json`。v1 保存完整的 window、render、audio 和 localization 快照，不保存窗口标题。
 
-- 无 `schema_version` 的旧文件视为 v0：合法字段覆盖 AppConfig 默认值，然后自动迁移并保存为 v1。
-- v0 的空语言回退到 AppConfig 默认语言。
-- 高于当前版本的文件会原样保留并终止初始化，不会自动降级或覆盖。
-- 有效主文件优先；主文件损坏后依次尝试 `.tmp`、`.bak`，最后使用 AppConfig 默认值重建。
-- 损坏主文件会改名为带毫秒时间戳的 `.corrupt` 文件。
-- 保存先写 `.tmp`，关闭并重新严格解析，再轮换 `.bak` 并 rename 提交；提交失败时尝试恢复旧主文件。
+- 无 `schema_version` 的文件作为 v0 覆盖 AppConfig 默认值并迁移到 v1。
+- 高于当前版本的文件原样保留并终止初始化。
+- 加载恢复顺序为主文件、`.tmp`、`.bak`、AppConfig 默认值。
+- 损坏主文件归档为带时间戳的 `.corrupt`。
+- 保存通过 `.tmp` 重新解析验证、`.bak` 轮换和 rename 提交。
 
-`UserConfigLoadResult` 会分别报告 `migrated`、`recovered`、`rebuilt` 和 warning。VSync 变更仍标记为需要重启；其他现有设置继续通过 `IUserConfigChangeHandler` 应用到运行时。
+`UserConfigLoadResult` 分别报告 migrated、recovered、rebuilt 和 warning。VSync 继续使用重启标记，其他设置通过 `IUserConfigChangeHandler` 应用。
 
-## 通用 ConfigService
+## 通用游戏配置
 
-入口 manifest 为 `assets/configs/manifests/config_manifest.json`：
+入口为 `assets/configs/manifests/config_manifest.json`：
 
 ```json
 {
@@ -61,15 +75,35 @@ Moonline 的运行时配置分为三个职责明确的模块。
 }
 ```
 
-`configs` 的属性名是文档 namespace，值是基于 `assets/` 的 JSON 路径。当前真实 manifest 只声明 `game`；InputConfig 和角色业务配置尚未注册。
+manifest 自身是严格 schema；`configs` 的属性名是 namespace，值是基于 `assets/` 解析的文档路径。当前只注册 `game_config.json`，InputConfig 和角色业务配置尚未注册。
 
-完整 key 为 `<namespace>.<JSON path>`。对象字段与 namespace 的每个 component 都必须符合 `[A-Za-z0-9_]+`，点只连接 component；数组索引使用无补位十进制，例如 `game.spawn_points.0`。
+被引用的文档没有业务 schema，根节点可以是 object、array、string、boolean 或 number，但不能是 `null`。根值注册为 namespace key；对象字段递归展开；数组索引使用 `.0/.1/...` 无补位 component。
 
-初始化会索引对象、数组和叶子节点，并在全部文档成功后原子发布不可变 snapshot。首次失败保持未初始化；重新初始化失败保留旧 snapshot。`null`、重复 JSON 属性、非法 component 和完整 key 冲突都会在发布前失败。冲突错误包含 first/second 两个项目相对配置路径、JSON pointer、namespace 和完整 key。
+```json
+{
+  "difficulty": { "enemy_health_scale": 1.0 },
+  "spawn_points": [ { "x": 100, "y": 200 } ]
+}
+```
 
-公开 getter：
+对应 key 包括：
+
+```text
+game
+game.difficulty
+game.difficulty.enemy_health_scale
+game.spawn_points
+game.spawn_points.0
+game.spawn_points.0.x
+```
+
+namespace 和对象字段 component 必须符合 `[A-Za-z0-9_]+`。重复 JSON 属性、任意层级的 `null`、非法 component 和跨文档完整 key 冲突都会在快照发布前失败，并携带配置路径、JSON pointer、namespace 与 first/second 来源。
+
+`ConfigService` 不接触文件系统或 JSON manifest，只提供：
 
 ```cpp
+publish(snapshot);
+contains(key);
 get_int(key);       get_int_array(key);
 get_double(key);    get_double_array(key);
 get_bool(key);      get_bool_array(key);
@@ -78,13 +112,6 @@ get_vector2(key);   get_vector2_array(key);
 get_rect(key);      get_rect_array(key);
 ```
 
-- `get_int` 只接受可表示为 `int64_t` 的 JSON integer。
-- `get_double` 接受 integer 或 floating number，但结果必须有限。
-- `Vector2` 必须恰好为 `{x, y}`。
-- `Rect` 必须恰好为 `{x, y, width, height}`，宽高不得为负。
-- 几何分量必须是有限且可表示为 `float` 的数值。
-- 数组逐项执行同一类型规则；空数组对任意数组 getter 都合法。
+Vector2、Rect、数组同质性和数值可表示性只在相应 getter 调用时校验。服务不暴露原始 JSON，不提供 optional、隐式 fallback、热重载或业务专用接口；角色、攻击、技能和关卡规则由 gameplay 层负责。
 
-接口不暴露原始 JSON，也不提供 optional 或隐式 fallback。访问失败会返回包含 key、期望/实际类型和来源的 `ConfigAccessFailure`；服务内部按“错误类别 + key + 请求类型”线程安全地只记录一次错误日志。
-
-目前资源管线仍只验证 `config_manifest.json` 文件存在，`Bootstrapper`、`GameContentLoader` 和场景都不会初始化通用 `ConfigService`。未来 gameplay 接入时负责角色、攻击、技能和关卡等业务约束。
+资源侧原 `loading::ConfigLoadPipeline` 已改名为 `ContentManifestPipeline`。它只加载核心资源 manifest 与 additional content module，不参与通用游戏配置快照构建。

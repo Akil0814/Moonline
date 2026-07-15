@@ -1,7 +1,7 @@
 #define SDL_MAIN_HANDLED
 
 #include "engine/io/path/path_manager.h"
-#include "engine/loading/config_load_pipeline.h"
+#include "engine/loading/content_manifest_pipeline.h"
 #include "engine/localization/localization_manager.h"
 #include "engine/resources/pipeline/resource_request_builder.h"
 #include "engine/resources/resource_manager.h"
