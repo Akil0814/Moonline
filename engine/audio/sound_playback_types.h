@@ -54,7 +54,7 @@ struct SoundPlayOptions
     std::chrono::milliseconds start_delay{ 0 };
 };
 
-using ScheduledSoundId = std::uint64_t;
+using SoundHandle = std::uint64_t;
 
 enum class SoundRequestStatus
 {
@@ -66,6 +66,6 @@ enum class SoundRequestStatus
 struct SoundRequestResult
 {
     SoundRequestStatus status = SoundRequestStatus::Rejected;
-    std::optional<ScheduledSoundId> scheduled_id = std::nullopt;
+    std::optional<SoundHandle> handle = std::nullopt;
 };
 }
