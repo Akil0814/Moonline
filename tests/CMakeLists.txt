@@ -56,6 +56,11 @@ add_moonline_test(camera_manager_tests
     SDL
 )
 
+add_moonline_test(physics_framework_contract_tests
+    LABEL physics
+    SOURCES physics/physics_framework_contract_tests.cpp
+)
+
 add_moonline_test(sound_playback_scheduler_tests
     LABEL audio
     SOURCES audio/sound_playback_scheduler_tests.cpp

@@ -29,6 +29,12 @@ The current `engine/ui` system has its own Chinese developer documentation in
 [`docs/ui/`](ui/README.md). It includes a component-by-component public API reference,
 shared API contracts, and a header coverage checklist.
 
+## Input Documentation
+
+The current Raw Input, Action Mapping, Gameplay Support, and GameplayScene pipeline is documented
+in Chinese in [`docs/input/`](input/README.md). It covers the implemented Button/Axis value model,
+keyboard and controller bindings, runtime rebinding APIs, scene receiver lifecycle, and tests.
+
 ## Asset Configuration Documentation
 
 The current resource-loading JSON chain, manifest schemas, entity content rules, animation paths,
@@ -94,7 +100,7 @@ Recommended implementation order:
 
 1. `ResourceManager` and related asset loading flow
 2.  animation runtime support
-3. `InputManager` for keyboard and future multi-input support
+3. adopt the existing Action Input and GameplayScene support in the minimum playable gameplay loop
 4. config/data loaders for character, enemy, stage, and global JSON
 5. audio management wrapper
 6. save system base interfaces and save data schema
