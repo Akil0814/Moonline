@@ -37,6 +37,15 @@ int main()
     require(collider.filter.mask == 0xffffffffu, "Collider masks must accept all categories by default");
     require(collider.response == CollisionResponse::Block, "Colliders must default to blocking intent");
     require(collider.enabled, "Colliders must default to enabled");
+    collider.response = CollisionResponse::Overlap;
+    require(collider.response == CollisionResponse::Overlap,
+        "Overlap must be the canonical non-blocking collision response");
+
+    CollisionContact contact;
+    require(contact.pair.first == InvalidColliderId && contact.pair.second == InvalidColliderId,
+        "Collision contacts must default to invalid collider IDs");
+    require(contact.response == CollisionResponse::Ignore,
+        "Collision contacts must default to an ignored response");
 
     ActorCollisionRig rig;
     require(rig.owner == InvalidActorId, "Actor rigs must default to an invalid owner");

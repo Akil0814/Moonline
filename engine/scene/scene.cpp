@@ -211,8 +211,7 @@ void Scene::register_scene_object_interfaces(elysia::core::SceneObject* object)
             _collider_entries.push_back(ColliderEntry{
                 object,
                 game_object,
-                collider_provider,
-                dynamic_cast<elysia::physics::CollisionListener*>(object)
+                collider_provider
             });
         }
     }

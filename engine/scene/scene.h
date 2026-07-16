@@ -18,7 +18,6 @@
 #include "../core/event/subject.h"
 #include "../core/interface/updatable.h"
 #include "../physics/collider_provider.h"
-#include "../physics/collision_listener.h"
 #include "../physics/collision_system.h"
 #include "../physics/physics_body_provider.h"
 #include "../physics/physics_system.h"
@@ -166,7 +165,6 @@ private:
         elysia::core::SceneObject* object = nullptr;
         elysia::core::GameObject* game_object = nullptr;
         elysia::physics::ColliderProvider* collider_provider = nullptr;
-        elysia::physics::CollisionListener* collision_listener = nullptr;
     };
 
 private:

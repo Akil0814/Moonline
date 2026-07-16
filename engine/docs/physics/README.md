@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-本目录记录 Moonline 的物理与 Gameplay 碰撞框架边界。当前阶段只提供可编译的数据契约和空系统入口，尚未实现：
+本目录记录 Moonline 的物理与 Gameplay 碰撞框架边界。当前阶段只提供可编译的数据契约，以及由 `Scene` 调用的系统入口，尚未实现：
 
 - 运动积分、重力和阻尼；
 - 粗检测、矩形相交和空间索引；
@@ -10,7 +10,7 @@
 - PushBox 推挤；
 - HitBox/HurtBox 配对、命中去重和伤害结算。
 
-因此，当前 `PhysicsSystem::step` 和 `CollisionSystem::dispatch_events` 调用不会改变对象或产生碰撞事件。
+`Scene` 会自动登记实现 `PhysicsBodyProvider` 或 `ColliderProvider` 的 `GameObject`，并在非暂停帧依次调用 `PhysicsSystem::step` 和 `CollisionSystem::dispatch_events`。这两个入口目前不会改变对象或产生碰撞事件。
 
 ## 分层边界
 
@@ -23,7 +23,8 @@
 - `CollisionResponse` 描述 Ignore、Overlap 或 Block 意图。
 - `CollisionOverlap` 和 `CollisionContact` 只记录双方 Collider 及几何结果。
 - `Collider::tag` 仅用于调试，不参与碰撞规则。
-- `Collider::is_trigger` 暂时保留用于源代码兼容；新代码应使用 `CollisionResponse::Overlap`。
+
+`CollisionResponse::Overlap` 是 Collider 表达重叠或触发语义的唯一方式。物理核心不提供独立的 trigger 标志或旧事件兼容接口。
 
 具体 category 位由使用物理核心的上层模块定义。物理核心不得加入 Player、Enemy、HitBox 等固定类别。
 

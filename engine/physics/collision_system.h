@@ -14,8 +14,5 @@ public:
     {
         (void)collider_entries;
     }
-
-    void reset();
-    void clear();
 };
 }

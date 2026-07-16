@@ -40,7 +40,5 @@ struct Collider
     std::string_view tag{};
 
     bool enabled = true;
-    // Retained for source compatibility while CollisionResponse becomes canonical.
-    bool is_trigger = false;
 };
 }

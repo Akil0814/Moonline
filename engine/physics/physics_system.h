@@ -15,8 +15,5 @@ public:
         (void)body_entries;
         (void)delta;
     }
-
-    void reset();
-    void clear();
 };
 }
