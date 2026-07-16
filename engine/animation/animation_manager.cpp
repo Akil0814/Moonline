@@ -90,4 +90,9 @@ std::unique_ptr<Animation> AnimationManager::create_animation(const std::string_
 	return animation;
 }
 
+void AnimationManager::clear() noexcept
+{
+	_definitions.clear();
+}
+
 }

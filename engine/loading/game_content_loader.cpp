@@ -2,6 +2,7 @@
 #include "game_content_loader.h"
 
 #include "content_manifest_pipeline.h"
+#include "content_runtime_cleanup.h"
 #include "resource_request_assembler.h"
 #include "../animation/animation_manager.h"
 #include "../config/config_service.h"
@@ -40,14 +41,16 @@ std::size_t resolve_worker_count(std::size_t total_prepare_jobs)
 
 GameContentLoader::~GameContentLoader()
 {
-	shutdown_worker_threads();
+	reset();
 }
 
 void GameContentLoader::reset()
 {
+	const bool was_loading = is_running();
 	shutdown_worker_threads();
 	reset_streaming_state();
-	elysia::config::ConfigService::instance()->shutdown();
+	if (was_loading)
+		clear_loaded_content();
 	_renderer = nullptr;
 	_load_plan.clear();
 	_config_snapshot.reset();
@@ -61,6 +64,7 @@ void GameContentLoader::reset()
 bool GameContentLoader::start(SDL_Renderer* renderer, const elysia::io::ContentRegistry& content_registry)
 {
 	reset();
+	clear_loaded_content();
 
 	if (!renderer)
 	{
@@ -665,7 +669,7 @@ void GameContentLoader::update_progress_value()
 void GameContentLoader::fail(std::string message)
 {
 	shutdown_worker_threads();
-	elysia::config::ConfigService::instance()->shutdown();
+	clear_loaded_content();
 	_config_snapshot.reset();
 	_error_message = std::move(message);
 	_state = GameContentLoaderState::Failed;

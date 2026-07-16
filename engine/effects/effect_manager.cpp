@@ -314,6 +314,12 @@ void EffectManager::reset_digit_caches() noexcept
 	_effect_digit_cache.reset();
 }
 
+void EffectManager::clear_content() noexcept
+{
+	_animation_effect_definitions.clear();
+	reset_digit_caches();
+}
+
 void EffectManager::set_active_scene(elysia::scene::Scene* scene) noexcept
 {
 	_active_scene = scene;

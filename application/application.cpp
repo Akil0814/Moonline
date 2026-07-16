@@ -8,11 +8,9 @@
 #include "../engine/audio/audio_service.h"
 #include "../engine/bootstrap/bootstrapper.h"
 #include "../engine/config/user_config_service.h"
-#include "../engine/config/config_service.h"
 #include "../engine/core/time.h"
-#include "../engine/effects/effect_manager.h"
 #include "../engine/localization/localization_manager.h"
-#include "../engine/resources/resource_manager.h"
+#include "../engine/loading/content_runtime_cleanup.h"
 #include "../engine/tools/logger.h"
 
 #include <cstdlib>
@@ -321,7 +319,6 @@ void Application::shutdown()
 	_input_system.shutdown();
 	_scene_manager.detach(this);
 	_scene_manager.shutdown();
-	elysia::effects::EffectManager::instance()->reset_digit_caches();
 	elysia::localization::LocalizationManager::instance()->shutdown();
 	if (_user_config_handler_registered)
 	{
@@ -329,9 +326,8 @@ void Application::shutdown()
 		_user_config_handler_registered = false;
 	}
 	elysia::config::UserConfigService::instance()->shutdown();
-	elysia::config::ConfigService::instance()->shutdown();
 	elysia::audio::AudioService::instance()->shutdown();
-	elysia::resources::ResourceManager::instance()->clear();
+	elysia::loading::clear_loaded_content();
 	elysia::tools::Logger::instance()->info("application","Application shutdown complete");
 	elysia::tools::Logger::instance()->shutdown();
 }

@@ -31,7 +31,7 @@ GameContentLoader
   全部资源成功注册 -> ConfigService::publish(snapshot)
 ```
 
-Bootstrap 不解析或发布 gameplay 配置。内容加载、资源组装或资源注册失败时，`ConfigService` 保持未初始化；重置或重新开始内容加载也会清空旧快照。
+Bootstrap 不解析或发布 gameplay 配置。内容加载、资源组装或资源注册失败时，已部分提交的内容会被清除，`ConfigService` 保持未初始化。成功加载后的普通 `reset()` 只释放 loader 的临时状态，保留已发布快照和资源；新一轮 `start()` 会先清空当前内容，再从空状态加载。当前不支持热重载或在重载失败时保留旧内容。
 
 ## AppConfig 与 UserConfig
 

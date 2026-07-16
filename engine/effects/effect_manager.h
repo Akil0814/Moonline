@@ -92,6 +92,7 @@ public:
 	bool spawn_floating_number_effect(const FloatingNumberEffectSpawnRequest& request);
 	[[nodiscard]] elysia::number::DigitCache* digit_cache(EffectDigitColor color);
 	void reset_digit_caches() noexcept;
+	void clear_content() noexcept;
 
 private:
 	friend class elysia::scene::SceneManager;
