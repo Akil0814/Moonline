@@ -8,11 +8,12 @@ Moonline/
 │  ├─ application.h
 │  └─ application.cpp
 │
-├─ engine/                    -> reusable game engine layer
+├─ engine/                       -> reusable game engine layer
 │  ├─ CMakeLists.txt
 │  ├─ game_object.h             
 │  ├─ animation/
 │  ├─ base/
+│  ├─ docs/                      -> engine developer docs
 │  ├─ io/
 │  ├─ resources/
 │  ├─ scene/
@@ -29,7 +30,7 @@ Moonline/
 |
 ├─ assets/                       -> game assets
 │       
-└─ docs/                         -> project docs   
+└─ docs/                         -> project-level docs
 
 Notes:
 1. Keep engine generic so it can be reused by other 2D game projects.

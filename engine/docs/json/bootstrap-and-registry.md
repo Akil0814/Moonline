@@ -61,3 +61,5 @@
 ```
 
 路径基于 `assets/preload/`，运行时 texture key 直接使用数组中的原字符串。图片解码、SDL texture 创建或重复 key 存储失败都会使预加载失败。
+
+预加载纹理由 bootstrap 子系统自己的 `BootstrapTextureCache` 持有，不会注册到正式内容使用的 `ResourceManager`。因此 `GameContentLoader` 清理或重新加载游戏内容时不会影响启动画面。`get_preload_texture()` 返回借用指针，其有效期截止到显式释放、bootstrap reset 或 SDL renderer 更换；`StartupLoadingScene` 在退出时释放全部预加载纹理。

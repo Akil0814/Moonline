@@ -122,6 +122,7 @@ void StartupLoadingScene::on_exit()
 {
 	_paused = false;
 	_content_loader.reset();
+	elysia::bootstrap::Bootstrapper::instance()->release_preload_textures();
 }
 
 void StartupLoadingScene::reset()

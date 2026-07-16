@@ -16,33 +16,36 @@ is added.
 The current source layout shows a clear separation between:
 
 - `application/`: application startup and main loop
-- `engine/`: reusable game engine foundation
+- `engine/`: reusable game engine foundation and its developer documentation
 - `gameplay/`: game-specific logic
 - `assets/`: textures, audio, fonts, configs, preload resources
 - `docs/`: project notes and planning documents
 
 The current development priority is to complete the core engine and data pipeline first, then build gameplay systems on top of that foundation.
 
+The engine developer documentation has a unified entry point at
+[`engine/docs/`](../engine/docs/README.md).
+
 ## UI Documentation
 
 The current `engine/ui` system has its own Chinese developer documentation in
-[`docs/ui/`](ui/README.md). It includes a component-by-component public API reference,
+[`engine/docs/ui/`](../engine/docs/ui/README.md). It includes a component-by-component public API reference,
 shared API contracts, and a header coverage checklist.
 
 ## Input Documentation
 
 The current Raw Input, Action Mapping, Gameplay Support, and GameplayScene pipeline is documented
-in Chinese in [`docs/input/`](input/README.md). It covers the implemented Button/Axis value model,
+in Chinese in [`engine/docs/input/`](../engine/docs/input/README.md). It covers the implemented Button/Axis value model,
 keyboard and controller bindings, runtime rebinding APIs, scene receiver lifecycle, and tests.
 
 ## Asset Configuration Documentation
 
 The current resource-loading JSON chain, manifest schemas, entity content rules, animation paths,
 and failure behavior are documented in Chinese in
-[`docs/json/`](json/README.md).
+[`engine/docs/json/`](../engine/docs/json/README.md).
 
 AppConfig、用户持久化设置与通用游戏 ConfigService 的职责和现行 schema 见
-[`docs/runtime-config.md`](runtime-config.md)。
+[`engine/docs/runtime-config.md`](../engine/docs/runtime-config.md)。
 
 
 ## Planned Game Features

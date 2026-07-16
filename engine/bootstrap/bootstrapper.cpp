@@ -87,6 +87,11 @@ bool Bootstrapper::preload_startup_resources(SDL_Renderer* renderer)
     return _startup_preload_loader.load(renderer);
 }
 
+void Bootstrapper::release_preload_textures() noexcept
+{
+    _startup_preload_loader.release_textures();
+}
+
 SDL_Texture* Bootstrapper::get_preload_texture(std::string_view key)
 {
     return _startup_preload_loader.get_texture(key);

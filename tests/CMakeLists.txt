@@ -35,6 +35,13 @@ add_moonline_test(glyph_run_layout_tests
     SOURCES core/glyph_run_layout_tests.cpp
 )
 
+add_moonline_test(bootstrap_texture_cache_tests
+    LABEL bootstrap
+    SOURCES bootstrap/bootstrap_texture_cache_tests.cpp
+    LIBRARIES ${SDL2_LIBRARIES}
+    SDL
+)
+
 foreach(INPUT_TEST_TARGET IN ITEMS
     input_action_mapping_tests
     gameplay_support_tests

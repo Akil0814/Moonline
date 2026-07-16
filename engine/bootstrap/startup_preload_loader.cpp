@@ -1,33 +1,37 @@
 #include "../tools/logger.h"
 #include "startup_preload_loader.h"
 
-#include "../resources/resource_manager.h"
 #include "../resources/texture/surface_loader.h"
 #include "../resources/texture/texture_loader.h"
-#include"../io/path/path_manager.h"
+#include "../io/path/path_manager.h"
 
-#include <algorithm>
+#include <utility>
+#include <vector>
 namespace elysia::bootstrap
 {
 void StartupPreloadLoader::set_manifest_path(const std::filesystem::path& preload_manifest_path)
 {
+    reset();
     _manifest_path = preload_manifest_path;
-    _manifest_loader.reset();
-    _preloaded_texture_keys.clear();
-    _is_loaded = false;
 }
 
 void StartupPreloadLoader::reset()
 {
+    release_textures();
     _manifest_path.clear();
     _manifest_loader.reset();
-    _preloaded_texture_keys.clear();
+}
+
+void StartupPreloadLoader::release_textures() noexcept
+{
+    _texture_cache.clear();
+    _renderer = nullptr;
     _is_loaded = false;
 }
 
 bool StartupPreloadLoader::load(SDL_Renderer* renderer)
 {
-    if (_is_loaded)
+    if (_is_loaded && renderer == _renderer)
         return true;
 
     if (!renderer)
@@ -45,26 +49,26 @@ bool StartupPreloadLoader::load(SDL_Renderer* renderer)
     if (!load_manifest())
         return false;
 
-    if (!load_textures(renderer))
+    BootstrapTextureCache prepared_cache;
+    if (!load_textures(renderer,prepared_cache))
         return false;
 
+    _texture_cache = std::move(prepared_cache);
+    _renderer = renderer;
     _is_loaded = true;
     return true;
 }
 
 SDL_Texture* StartupPreloadLoader::get_texture(std::string_view key) const
 {
-    const std::string requested_key(key);
-    if (std::find(
-        _preloaded_texture_keys.begin(),
-        _preloaded_texture_keys.end(),
-        requested_key) == _preloaded_texture_keys.end())
+    SDL_Texture* texture = _texture_cache.find(key);
+    if (!texture)
     {
-        ELYSIA_LOG_WARN("bootstrap","Texture: " << requested_key << " is not preloaded");
+        ELYSIA_LOG_WARN("bootstrap","Texture: " << key << " is not preloaded");
         return nullptr;
     }
 
-    return elysia::resources::ResourceManager::instance()->find_texture(key);
+    return texture;
 }
 
 bool StartupPreloadLoader::load_manifest()
@@ -79,10 +83,11 @@ bool StartupPreloadLoader::load_manifest()
     return true;
 }
 
-bool StartupPreloadLoader::load_textures(SDL_Renderer* renderer)
+bool StartupPreloadLoader::load_textures(
+    SDL_Renderer* renderer,
+    BootstrapTextureCache& destination
+)
 {
-    _preloaded_texture_keys.clear();
-
     std::vector<std::string> texture_paths;
     const elysia::io::JsonReadResult array_result =
         _manifest_loader.get_array("textures", texture_paths);
@@ -92,7 +97,6 @@ bool StartupPreloadLoader::load_textures(SDL_Renderer* renderer)
         return false;
     }
 
-    elysia::resources::ResourceManager* resource_manager = elysia::resources::ResourceManager::instance();
     elysia::resources::SurfaceLoader surface_loader;
     elysia::resources::TextureLoader texture_loader;
     const std::filesystem::path preload_root=elysia::io::PathManager::instance()->preload();
@@ -119,16 +123,12 @@ bool StartupPreloadLoader::load_textures(SDL_Renderer* renderer)
         if (!texture_result._success)
             return false;
 
-        if (!resource_manager->texture_manager().store_texture(
-            relative_path,
-            std::move(texture_result._texture)))
+        if (!destination.store(relative_path,std::move(texture_result._texture)))
         {
             ELYSIA_LOG_ERROR("bootstrap","Load preload textures failed: store texture failed: "
                 << relative_path);
             return false;
         }
-
-        _preloaded_texture_keys.push_back(relative_path);
     }
 
     return true;

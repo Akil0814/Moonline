@@ -1,6 +1,6 @@
 # Action Mapping 详解
 
-对应公开头文件：[`input_action_types.h`](../../engine/input/action/input_action_types.h)、[`action_input_frame.h`](../../engine/input/action/action_input_frame.h)、[`input_action_map.h`](../../engine/input/action/input_action_map.h)。
+对应公开头文件：[`input_action_types.h`](../../input/action/input_action_types.h)、[`action_input_frame.h`](../../input/action/action_input_frame.h)、[`input_action_map.h`](../../input/action/input_action_map.h)。
 
 ## InputActionId
 
@@ -142,4 +142,3 @@ map.replace_bindings(
 `bindings(action)` 返回指向内部 vector 的 `std::span`。后续追加、替换、清除或恢复 binding 后，不应继续保存旧 span。
 
 当前 API 只修改内存中的 map。退出进程后不会保存；这里也没有配置文件 schema 或 Input Context 切换机制。
-
