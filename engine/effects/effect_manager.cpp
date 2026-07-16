@@ -2,6 +2,8 @@
 #include "effect_manager.h"
 
 #include "../animation/animation_manager.h"
+#include "../localization/localization_manager.h"
+#include "../resources/resource_manager.h"
 #include "../scene/scene.h"
 
 #include <algorithm>
@@ -10,15 +12,6 @@ namespace elysia::effects
 {
 namespace
 {
-bool is_supported_floating_number_character(char ch) noexcept
-{
-	return (ch >= '0' && ch <= '9')
-		|| ch == '-'
-		|| ch == '.'
-		|| ch == '/'
-		|| ch == '%';
-}
-
 bool is_finite_vector(const elysia::core::Vector2& value) noexcept
 {
 	return std::isfinite(value.x) && std::isfinite(value.y);
@@ -247,32 +240,33 @@ std::unique_ptr<FloatingNumberEffect> EffectManager::create_floating_number_effe
 
 	for (const char ch : request.text)
 	{
-		if (!is_supported_floating_number_character(ch))
+		if (!FloatingNumberGlyphCache::supports(ch))
 		{
 			ELYSIA_LOG_WARN("effects", "Create floating number effect failed: text contains an unsupported character.");
 			return nullptr;
 		}
 	}
 
-	elysia::number::DigitCache* cache = digit_cache(request.color);
-	if (!cache)
+	elysia::localization::LocalizationManager* localization_manager =
+		elysia::localization::LocalizationManager::instance();
+	SDL_Renderer* renderer = localization_manager ? localization_manager->renderer() : nullptr;
+	TTF_Font* font = elysia::resources::ResourceManager::instance()->find_font("ui.latin.20");
+	if (!_floating_number_glyph_cache.configure(renderer,font))
 	{
-		ELYSIA_LOG_WARN("effects", "Create floating number effect failed: digit cache is unavailable.");
+		ELYSIA_LOG_WARN("effects", "Create floating number effect failed: glyph cache dependencies are unavailable.");
 		return nullptr;
 	}
 
-	for (const char ch : request.text)
+	std::optional<std::vector<FloatingNumberGlyph>> glyphs =
+		_floating_number_glyph_cache.resolve(request.text,request.color);
+	if (!glyphs.has_value())
 	{
-		if (!cache->get_glyph(ch))
-		{
-			ELYSIA_LOG_WARN("effects", "Create floating number effect failed: digit glyph is unavailable.");
-			return nullptr;
-		}
+		ELYSIA_LOG_WARN("effects", "Create floating number effect failed: digit glyph is unavailable.");
+		return nullptr;
 	}
 
 	std::unique_ptr<FloatingNumberEffect> effect = std::make_unique<FloatingNumberEffect>(
-		request.text,
-		cache,
+		std::move(*glyphs),
 		request.position,
 		request.alignment,
 		request.target_height,
@@ -304,20 +298,10 @@ bool EffectManager::spawn_floating_number_effect(const FloatingNumberEffectSpawn
 	return false;
 }
 
-elysia::number::DigitCache* EffectManager::digit_cache(EffectDigitColor color)
-{
-	return _effect_digit_cache.digit_cache(color);
-}
-
-void EffectManager::reset_digit_caches() noexcept
-{
-	_effect_digit_cache.reset();
-}
-
 void EffectManager::clear_content() noexcept
 {
 	_animation_effect_definitions.clear();
-	reset_digit_caches();
+	_floating_number_glyph_cache.reset();
 }
 
 void EffectManager::set_active_scene(elysia::scene::Scene* scene) noexcept

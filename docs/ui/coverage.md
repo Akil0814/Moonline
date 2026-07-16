@@ -12,13 +12,12 @@
 | `focus/*.h` | [UiFocusScope](reference/ui_focus_scope.md)、[UiControlFocusScopeHost](reference/ui_control_focus_scope_host.md)、[input_focus_scroll](concepts/input_focus_scroll.md) |
 | `scroll/ui_scroll_state.h` | [输入与滚动运行时](reference/input_runtime.md) |
 | `effects/*.h` | [effects](concepts/effects.md)、[动画基础状态机](reference/animation_primitives.md)、[透明度动画组件](reference/opacity_variants.md) |
-| `number/ui_digit_renderer.h` | [数值展示](reference/value_display.md) |
 | `text/*.h` | [text_number](concepts/text_number.md) |
 | `style/*.h` | [style_theme](concepts/style_theme.md)、[样式与主题运行时](reference/theme_runtime.md) |
 | `widgets/ui_button.h` | [UiButton](reference/ui_button.md) |
 | `widgets/ui_checkbox.h`, `widgets/ui_radio_button.h` | [基础选择控件](reference/selection_controls.md) |
 | `widgets/ui_drag_handle.h`, `widgets/ui_slider.h` | [拖拽与数值调节](reference/drag_value_controls.md) |
-| `widgets/ui_bar.h`, `widgets/number/ui_number.h`, `number/ui_digit_renderer.h` | [数值展示](reference/value_display.md) |
+| `widgets/ui_bar.h`, `widgets/number/ui_number.h` | [数值展示](reference/value_display.md) |
 | `widgets/ui_text_input.h` | [UiTextInput](reference/ui_text_input.md) |
 | `widgets/label/ui_label.h` | [UiLabel](reference/ui_label.md) |
 | `widgets/text/ui_text_block.h` | [UiTextBlock](reference/ui_text_block.md) |

@@ -30,6 +30,11 @@ endfunction()
 
 find_package(Threads REQUIRED)
 
+add_moonline_test(glyph_run_layout_tests
+    LABEL core
+    SOURCES core/glyph_run_layout_tests.cpp
+)
+
 foreach(INPUT_TEST_TARGET IN ITEMS
     input_action_mapping_tests
     gameplay_support_tests
@@ -75,9 +80,9 @@ add_moonline_test(animation_effect_tests
     SDL
 )
 
-add_moonline_test(effect_digit_cache_tests
+add_moonline_test(floating_number_glyph_cache_tests
     LABEL effects
-    SOURCES effects/effect_digit_cache_tests.cpp
+    SOURCES effects/floating_number_glyph_cache_tests.cpp
     LIBRARIES ${SDL2_LIBRARIES} ${SDL2_TTF_LIBRARIES}
     SDL
 )
@@ -119,6 +124,7 @@ foreach(UI_TEST_TARGET IN ITEMS
     ui_presentation_tests
     ui_callback_safety_tests
     ui_text_input_rendering_tests
+    ui_number_rendering_tests
 )
     add_moonline_test(${UI_TEST_TARGET}
         LABEL ui

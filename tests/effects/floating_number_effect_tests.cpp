@@ -12,6 +12,7 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 
+#include <cmath>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
@@ -55,7 +56,7 @@ struct FloatingNumberEffectFixture
 
     ~FloatingNumberEffectFixture()
     {
-        elysia::effects::EffectManager::instance()->reset_digit_caches();
+        elysia::effects::EffectManager::instance()->clear_content();
         elysia::localization::LocalizationManager::instance()->shutdown();
         elysia::resources::ResourceManager::instance()->clear();
         SDL_DestroyRenderer(renderer);
@@ -80,7 +81,7 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
     resources::ResourceManager* resource_manager = resources::ResourceManager::instance();
     io::PathManager* path_manager = io::PathManager::instance();
 
-    effect_manager->reset_digit_caches();
+    effect_manager->clear_content();
     localization_manager->shutdown();
     resource_manager->clear();
     require(path_manager->init(), "floating number tests must initialize the project path manager");
@@ -91,7 +92,7 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
 
     effects::FloatingNumberEffectSpawnRequest request;
     request.text = "12%";
-    request.color = effects::EffectDigitColor::Yellow;
+    request.color = effects::FloatingNumberColor::Yellow;
     request.position = core::Vector2(50.0f, 50.0f);
     request.target_height = 20.0f;
     require(effect_manager->create_floating_number_effect(request) == nullptr,
@@ -141,6 +142,31 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
     effect->submit_render_commands(commands);
     require(commands.size() == 3 && commands.front().alpha == 255,
         "floating numbers must render each supported glyph at their initial alpha");
+    require(std::fabs((commands.front().command_rect.left() + commands.back().command_rect.right()) * 0.5f
+            - request.position.x) < 0.001f,
+        "center-aligned floating numbers must be centered on their world position");
+
+    effects::FloatingNumberEffectSpawnRequest left_request = request;
+    left_request.alignment = effects::FloatingNumberAlignment::Left;
+    std::unique_ptr<effects::FloatingNumberEffect> left_effect =
+        effect_manager->create_floating_number_effect(left_request);
+    require(left_effect != nullptr,"left-aligned floating number request must be created");
+    commands.clear();
+    left_effect->submit_render_commands(commands);
+    require(!commands.empty() && std::fabs(commands.front().command_rect.left() - request.position.x) < 0.001f,
+        "left-aligned floating numbers must begin at their world position");
+
+    effects::FloatingNumberEffectSpawnRequest right_request = request;
+    right_request.alignment = effects::FloatingNumberAlignment::Right;
+    std::unique_ptr<effects::FloatingNumberEffect> right_effect =
+        effect_manager->create_floating_number_effect(right_request);
+    require(right_effect != nullptr,"right-aligned floating number request must be created");
+    commands.clear();
+    right_effect->submit_render_commands(commands);
+    require(!commands.empty() && std::fabs(commands.back().command_rect.right() - request.position.x) < 0.001f,
+        "right-aligned floating numbers must end at their world position");
+
+    commands.clear();
     effect->update(0.3);
     require(effect->position().nearly_equals(core::Vector2(55.0f, 40.0f)),
         "linear motion must update the number position over its shared lifetime");

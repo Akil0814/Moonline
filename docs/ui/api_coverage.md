@@ -11,7 +11,7 @@
 | `UiButton` | [UiButton](reference/ui_button.md) |
 | `UiCheckbox`, `UiRadioButton` | [基础选择控件](reference/selection_controls.md) |
 | `UiDragHandle`, `UiSlider` | [拖拽与数值调节](reference/drag_value_controls.md) |
-| `UiBar`, `UiNumber`, `UiDigitRenderer` | [数值展示](reference/value_display.md) |
+| `UiBar`, `UiNumber` | [数值展示](reference/value_display.md) |
 | `UiTextInput`, `UiLabel`, `UiTextBlock` | [各文本控件](README.md#独立组件参考) + [text_number](concepts/text_number.md) |
 | `UiImage`, `UiAnimation` | [媒体控件](reference/media_controls.md) |
 | `UiFadeImage`, `UiBlinkImage`, `UiPulseImage`, `UiFadeLabel`, `UiBlinkLabel`, `UiPulseLabel` | [透明度动画组件](reference/opacity_variants.md) |

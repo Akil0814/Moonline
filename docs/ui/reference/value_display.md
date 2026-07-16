@@ -1,6 +1,6 @@
 # 数值展示控件：UiBar 与 UiNumber
 
-覆盖头文件：`widgets/ui_bar.h`、`widgets/number/ui_number.h`、`number/ui_digit_renderer.h`。
+覆盖头文件：`widgets/ui_bar.h`、`widgets/number/ui_number.h`。
 
 ## UiBar
 
@@ -10,4 +10,4 @@
 
 `set_value(double)` 更新数字；`set_decimal_places`、`set_trim_trailing_zeros`、`set_keep_decimal_point`、`set_suffix` 管理文本格式。`set_digit_spacing`、`set_fixed_glyph_advance`、`set_target_height` 管理字形几何；对应 `clear_*` 移除可选约束。
 
-`UiDigitRenderer` 是底层 render-command 帮助类：向其提供 `UiDigitRenderRequest` 与 DigitCache，调用 `render` 追加命令。常规场景使用 UiNumber，不直接构造 renderer。
+`UiNumber` 按字符复用本地化纹理缓存，并使用公共 glyph-run 排版算法生成渲染命令。

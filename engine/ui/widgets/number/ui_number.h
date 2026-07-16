@@ -2,7 +2,6 @@
 
 #include "../../style/ui_style.h"
 #include "../../style/ui_visual_styles.h"
-#include "../../../number/number_texture_provider.h"
 #include "../../core/ui_element.h"
 #include "../../core/ui_text_align.h"
 #include "../../text/ui_typography.h"
@@ -18,7 +17,7 @@ enum class UiNumberSuffix
     Percent
 };
 
-// Numeric text widget backed by the shared digit cache rather than localized full-string textures.
+// Numeric text widget with per-glyph layout backed by the localization texture cache.
 class UiNumber : public UiElement
 {
 public:
@@ -100,11 +99,7 @@ private:
         std::string text,
         bool keep_decimal_point
     );
-    // Converts text alignment into the digit-renderer alignment enum.
-    [[nodiscard]] elysia::number::DigitAlignment digit_alignment() const noexcept;
-
 private:
-    mutable elysia::number::NumberTextureProvider _texture_provider;
     double _value = 0.0;
     UiStyleState<UiNumberStyle> _style_state;
     UiTypographyRole _typography_role = UiTypographyRole::Number;

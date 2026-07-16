@@ -1,7 +1,6 @@
 #pragma once
 
-#include "effect_digit_cache.h"
-#include "effect_digit_renderer.h"
+#include "floating_number_glyph_cache.h"
 #include "../../core/game_object.h"
 #include "../../core/interface/updatable.h"
 
@@ -14,6 +13,13 @@
 
 namespace elysia::effects
 {
+enum class FloatingNumberAlignment
+{
+    Left,
+    Center,
+    Right
+};
+
 struct FloatingNumberEffectTimeRange
 {
     float start_progress = 0.0f;
@@ -62,10 +68,9 @@ public:
     using Callback = std::function<void(FloatingNumberEffect&)>;
 
     FloatingNumberEffect(
-        std::string text,
-        elysia::number::DigitCache* digit_cache,
+        std::vector<FloatingNumberGlyph> glyphs,
         const elysia::core::Vector2& position,
-        elysia::number::DigitAlignment alignment,
+        FloatingNumberAlignment alignment,
         float target_height,
         double lifetime_seconds,
         FloatingNumberEffects effects,
@@ -87,11 +92,10 @@ private:
     [[nodiscard]] static float range_progress(const FloatingNumberEffectTimeRange& range, float progress) noexcept;
 
 private:
-    std::string _text;
-    EffectDigitRenderer _digit_renderer;
+    std::vector<FloatingNumberGlyph> _glyphs;
     elysia::core::Vector2 _origin_position;
     elysia::core::Vector2 _render_position;
-    elysia::number::DigitAlignment _alignment = elysia::number::DigitAlignment::Center;
+    FloatingNumberAlignment _alignment = FloatingNumberAlignment::Center;
     float _target_height = 20.0f;
     double _lifetime_seconds = 0.6;
     double _start_delay_remaining_seconds = 0.0;

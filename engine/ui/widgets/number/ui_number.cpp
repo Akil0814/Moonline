@@ -1,7 +1,10 @@
 #include "ui_number.h"
 
 #include "../../style/ui_style_defaults.h"
+#include "../../../core/render/glyph_run_layout.h"
 #include "../../../core/render/render_command.h"
+#include "../../../localization/localization_manager.h"
+#include "../../../localization/localized_text_style.h"
 
 #include <SDL.h>
 
@@ -16,14 +19,6 @@ namespace elysia::ui
 namespace
 {
 constexpr double kNegativeZeroTolerance = 1e-9;
-
-struct GlyphLayout
-{
-    SDL_Texture* texture = nullptr;
-    float render_width = 0.0f;
-    float render_height = 0.0f;
-    float advance = 0.0f;
-};
 }
 
 UiNumber::UiNumber(const elysia::core::Rect& rect,int order) noexcept
@@ -56,7 +51,6 @@ UiNumber::UiNumber(
 void UiNumber::reset() noexcept
 {
     UiElement::reset();
-    _texture_provider.reset();
     _value = 0.0;
     _style_state.reset(UiStyleDefaults::number());
     _typography_role = UiTypographyRole::Number;
@@ -93,75 +87,87 @@ void UiNumber::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
     if (available_rect.is_empty())
         return;
 
-    const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
-    const std::vector<elysia::number::NumberTextureGlyph> texture_set =
-        _texture_provider.get_texture_set(text,typography.point_size,style.text);
-    if (texture_set.empty())
+    elysia::localization::LocalizationManager* localization_manager =
+        elysia::localization::LocalizationManager::instance();
+    if (!localization_manager)
         return;
 
-    std::vector<GlyphLayout> glyphs;
-    glyphs.reserve(texture_set.size());
+    const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
+    elysia::localization::LocalizedTextStyle text_style;
+    text_style.point_size = typography.point_size;
+    text_style.color = style.text;
 
-    float total_width = 0.0f;
-    for (const elysia::number::NumberTextureGlyph& texture_glyph : texture_set)
+    std::vector<SDL_Texture*> textures;
+    std::vector<elysia::core::Vector2> source_sizes;
+    textures.reserve(text.size());
+    source_sizes.reserve(text.size());
+    for (const char ch : text)
     {
-        if (!texture_glyph.texture || texture_glyph.texture_width <= 0 || texture_glyph.texture_height <= 0)
+        SDL_Texture* texture = localization_manager->get_raw_text_texture(
+            std::string_view(&ch,1),
+            text_style
+        );
+        if (!texture)
             continue;
 
-        float scale = 0.0f;
-        if (_target_height.has_value() && *_target_height > 0.0f)
-            scale = *_target_height / static_cast<float>(texture_glyph.texture_height);
-        else if (available_rect.height() > 0.0f)
-            scale = available_rect.height() / static_cast<float>(texture_glyph.texture_height);
+        int texture_width = 0;
+        int texture_height = 0;
+        if (SDL_QueryTexture(texture,nullptr,nullptr,&texture_width,&texture_height) != 0
+            || texture_width <= 0
+            || texture_height <= 0)
+        {
+            continue;
+        }
 
-        scale = std::max(0.0f,scale);
-
-        GlyphLayout glyph;
-        glyph.texture = texture_glyph.texture;
-        glyph.render_width = static_cast<float>(texture_glyph.texture_width) * scale;
-        glyph.render_height = static_cast<float>(texture_glyph.texture_height) * scale;
-        glyph.advance = _fixed_glyph_advance.has_value()
-            ? std::max(0.0f,*_fixed_glyph_advance)
-            : glyph.render_width;
-
-        if (!glyphs.empty())
-            total_width += _digit_spacing;
-
-        total_width += glyph.advance;
-        glyphs.push_back(glyph);
+        textures.push_back(texture);
+        source_sizes.emplace_back(
+            static_cast<float>(texture_width),
+            static_cast<float>(texture_height)
+        );
     }
 
-    if (glyphs.empty())
+    const float target_height = _target_height.has_value()
+        ? *_target_height
+        : available_rect.height();
+    const elysia::core::GlyphRunLayout layout = elysia::core::layout_glyph_run(
+        source_sizes,
+        elysia::core::GlyphRunLayoutOptions{
+            .target_height = target_height,
+            .spacing = _digit_spacing,
+            .fixed_advance = _fixed_glyph_advance
+        }
+    );
+    if (layout.glyphs.empty())
         return;
 
     float origin_x = available_rect.x();
-    switch (digit_alignment())
+    switch (_horizontal_align)
     {
-    case elysia::number::DigitAlignment::Center:
-        origin_x = available_rect.center().x - total_width * 0.5f;
+    case TextHorizontalAlign::Center:
+        origin_x = available_rect.center().x - layout.width * 0.5f;
         break;
-    case elysia::number::DigitAlignment::Right:
-        origin_x = available_rect.right() - total_width;
+    case TextHorizontalAlign::Right:
+        origin_x = available_rect.right() - layout.width;
         break;
-    case elysia::number::DigitAlignment::Left:
+    case TextHorizontalAlign::Left:
     default:
         origin_x = available_rect.x();
         break;
     }
 
-    float cursor_x = origin_x;
-    for (std::size_t index = 0; index < glyphs.size(); ++index)
+    for (const elysia::core::GlyphPlacement& placement : layout.glyphs)
     {
-        const GlyphLayout& glyph = glyphs[index];
+        if (placement.glyph_index >= textures.size())
+            continue;
 
         float render_y = available_rect.y();
         switch (_vertical_align)
         {
         case TextVerticalAlign::Center:
-            render_y = available_rect.center().y - glyph.render_height * 0.5f;
+            render_y = available_rect.center().y - placement.local_rect.height() * 0.5f;
             break;
         case TextVerticalAlign::Bottom:
-            render_y = available_rect.bottom() - glyph.render_height;
+            render_y = available_rect.bottom() - placement.local_rect.height();
             break;
         case TextVerticalAlign::Top:
         default:
@@ -170,15 +176,16 @@ void UiNumber::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
         }
 
         elysia::core::UiRenderCommand command = elysia::core::make_ui_texture_command(
-            glyph.texture,
-            elysia::core::Rect(cursor_x,render_y,glyph.render_width,glyph.render_height)
+            textures[placement.glyph_index],
+            elysia::core::Rect(
+                origin_x + placement.local_rect.x(),
+                render_y,
+                placement.local_rect.width(),
+                placement.local_rect.height()
+            )
         );
         apply_opacity(command);
         out_commands.push_back(command);
-
-        cursor_x += glyph.advance;
-        if (index + 1 < glyphs.size())
-            cursor_x += _digit_spacing;
     }
 }
 
@@ -407,20 +414,6 @@ std::string UiNumber::trim_fractional_zeros(std::string text,bool keep_decimal_p
         return keep_decimal_point && !text.empty() && text.back() == '.' ? "0." : "0";
 
     return text;
-}
-
-elysia::number::DigitAlignment UiNumber::digit_alignment() const noexcept
-{
-    switch (_horizontal_align)
-    {
-    case TextHorizontalAlign::Center:
-        return elysia::number::DigitAlignment::Center;
-    case TextHorizontalAlign::Right:
-        return elysia::number::DigitAlignment::Right;
-    case TextHorizontalAlign::Left:
-    default:
-        return elysia::number::DigitAlignment::Left;
-    }
 }
 
 }

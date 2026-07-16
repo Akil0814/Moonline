@@ -1,7 +1,7 @@
 #pragma once
 
 #include "animation_effect.h"
-#include "number/effect_digit_cache.h"
+#include "number/floating_number_glyph_cache.h"
 #include "number/floating_number_effect.h"
 #include "../resources/resource_types.h"
 #include "../tools/singleton.h"
@@ -66,9 +66,9 @@ struct AnimationEffectSpawnRequest
 struct FloatingNumberEffectSpawnRequest
 {
 	std::string text;
-	EffectDigitColor color = EffectDigitColor::White;
+	FloatingNumberColor color = FloatingNumberColor::White;
 	elysia::core::Vector2 position;
-	elysia::number::DigitAlignment alignment = elysia::number::DigitAlignment::Center;
+	FloatingNumberAlignment alignment = FloatingNumberAlignment::Center;
 	float target_height = 20.0f;
 	double start_delay_seconds = 0.0;
 	double time_scale = 1.0;
@@ -90,8 +90,6 @@ public:
 	bool spawn_animation_effect(const AnimationEffectSpawnRequest& request) const;
 	std::unique_ptr<FloatingNumberEffect> create_floating_number_effect(const FloatingNumberEffectSpawnRequest& request);
 	bool spawn_floating_number_effect(const FloatingNumberEffectSpawnRequest& request);
-	[[nodiscard]] elysia::number::DigitCache* digit_cache(EffectDigitColor color);
-	void reset_digit_caches() noexcept;
 	void clear_content() noexcept;
 
 private:
@@ -101,7 +99,7 @@ private:
 	void clear_active_scene(const elysia::scene::Scene* scene) noexcept;
 
 	std::unordered_map<std::string, AnimationEffectDefinition> _animation_effect_definitions;
-	EffectDigitCache _effect_digit_cache;
+	FloatingNumberGlyphCache _floating_number_glyph_cache;
 	elysia::scene::Scene* _active_scene = nullptr;
 };
 

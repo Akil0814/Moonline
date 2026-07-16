@@ -1,5 +1,8 @@
 #include "floating_number_effect.h"
 
+#include "../../core/render/glyph_run_layout.h"
+#include "../../core/render/render_command.h"
+
 #include <algorithm>
 #include <cmath>
 #include <utility>
@@ -20,18 +23,16 @@ float lerp(float from, float to, float progress) noexcept
 }
 
 FloatingNumberEffect::FloatingNumberEffect(
-    std::string text,
-    elysia::number::DigitCache* digit_cache,
+    std::vector<FloatingNumberGlyph> glyphs,
     const elysia::core::Vector2& position,
-    elysia::number::DigitAlignment alignment,
+    FloatingNumberAlignment alignment,
     float target_height,
     double lifetime_seconds,
     FloatingNumberEffects effects,
     Callback on_finished
 )
     : elysia::core::GameObject(elysia::core::DepthLayer::EffectFront),
-      _text(std::move(text)),
-      _digit_renderer(digit_cache),
+      _glyphs(std::move(glyphs)),
       _origin_position(position),
       _render_position(position),
       _alignment(alignment),
@@ -49,13 +50,46 @@ void FloatingNumberEffect::submit_render_commands(std::vector<elysia::core::Rend
     if (is_destroyed() || _start_delay_remaining_seconds > 0.0 || _alpha == 0 || _scale <= 0.0f)
         return;
 
-    EffectDigitRenderRequest request;
-    request.text = _text;
-    request.world_position = _render_position;
-    request.target_height = _target_height * _scale;
-    request.alignment = _alignment;
-    request.alpha = _alpha;
-    _digit_renderer.append_render_commands(request, out_commands);
+    std::vector<elysia::core::Vector2> source_sizes;
+    source_sizes.reserve(_glyphs.size());
+    for (const FloatingNumberGlyph& glyph : _glyphs)
+        source_sizes.push_back(glyph.source_size);
+
+    const elysia::core::GlyphRunLayout layout = elysia::core::layout_glyph_run(
+        source_sizes,
+        elysia::core::GlyphRunLayoutOptions{ .target_height = _target_height * _scale }
+    );
+
+    float origin_x = _render_position.x;
+    switch (_alignment)
+    {
+    case FloatingNumberAlignment::Center:
+        origin_x -= layout.width * 0.5f;
+        break;
+    case FloatingNumberAlignment::Right:
+        origin_x -= layout.width;
+        break;
+    case FloatingNumberAlignment::Left:
+    default:
+        break;
+    }
+
+    for (const elysia::core::GlyphPlacement& placement : layout.glyphs)
+    {
+        if (placement.glyph_index >= _glyphs.size() || !_glyphs[placement.glyph_index].texture)
+            continue;
+
+        elysia::core::RenderCommand command;
+        command.texture = _glyphs[placement.glyph_index].texture.get();
+        command.command_rect = elysia::core::Rect(
+            origin_x + placement.local_rect.x(),
+            _render_position.y - placement.local_rect.height() * 0.5f,
+            placement.local_rect.width(),
+            placement.local_rect.height()
+        );
+        command.alpha = _alpha;
+        out_commands.push_back(command);
+    }
 }
 
 void FloatingNumberEffect::update(double delta)
