@@ -30,6 +30,19 @@ endfunction()
 
 find_package(Threads REQUIRED)
 
+foreach(INPUT_TEST_TARGET IN ITEMS
+    input_action_mapping_tests
+    gameplay_support_tests
+    gameplay_scene_input_tests
+)
+    add_moonline_test(${INPUT_TEST_TARGET}
+        LABEL input
+        SOURCES input/${INPUT_TEST_TARGET}.cpp
+        LIBRARIES ${SDL2_LIBRARIES}
+        SDL
+    )
+endforeach()
+
 add_moonline_test(termination_manager_tests
     LABEL application
     SOURCES application/termination_manager_tests.cpp

@@ -101,7 +101,7 @@ void StartupLoadingScene::on_render(SDL_Renderer* renderer)
 
 void StartupLoadingScene::on_input(const elysia::input::RawInputFrame& input, const std::vector<elysia::input::RawInputEvent>& events)
 {
-	ApplicationScene::on_input(input, events);
+	elysia::scene::Scene::on_input(input, events);
 
 	if (_phase != StartupPhase::WaitingForStartInput)
 		return;

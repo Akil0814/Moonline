@@ -118,7 +118,7 @@ void UiTestScene::on_enter(const elysia::scene::ScenePayload& payload)
 
 void UiTestScene::on_input(const elysia::input::RawInputFrame& input,const std::vector<elysia::input::RawInputEvent>& events)
 {
-    ApplicationScene::on_input(input,events);
+    elysia::scene::Scene::on_input(input,events);
 }
 
 void UiTestScene::on_exit() { _paused = false; clear_ui(); }

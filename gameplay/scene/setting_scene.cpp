@@ -64,19 +64,19 @@ std::unique_ptr<elysia::ui::UiSlider> make_volume_slider(float value)
 
 void SettingScene::on_update(double delta)
 {
-    ApplicationScene::on_update(delta);
+    elysia::scene::Scene::on_update(delta);
 }
 
 void SettingScene::on_render(SDL_Renderer* renderer)
 {
-    ApplicationScene::on_render(renderer);
+    elysia::scene::Scene::on_render(renderer);
 }
 
 void SettingScene::on_input(
     const elysia::input::RawInputFrame& input,
     const std::vector<elysia::input::RawInputEvent>& events)
 {
-    ApplicationScene::on_input(input,events);
+    elysia::scene::Scene::on_input(input,events);
 }
 
 void SettingScene::on_enter(const elysia::scene::ScenePayload& payload)

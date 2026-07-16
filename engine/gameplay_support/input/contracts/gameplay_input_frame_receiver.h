@@ -2,7 +2,7 @@
 
 #include "../gameplay_input_frame.h"
 
-namespace arcneco::input
+namespace elysia::gameplay
 {
 class GameplayInputFrameReceiver
 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../application/scene/application_scene.h"
+#include "../../engine/scene/scene.h"
 #include "../../engine/ui/window/ui_window.h"
 #include <cstddef>
 #include <vector>
@@ -12,7 +12,7 @@ namespace elysia::ui
 
 namespace arcneco::scene
 {
-class SettingScene final : public ApplicationScene
+class SettingScene final : public elysia::scene::Scene
 {
 public:
     SettingScene() = default;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../application/scene/application_scene.h"
+#include "../../engine/scene/scene.h"
 
 #include "../../engine/ui/window/ui_window.h"
 
@@ -15,7 +15,7 @@ class UiConfirmationDialog;
 
 namespace arcneco::scene
 {
-class MainMenuScene final : public ApplicationScene
+class MainMenuScene final : public elysia::scene::Scene
 {
 public:
     MainMenuScene() = default;

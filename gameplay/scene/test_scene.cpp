@@ -10,7 +10,7 @@ void TestScene::on_input(
     const elysia::input::RawInputFrame& input,
     const std::vector<elysia::input::RawInputEvent>& events)
 {
-    ApplicationScene::on_input(input,events);
+    elysia::scene::Scene::on_input(input,events);
 
     if (input.state.is_just_pressed(elysia::input::RawInputControl::KeyEscape))
         request_scene_switch(AppSceneKeys::MainMenu);

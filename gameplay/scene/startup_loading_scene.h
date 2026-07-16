@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../application/scene/application_scene.h"
+#include "../../engine/scene/scene.h"
 #include "../../engine/loading/game_content_loader.h"
 #include "../../engine/ui/widgets/image/ui_fade_image.h"
 #include "../../engine/ui/widgets/ui_bar.h"
@@ -8,7 +8,7 @@
 
 namespace arcneco::scene
 {
-class StartupLoadingScene final : public ApplicationScene
+class StartupLoadingScene final : public elysia::scene::Scene
 {
 public:
 	StartupLoadingScene() = default;

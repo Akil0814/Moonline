@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../application/scene/application_scene.h"
+#include "../../engine/scene/scene.h"
 #include "../../engine/ui/style/ui_theme_manager.h"
 
 #include <array>
@@ -17,7 +17,7 @@ class UiLabel;
 
 namespace arcneco::scene
 {
-class UiTestScene final : public ApplicationScene
+class UiTestScene final : public elysia::scene::Scene
 {
 public:
     UiTestScene() = default;

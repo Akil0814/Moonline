@@ -1,5 +1,5 @@
 #pragma once
-#include "../../application/scene/application_scene.h"
+#include "../../engine/scene/scene.h"
 #include "../../engine/ui/window/ui_window.h"
 
 
@@ -20,7 +20,7 @@ class UiPanel;
 
 namespace arcneco::scene
 {
-    class  CharacterSelectScene final : public ApplicationScene
+    class  CharacterSelectScene final : public elysia::scene::Scene
     {
     public:
         CharacterSelectScene() = default;

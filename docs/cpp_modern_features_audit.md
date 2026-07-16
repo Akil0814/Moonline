@@ -39,7 +39,7 @@
 
 ### 语言基础：类型推导、范围 for、强类型枚举、空指针与虚函数控制
 
-- `auto` 与范围 for：例如 `application/scene/application_scene.cpp:34`、`engine/core/render/sdl_render_command_executor.h:256`。
+- `auto` 与范围 for：例如 `engine/gameplay_support/scene/gameplay_scene.cpp`、`engine/core/render/sdl_render_command_executor.h:256`。
 - `enum class`：例如 `engine/ui/core/ui_child_host.h:18` 的 `UiChildStyleRelation`，防止枚举值隐式转换。
 - `nullptr`、`override`、`final`、`noexcept`：遍布引擎接口和测试桩；例如 `tests/ui_focus_routing_tests.cpp:57-63`。
 - `= delete` / `= default`：例如 `engine/ui/core/ui_child_host.h:47-60`，明确对象可复制/可移动语义。

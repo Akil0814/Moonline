@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../application/scene/application_scene.h"
+#include "../../engine/scene/scene.h"
 
 namespace elysia::ui
 {
@@ -9,7 +9,7 @@ class UiAnimation;
 
 namespace arcneco::scene
 {
-class TestScene final : public ApplicationScene
+class TestScene final : public elysia::scene::Scene
 {
 public:
     TestScene() = default;

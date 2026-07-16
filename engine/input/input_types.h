@@ -1,70 +1,13 @@
 #pragma once
 
-#include <string>
-
 namespace elysia::input
 {
-enum class InputAction
-{
-    Left,
-    Right,
-    Up,
-    Down,
-
-    Confirm,
-    Cancel,
-    Pause,
-
-    Jump,
-    Attack,
-    Special,
-    Guard,
-    Dash,
-    Backspace,
-    DeleteKey,
-    Home,
-    End,
-    Tab,
-
-    Exit,
-
-    Count
-};
-
-enum class InputContext
-{
-    None,
-    Gameplay,
-    UI,
-    Dialogue,
-    Debug
-};
-
 enum class InputDevice
 {
     Keyboard,
     Mouse,
     Gamepad,
     Unknown
-};
-
-enum class InputEventType
-{
-    Pressed,
-    Released,
-    MouseWheel,
-    TextInput,
-    TextEditing
-};
-
-struct InputEvent
-{
-    InputAction action = InputAction::Count;
-    InputEventType type = InputEventType::Released;
-    InputDevice device = InputDevice::Unknown;
-    int wheel_x = 0;
-    int wheel_y = 0;
-    std::string text;
 };
 
 }
