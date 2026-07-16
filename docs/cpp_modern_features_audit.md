@@ -83,7 +83,7 @@
 ### `std::string_view` 与 `std::filesystem`
 
 - `std::string_view`：在配置与资源模块中用于非拥有的语言和配置 key 参数，减少不必要的复制。
-- `std::filesystem`：例如 `engine/config/user_config_store.cpp` 处理设置文件，测试中用其创建和清理临时资源目录。
+- `std::filesystem`：例如 `engine/config/user/user_config_store.cpp` 处理设置文件，测试中用其创建和清理临时资源目录。
 
 ### 编译期分支与折叠表达式
 
@@ -133,7 +133,7 @@
 
 项目的设置与初始化路径使用值语义错误处理，而不是用异常承载可预期业务失败。
 
-- `engine/config/user_config_store.h`：用户设置加载/保存返回 `std::expected`。
+- `engine/config/user/user_config_store.h`：用户设置加载/保存返回 `std::expected`。
 - `engine/config/user_config.cpp`：设置校验或运行时应用失败时返回 `std::unexpected<UserConfigFailure>`；调用端通过 `if (...; !result)` 传播错误。
 - `engine/config/config_service.cpp:5-24`：配置服务初始化和保存将底层错误逐层封装/返回。
 - `application/application.h:30-36`、`application/application.cpp:339-380`：应用层实现运行时设置变更，并向配置层返回可诊断失败。

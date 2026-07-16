@@ -1,12 +1,13 @@
 #pragma once
 
-#include "user_config_initialization_failure.h"
 #include "user_config.h"
-#include "user_config_store.h"
+#include "user_config_types.h"
 #include "../tools/singleton.h"
 
 #include <expected>
 #include <filesystem>
+#include <memory>
+#include <string_view>
 
 class Application;
 
@@ -14,6 +15,21 @@ namespace elysia::bootstrap { class Bootstrapper; }
 
 namespace elysia::config
 {
+class IUserConfigChangeHandler
+{
+public:
+    virtual ~IUserConfigChangeHandler() = default;
+
+    virtual std::expected<void,UserConfigFailure> apply_master_volume(int value) = 0;
+    virtual std::expected<void,UserConfigFailure> apply_music_volume(int value) = 0;
+    virtual std::expected<void,UserConfigFailure> apply_sound_volume(int value) = 0;
+    virtual std::expected<void,UserConfigFailure> apply_language(std::string_view language) = 0;
+    virtual std::expected<void,UserConfigFailure> apply_target_fps(double value) = 0;
+    virtual std::expected<void,UserConfigFailure> apply_window_size(int width,int height) = 0;
+    virtual std::expected<void,UserConfigFailure> apply_fullscreen(bool value) = 0;
+};
+
+class UserConfigStore;
 class UserConfigService final : public elysia::tools::Singleton<UserConfigService>
 {
     friend elysia::tools::Singleton<UserConfigService>;
@@ -33,9 +49,10 @@ public:
     void shutdown() noexcept;
 
 private:
-    UserConfigService() = default;
+    UserConfigService();
+    ~UserConfigService();
     UserConfig _user_config;
-    UserConfigStore _user_config_store;
+    std::unique_ptr<UserConfigStore> _user_config_store;
     std::filesystem::path _user_config_path;
     bool _initialized = false;
 };

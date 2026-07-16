@@ -6,7 +6,7 @@
 #include "../io/loaders/animation_effect_manifest_loader.h"
 #include "../io/loaders/fonts_manifest_loader.h"
 #include "../io/loaders/texture_manifest_loader.h"
-#include "../config/config_load_pipeline.h"
+#include "../config/content/config_load_pipeline.h"
 #include "animated_entity_content_loader.h"
 
 namespace elysia::loading

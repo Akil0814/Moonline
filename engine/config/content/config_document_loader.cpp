@@ -1,7 +1,7 @@
 #include "config_document_loader.h"
 
 #include "config_load_utils.h"
-#include "../io/json/strict_json.h"
+#include "../../io/json/strict_json.h"
 
 namespace elysia::config
 {

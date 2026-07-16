@@ -1,6 +1,6 @@
 #include "config_service.h"
 
-#include "config_snapshot_internal.h"
+#include "content/config_snapshot_internal.h"
 #include "../tools/logger.h"
 
 #include <cmath>

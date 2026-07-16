@@ -1,7 +1,7 @@
 #pragma once
 
 #include "config_snapshot.h"
-#include "config_types.h"
+#include "../config_types.h"
 
 #include <expected>
 #include <filesystem>

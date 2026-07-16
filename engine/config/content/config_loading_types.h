@@ -1,7 +1,7 @@
 #pragma once
 
-#include "config_types.h"
-#include "../io/json/json_loader.h"
+#include "../config_types.h"
+#include "../../io/json/json_loader.h"
 
 #include <filesystem>
 #include <string>

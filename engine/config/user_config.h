@@ -1,8 +1,6 @@
 #pragma once
 
-#include "../bootstrap/runtime_settings.h"
-#include "i_user_config_change_handler.h"
-#include "user_config_apply_status.h"
+#include "user_config_types.h"
 
 #include <expected>
 #include <string>
@@ -10,6 +8,8 @@
 
 namespace elysia::config
 {
+class IUserConfigChangeHandler;
+
 class UserConfig
 {
 public:

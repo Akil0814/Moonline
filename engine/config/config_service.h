@@ -1,6 +1,5 @@
 #pragma once
 
-#include "config_snapshot.h"
 #include "config_types.h"
 #include "../core/geometry/rect.h"
 #include "../core/geometry/vector2.h"
@@ -17,6 +16,7 @@
 
 namespace elysia::config
 {
+class ConfigSnapshot;
 class ConfigService final : public elysia::tools::Singleton<ConfigService>
 {
     friend elysia::tools::Singleton<ConfigService>;

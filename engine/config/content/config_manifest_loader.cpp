@@ -1,8 +1,8 @@
 #include "config_manifest_loader.h"
 
 #include "config_load_utils.h"
-#include "../core/validation/dotted_key_validator.h"
-#include "../io/json/strict_json.h"
+#include "../../core/validation/dotted_key_validator.h"
+#include "../../io/json/strict_json.h"
 
 namespace elysia::config
 {

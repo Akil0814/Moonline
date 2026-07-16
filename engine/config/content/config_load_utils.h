@@ -1,7 +1,7 @@
 #pragma once
 
-#include "config_types.h"
-#include "../io/path/path_manager.h"
+#include "../config_types.h"
+#include "../../io/path/path_manager.h"
 
 #include <filesystem>
 #include <string>

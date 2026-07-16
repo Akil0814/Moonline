@@ -8,6 +8,14 @@ Moonline 将配置划分为三个职责明确的模块：
 | `UserConfigService` | 玩家全局设置、运行时应用与持久化 | Bootstrap，使用 AppConfig 默认值 |
 | `ConfigService` | 只读 gameplay 配置快照与强类型访问 | `GameContentLoader` 完成内容加载后 |
 
+## 代码目录
+
+`engine/config/` 根目录保留稳定的公开入口及其配对实现：`ConfigService`、`UserConfigService`、`UserConfig`，以及合并后的 `user_config_types.h`、错误、状态和回调契约。
+
+- `engine/config/content/`：通用只读 gameplay 配置的 manifest、文档、快照与构建实现。
+- `engine/config/user/`：用户设置的运行时实现与持久化 Store。
+- `engine/bootstrap/`：AppConfig、StartupSettings 及启动解析，保持独立于运行时配置模块。
+
 ## 启动与内容加载
 
 ```text

@@ -1,6 +1,6 @@
 #include "user_config_store.h"
 
-#include "../io/json/strict_json.h"
+#include "../../io/json/strict_json.h"
 
 #include <chrono>
 #include <cmath>

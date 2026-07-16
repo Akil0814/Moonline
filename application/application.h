@@ -4,7 +4,7 @@
 #include "../engine/tools/singleton.h"
 #include "../engine/input/input_system.h"
 #include "../engine/bootstrap/runtime_settings.h"
-#include "../engine/config/i_user_config_change_handler.h"
+#include "../engine/config/user_config_service.h"
 
 #include <SDL.h>
 

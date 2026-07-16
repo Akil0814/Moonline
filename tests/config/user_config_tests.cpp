@@ -1,4 +1,4 @@
-#include "engine/config/user_config_store.h"
+#include "engine/config/user/user_config_store.h"
 #include "engine/config/user_config_service.h"
 #include "tests/support/test_assertions.h"
 

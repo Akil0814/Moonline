@@ -1,5 +1,5 @@
-#include "engine/config/config_load_pipeline.h"
-#include "engine/config/config_manifest_loader.h"
+#include "engine/config/content/config_load_pipeline.h"
+#include "engine/config/content/config_manifest_loader.h"
 #include "engine/config/config_service.h"
 #include "engine/io/path/path_manager.h"
 #include "tests/support/test_assertions.h"

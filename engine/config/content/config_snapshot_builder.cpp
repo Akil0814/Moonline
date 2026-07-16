@@ -2,7 +2,7 @@
 
 #include "config_load_utils.h"
 #include "config_snapshot_internal.h"
-#include "../core/validation/dotted_key_validator.h"
+#include "../../core/validation/dotted_key_validator.h"
 
 namespace elysia::config
 {

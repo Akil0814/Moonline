@@ -1,7 +1,6 @@
 #pragma once
 
-#include "../bootstrap/runtime_settings.h"
-#include "user_config_failure.h"
+#include "../user_config_types.h"
 
 #include <expected>
 #include <filesystem>
@@ -9,16 +8,6 @@
 
 namespace elysia::config
 {
-struct UserConfigLoadResult
-{
-    elysia::bootstrap::UserConfigData settings;
-    std::string warning;
-    bool migrated = false;
-    bool recovered = false;
-    bool rebuilt = false;
-    bool rebuilt_user_config = false;
-};
-
 class UserConfigStore
 {
 public:
