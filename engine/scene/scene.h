@@ -12,8 +12,7 @@
 #include "scene_request.h"
 #include "scene_request_observer.h"
 
-#include "../camera/camera.h"
-#include "../camera/camera_controller.h"
+#include "../camera/camera_manager.h"
 #include "../core/depth_layer.h"
 #include "../core/game_object.h"
 #include "../core/event/subject.h"
@@ -57,13 +56,8 @@ public:
     void pause() { _paused = true; }
     void resume() { _paused = false; }
     [[nodiscard]] bool is_paused() const { return _paused; }
-    [[nodiscard]] elysia::camera::Camera& camera() noexcept { return _camera; }
-    [[nodiscard]] const elysia::camera::Camera& camera() const noexcept { return _camera; }
-    [[nodiscard]] elysia::camera::CameraController* camera_controller() noexcept { return _camera_controller.get(); }
-    [[nodiscard]] const elysia::camera::CameraController* camera_controller() const noexcept { return _camera_controller.get(); }
-
-    elysia::camera::CameraController* emplace_camera_controller();
-    void clear_camera_controller() noexcept;
+    [[nodiscard]] const elysia::camera::Camera& camera() const noexcept;
+    [[nodiscard]] elysia::camera::CameraSlot render_camera_slot() const noexcept;
 
     template <typename T, typename... Args>
     T* create_and_add_object(Args&&... args)
@@ -115,6 +109,7 @@ protected:
     );
     void request_quit();
     void set_camera_viewport_size(const elysia::core::Vector2& viewport_size) noexcept;
+    void set_render_camera_slot(elysia::camera::CameraSlot slot) noexcept;
     virtual void on_scene_object_registered(elysia::core::SceneObject& object);
     [[nodiscard]] virtual std::optional<elysia::core::Rect> resolve_camera_focus_rect() const;
 
@@ -188,8 +183,7 @@ private:
     std::vector<ColliderEntry> _collider_entries;
 
     elysia::ui::UiInputRouter _ui_input_router;
-    elysia::camera::Camera _camera;
-    std::unique_ptr<elysia::camera::CameraController> _camera_controller;
+    elysia::camera::CameraSlot _render_camera_slot = elysia::camera::CameraSlot::Main;
     elysia::physics::PhysicsSystem _physics_system;
     elysia::physics::CollisionSystem _collision_system;
 };

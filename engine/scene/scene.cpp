@@ -10,6 +10,7 @@
 #include "../ui/core/ui_render_command_range_utils.h"
 
 #include <algorithm>
+#include <cassert>
 
 namespace elysia::scene
 {
@@ -98,11 +99,12 @@ void Scene::on_update(double delta)
         _collision_system.dispatch_events(_collider_entries);
     }
 
-    if (_camera_controller)
-    {
-        _camera_controller->set_focus_rect(resolve_camera_focus_rect());
-        _camera_controller->update(delta);
-    }
+    auto* camera_manager = elysia::camera::CameraManager::instance();
+    camera_manager->set_focus_rect(
+        elysia::camera::CameraSlot::Main,
+        resolve_camera_focus_rect()
+    );
+    camera_manager->update(delta);
 
     remove_destroyed_objects();
 }
@@ -134,7 +136,7 @@ void Scene::on_render(SDL_Renderer* renderer)
 
         elysia::core::project_render_commands_to_screen(
             render_commands,
-            _camera,
+            camera(),
             projected_render_commands
         );
         elysia::core::execute_render_commands(renderer, projected_render_commands);
@@ -315,25 +317,31 @@ void Scene::on_scene_object_registered(elysia::core::SceneObject& object)
     (void)object;
 }
 
-elysia::camera::CameraController* Scene::emplace_camera_controller()
+const elysia::camera::Camera& Scene::camera() const noexcept
 {
-    _camera_controller = std::make_unique<elysia::camera::CameraController>(_camera);
-    return _camera_controller.get();
+    return elysia::camera::CameraManager::instance()->camera(_render_camera_slot);
 }
 
-void Scene::clear_camera_controller() noexcept
+elysia::camera::CameraSlot Scene::render_camera_slot() const noexcept
 {
-    _camera_controller.reset();
+    return _render_camera_slot;
 }
 
 void Scene::set_camera_viewport_size(const elysia::core::Vector2& viewport_size) noexcept
 {
-    _camera.set_viewport_size(viewport_size);
+    elysia::camera::CameraManager::instance()->set_viewport_size(
+        elysia::camera::CameraSlot::Main,
+        viewport_size
+    );
+}
 
-    if (_camera_controller)
-    {
-        _camera_controller->set_viewport_size(viewport_size);
-    }
+void Scene::set_render_camera_slot(elysia::camera::CameraSlot slot) noexcept
+{
+    assert(slot != elysia::camera::CameraSlot::Count);
+    if (slot == elysia::camera::CameraSlot::Count)
+        return;
+
+    _render_camera_slot = slot;
 }
 
 std::optional<elysia::core::Rect> Scene::resolve_camera_focus_rect() const

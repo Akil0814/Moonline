@@ -1,125 +1,85 @@
-# 摄像机工作流程
+# Camera 工作流
 
-本目录实现的是 Moonline 的 **2D 世界坐标摄像机**。它把游戏物体提交的世界坐标渲染命令投影到屏幕坐标；UI 使用独立的屏幕坐标渲染路径，因此不随摄像机移动。
+## 模块结构
 
-当前模块分为三层：
+相机模块由三个层次组成：
 
 ```text
-Scene
-  ├─ Camera                 保存最终用于渲染的中心点和视口大小
-  └─ CameraController       可选；计算跟随、边界限制和震屏
-       ├─ IFollowStrategy   决定逻辑中心如何追随焦点
-       └─ CameraEffect      为最终渲染中心叠加临时效果
+CameraManager（全局唯一拥有者和写入口）
+  ├─ Main       Camera + CameraController
+  ├─ Cinematic  Camera + CameraController
+  ├─ Auxiliary1 Camera + CameraController
+  └─ Auxiliary2 Camera + CameraController
 ```
 
-## 文件职责
+- `Camera` 保存最终渲染中心和视口大小，并负责世界坐标到屏幕坐标的投影。
+- `CameraController` 保存逻辑中心、焦点、世界边界、跟随策略和当前临时效果。
+- `CameraManager` 固定拥有四组相机，不提供动态创建或销毁接口。
 
-| 文件 | 职责 |
+四个槽位定义如下：
+
+| 槽位 | 用途 |
 | --- | --- |
-| `camera.h/.cpp` | 摄像机状态、可见世界区域，以及世界到屏幕的坐标投影。 |
-| `camera_controller.h/.cpp` | 管理焦点、跟随策略、世界边界和单个活动特效；将最终结果写回 `Camera`。 |
-| `follow_strategy.h/.cpp` | 三种无状态/轻状态的跟随算法：硬跟随、死区、匀速平滑。 |
-| `camera_effect.h/.cpp` | 可扩展的摄像机效果接口；当前实现为衰减正弦震屏。 |
+| `Main` | Scene 默认使用的世界相机。 |
+| `Cinematic` | 过场和演出视角。 |
+| `Auxiliary1` | 无预设用途的扩展相机。 |
+| `Auxiliary2` | 无预设用途的扩展相机。 |
 
-## 坐标与投影
+## 访问规则
 
-`Camera` 只保存两个值：
-
-- `center`：当前视口在世界坐标中的中心。
-- `viewport_size`：视口宽高；设置时负值会被钳制为 `0`。
-
-由此得到：
-
-```text
-view_rect = Rect::from_center(center, viewport_size)
-screen_position = world_position - view_rect.top_left()
-```
-
-矩形投影只平移左上角，保持原始尺寸。因此当前实现：
-
-- 支持平移；
-- 不支持缩放、旋转或透视；
-- 不在摄像机层做可见性裁剪；提交的世界渲染命令都会被投影并交给 SDL 执行。
-
-在 `Scene::on_render` 中，每一个 `GameObject` 深度层的 `RenderCommand` 都会先经过上述投影，再执行渲染。之后 UI 命令直接执行，不经过 `Camera`，所以 UI/HUD 不会随世界滚动或震屏。
-
-## 每帧更新顺序
-
-`Scene::on_update(delta)` 在普通对象更新、UI 展示动画、物理和碰撞之后，按以下顺序更新摄像机：
-
-```text
-1. Scene::resolve_camera_focus_rect()
-2. CameraController::set_focus_rect(...)
-3. CameraController::update(delta)
-   3.1 首次获得焦点时，立即对齐焦点中心
-   3.2 后续帧按跟随策略计算 logical_center
-   3.3 将 logical_center 限制在 world_bounds 内
-   3.4 叠加活动 CameraEffect 的偏移
-   3.5 将 final_render_center 写入 Camera::center
-4. 下一次 on_render 使用 Camera::center 投影世界命令
-```
-
-控制器不存在时，`Scene` 仍会使用其持有的 `Camera` 渲染；此时中心完全由调用方直接设置。
-
-## 焦点与跟随策略
-
-焦点是一个可选的世界矩形，而不是对象指针。场景应覆写 `resolve_camera_focus_rect()`，在每帧返回要关注对象当前的世界矩形；没有焦点时控制器保留现有逻辑中心。
-
-### 首次对焦
-
-控制器第一次收到焦点时，不经过跟随策略，直接把逻辑中心设为焦点矩形中心。这避免了场景刚进入时摄像机从默认位置缓慢追赶目标。
-
-### `HardFollowStrategy`
-
-每帧直接返回 `focus_rect.center()`。适用于始终把目标固定在屏幕中央的场景。
-
-### `DeadZoneFollowStrategy`
-
-死区矩形以屏幕/视口局部坐标表示。只要焦点矩形仍完全处于死区内，摄像机保持不动；焦点越过任一边时，摄像机仅移动足以使该边重新贴合死区边缘的距离。
-
-若死区为空，或焦点本身大于死区，策略退化为硬跟随，避免无法将焦点完整放入死区的情况。
-
-### `SmoothFollowStrategy`
-
-以 `follow_speed_units_per_second * delta_seconds` 为本帧最大移动距离，向焦点中心做匀速直线移动；距离不足一个步长时直接到达。速度或 `delta_seconds` 非正时不移动。
-
-## 世界边界
-
-`CameraController::set_world_bounds()` 接收一个可选世界矩形。存在边界时，控制器会对逻辑中心做轴向限制：
-
-- 世界宽/高大于视口：中心限定在使视口不越过世界边界的范围内。
-- 世界宽/高小于等于视口：对应轴始终使用世界中心，使小地图位于视口中央。
-
-边界约束发生在跟随之后、震屏之前。因此震屏允许最终渲染中心暂时越过逻辑世界边界；这保留了震动的完整视觉效果，而不会改变跟随的逻辑位置。
-
-## 震屏效果
-
-`start_shake(params)` 替换当前活动效果。当前 `CameraShakeEffect`：
-
-- 对振幅、持续时间和频率做非负钳制；
-- 以不同频率的正弦/余弦生成 X/Y 偏移；
-- 用线性包络让振幅从初始值衰减到 `0`；
-- 持续时间结束后控制器自动清除效果。
-
-`clear_shake()` 会立即移除效果并把渲染中心恢复到逻辑中心。控制器当前只持有一个 `CameraEffect`，后一次 `start_shake()` 会取代前一次，而不是叠加多个效果。
-
-## 场景接入要求
-
-本仓库当前已经把投影路径接入 `Scene`，但尚未发现具体场景创建 `CameraController`、设置视口大小，或提供焦点矩形。因此默认 `viewport_size` 为 `(0, 0)`，投影结果等同于不做平移。
-
-一个需要跟随的场景应在初始化阶段完成：
+`CameraManager` 是受管相机的唯一配置入口。外部只能取得 `const Camera&`，用于渲染、查询可见区域和坐标投影：
 
 ```cpp
-set_camera_viewport_size({ logical_width, logical_height });
-
-auto* controller = emplace_camera_controller();
-controller->set_follow_strategy(
-    std::make_unique<elysia::camera::SmoothFollowStrategy>(300.0)
+const auto& camera = elysia::camera::CameraManager::instance()->camera(
+    elysia::camera::CameraSlot::Main
 );
-controller->set_world_bounds(world_rect); // 若地图边界已知
 ```
 
-并覆写：
+相机状态必须通过 Manager 修改：
+
+```cpp
+auto* cameras = elysia::camera::CameraManager::instance();
+
+cameras->set_viewport_size(CameraSlot::Main, { 1280.0f, 720.0f });
+cameras->set_world_bounds(CameraSlot::Main, world_bounds);
+cameras->set_follow_strategy(
+    CameraSlot::Main,
+    std::make_unique<SmoothFollowStrategy>(300.0)
+);
+```
+
+配置接口立即生效，包括中心、视口、焦点、边界和跟随策略。直接设置中心时，Manager 会同步 Controller 的逻辑中心和 Camera 的最终中心，避免两者失配。
+
+## 请求与更新时序
+
+震屏、立即对焦和清除效果是瞬时请求：
+
+```cpp
+cameras->request_shake(CameraSlot::Main, shake_params);
+cameras->request_snap_to_focus(CameraSlot::Cinematic);
+cameras->request_clear_effects(CameraSlot::Main);
+```
+
+请求按提交顺序进入单线程 FIFO 队列。`CameraManager::update(delta)` 的执行顺序为：
+
+1. 按 FIFO 顺序处理所有待执行请求。
+2. 更新四个 CameraController。
+3. Controller 计算跟随和世界边界限制。
+4. Controller 叠加活动效果偏移。
+5. 最终中心写回 Camera，供随后渲染使用。
+
+同一相机当前只保存一个活动效果。新的震屏会替换旧震屏；如果同一帧依次提交震屏和清除请求，清除请求会在更新前取消震屏。
+
+## Scene 集成
+
+Scene 不再拥有 Camera 或 CameraController。基础场景行为为：
+
+- `Scene::on_update` 每帧将 `resolve_camera_focus_rect()` 的结果写入 `Main`，然后更新 CameraManager 中的全部相机。
+- `Scene::on_render` 默认使用 `Main` 投影世界渲染命令。
+- UI 命令仍直接使用屏幕坐标执行，不经过世界相机。
+- Scene 子类可以通过受保护的 `set_render_camera_slot()` 改用 `Cinematic`、`Auxiliary1` 或 `Auxiliary2` 渲染世界。
+
+只有 Main 会自动接收 Scene 的焦点矩形。其他三个槽位的焦点和配置完全由业务代码管理，不会被 Scene 基础更新覆盖。
 
 ```cpp
 std::optional<elysia::core::Rect> MyScene::resolve_camera_focus_rect() const
@@ -128,11 +88,30 @@ std::optional<elysia::core::Rect> MyScene::resolve_camera_focus_rect() const
 }
 ```
 
-若窗口或逻辑分辨率可在运行时变化，应再次调用 `set_camera_viewport_size()`。该函数会同步更新摄像机，并在有控制器时重新应用世界边界约束。
+场景若需要使用演出相机作为世界渲染相机，可以在进入时选择槽位：
 
-## 扩展边界
+```cpp
+set_render_camera_slot(elysia::camera::CameraSlot::Cinematic);
+```
 
-- 新的追随行为：实现 `IFollowStrategy`，不需要修改 `CameraController`。
-- 新的视觉效果：实现 `CameraEffect`；若需要多效果叠加，需要把控制器当前的单一 `_active_effect` 改为效果集合。
-- 缩放、旋转或裁剪：属于 `Camera` 与渲染投影层的扩展，不应放入跟随策略。
-- 将鼠标屏幕坐标转换回世界坐标：当前未提供 `screen_to_world`，需要时应作为 `Camera` 的对称转换接口加入。
+## 场景切换与重置
+
+切换到不同场景，或以 `SceneReloadMode::Reset` 重进当前场景时，SceneManager 会在旧场景 `on_exit()` 之后、新场景 `on_enter()` 之前重置 Main。
+
+Main 重置会：
+
+- 清除焦点和世界边界；
+- 清除跟随策略和活动效果；
+- 清除面向 Main 的未处理请求；
+- 将逻辑中心和最终中心归零；
+- 保留视口大小。
+
+`Cinematic`、`Auxiliary1` 和 `Auxiliary2` 跨场景保留。使用这些槽位的业务负责主动重新配置或调用 `CameraManager::reset(slot)`。Reuse 当前活动场景不会触发重置；SceneManager 关闭时会重置 Main。
+
+## 当前边界
+
+- 相机请求队列仅用于主线程，不提供线程同步。
+- 四个相机的初始中心和视口均为零；应用或场景需要显式设置视口。
+- 当前不提供动态相机、分屏视口布局、辅助相机占用仲裁或多效果叠加。
+- 缩放、旋转和裁剪属于 Camera 与渲染投影层的后续扩展，不应放入跟随策略。
+- 当前未提供 `screen_to_world`；需要时应作为 Camera 的对称只读转换接口增加。

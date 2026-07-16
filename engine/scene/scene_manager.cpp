@@ -1,5 +1,6 @@
 #include "scene_manager.h"
 
+#include "../camera/camera_manager.h"
 #include "../effects/effect_manager.h"
 
 #include <stdexcept>
@@ -171,6 +172,9 @@ void SceneManager::switch_to_scene(
 
         detach_from_scene(_current_scene);
         _current_scene->on_exit();
+        elysia::camera::CameraManager::instance()->reset(
+            elysia::camera::CameraSlot::Main
+        );
 
         if (reload_mode == SceneReloadMode::Reset)
             _current_scene->reset();
@@ -186,6 +190,10 @@ void SceneManager::switch_to_scene(
         detach_from_scene(_current_scene);
         _current_scene->on_exit();
     }
+
+    elysia::camera::CameraManager::instance()->reset(
+        elysia::camera::CameraSlot::Main
+    );
 
     _current_scene = next_scene;
     _current_scene_key = target;
@@ -225,6 +233,10 @@ void SceneManager::shutdown()
         _current_scene = nullptr;
         _current_scene_key = SceneKeys::Invalid;
     }
+
+    elysia::camera::CameraManager::instance()->reset(
+        elysia::camera::CameraSlot::Main
+    );
 
     _scene_factory.destroy_all_scene();
     _scene_providers.clear();

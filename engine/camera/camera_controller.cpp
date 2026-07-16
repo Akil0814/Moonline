@@ -43,6 +43,12 @@ void CameraController::set_viewport_size(
     write_final_camera_center(_logical_center);
 }
 
+void CameraController::set_center(const elysia::core::Vector2& center) noexcept
+{
+    _logical_center = clamp_center_to_world_bounds(center);
+    write_final_camera_center(_logical_center);
+}
+
 void CameraController::snap_to_focus() noexcept
 {
     if (!_focus_rect.has_value())
@@ -62,6 +68,17 @@ void CameraController::start_shake(const CameraShakeParams& params)
 void CameraController::clear_shake() noexcept
 {
     _active_effect.reset();
+    write_final_camera_center(_logical_center);
+}
+
+void CameraController::reset_scene_state() noexcept
+{
+    _follow_strategy.reset();
+    _focus_rect.reset();
+    _world_bounds.reset();
+    _active_effect.reset();
+    _has_initialized_focus = false;
+    _logical_center = elysia::core::Vector2::zero();
     write_final_camera_center(_logical_center);
 }
 

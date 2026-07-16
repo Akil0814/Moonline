@@ -36,6 +36,13 @@ add_moonline_test(termination_manager_tests
     LIBRARIES Threads::Threads
 )
 
+add_moonline_test(camera_manager_tests
+    LABEL camera
+    SOURCES camera/camera_manager_tests.cpp
+    LIBRARIES ${SDL2_LIBRARIES}
+    SDL
+)
+
 add_moonline_test(sound_playback_scheduler_tests
     LABEL audio
     SOURCES audio/sound_playback_scheduler_tests.cpp

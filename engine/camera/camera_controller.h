@@ -18,10 +18,12 @@ public:
     void set_focus_rect(std::optional<elysia::core::Rect> focus_rect) noexcept;
     void set_world_bounds(std::optional<elysia::core::Rect> world_bounds) noexcept;
     void set_viewport_size(const elysia::core::Vector2& viewport_size) noexcept;
+    void set_center(const elysia::core::Vector2& center) noexcept;
 
     void snap_to_focus() noexcept;
     void start_shake(const CameraShakeParams& params);
     void clear_shake() noexcept;
+    void reset_scene_state() noexcept;
     void update(double delta_seconds);
 
     [[nodiscard]] Camera& camera() noexcept;
