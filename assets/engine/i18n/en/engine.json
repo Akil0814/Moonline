@@ -39,6 +39,20 @@
       "status": {
         "saved": "Settings saved."
       }
+    },
+    "ui_test": {
+      "typography": {
+        "tab": "Typography",
+        "title": "Typography Scale",
+        "description": "Engine font samples at every preloaded point size.",
+        "sample_10": "10 px — Caption sample",
+        "sample_20": "20 px — Compact text sample",
+        "sample_30": "30 px — Standard text sample",
+        "sample_40": "40 px — Heading sample",
+        "sample_50": "50 px — Subtitle sample",
+        "sample_60": "60 px — Dialog title sample",
+        "sample_70": "70 px — Title sample"
+      }
     }
   }
 }

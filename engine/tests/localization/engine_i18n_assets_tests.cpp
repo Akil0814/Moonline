@@ -141,6 +141,16 @@ const std::set<std::string> expected_keys = {
     "engine.settings.status.saved",
     "engine.settings.title",
     "engine.startup.press_any_button",
+    "engine.ui_test.typography.description",
+    "engine.ui_test.typography.sample_10",
+    "engine.ui_test.typography.sample_20",
+    "engine.ui_test.typography.sample_30",
+    "engine.ui_test.typography.sample_40",
+    "engine.ui_test.typography.sample_50",
+    "engine.ui_test.typography.sample_60",
+    "engine.ui_test.typography.sample_70",
+    "engine.ui_test.typography.tab",
+    "engine.ui_test.typography.title",
 };
 
 } // namespace

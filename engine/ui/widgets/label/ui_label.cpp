@@ -234,7 +234,9 @@ elysia::core::Rect UiLabel::text_render_rect(SDL_Texture* text_texture) const no
     const float fit_scale = std::min(width_scale,height_scale);
     const float scale = _text_fit_mode == UiLabelTextFitMode::ScaleToFit
         ? fit_scale
-        : std::min(1.0f,fit_scale);
+        : _text_fit_mode == UiLabelTextFitMode::ShrinkToFit
+            ? std::min(1.0f,fit_scale)
+            : 1.0f;
     const elysia::core::Vector2 render_size(
         static_cast<float>(texture_width) * scale,
         static_cast<float>(texture_height) * scale

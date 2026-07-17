@@ -21,7 +21,9 @@ enum class UiTypographyRole
     DialogAction,
     SliderValue,
     CheckboxLabel,
-    RadioLabel
+    RadioLabel,
+    Caption,
+    Heading
 };
 
 // Rendering inputs resolved from a role; colors remain part of the widget's visual style.
@@ -32,7 +34,7 @@ struct UiResolvedTextStyle
     TextHorizontalAlign horizontal_align_default = TextHorizontalAlign::Left;
 };
 
-[[nodiscard]] inline UiResolvedTextStyle resolve_ui_typography(UiTypographyRole role) noexcept
+[[nodiscard]] static inline UiResolvedTextStyle resolve_ui_typography(UiTypographyRole role) noexcept
 {
     switch (role)
     {
@@ -42,9 +44,21 @@ struct UiResolvedTextStyle
             .wrap_allowed = false,
             .horizontal_align_default = TextHorizontalAlign::Left
         };
+    case UiTypographyRole::Caption:
+        return UiResolvedTextStyle{
+            .point_size = 10,
+            .wrap_allowed = false,
+            .horizontal_align_default = TextHorizontalAlign::Left
+        };
     case UiTypographyRole::Title:
         return UiResolvedTextStyle{
             .point_size = 70,
+            .wrap_allowed = false,
+            .horizontal_align_default = TextHorizontalAlign::Left
+        };
+    case UiTypographyRole::Heading:
+        return UiResolvedTextStyle{
+            .point_size = 40,
             .wrap_allowed = false,
             .horizontal_align_default = TextHorizontalAlign::Left
         };

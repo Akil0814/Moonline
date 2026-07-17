@@ -7,6 +7,7 @@
 #include "engine/ui/containers/ui_panel.h"
 #include "engine/ui/style/ui_theme.h"
 #include "engine/ui/style/ui_theme_manager.h"
+#include "engine/ui/text/ui_typography.h"
 #include "engine/ui/widgets/ui_button.h"
 #include "engine/ui/widgets/ui_checkbox.h"
 #include "engine/ui/widgets/ui_drag_handle.h"
@@ -53,6 +54,28 @@ elysia::ui::UiInteractiveColorsOverrides test_border_color_overrides()
 {
     const auto colors = test_border_colors();
     return { colors.idle,colors.focused,colors.active,colors.disabled };
+}
+
+void test_typography_role_sizes()
+{
+    // Preserve the complete Engine Assist font-size contract in one focused test.
+    using elysia::ui::UiTypographyRole;
+    using elysia::ui::resolve_ui_typography;
+
+    require(resolve_ui_typography(UiTypographyRole::Caption).point_size == 10,
+        "caption typography must use the 10 px Engine font");
+    require(resolve_ui_typography(UiTypographyRole::Heading).point_size == 40,
+        "heading typography must use the 40 px Engine font");
+    require(resolve_ui_typography(UiTypographyRole::ButtonCompact).point_size == 20,
+        "existing compact-button typography must remain 20 px");
+    require(resolve_ui_typography(UiTypographyRole::Label).point_size == 30,
+        "existing label typography must remain 30 px");
+    require(resolve_ui_typography(UiTypographyRole::Subtitle).point_size == 50,
+        "existing subtitle typography must remain 50 px");
+    require(resolve_ui_typography(UiTypographyRole::DialogTitle).point_size == 60,
+        "existing dialog-title typography must remain 60 px");
+    require(resolve_ui_typography(UiTypographyRole::Title).point_size == 70,
+        "existing title typography must remain 70 px");
 }
 
 
@@ -518,6 +541,7 @@ void test_labeled_controls_preserve_label_base_style()
 
 int main()
 {
+    test_typography_role_sizes();
     test_corner_radius_normalization();
     test_chrome_uses_single_rounded_outer_frame();
     test_field_level_style_cascade();

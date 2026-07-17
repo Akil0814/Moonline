@@ -16,6 +16,7 @@ namespace elysia::ui
 {
 enum class UiLabelTextFitMode
 {
+    None,
     ShrinkToFit,
     ScaleToFit
 };

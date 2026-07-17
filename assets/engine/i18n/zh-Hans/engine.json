@@ -39,6 +39,20 @@
       "status": {
         "saved": "设置已保存。"
       }
+    },
+    "ui_test": {
+      "typography": {
+        "tab": "字体排版",
+        "title": "字体字号",
+        "description": "使用引擎内置字体展示所有预加载字号。",
+        "sample_10": "10 px — 说明文字示例",
+        "sample_20": "20 px — 紧凑文字示例",
+        "sample_30": "30 px — 标准文字示例",
+        "sample_40": "40 px — 标题文字示例",
+        "sample_50": "50 px — 副标题文字示例",
+        "sample_60": "60 px — 对话框标题示例",
+        "sample_70": "70 px — 主标题文字示例"
+      }
     }
   }
 }

@@ -338,6 +338,35 @@ void UiTestScene::rebuild_ui()
     auto raw = std::make_unique<UiLabel>(elysia::core::Rect{ 0,0,680,32 },0,ui_raw_text("Raw text: localization bypass comparison")); raw->set_visual_role(UiLabelVisualRole::Muted); theme_section->add_back(std::move(raw));
     (void)tabs->add_tab(ui_text_key("ui_test_scene.pages.theme"),std::move(themes_page));
 
+    // Typography: render every preloaded Engine font point size without fitting.
+    UiListContainer* typography_list = nullptr;
+    auto typography_page = page_scroll(typography_list);
+    auto* typography_section = add_section(*typography_list,
+        "engine.ui_test.typography.title","engine.ui_test.typography.description");
+    struct TypographySample
+    {
+        const char* key;
+        UiTypographyRole role;
+        float height;
+    };
+    static constexpr std::array<TypographySample,7> typography_samples{{
+        { "engine.ui_test.typography.sample_10",UiTypographyRole::Caption,26.0f },
+        { "engine.ui_test.typography.sample_20",UiTypographyRole::ButtonCompact,36.0f },
+        { "engine.ui_test.typography.sample_30",UiTypographyRole::Label,46.0f },
+        { "engine.ui_test.typography.sample_40",UiTypographyRole::Heading,56.0f },
+        { "engine.ui_test.typography.sample_50",UiTypographyRole::Subtitle,66.0f },
+        { "engine.ui_test.typography.sample_60",UiTypographyRole::DialogTitle,76.0f },
+        { "engine.ui_test.typography.sample_70",UiTypographyRole::Title,86.0f }
+    }};
+    for (const auto& sample : typography_samples)
+    {
+        auto label = std::make_unique<UiLabel>(elysia::core::Rect{ 0,0,780,sample.height },0,ui_text_key(sample.key));
+        label->set_typography_role(sample.role);
+        label->set_text_fit_mode(UiLabelTextFitMode::None);
+        typography_section->add_back(std::move(label));
+    }
+    (void)tabs->add_tab(ui_text_key("engine.ui_test.typography.tab"),std::move(typography_page));
+
     _root_window->add_child(std::move(workbench),at(16,48,1080,530));
     _root_window->register_focus_scope(*tabs);
     _root_window->focus_first_available_scope();
