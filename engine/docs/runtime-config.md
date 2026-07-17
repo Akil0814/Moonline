@@ -21,8 +21,9 @@ Moonline 将配置划分为三个职责明确的模块：
 ```text
 Bootstrap
   content_registry.json（解析一次） -> Application 持有 ContentRegistry
-  Application -> SceneRuntimeContext（向 Scene 提供只读 registry 与逻辑画布）
-  AppConfig -> UserConfigService -> preload manifest
+  AppConfig -> UserConfigService -> renderer -> EngineAssistCache
+  EngineAssistCache -> LocalizationManager -> 项目 preload manifest
+  Application -> SceneRuntimeContext（向 Scene 提供只读 registry、逻辑画布与 Engine Assist Cache）
 
 GameContentLoader
   SceneRuntimeContext::content_registry() -> manifests.required.configs -> ConfigLoadPipeline

@@ -8,12 +8,14 @@ SceneRuntimeContext::SceneRuntimeContext(
     SDL_Renderer* renderer,
     const elysia::io::ContentRegistry& content_registry,
     int logical_width,
-    int logical_height
+    int logical_height,
+    const elysia::assist::EngineAssistCache* engine_assist_cache
 ) noexcept
     : _renderer(renderer)
     , _content_registry(&content_registry)
     , _logical_width(logical_width)
     , _logical_height(logical_height)
+    , _engine_assist_cache(engine_assist_cache)
 {
 }
 
@@ -35,5 +37,10 @@ int SceneRuntimeContext::logical_width() const noexcept
 int SceneRuntimeContext::logical_height() const noexcept
 {
     return _logical_height;
+}
+
+const elysia::assist::EngineAssistCache* SceneRuntimeContext::engine_assist_cache() const noexcept
+{
+    return _engine_assist_cache;
 }
 }

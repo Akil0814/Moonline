@@ -31,10 +31,6 @@ private:
 
     bool load_manifest();
     bool load_textures(SDL_Renderer* renderer, BootstrapTextureCache& destination);
-    bool load_required_engine_texture(
-        SDL_Renderer* renderer,
-        BootstrapTextureCache& destination
-    );
     bool load_optional_project_texture(
         SDL_Renderer* renderer,
         const TextureEntry& entry,

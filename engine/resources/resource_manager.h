@@ -40,6 +40,7 @@ public:
 	bool load_music(const std::vector<MusicLoadRequest>& requests);
 
 	Atlas* find_atlas(const std::string_view& key) const;
+	bool has_font(std::string_view key) const noexcept;
 	TTF_Font* find_font(const std::string_view& key) const;
 	Mix_Chunk* find_sound(const std::string_view& key) const;
 	Mix_Music* find_music(const std::string_view& key) const;

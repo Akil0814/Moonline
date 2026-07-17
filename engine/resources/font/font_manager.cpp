@@ -76,6 +76,11 @@ bool FontManager::store_font(const std::string& key, TTF_Font* font)
 	return true;
 }
 
+bool FontManager::has_font(std::string_view key) const noexcept
+{
+	return !key.empty() && _font_pool.contains(std::string(key));
+}
+
 TTF_Font* FontManager::find_font(const std::string_view& key) const
 {
 	if (key.empty())

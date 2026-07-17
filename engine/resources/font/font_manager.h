@@ -23,6 +23,7 @@ public:
 		int point_size
 	);
 	bool store_font(const std::string& key, TTF_Font* font);
+	bool has_font(std::string_view key) const noexcept;
 	TTF_Font* find_font(const std::string_view& key) const;
 
 	void clear() override;

@@ -24,6 +24,7 @@ struct EngineAssistLocaleDescriptor
 enum class EngineAssistValidationErrorCode
 {
     RootMissing,
+    RequiredMarkerMissing,
     RequiredFileMissing
 };
 
@@ -40,6 +41,7 @@ public:
     explicit EngineAssistCatalog(const elysia::io::PathManager& path_manager);
 
     [[nodiscard]] const std::filesystem::path& root() const noexcept;
+    [[nodiscard]] std::filesystem::path required_marker_path() const;
     [[nodiscard]] std::span<const EngineAssistAssetDescriptor> fonts() const noexcept;
     [[nodiscard]] std::span<const EngineAssistAssetDescriptor> textures() const noexcept;
     [[nodiscard]] std::span<const EngineAssistLocaleDescriptor> locales() const noexcept;

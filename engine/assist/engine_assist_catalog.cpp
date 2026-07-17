@@ -34,6 +34,8 @@ const std::array<EngineAssistLocaleDescriptor, 5> kLocaleDescriptors = {
     EngineAssistLocaleDescriptor{"ja", "i18n/ja/engine.json"},
     EngineAssistLocaleDescriptor{"ko", "i18n/ko/engine.json"},
 };
+
+constexpr std::string_view kRequiredMarkerFileName = ".elysia_engine_required";
 }
 
 EngineAssistCatalog::EngineAssistCatalog(std::filesystem::path project_root)
@@ -49,6 +51,11 @@ EngineAssistCatalog::EngineAssistCatalog(const elysia::io::PathManager& path_man
 const std::filesystem::path& EngineAssistCatalog::root() const noexcept
 {
     return _root;
+}
+
+std::filesystem::path EngineAssistCatalog::required_marker_path() const
+{
+    return _root / kRequiredMarkerFileName;
 }
 
 std::span<const EngineAssistAssetDescriptor> EngineAssistCatalog::fonts() const noexcept
@@ -81,6 +88,15 @@ EngineAssistCatalog::validate_required_files() const
         return std::unexpected(EngineAssistValidationError{
             .code = EngineAssistValidationErrorCode::RootMissing,
             .path = _root
+        });
+    }
+
+    const std::filesystem::path required_marker = required_marker_path();
+    if (!std::filesystem::is_regular_file(required_marker, error))
+    {
+        return std::unexpected(EngineAssistValidationError{
+            .code = EngineAssistValidationErrorCode::RequiredMarkerMissing,
+            .path = required_marker
         });
     }
 

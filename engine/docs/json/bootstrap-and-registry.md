@@ -67,6 +67,8 @@
 }
 ```
 
-项目纹理路径基于 `assets/preload/`，运行时使用条目的 `key`。Elysia Logo 由 engine 固定从 `assets/engine/preload/` 加载，不由项目 manifest 声明；缺失属于启动失败。项目 Logo 是可选资源，缺失时记录 warning 并跳过。
+项目纹理路径基于 `assets/preload/`，运行时使用条目的 `key`。项目 Logo 是可选资源，缺失时记录 warning 并跳过。
 
-预加载纹理由 bootstrap 子系统自己的 `BootstrapTextureCache` 持有，不会注册到正式内容使用的 `ResourceManager`。因此 `GameContentLoader` 清理或重新加载游戏内容时不会影响启动画面。`get_preload_texture()` 返回借用指针，其有效期截止到 Application shutdown、bootstrap reset 或 SDL renderer 更换；退出 `StartupLoadingScene` 不会释放 engine 常驻 Logo，因此该内建场景可以安全再次进入。
+`assets/engine` 由 Application 持有的 `EngineAssistCache` 在 renderer 建立后事务式加载：五张 Engine 纹理、五套七档字号字体及五语 `engine.json` 都常驻到 Application shutdown，且不注册到项目 `ResourceManager`。其中 `.elysia_engine_required` 是必需根标记；`OFL.txt` 仅为许可证文件。Elysia Logo 由 `StartupLoadingScene` 直接从 Engine Assist Cache 取得，因此 `GameContentLoader` 清理或重新加载项目内容不会影响内建启动场景。
+
+`BootstrapTextureCache` 仅持有项目 preload manifest 中的可选纹理。`get_preload_texture()` 返回借用指针，其有效期截止到 Application shutdown、bootstrap reset 或 SDL renderer 更换。

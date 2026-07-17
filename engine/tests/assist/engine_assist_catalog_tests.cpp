@@ -96,6 +96,10 @@ int main()
         catalog.validate_required_files().has_value(),
         "all repository Engine assist files must be present"
     );
+    require(
+        catalog.required_marker_path() == source_root / "assets" / "engine" / ".elysia_engine_required",
+        "assist catalog must require the Engine-specific marker file"
+    );
 
     const auto unique_suffix = std::to_string(
         std::chrono::steady_clock::now().time_since_epoch().count()
@@ -108,12 +112,12 @@ int main()
     const auto missing_file = missing_file_catalog.validate_required_files();
     require(!missing_file.has_value(), "catalog must reject a missing required resource");
     require(
-        missing_file.error().code == EngineAssistValidationErrorCode::RequiredFileMissing,
-        "existing assist root with no resources must report a required file failure"
+        missing_file.error().code == EngineAssistValidationErrorCode::RequiredMarkerMissing,
+        "existing assist root with no marker must report a marker failure"
     );
     require(
-        missing_file.error().path == temporary_root / "assets" / "engine" / "fonts" / "NotoSans-Regular.ttf",
-        "missing file failure must identify the first missing required asset"
+        missing_file.error().path == temporary_root / "assets" / "engine" / ".elysia_engine_required",
+        "missing marker failure must identify the Engine-specific marker"
     );
 
     EngineAssistCatalog missing_root_catalog(temporary_root / "missing");

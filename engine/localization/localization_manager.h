@@ -14,6 +14,11 @@
 #include <unordered_map>
 #include <vector>
 
+namespace elysia::assist
+{
+class EngineAssistCache;
+}
+
 namespace elysia::localization
 {
 class LocalizationManager : public elysia::tools::Singleton<LocalizationManager>
@@ -24,7 +29,8 @@ public:
 	bool init(
 		SDL_Renderer* renderer,
 		const std::filesystem::path& manifest_path,
-		std::string initial_language
+		std::string initial_language,
+		const elysia::assist::EngineAssistCache* engine_assist_cache = nullptr
 	);
 	void shutdown();
 
@@ -51,6 +57,7 @@ private:
 	bool ensure_language_loaded(const std::string& language);
 	bool load_language_table(const std::string& language, TranslationTable& out_table) const;
 	std::filesystem::path resolve_locale_directory(const std::string& language) const;
+	std::string_view engine_locale() const noexcept;
 	std::string_view lookup_translation(
 		const TranslationTable& table,
 		std::string_view key
@@ -74,6 +81,7 @@ private:
 	TextTextureCache _text_texture_cache;
 	std::unordered_map<std::string, TranslationTable> _translation_tables;
 	std::string _current_language;
+	const elysia::assist::EngineAssistCache* _engine_assist_cache = nullptr;
 	bool _initialized = false;
 };
 

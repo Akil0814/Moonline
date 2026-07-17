@@ -5,11 +5,13 @@
 #include "application_scene_composition.h"
 #include "application_termination_logging.h"
 
+#include "../assist/engine_assist_catalog.h"
 #include "../audio/audio_service.h"
 #include "../bootstrap/bootstrapper.h"
 #include "../core/time.h"
 #include "../loading/content_runtime_cleanup.h"
 #include "../localization/localization_manager.h"
+#include "../io/path/path_manager.h"
 #include "../tools/logger.h"
 
 #include <cstdlib>
@@ -120,10 +122,21 @@ bool Application::init(
     if (!init_runtime(runtime_settings,descriptor))
         startup_fail("Application runtime initialization failed.");
 
+    const elysia::assist::EngineAssistCatalog engine_assist_catalog(
+        *elysia::io::PathManager::instance());
+    if (const auto engine_assist_result = _engine_assist_cache.initialize(
+            _renderer,
+            engine_assist_catalog);
+        !engine_assist_result)
+    {
+        startup_fail("Engine assist initialization failed: " + engine_assist_result.error());
+    }
+
     if (!elysia::localization::LocalizationManager::instance()->init(
         _renderer,
         parse_result.i18n_manifest_path,
-        runtime_settings.language))
+        runtime_settings.language,
+        &_engine_assist_cache))
     {
         startup_fail("Localization initialization failed.");
     }
@@ -164,7 +177,8 @@ bool Application::init(
         _renderer,
         _content_registry,
         descriptor.logical_width,
-        descriptor.logical_height);
+        descriptor.logical_height,
+        &_engine_assist_cache);
     _scene_manager.set_runtime_context(*_scene_runtime_context);
 
     enter_initial_scene(game_module,descriptor);
@@ -368,9 +382,10 @@ void Application::shutdown()
     _scene_manager.detach(this);
     _scene_manager.shutdown();
     _scene_runtime_context.reset();
-    elysia::bootstrap::Bootstrapper::instance()->release_preload_textures();
 
     elysia::localization::LocalizationManager::instance()->shutdown();
+    elysia::bootstrap::Bootstrapper::instance()->release_preload_textures();
+    _engine_assist_cache.shutdown();
     if (_user_config_handler_registered)
     {
         elysia::config::UserConfigService::instance()

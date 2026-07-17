@@ -174,9 +174,6 @@ bool StartupPreloadLoader::load_textures(
     BootstrapTextureCache& destination
 )
 {
-    if (!load_required_engine_texture(renderer,destination))
-        return false;
-
     for (const TextureEntry& entry : _project_textures)
     {
         // Project branding is optional. A missing or undecodable project image
@@ -185,29 +182,6 @@ bool StartupPreloadLoader::load_textures(
     }
 
     return true;
-}
-
-bool StartupPreloadLoader::load_required_engine_texture(
-    SDL_Renderer* renderer,
-    BootstrapTextureCache& destination)
-{
-    const std::filesystem::path file =
-        elysia::io::PathManager::instance()->assets()
-        / std::filesystem::path(startup_preload::EngineLogoAssetPath);
-
-    if (load_texture(
-        renderer,
-        startup_preload::EngineLogoTextureKey,
-        file,
-        destination))
-    {
-        return true;
-    }
-
-    ELYSIA_LOG_ERROR("bootstrap",
-        "Bootstrapper phase2 failed: required Elysia startup logo could not be loaded: "
-        << file);
-    return false;
 }
 
 bool StartupPreloadLoader::load_optional_project_texture(

@@ -2,6 +2,7 @@
 
 #include "game_module.h"
 
+#include "../assist/engine_assist_cache.h"
 #include "../bootstrap/runtime_settings.h"
 #include "../config/user_config_service.h"
 #include "../input/input_system.h"
@@ -73,6 +74,7 @@ private:
     elysia::input::InputSystem _input_system;
     elysia::scene::SceneManager _scene_manager;
     elysia::io::ContentRegistry _content_registry;
+    elysia::assist::EngineAssistCache _engine_assist_cache;
     std::optional<elysia::scene::SceneRuntimeContext> _scene_runtime_context;
 
     bool _active = true;

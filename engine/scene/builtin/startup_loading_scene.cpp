@@ -2,6 +2,7 @@
 
 #include "../../bootstrap/bootstrapper.h"
 #include "../../bootstrap/startup_preload_contract.h"
+#include "../../assist/engine_assist_cache.h"
 #include "../../tools/logger.h"
 #include "../../tools/termination_manager.h"
 #include "../../ui/widgets/image/ui_fade_image.h"
@@ -132,9 +133,12 @@ void StartupLoadingScene::on_input(
 
 bool StartupLoadingScene::create_presentation()
 {
-    SDL_Texture* engine_texture =
-        elysia::bootstrap::Bootstrapper::instance()->get_preload_texture(
-            elysia::bootstrap::startup_preload::EngineLogoTextureKey);
+    const elysia::assist::EngineAssistCache* engine_assist_cache =
+        runtime_context().engine_assist_cache();
+    SDL_Texture* engine_texture = engine_assist_cache
+        ? engine_assist_cache->find_texture(
+            elysia::bootstrap::startup_preload::EngineLogoTextureKey)
+        : nullptr;
     if (!engine_texture)
     {
         handle_failure("Required Elysia startup logo is not available.");

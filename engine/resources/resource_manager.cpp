@@ -54,6 +54,11 @@ Atlas* elysia::resources::ResourceManager::find_atlas(const std::string_view& ke
 	return _atlas_manager.find_atlas(key);
 }
 
+bool elysia::resources::ResourceManager::has_font(std::string_view key) const noexcept
+{
+	return _font_manager.has_font(key);
+}
+
 TTF_Font* elysia::resources::ResourceManager::find_font(const std::string_view& key) const
 {
 	return _font_manager.find_font(key);

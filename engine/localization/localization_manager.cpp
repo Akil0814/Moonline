@@ -1,4 +1,5 @@
 #include "../tools/logger.h"
+#include "../assist/engine_assist_cache.h"
 #include "localization_manager.h"
 
 #include "../core/render/sdl_convert.h"
@@ -55,7 +56,8 @@ std::string replace_underscores_with_hyphens(std::string value)
 bool LocalizationManager::init(
 	SDL_Renderer* renderer,
 	const std::filesystem::path& manifest_path,
-	std::string initial_language
+	std::string initial_language,
+	const elysia::assist::EngineAssistCache* engine_assist_cache
 )
 {
 	shutdown();
@@ -97,6 +99,7 @@ bool LocalizationManager::init(
 	}
 
 	_renderer = renderer;
+	_engine_assist_cache = engine_assist_cache;
 	_manifest_path = manifest_path;
 	_i18n_root = path_manager->assets() / "i18n";
 
@@ -126,6 +129,7 @@ void LocalizationManager::shutdown()
 	_manifest_path.clear();
 	_i18n_root.clear();
 	_current_language.clear();
+	_engine_assist_cache = nullptr;
 	_renderer = nullptr;
 	_initialized = false;
 }
@@ -151,6 +155,18 @@ std::string_view LocalizationManager::tr(std::string_view key) const
 			lookup_translation(default_table_iterator->second, key);
 		if (default_translation != key)
 			return default_translation;
+	}
+
+	if (key.starts_with("engine.") && _engine_assist_cache)
+	{
+		const std::string_view locale = engine_locale();
+		if (const std::string* translation = _engine_assist_cache->find_translation(locale, key))
+			return *translation;
+		if (locale != "en")
+		{
+			if (const std::string* fallback = _engine_assist_cache->find_translation("en", key))
+				return *fallback;
+		}
 	}
 
 	return key;
@@ -374,6 +390,13 @@ std::filesystem::path LocalizationManager::resolve_locale_directory(
 	return {};
 }
 
+std::string_view LocalizationManager::engine_locale() const noexcept
+{
+	return _engine_assist_cache
+		? elysia::assist::EngineAssistCache::map_project_locale(_current_language)
+		: std::string_view{};
+}
+
 std::string_view LocalizationManager::lookup_translation(
 	const TranslationTable& table,
 	std::string_view key
@@ -394,10 +417,14 @@ std::string LocalizationManager::map_font_key(
 	const std::string suffix = "." + std::to_string(point_size);
 	if (language == "en")
 		return "ui.latin" + suffix;
-	if (language == "zh_cn")
+	if (language == "zh_cn" || language == "zh-Hans")
 		return "ui.zh_hans" + suffix;
+	if (language == "zh_hant" || language == "zh-Hant")
+		return "ui.zh_hant" + suffix;
 	if (language == "ja")
 		return "ui.ja" + suffix;
+	if (language == "ko")
+		return "ui.ko" + suffix;
 
 	return {};
 }
@@ -415,15 +442,24 @@ TTF_Font* LocalizationManager::resolve_font(int point_size) const
 		return nullptr;
 	}
 
-	TTF_Font* font = elysia::resources::ResourceManager::instance()->find_font(font_key);
-	if (!font)
+	elysia::resources::ResourceManager* resource_manager =
+		elysia::resources::ResourceManager::instance();
+	if (resource_manager->has_font(font_key))
+		return resource_manager->find_font(font_key);
+
+	if (_engine_assist_cache)
 	{
-		ELYSIA_LOG_WARN("localization","Resolve font failed: font is not loaded: "
-			<< font_key);
-		return nullptr;
+		if (TTF_Font* fallback = _engine_assist_cache->find_font(
+			elysia::assist::EngineAssistCache::map_project_locale(_current_language),
+			point_size))
+		{
+			return fallback;
+		}
 	}
 
-	return font;
+	ELYSIA_LOG_WARN("localization","Resolve font failed: font is not loaded: "
+		<< font_key);
+	return nullptr;
 }
 
 CachedTexturePtr LocalizationManager::create_text_texture(
