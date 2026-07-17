@@ -1,6 +1,7 @@
 #include "application_scene_composition.h"
 
 #include "../scene/builtin/settings_scene.h"
+#include "../scene/builtin/startup_failure_scene.h"
 #include "../scene/builtin/startup_loading_scene.h"
 #include "../scene/builtin/ui_test_scene.h"
 #include "../scene/builtin/engine_feature_test_scene.h"
@@ -24,6 +25,9 @@ void compose_application_scenes(
     scene_manager.register_builtin_scene<
         elysia::scene::builtin::SettingsScene>(
             elysia::scene::builtin::Settings);
+    scene_manager.register_builtin_scene<
+        elysia::scene::builtin::StartupFailureScene>(
+            elysia::scene::builtin::StartupFailure);
     scene_manager.register_builtin_scene<
         elysia::scene::builtin::UiTestScene>(
             elysia::scene::builtin::UiTest);

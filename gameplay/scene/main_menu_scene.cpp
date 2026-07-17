@@ -4,6 +4,7 @@
 
 #include "../../engine/audio/audio_service.h"
 #include "../../engine/resources/resource_manager.h"
+#include "../../engine/scene/builtin/startup_failure_scene_payload.h"
 #include "../../engine/scene/builtin/settings_scene.h"
 #include "../../engine/scene/builtin/engine_test_scene_payload.h"
 
@@ -186,6 +187,22 @@ void MainMenuScene::build_menu_buttons()
                     .payload = MainMenuEnterPayload{ .replay_theme_music = false },
                     .reload_mode = elysia::scene::SceneReloadMode::Reuse
                 }
+            });
+    });
+    //test end
+
+    //test begin
+    auto* startup_failure_scene_button =
+        Scene::create_and_add_object<elysia::ui::UiButton>(
+            elysia::core::Rect{ 20,140,180,50 },20);
+    startup_failure_scene_button->set_text_content(
+        elysia::ui::ui_raw_text("Startup Failure"));
+    startup_failure_scene_button->set_on_click([this]() {
+        Scene::request_scene_switch(
+            elysia::scene::builtin::StartupFailure,
+            elysia::scene::builtin::StartupFailureScenePayload{
+                .diagnostic_message =
+                    "Injected startup failure from the main menu test."
             });
     });
     //test end
