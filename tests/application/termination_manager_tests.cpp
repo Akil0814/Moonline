@@ -128,15 +128,25 @@ void test_event_boundary_and_exit_priority()
     require(elysia::application::resolve_application_exit(false,*manager)
             == elysia::application::ApplicationExitDecision::Continue,
         "no request and no normal quit must continue");
-    require(elysia::application::resolve_application_exit(true,*manager)
-            == elysia::application::ApplicationExitDecision::NormalExit,
+    const auto normal_exit =
+        elysia::application::resolve_application_exit(true,*manager);
+    require(normal_exit == elysia::application::ApplicationExitDecision::NormalExit,
         "normal quit without a fault must exit successfully");
+    require(
+        elysia::application::to_application_run_result(normal_exit)
+            == elysia::application::ApplicationRunResult::NormalExit,
+        "normal exit decisions must produce a normal application run result");
 
     manager->reset_for_testing();
     manager->request_termination(tools::TerminationReason::FatalRuntimeFailure,"worker","same frame fault");
-    require(elysia::application::resolve_application_exit(true,*manager)
-            == elysia::application::ApplicationExitDecision::FaultExit,
+    const auto fault_exit =
+        elysia::application::resolve_application_exit(true,*manager);
+    require(fault_exit == elysia::application::ApplicationExitDecision::FaultExit,
         "published termination requests must override normal quit requests");
+    require(
+        elysia::application::to_application_run_result(fault_exit)
+            == elysia::application::ApplicationRunResult::FaultExit,
+        "fault exit decisions must produce a fault application run result");
 }
 }
 

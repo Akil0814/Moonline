@@ -1,5 +1,6 @@
 #pragma once
 
+#include "application_run_result.h"
 #include "../tools/termination_manager.h"
 
 namespace elysia::application
@@ -23,5 +24,13 @@ enum class ApplicationExitDecision
     return termination_manager.seal_for_shutdown()
         ? ApplicationExitDecision::FaultExit
         : ApplicationExitDecision::NormalExit;
+}
+
+[[nodiscard]] inline ApplicationRunResult to_application_run_result(
+    ApplicationExitDecision decision) noexcept
+{
+    return decision == ApplicationExitDecision::FaultExit
+        ? ApplicationRunResult::FaultExit
+        : ApplicationRunResult::NormalExit;
 }
 }

@@ -11,5 +11,7 @@ int main(int argc, char** argv)
 	if (!application->init(argc,argv,game_module))
 		return EXIT_FAILURE;
 
-	return application->run();
+	return application->run() == elysia::application::ApplicationRunResult::NormalExit
+		? EXIT_SUCCESS
+		: EXIT_FAILURE;
 }

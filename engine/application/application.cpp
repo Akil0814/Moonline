@@ -27,45 +27,40 @@ namespace elysia::application
 Application::~Application()
 {
     shutdown();
-
-    SDL_DestroyRenderer(_renderer);
-    _renderer = nullptr;
-    SDL_DestroyWindow(_window);
-    _window = nullptr;
-
-    Mix_CloseAudio();
-    TTF_Quit();
-    Mix_Quit();
-    IMG_Quit();
-    SDL_Quit();
 }
 
-void Application::init_assert(
+bool Application::check_startup_step(
     bool flag,
+    std::string_view category,
     const char* err_msg,
     std::source_location location)
 {
     if (flag)
-        return;
+        return true;
 
     const std::string error_message =
         err_msg ? err_msg : "Application runtime initialization failed.";
-    elysia::tools::Logger::instance()->error("application",error_message,location);
-    startup_fail(error_message,location);
+    return startup_fail(category,error_message,location);
 }
 
-[[noreturn]] void Application::startup_fail(
+bool Application::startup_fail(
+    std::string_view category,
     const std::string& err_msg,
     std::source_location location)
 {
-    elysia::tools::Logger::instance()->terminating("application",err_msg,location);
+    auto* logger = elysia::tools::Logger::instance();
+    logger->error(category,err_msg,location);
+    logger->terminating(
+        "application",
+        "Application terminating during startup after a fatal failure",
+        location);
     SDL_ShowSimpleMessageBox(
         SDL_MESSAGEBOX_ERROR,
         "Game Start Error",
         err_msg.c_str(),
         _window);
     shutdown();
-    std::exit(EXIT_FAILURE);
+    return false;
 }
 
 bool Application::init(
@@ -86,15 +81,19 @@ bool Application::init(
     }
     catch (const std::exception& error)
     {
-        startup_fail(std::string("Game module descriptor failed: ") + error.what());
+        return startup_fail(
+            "game_module",
+            std::string("Game module descriptor failed: ") + error.what());
     }
     catch (...)
     {
-        startup_fail("Game module descriptor failed with an unknown exception.");
+        return startup_fail(
+            "game_module",
+            "Game module descriptor failed with an unknown exception.");
     }
 
     if (descriptor.logical_width <= 0 || descriptor.logical_height <= 0)
-        startup_fail("Game module logical viewport must be positive.");
+        return startup_fail("game_module","Game module logical viewport must be positive.");
 
     const std::filesystem::path executable_path =
         argc > 0 && argv && argv[0]
@@ -105,10 +104,7 @@ bool Application::init(
             executable_path);
 
     if (!parse_result.success)
-    {
-        elysia::tools::Logger::instance()->error("bootstrap",parse_result.error);
-        startup_fail(parse_result.error);
-    }
+        return startup_fail("bootstrap",parse_result.error);
 
     _content_registry = std::move(parse_result.content_registry);
     elysia::tools::Logger::instance()->initialize();
@@ -118,7 +114,7 @@ bool Application::init(
 
     elysia::bootstrap::StartupSettings runtime_settings = parse_result.startup_settings;
     if (!init_runtime(runtime_settings,descriptor))
-        startup_fail("Application runtime initialization failed.");
+        return false;
 
     const elysia::assist::EngineAssistCatalog engine_assist_catalog(
         *elysia::io::PathManager::instance());
@@ -127,7 +123,9 @@ bool Application::init(
             engine_assist_catalog);
         !engine_assist_result)
     {
-        startup_fail("Engine assist initialization failed: " + engine_assist_result.error());
+        return startup_fail(
+            "engine_assist",
+            "Engine assist initialization failed: " + engine_assist_result.error());
     }
 
     if (!elysia::localization::LocalizationManager::instance()->init(
@@ -136,7 +134,7 @@ bool Application::init(
         runtime_settings.language,
         &_engine_assist_cache))
     {
-        startup_fail("Localization initialization failed.");
+        return startup_fail("localization","Localization initialization failed.");
     }
 
     elysia::config::UserConfigService::instance()->register_user_config_change_handler(*this);
@@ -169,7 +167,7 @@ bool Application::init(
     _input_system.set_renderer(_renderer);
 
     if (!elysia::bootstrap::Bootstrapper::instance()->preload_startup_resources(_renderer))
-        startup_fail("Startup resource preload failed.");
+        return startup_fail("loading","Startup resource preload failed.");
 
     _scene_runtime_context.emplace(
         _renderer,
@@ -179,29 +177,57 @@ bool Application::init(
         &_engine_assist_cache);
     _scene_manager.set_runtime_context(*_scene_runtime_context);
 
-    enter_initial_scene(game_module,descriptor);
-    return true;
+    return enter_initial_scene(game_module,descriptor);
 }
 
 bool Application::init_runtime(
     const elysia::bootstrap::StartupSettings& settings,
     const ApplicationDescriptor& descriptor)
 {
-    init_assert(!SDL_Init(SDL_INIT_EVERYTHING),"SDL2 Error");
+    const bool sdl_initialized = SDL_Init(SDL_INIT_EVERYTHING) == 0;
+    _sdl_initialized = sdl_initialized;
+    if (!check_startup_step(sdl_initialized,"platform","SDL2 Error"))
+        return false;
 
     const int img_flags = IMG_INIT_JPG | IMG_INIT_PNG;
-    init_assert((IMG_Init(img_flags) & img_flags) == img_flags,"SDL_image Error");
+    const int initialized_img_flags = IMG_Init(img_flags);
+    _image_initialized = initialized_img_flags != 0;
+    if (!check_startup_step(
+        (initialized_img_flags & img_flags) == img_flags,
+        "platform",
+        "SDL_image Error"))
+    {
+        return false;
+    }
 
     const int mix_flags = MIX_INIT_MP3;
-    init_assert((Mix_Init(mix_flags) & mix_flags) == mix_flags,"SDL_mixer Error");
+    const int initialized_mix_flags = Mix_Init(mix_flags);
+    _mixer_initialized = initialized_mix_flags != 0;
+    if (!check_startup_step(
+        (initialized_mix_flags & mix_flags) == mix_flags,
+        "platform",
+        "SDL_mixer Error"))
+    {
+        return false;
+    }
 
-    init_assert(!TTF_Init(),"SDL_ttf Error");
-    init_assert(
-        Mix_OpenAudio(44100,MIX_DEFAULT_FORMAT,2,2048) == 0,
-        "Mix_OpenAudio Error");
-    init_assert(
+    const bool ttf_initialized = TTF_Init() == 0;
+    _ttf_initialized = ttf_initialized;
+    if (!check_startup_step(ttf_initialized,"platform","SDL_ttf Error"))
+        return false;
+
+    const bool audio_device_open =
+        Mix_OpenAudio(44100,MIX_DEFAULT_FORMAT,2,2048) == 0;
+    _audio_device_open = audio_device_open;
+    if (!check_startup_step(audio_device_open,"audio","Mix_OpenAudio Error"))
+        return false;
+    if (!check_startup_step(
         elysia::audio::AudioService::instance()->init(settings.audio),
-        "AudioService init failed");
+        "audio",
+        "AudioService init failed"))
+    {
+        return false;
+    }
 
     SDL_SetHint(SDL_HINT_IME_SHOW_UI,"1");
 
@@ -212,7 +238,8 @@ bool Application::init_runtime(
         settings.window_width,
         settings.window_height,
         SDL_WINDOW_SHOWN);
-    init_assert(_window,"SDL_CreateWindow Error");
+    if (!check_startup_step(_window != nullptr,"platform","SDL_CreateWindow Error"))
+        return false;
 
     if (settings.fullscreen
         && SDL_SetWindowFullscreen(_window,SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)
@@ -228,19 +255,24 @@ bool Application::init_runtime(
         renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
 
     _renderer = SDL_CreateRenderer(_window,-1,renderer_flags);
-    init_assert(_renderer,"SDL_CreateRenderer Error");
-    init_assert(
+    if (!check_startup_step(_renderer != nullptr,"platform","SDL_CreateRenderer Error"))
+        return false;
+    if (!check_startup_step(
         SDL_RenderSetLogicalSize(
             _renderer,
             descriptor.logical_width,
             descriptor.logical_height) == 0,
-        "SDL_RenderSetLogicalSize Error");
+        "platform",
+        "SDL_RenderSetLogicalSize Error"))
+    {
+        return false;
+    }
 
     _target_fps = settings.target_fps;
     return true;
 }
 
-void Application::enter_initial_scene(
+bool Application::enter_initial_scene(
     const IGameModule& game_module,
     const ApplicationDescriptor& descriptor)
 {
@@ -252,22 +284,28 @@ void Application::enter_initial_scene(
     }
     catch (const std::exception& error)
     {
-        startup_fail(std::string("Scene composition failed: ") + error.what());
+        return startup_fail(
+            "scene",
+            std::string("Scene composition failed: ") + error.what());
     }
     catch (...)
     {
-        startup_fail("Scene composition failed with an unknown exception.");
+        return startup_fail(
+            "scene",
+            "Scene composition failed with an unknown exception.");
     }
+
+    return true;
 }
 
-int Application::run()
+ApplicationRunResult Application::run()
 {
     Uint64 last_counter = SDL_GetPerformanceCounter();
     const Uint64 counter_freq = SDL_GetPerformanceFrequency();
     elysia::core::Time::instance()->reset();
 
-    int exit_code = EXIT_SUCCESS;
-    auto resolve_exit = [this,&exit_code]()
+    ApplicationRunResult run_result = ApplicationRunResult::NormalExit;
+    auto resolve_exit = [this,&run_result]()
     {
         auto* termination_manager = elysia::tools::TerminationManager::instance();
         const ApplicationExitDecision decision =
@@ -276,10 +314,18 @@ int Application::run()
             return false;
 
         _active = false;
-        if (decision == ApplicationExitDecision::FaultExit)
-            exit_code = EXIT_FAILURE;
+        run_result = to_application_run_result(decision);
         log_fault_exit_if_needed(decision,termination_manager->termination_info());
         return true;
+    };
+    auto stop_after_boundary_failure = [this,&run_result,&resolve_exit]()
+    {
+        if (resolve_exit())
+            return;
+
+        _active = false;
+        run_result = ApplicationRunResult::FaultExit;
+        log_published_termination(std::nullopt);
     };
 
     while (_active)
@@ -301,11 +347,7 @@ int Application::run()
             _scene_manager.on_input(_input_system.frame(),_input_system.events());
         }))
         {
-            if (!resolve_exit())
-            {
-                _active = false;
-                exit_code = EXIT_FAILURE;
-            }
+            stop_after_boundary_failure();
             break;
         }
         if (resolve_exit())
@@ -330,11 +372,7 @@ int Application::run()
             elysia::audio::AudioService::instance()->update(frame_delta);
         }))
         {
-            if (!resolve_exit())
-            {
-                _active = false;
-                exit_code = EXIT_FAILURE;
-            }
+            stop_after_boundary_failure();
             break;
         }
         if (resolve_exit())
@@ -348,11 +386,7 @@ int Application::run()
             _scene_manager.on_render(_renderer);
         }))
         {
-            if (!resolve_exit())
-            {
-                _active = false;
-                exit_code = EXIT_FAILURE;
-            }
+            stop_after_boundary_failure();
             break;
         }
         if (resolve_exit())
@@ -364,7 +398,7 @@ int Application::run()
     }
 
     shutdown();
-    return exit_code;
+    return run_result;
 }
 
 void Application::shutdown()
@@ -373,8 +407,10 @@ void Application::shutdown()
         return;
 
     _has_shutdown = true;
+    _active = false;
 
     _input_system.shutdown();
+    _input_system.set_renderer(nullptr);
     _scene_manager.detach(this);
     _scene_manager.shutdown();
     _scene_runtime_context.reset();
@@ -391,6 +427,38 @@ void Application::shutdown()
     elysia::config::UserConfigService::instance()->shutdown();
     elysia::audio::AudioService::instance()->shutdown();
     elysia::loading::clear_loaded_content();
+
+    SDL_DestroyRenderer(_renderer);
+    _renderer = nullptr;
+    SDL_DestroyWindow(_window);
+    _window = nullptr;
+
+    if (_audio_device_open)
+    {
+        Mix_CloseAudio();
+        _audio_device_open = false;
+    }
+    if (_ttf_initialized)
+    {
+        TTF_Quit();
+        _ttf_initialized = false;
+    }
+    if (_mixer_initialized)
+    {
+        Mix_Quit();
+        _mixer_initialized = false;
+    }
+    if (_image_initialized)
+    {
+        IMG_Quit();
+        _image_initialized = false;
+    }
+    if (_sdl_initialized)
+    {
+        SDL_Quit();
+        _sdl_initialized = false;
+    }
+
     ELYSIA_LOG("application","Application shutdown complete");
     elysia::tools::Logger::instance()->shutdown();
 }
