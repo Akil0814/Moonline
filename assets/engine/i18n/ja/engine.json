@@ -8,7 +8,12 @@
       "close": "閉じる"
     },
     "startup": {
-      "press_any_button": "いずれかのボタンを押して開始"
+      "press_any_button": "いずれかのボタンを押して開始",
+      "failure": {
+        "title": "起動に失敗しました",
+        "message": "必要なゲームリソースを読み込めませんでした。詳細はログを確認してください。",
+        "exit": "終了"
+      }
     },
     "settings": {
       "title": "設定",

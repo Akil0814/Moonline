@@ -8,7 +8,12 @@
       "close": "닫기"
     },
     "startup": {
-      "press_any_button": "아무 버튼이나 눌러 시작"
+      "press_any_button": "아무 버튼이나 눌러 시작",
+      "failure": {
+        "title": "시작 실패",
+        "message": "필수 게임 리소스를 불러올 수 없습니다. 자세한 내용은 로그를 확인하세요.",
+        "exit": "종료"
+      }
     },
     "settings": {
       "title": "설정",

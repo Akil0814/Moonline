@@ -8,7 +8,12 @@
       "close": "Close"
     },
     "startup": {
-      "press_any_button": "PRESS ANY BUTTON TO START"
+      "press_any_button": "PRESS ANY BUTTON TO START",
+      "failure": {
+        "title": "Startup failed",
+        "message": "Required game resources could not be loaded. See the log for details.",
+        "exit": "Exit"
+      }
     },
     "settings": {
       "title": "Settings",

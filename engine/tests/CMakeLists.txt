@@ -38,3 +38,10 @@ add_moonline_test(random_generator_tests
     LABEL tools
     SOURCES tools/random_generator_tests.cpp
 )
+
+add_moonline_test(startup_failure_scene_tests
+    LABEL scene
+    SOURCES scene/startup_failure_scene_tests.cpp
+    LIBRARIES ${SDL2_LIBRARIES}
+    SDL
+)

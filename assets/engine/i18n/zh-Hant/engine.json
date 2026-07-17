@@ -8,7 +8,12 @@
       "close": "關閉"
     },
     "startup": {
-      "press_any_button": "按任意鍵開始"
+      "press_any_button": "按任意鍵開始",
+      "failure": {
+        "title": "啟動失敗",
+        "message": "無法載入必要的遊戲資源。請查看日誌以瞭解詳情。",
+        "exit": "離開"
+      }
     },
     "settings": {
       "title": "設定",
