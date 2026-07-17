@@ -163,23 +163,25 @@ void test_settings_panel_keeps_draft_local_and_normalizes_options()
             ? dynamic_cast<ui::UiDropdown*>(row->child_at(1))
             : nullptr;
     };
-    ui::UiDropdown* mode_dropdown = dropdown_at(2);
-    ui::UiDropdown* size_dropdown = dropdown_at(3);
-    require(mode_dropdown && size_dropdown,
-        "settings panel must expose display mode and window size dropdowns");
-    require(mode_dropdown->set_selected_index(1)
+    ui::UiDropdown* window_dropdown = dropdown_at(2);
+    require(window_dropdown
+        && window_dropdown->options().size()
+            == panel.options().window_sizes.size() + 1u,
+        "settings panel must expose window sizes and fullscreen in one dropdown");
+    const std::size_t fullscreen_index =
+        panel.options().window_sizes.size();
+    require(window_dropdown->set_selected_index(fullscreen_index)
         && panel.draft().window_mode
             == ui::SettingsWindowMode::BorderlessFullscreen
-        && !size_dropdown->is_enabled()
         && panel.draft().window_size == draft.window_size,
-        "borderless fullscreen must disable window size without discarding its draft");
-    require(mode_dropdown->set_selected_index(0)
+        "selecting borderless fullscreen must preserve the windowed size draft");
+    require(window_dropdown->set_selected_index(0)
         && panel.draft().window_mode == ui::SettingsWindowMode::Windowed
-        && size_dropdown->is_enabled()
-        && panel.draft().window_size == draft.window_size,
-        "switching back to Windowed must restore the saved window size selection");
+        && panel.draft().window_size
+            == panel.options().window_sizes[0],
+        "selecting a window size must switch the draft back to Windowed");
 
-    auto* actions = dynamic_cast<ui::UiListContainer*>(panel.child_at(11));
+    auto* actions = dynamic_cast<ui::UiListContainer*>(panel.child_at(10));
     auto* save = actions
         ? dynamic_cast<ui::UiButton*>(actions->child_at(0))
         : nullptr;

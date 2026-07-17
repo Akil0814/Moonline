@@ -32,27 +32,18 @@ constexpr float kFieldSpacing = 20.0f;
 constexpr float kButtonWidth = 160.0f;
 constexpr std::size_t kNotFound = std::numeric_limits<std::size_t>::max();
 
-std::unique_ptr<UiLabel> make_label(
-    std::string text,
-    float width,
-    float height = kRowHeight,
+std::unique_ptr<UiLabel> make_label(std::string text,float width,float height = kRowHeight,
     UiTypographyRole role = UiTypographyRole::Label)
 {
-    auto label = std::make_unique<UiLabel>(
-        elysia::core::Rect{ 0,0,width,height },
-        0,
-        ui_raw_text(std::move(text)));
+    auto label = std::make_unique<UiLabel>(elysia::core::Rect{ 0,0,width,height }, 0,ui_raw_text(std::move(text)));
     label->set_typography_role(role);
     label->set_horizontal_align(TextHorizontalAlign::Left);
     label->set_vertical_align(TextVerticalAlign::Center);
     return label;
 }
 
-std::unique_ptr<UiListContainer> make_field_row(
-    std::string label_text,
-    float field_width,
-    float label_width,
-    std::unique_ptr<UiElement> control)
+std::unique_ptr<UiListContainer> make_field_row(std::string label_text,
+    float field_width,float label_width,std::unique_ptr<UiElement> control)
 {
     auto row = std::make_unique<UiListContainer>(
         elysia::core::Rect{ 0,0,field_width,kRowHeight });
@@ -71,27 +62,25 @@ std::unique_ptr<UiSlider> make_volume_slider(float width)
     config.value = 100.0f;
     config.step = 1.0f;
     config.value_display = UiSliderValueDisplay::Percent;
-    return std::make_unique<UiSlider>(
-        elysia::core::Rect{ 0,0,width,kRowHeight },
-        config);
+    return std::make_unique<UiSlider>(elysia::core::Rect{ 0,0,width,kRowHeight },config);
 }
 
-std::vector<SettingsWindowSize> normalized_window_sizes(
-    std::vector<SettingsWindowSize> window_sizes)
+std::vector<SettingsWindowSize> normalized_window_sizes(std::vector<SettingsWindowSize> window_sizes)
 {
     std::erase_if(window_sizes,[](const SettingsWindowSize& window_size)
     {
         return window_size.width <= 0 || window_size.height <= 0;
     });
+
     std::sort(window_sizes.begin(),window_sizes.end(),[](const auto& left,const auto& right)
     {
         if (left.width != right.width)
             return left.width < right.width;
         return left.height < right.height;
     });
-    window_sizes.erase(
-        std::unique(window_sizes.begin(),window_sizes.end()),
-        window_sizes.end());
+
+    window_sizes.erase(std::unique(window_sizes.begin(),window_sizes.end()),window_sizes.end());
+
     return window_sizes;
 }
 
@@ -154,8 +143,7 @@ void SettingsPanel::reset() noexcept
     _draft = {};
     _on_save = {};
     _on_back = {};
-    _window_mode_dropdown = nullptr;
-    _window_size_dropdown = nullptr;
+    _window_option_dropdown = nullptr;
     _master_volume_slider = nullptr;
     _music_volume_slider = nullptr;
     _sound_volume_slider = nullptr;
@@ -168,19 +156,15 @@ void SettingsPanel::reset() noexcept
 
 void SettingsPanel::set_options(SettingsPanelOptions options)
 {
-    options.window_sizes =
-        normalized_window_sizes(std::move(options.window_sizes));
+    options.window_sizes =normalized_window_sizes(std::move(options.window_sizes));
     options.languages = normalized_languages(std::move(options.languages));
 
     if (_draft.window_size.width > 0 && _draft.window_size.height > 0
-        && std::find(
-            options.window_sizes.begin(),
-            options.window_sizes.end(),
-            _draft.window_size) == options.window_sizes.end())
+        && std::find(options.window_sizes.begin(),options.window_sizes.end(), _draft.window_size)
+        == options.window_sizes.end())
     {
         options.window_sizes.push_back(_draft.window_size);
-        options.window_sizes =
-            normalized_window_sizes(std::move(options.window_sizes));
+        options.window_sizes =normalized_window_sizes(std::move(options.window_sizes));
     }
 
     if (!_draft.language.empty()
@@ -191,7 +175,7 @@ void SettingsPanel::set_options(SettingsPanelOptions options)
     }
 
     _options = std::move(options);
-    rebuild_window_size_options();
+    rebuild_window_options();
     rebuild_language_options();
     sync_controls_from_draft();
 }
@@ -207,12 +191,14 @@ void SettingsPanel::set_draft(const SettingsPanelDraft& draft)
 
     SettingsPanelOptions options = _options;
     bool options_changed = false;
+
     if (_draft.window_size.width > 0 && _draft.window_size.height > 0
         && find_window_size_index(_draft.window_size) == kNotFound)
     {
         options.window_sizes.push_back(_draft.window_size);
         options_changed = true;
     }
+
     if (!_draft.language.empty() && find_language_index(_draft.language) == kNotFound)
     {
         options.languages.push_back(_draft.language);
@@ -244,10 +230,9 @@ void SettingsPanel::set_status_message(std::string message,bool is_error)
 {
     if (!_status_label)
         return;
+
     _status_label->set_text_content(ui_raw_text(std::move(message)));
-    _status_label->set_visual_role(is_error
-        ? UiLabelVisualRole::Default
-        : UiLabelVisualRole::Muted);
+    _status_label->set_visual_role(is_error? UiLabelVisualRole::Default: UiLabelVisualRole::Muted);
     _status_label->set_visible(true);
 }
 
@@ -255,6 +240,7 @@ void SettingsPanel::clear_status_message()
 {
     if (!_status_label)
         return;
+
     _status_label->set_text_content({});
     _status_label->set_visible(false);
 }
@@ -263,22 +249,23 @@ void SettingsPanel::register_with_window(UiWindow& window)
 {
     if (_window == &window)
         return;
+
     unregister_from_window();
+
     _window = &window;
-    if (_window_mode_dropdown)
-        _window_mode_dropdown->register_with_window(window);
-    if (_window_size_dropdown)
-        _window_size_dropdown->register_with_window(window);
+
+    if (_window_option_dropdown)
+        _window_option_dropdown->register_with_window(window);
+
     if (_language_dropdown)
         _language_dropdown->register_with_window(window);
 }
 
 void SettingsPanel::unregister_from_window() noexcept
 {
-    if (_window_mode_dropdown)
-        _window_mode_dropdown->unregister_from_window();
-    if (_window_size_dropdown)
-        _window_size_dropdown->unregister_from_window();
+    if (_window_option_dropdown)
+        _window_option_dropdown->unregister_from_window();
+
     if (_language_dropdown)
         _language_dropdown->unregister_from_window();
     _window = nullptr;
@@ -308,41 +295,29 @@ void SettingsPanel::build_controls()
     display->set_visual_role(UiLabelVisualRole::Subtitle);
     add_back(std::move(display));
 
-    auto window_mode = std::make_unique<UiDropdown>(
+    auto window_option = std::make_unique<UiDropdown>(
         elysia::core::Rect{ 0,0,control_width,kRowHeight });
-    _window_mode_dropdown = window_mode.get();
-    _window_mode_dropdown->set_options({
-        UiDropdownOption{ ui_raw_text("Windowed") },
-        UiDropdownOption{ ui_raw_text("Borderless Fullscreen") }
-    });
-    _window_mode_dropdown->set_on_selection_changed([this](std::size_t index)
+    _window_option_dropdown = window_option.get();
+    _window_option_dropdown->set_on_selection_changed([this](std::size_t index)
     {
-        if (_syncing_controls || index > 1)
+        if (_syncing_controls)
             return;
-        _draft.window_mode = index == 0
-            ? SettingsWindowMode::Windowed
-            : SettingsWindowMode::BorderlessFullscreen;
-        sync_window_size_enabled();
-    });
-    add_back(make_field_row(
-        "Display mode",
-        field_width,
-        label_width,
-        std::move(window_mode)));
 
-    auto window_size = std::make_unique<UiDropdown>(
-        elysia::core::Rect{ 0,0,control_width,kRowHeight });
-    _window_size_dropdown = window_size.get();
-    _window_size_dropdown->set_on_selection_changed([this](std::size_t index)
-    {
-        if (!_syncing_controls && index < _options.window_sizes.size())
+        if (index < _options.window_sizes.size())
+        {
+            _draft.window_mode = SettingsWindowMode::Windowed;
             _draft.window_size = _options.window_sizes[index];
+            return;
+        }
+
+        if (index == _options.window_sizes.size())
+            _draft.window_mode = SettingsWindowMode::BorderlessFullscreen;
     });
     add_back(make_field_row(
-        "Window size",
+        "Window",
         field_width,
         label_width,
-        std::move(window_size)));
+        std::move(window_option)));
 
     auto audio = make_label("Audio",field_width,kSectionHeight,UiTypographyRole::Subtitle);
     audio->set_visual_role(UiLabelVisualRole::Subtitle);
@@ -443,12 +418,13 @@ void SettingsPanel::build_controls()
     add_back(std::move(actions));
 }
 
-void SettingsPanel::rebuild_window_size_options()
+void SettingsPanel::rebuild_window_options()
 {
-    if (!_window_size_dropdown)
+    if (!_window_option_dropdown)
         return;
+
     std::vector<UiDropdownOption> options;
-    options.reserve(_options.window_sizes.size());
+    options.reserve(_options.window_sizes.size() + 1u);
     for (const SettingsWindowSize& window_size : _options.window_sizes)
     {
         options.push_back(UiDropdownOption{
@@ -458,7 +434,10 @@ void SettingsPanel::rebuild_window_size_options()
                 + std::to_string(window_size.height))
         });
     }
-    _window_size_dropdown->set_options(std::move(options));
+    options.push_back(UiDropdownOption{
+        ui_raw_text("Borderless Fullscreen")
+    });
+    _window_option_dropdown->set_options(std::move(options));
 }
 
 void SettingsPanel::rebuild_language_options()
@@ -475,15 +454,26 @@ void SettingsPanel::rebuild_language_options()
 void SettingsPanel::sync_controls_from_draft()
 {
     _syncing_controls = true;
-    if (_window_mode_dropdown)
+
+    if (_window_option_dropdown)
     {
-        (void)_window_mode_dropdown->set_selected_index(
-            _draft.window_mode == SettingsWindowMode::Windowed ? 0u : 1u);
+        if (_draft.window_mode == SettingsWindowMode::BorderlessFullscreen)
+        {
+            (void)_window_option_dropdown->set_selected_index(
+                _options.window_sizes.size());
+        }
+        else
+        {
+            const std::size_t window_size_index =
+                find_window_size_index(_draft.window_size);
+            if (window_size_index != kNotFound)
+            {
+                (void)_window_option_dropdown->set_selected_index(
+                    window_size_index);
+            }
+        }
     }
-    const std::size_t window_size_index =
-        find_window_size_index(_draft.window_size);
-    if (_window_size_dropdown && window_size_index != kNotFound)
-        (void)_window_size_dropdown->set_selected_index(window_size_index);
+
     if (_master_volume_slider)
         _master_volume_slider->set_value(static_cast<float>(_draft.master_volume));
     if (_music_volume_slider)
@@ -495,16 +485,6 @@ void SettingsPanel::sync_controls_from_draft()
     if (_language_dropdown && language_index != kNotFound)
         (void)_language_dropdown->set_selected_index(language_index);
     _syncing_controls = false;
-    sync_window_size_enabled();
-}
-
-void SettingsPanel::sync_window_size_enabled()
-{
-    if (_window_size_dropdown)
-    {
-        _window_size_dropdown->set_enabled(
-            _draft.window_mode == SettingsWindowMode::Windowed);
-    }
 }
 
 std::size_t SettingsPanel::find_window_size_index(

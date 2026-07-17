@@ -567,16 +567,12 @@ Application::apply_target_fps(double value)
     return {};
 }
 
-std::expected<void,elysia::config::UserConfigFailure>
-Application::apply_window_settings(
-    const elysia::bootstrap::WindowSettings& settings)
+std::expected<void,elysia::config::UserConfigFailure>Application::apply_window_settings(const elysia::bootstrap::WindowSettings& settings)
 {
     if (!_window)
-        return runtime_apply_failure(
-            "window_settings",
-            "Application window is unavailable.");
-    const auto result = detail::apply_window_settings(
-        settings,
+        return runtime_apply_failure("window_settings","Application window is unavailable.");
+
+    const auto result = detail::apply_window_settings(settings,
         detail::ApplicationWindowOperations{
             .set_fullscreen = [this](Uint32 flags)
             {

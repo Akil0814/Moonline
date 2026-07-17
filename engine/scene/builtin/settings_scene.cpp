@@ -90,22 +90,14 @@ void SettingsScene::on_enter(const ScenePayload& payload)
     const SettingsScenePayload* settings_payload =
         try_scene_payload<SettingsScenePayload>(payload);
     if (!settings_payload)
-    {
-        throw std::logic_error(
-            "SettingsScene requires SettingsScenePayload.");
-    }
+        throw std::logic_error("SettingsScene requires SettingsScenePayload.");
     if (!is_valid_route(settings_payload->return_route))
-    {
-        throw std::logic_error(
-            "SettingsScene requires a valid return route.");
-    }
+        throw std::logic_error("SettingsScene requires a valid return route.");
 
     auto* config_service = elysia::config::UserConfigService::instance();
+
     if (!config_service->is_initialized())
-    {
-        throw std::logic_error(
-            "SettingsScene requires an initialized UserConfigService.");
-    }
+        throw std::logic_error("SettingsScene requires an initialized UserConfigService.");
 
     _return_route = settings_payload->return_route;
     _baseline_state = config_service->user_config().runtime_state();
@@ -121,8 +113,10 @@ void SettingsScene::on_exit()
 {
     _paused = false;
     _transitioning = false;
+
     if (_settings_panel)
         _settings_panel->unregister_from_window();
+
     if (_window && !_window->is_destroyed())
     {
         _window->set_active(false);
@@ -141,32 +135,36 @@ void SettingsScene::reset()
 
 void SettingsScene::build_ui()
 {
-    const float logical_width = static_cast<float>(
-        std::max(1,runtime_context().logical_width()));
-    const float logical_height = static_cast<float>(
-        std::max(1,runtime_context().logical_height()));
+    const int logical_width = runtime_context().logical_width();
+    const int logical_height = runtime_context().logical_height();
 
     _window = create_and_add_object<elysia::ui::UiWindow>(
-        elysia::core::Rect{ 0,0,logical_width,logical_height },
+        elysia::core::Rect{
+            0.0f,
+            0.0f,
+            static_cast<float>(logical_width),
+            static_cast<float>(logical_height)
+        },
         10);
+
     if (!_window)
         throw std::runtime_error("SettingsScene could not create its UiWindow.");
 
-    const float panel_width = std::min(700.0f,std::max(1.0f,logical_width - 32.0f));
-    const float panel_height = std::min(680.0f,std::max(1.0f,logical_height - 32.0f));
-    auto panel = std::make_unique<elysia::ui::SettingsPanel>(
-        elysia::core::Rect{ 0,0,panel_width,panel_height });
+    const float panel_width = std::min(
+        700.0f,
+        static_cast<float>(logical_width) - 32.0f);
+    const float panel_height = std::min(
+        680.0f,
+        static_cast<float>(logical_height) - 32.0f);
+
+    auto panel = std::make_unique<elysia::ui::SettingsPanel>(elysia::core::Rect{ 0,0,panel_width,panel_height });
+
     _settings_panel = panel.get();
-    _settings_panel->set_on_save(
-        [this](const elysia::ui::SettingsPanelDraft& draft)
-        {
-            save_draft(draft);
-        });
+    _settings_panel->set_on_save([this](const elysia::ui::SettingsPanelDraft& draft){save_draft(draft);});
     _settings_panel->set_on_back([this]() { return_to_caller(); });
 
-    elysia::ui::UiElement* adopted = _window->add_child(
-        std::move(panel),
-        { elysia::ui::UiLayoutAnchor::Center });
+    elysia::ui::UiElement* adopted = _window->add_child(std::move(panel),{ elysia::ui::UiLayoutAnchor::Center });
+
     if (!adopted)
         throw std::runtime_error("SettingsScene could not adopt its SettingsPanel.");
 
@@ -189,15 +187,13 @@ void SettingsScene::restore_ui_state()
     _window->focus_first_available_scope();
 }
 
-void SettingsScene::save_draft(
-    const elysia::ui::SettingsPanelDraft& draft)
+void SettingsScene::save_draft(const elysia::ui::SettingsPanelDraft& draft)
 {
     if (_transitioning || !_settings_panel)
         return;
 
     auto* config_service = elysia::config::UserConfigService::instance();
-    elysia::bootstrap::UserConfigData requested =
-        config_service->user_config().snapshot();
+    elysia::bootstrap::UserConfigData requested =config_service->user_config().snapshot();
     requested.window = {
         draft.window_mode == elysia::ui::SettingsWindowMode::Windowed
             ? elysia::bootstrap::WindowMode::Windowed

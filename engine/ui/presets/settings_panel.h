@@ -86,10 +86,9 @@ public:
 
 private:
     void build_controls();
-    void rebuild_window_size_options();
+    void rebuild_window_options();
     void rebuild_language_options();
     void sync_controls_from_draft();
-    void sync_window_size_enabled();
     [[nodiscard]] std::size_t find_window_size_index(
         const SettingsWindowSize& window_size) const noexcept;
     [[nodiscard]] std::size_t find_language_index(const std::string& language) const noexcept;
@@ -99,8 +98,7 @@ private:
     SettingsPanelDraft _draft;
     SettingsPanelSaveCallback _on_save;
     SettingsPanelBackCallback _on_back;
-    UiDropdown* _window_mode_dropdown = nullptr;
-    UiDropdown* _window_size_dropdown = nullptr;
+    UiDropdown* _window_option_dropdown = nullptr;
     UiSlider* _master_volume_slider = nullptr;
     UiSlider* _music_volume_slider = nullptr;
     UiSlider* _sound_volume_slider = nullptr;

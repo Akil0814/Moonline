@@ -42,9 +42,7 @@ public:
     std::expected<void,elysia::config::UserConfigFailure> apply_sound_volume(int value) override;
     std::expected<void,elysia::config::UserConfigFailure> apply_language(std::string_view language) override;
     std::expected<void,elysia::config::UserConfigFailure> apply_target_fps(double value) override;
-    std::expected<void,elysia::config::UserConfigFailure>
-        apply_window_settings(
-            const elysia::bootstrap::WindowSettings& settings) override;
+    std::expected<void,elysia::config::UserConfigFailure>apply_window_settings(const elysia::bootstrap::WindowSettings& settings) override;
 
 private:
     Application() = default;
