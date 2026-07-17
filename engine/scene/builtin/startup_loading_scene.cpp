@@ -6,7 +6,7 @@
 #include "../../tools/logger.h"
 #include "../../tools/termination_manager.h"
 #include "../../ui/widgets/image/ui_fade_image.h"
-#include "../../ui/widgets/label/ui_label.h"
+#include "../../ui/widgets/label/ui_blink_label.h"
 #include "../../ui/widgets/ui_bar.h"
 #include "../scene_runtime_context.h"
 
@@ -264,13 +264,12 @@ void StartupLoadingScene::create_loading_ui()
         prompt_width,
         prompt_height
     };
-    _start_prompt = create_and_add_object<elysia::ui::UiLabel>(
-        prompt_rect,
-        0,
-        elysia::ui::ui_raw_text("PRESS ANY BUTTON TO START")
+    _start_prompt = create_and_add_object<elysia::ui::UiBlinkLabel>(
+        prompt_rect,0,elysia::ui::ui_raw_text("PRESS ANY BUTTON TO START")
     );
     if (_start_prompt)
     {
+        _start_prompt->configure_playback(elysia::ui::effects::UiOpacityBlinkMode::HiddenFirst, 0.0, 0.6, 0.6);
         _start_prompt->set_typography_role(elysia::ui::UiTypographyRole::Button);
         _start_prompt->set_horizontal_align(
             elysia::ui::TextHorizontalAlign::Center);
@@ -344,7 +343,10 @@ void StartupLoadingScene::handle_completion_action(
     {
     case StartupLoadingAction::WaitForConfirmation:
         if (_start_prompt)
+        {
             _start_prompt->set_visible(true);
+            _start_prompt->play();
+        }
         break;
     case StartupLoadingAction::TransitionToSuccess:
         transition_to_success();
