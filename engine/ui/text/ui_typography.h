@@ -23,7 +23,8 @@ enum class UiTypographyRole
     CheckboxLabel,
     RadioLabel,
     Caption,
-    Heading
+    Heading,
+    Count
 };
 
 // Rendering inputs resolved from a role; colors remain part of the widget's visual style.

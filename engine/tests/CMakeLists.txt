@@ -39,6 +39,18 @@ add_moonline_test(random_generator_tests
     SOURCES tools/random_generator_tests.cpp
 )
 
+add_moonline_test(application_presentation_settings_tests
+    LABEL application
+    SOURCES application/application_presentation_settings_tests.cpp
+)
+
+add_moonline_test(application_sdl_presentation_tests
+    LABEL application
+    SOURCES application/application_sdl_presentation_tests.cpp
+    LIBRARIES ${SDL2_LIBRARIES}
+    SDL
+)
+
 add_moonline_test(startup_failure_scene_tests
     LABEL scene
     SOURCES scene/startup_failure_scene_tests.cpp
