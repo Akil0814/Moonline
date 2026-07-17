@@ -4,7 +4,7 @@
 
 Moonline is a C++ 2D game project
 
-As of 2026-07-08, the tracked C/C++ code in `application/`, `engine/`, and `gameplay/`
+The tracked C/C++ code in `engine/`, `gameplay/`
 is already about 25.6k LOC, excluding `thirdparty/`.
 
 That means the older "around 25k LOC" estimate is no longer realistic as a final project-size
@@ -15,7 +15,7 @@ is added.
 
 The current source layout shows a clear separation between:
 
-- `application/`: application startup and main loop
+- `engine/application/`: reusable application startup, runtime ownership, and main loop
 - `engine/`: reusable game engine foundation and its developer documentation
 - `gameplay/`: game-specific logic
 - `assets/`: textures, audio, fonts, configs, preload resources

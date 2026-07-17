@@ -61,9 +61,42 @@ add_moonline_test(termination_manager_tests
     LIBRARIES Threads::Threads
 )
 
+add_moonline_test(application_composition_tests
+    LABEL application
+    SOURCES application/application_composition_tests.cpp
+    LIBRARIES ${SDL2_LIBRARIES}
+    SDL
+)
+
 add_moonline_test(camera_manager_tests
     LABEL camera
     SOURCES camera/camera_manager_tests.cpp
+    LIBRARIES ${SDL2_LIBRARIES}
+    SDL
+)
+
+add_moonline_test(scene_core_tests
+    LABEL scene
+    SOURCES scene/scene_core_tests.cpp
+    LIBRARIES ${SDL2_LIBRARIES}
+    SDL
+)
+
+add_moonline_test(startup_loading_flow_tests
+    LABEL scene
+    SOURCES scene/startup_loading_flow_tests.cpp
+)
+
+add_moonline_test(startup_loading_scene_tests
+    LABEL scene
+    SOURCES scene/startup_loading_scene_tests.cpp
+    LIBRARIES ${SDL2_LIBRARIES}
+    SDL
+)
+
+add_moonline_test(settings_scene_tests
+    LABEL scene
+    SOURCES scene/settings_scene_tests.cpp
     LIBRARIES ${SDL2_LIBRARIES}
     SDL
 )

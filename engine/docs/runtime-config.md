@@ -21,10 +21,11 @@ Moonline 将配置划分为三个职责明确的模块：
 ```text
 Bootstrap
   content_registry.json（解析一次） -> Application 持有 ContentRegistry
+  Application -> SceneRuntimeContext（向 Scene 提供只读 registry 与逻辑画布）
   AppConfig -> UserConfigService -> preload manifest
 
 GameContentLoader
-  Application::content_registry() -> manifests.required.configs -> ConfigLoadPipeline
+  SceneRuntimeContext::content_registry() -> manifests.required.configs -> ConfigLoadPipeline
     -> ConfigManifestLoader
     -> ConfigDocumentLoader
     -> ConfigSnapshotBuilder
@@ -50,6 +51,12 @@ Bootstrap 不解析或发布 gameplay 配置。内容加载、资源组装或资
 未知、缺失、重复或非法字段会使启动失败。窗口宽高和 FPS 必须为正，音量范围为 `0..100`，标题和语言不能为空。
 
 `player_data/user_config.json` 保存完整的 window、render、audio 与 localization 快照，但不保存窗口标题。它支持旧 v0 文件迁移、`.tmp`/`.bak` 恢复和损坏主文件归档；未来版本文件不会被自动覆盖。
+
+内建 `SettingsScene` 使用草稿式提交：控件编辑不会立即修改运行时；Save 通过
+`UserConfigService::apply_and_save_user_config()` 批量应用并持久化。事务显式携带进入页面（或上次保存成功）时的
+`UserConfigRuntimeState` 作为回滚基线，因此应用失败或持久化失败不会回滚到点击 Save 前偶然变化的状态。
+回滚失败会作为独立错误返回，页面随后以 `UserConfig` 的实际运行时状态刷新。预设面板不编辑 target FPS 与
+VSync，但提交成功时会保留这两个字段在页面打开期间由其他 API 产生的有效变化。
 
 ## 通用 gameplay 配置
 

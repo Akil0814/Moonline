@@ -1,13 +1,13 @@
 #pragma once
 
 #include "application_exit_policy.h"
-#include "../engine/tools/logger.h"
-#include "../engine/tools/termination_manager.h"
+#include "../tools/logger.h"
+#include "../tools/termination_manager.h"
 
 #include <optional>
 #include <source_location>
 
-namespace moonline::application
+namespace elysia::application
 {
 inline void log_published_termination(
     const std::optional<elysia::tools::TerminationInfo>& info,
@@ -17,8 +17,10 @@ inline void log_published_termination(
     auto* logger = elysia::tools::Logger::instance();
     if (!info)
     {
-        logger->error("termination","Application termination requested without diagnostic information",location);
-        logger->terminating("application","Application terminating without diagnostic information",location);
+        logger->error("termination",
+            "Application termination requested without diagnostic information",location);
+        logger->terminating("application",
+            "Application terminating without diagnostic information",location);
         return;
     }
 

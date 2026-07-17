@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../engine/tools/termination_manager.h"
+#include "../tools/termination_manager.h"
 
-namespace moonline::application
+namespace elysia::application
 {
 enum class ApplicationExitDecision
 {

@@ -1,6 +1,6 @@
 # 启动注册与预加载
 
-默认入口为 `assets/content_registry.json`。Bootstrap 在程序启动时仅解析一次，并将解析后的只读 `ContentRegistry` 快照交给 Application 持有；内容加载阶段复用该快照，不会再次读取此文件。根对象必须且只能包含 `bootstrap` 与 `manifests`；解析前会拒绝重复 JSON 属性，未知字段或目标文件不存在都会失败。
+默认入口为 `assets/content_registry.json`。Bootstrap 在程序启动时仅解析一次，并将解析后的只读 `ContentRegistry` 快照交给 engine Application 持有；Scene 通过 `SceneRuntimeContext` 借用该快照，内容加载阶段不会再次读取此文件。根对象必须且只能包含 `bootstrap` 与 `manifests`；解析前会拒绝重复 JSON 属性，未知字段或目标文件不存在都会失败。
 
 ```json
 {
@@ -54,12 +54,19 @@
 
 ## `preload_manifest.json`
 
-启动预加载当前只读取 `textures` 字符串数组：
+启动预加载读取显式的 `textures` 条目，每项都包含稳定资源 key 和相对文件名：
 
 ```json
-{ "textures": ["Akil_icon_1024.png", "start.png"] }
+{
+  "textures": [
+    {
+      "key": "moonline.brand.logo",
+      "file": "Akil_icon_1024.png"
+    }
+  ]
+}
 ```
 
-路径基于 `assets/preload/`，运行时 texture key 直接使用数组中的原字符串。图片解码、SDL texture 创建或重复 key 存储失败都会使预加载失败。
+项目纹理路径基于 `assets/preload/`，运行时使用条目的 `key`。Elysia Logo 由 engine 固定从 `assets/engine/preload/` 加载，不由项目 manifest 声明；缺失属于启动失败。项目 Logo 是可选资源，缺失时记录 warning 并跳过。
 
-预加载纹理由 bootstrap 子系统自己的 `BootstrapTextureCache` 持有，不会注册到正式内容使用的 `ResourceManager`。因此 `GameContentLoader` 清理或重新加载游戏内容时不会影响启动画面。`get_preload_texture()` 返回借用指针，其有效期截止到显式释放、bootstrap reset 或 SDL renderer 更换；`StartupLoadingScene` 在退出时释放全部预加载纹理。
+预加载纹理由 bootstrap 子系统自己的 `BootstrapTextureCache` 持有，不会注册到正式内容使用的 `ResourceManager`。因此 `GameContentLoader` 清理或重新加载游戏内容时不会影响启动画面。`get_preload_texture()` 返回借用指针，其有效期截止到 Application shutdown、bootstrap reset 或 SDL renderer 更换；退出 `StartupLoadingScene` 不会释放 engine 常驻 Logo，因此该内建场景可以安全再次进入。

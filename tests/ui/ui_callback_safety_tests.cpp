@@ -1,6 +1,6 @@
 #define SDL_MAIN_HANDLED
 
-#include "application/application_event_boundary.h"
+#include "engine/application/application_event_boundary.h"
 #include "engine/scene/scene.h"
 #include "engine/ui/containers/ui_button_group.h"
 #include "engine/ui/containers/ui_panel.h"
@@ -158,7 +158,7 @@ void test_callback_exceptions_reach_window_scene_and_boundary()
     require(scene_threw,"callback exceptions must escape the full Scene UI input route");
 
     bool continued = false;
-    const bool completed = moonline::application::run_event_boundary("test",[&]()
+    const bool completed = elysia::application::run_event_boundary("test",[&]()
     {
         throw std::runtime_error("boundary callback");
         continued = true;

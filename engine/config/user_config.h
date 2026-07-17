@@ -33,6 +33,7 @@ public:
     [[nodiscard]] std::expected<UserConfigApplyStatus,UserConfigFailure> set_language(std::string value);
 
     [[nodiscard]] elysia::bootstrap::UserConfigData snapshot() const;
+    [[nodiscard]] UserConfigRuntimeState runtime_state() const;
     [[nodiscard]] bool is_dirty() const noexcept;
     [[nodiscard]] bool restart_required() const noexcept;
 
@@ -45,6 +46,12 @@ private:
     void unregister_change_handler(IUserConfigChangeHandler& handler) noexcept;
 
     [[nodiscard]] std::expected<void,UserConfigFailure> require_handler(std::string_view setting) const;
+    [[nodiscard]] std::expected<void,UserConfigFailure> validate_snapshot(
+        const elysia::bootstrap::UserConfigData& settings) const;
+    [[nodiscard]] std::expected<UserConfigApplyStatus,UserConfigFailure> apply_snapshot(
+        const elysia::bootstrap::UserConfigData& settings,
+        bool continue_after_failure = false);
+    void restore_restart_required(bool restart_required) noexcept;
     elysia::bootstrap::UserConfigData _current_settings;
     elysia::bootstrap::UserConfigData _persisted_snapshot;
     IUserConfigChangeHandler* _change_handler = nullptr;

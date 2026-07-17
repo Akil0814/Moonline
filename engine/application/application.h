@@ -1,32 +1,38 @@
 #pragma once
-#include "../engine/scene/scene_manager.h"
-#include "../engine/scene/scene_manager_observer.h"
-#include "../engine/tools/singleton.h"
-#include "../engine/input/input_system.h"
-#include "../engine/bootstrap/runtime_settings.h"
-#include "../engine/config/user_config_service.h"
+
+#include "game_module.h"
+
+#include "../bootstrap/runtime_settings.h"
+#include "../config/user_config_service.h"
+#include "../input/input_system.h"
+#include "../io/loaders/asset_config_types.h"
+#include "../scene/scene_manager.h"
+#include "../scene/scene_manager_observer.h"
+#include "../scene/scene_runtime_context.h"
+#include "../tools/singleton.h"
 
 #include <SDL.h>
 
 #include <expected>
+#include <optional>
 #include <source_location>
 #include <string>
 #include <string_view>
 
-class Application
+namespace elysia::application
+{
+class Application final
     : public elysia::tools::Singleton<Application>
     , public elysia::scene::SceneManagerObserver
     , public elysia::config::IUserConfigChangeHandler
 {
     friend elysia::tools::Singleton<Application>;
+
 public:
-    Application();
     ~Application();
 
-    bool init(int argc, char** argv);
-    int run(int argc, char** argv);
-    SDL_Renderer* renderer() const { return _renderer; }
-    const elysia::io::ContentRegistry& content_registry() const noexcept { return _content_registry; }
+    bool init(int argc,char** argv,const IGameModule& game_module);
+    int run();
 
     std::expected<void,elysia::config::UserConfigFailure> apply_master_volume(int value) override;
     std::expected<void,elysia::config::UserConfigFailure> apply_music_volume(int value) override;
@@ -37,13 +43,17 @@ public:
     std::expected<void,elysia::config::UserConfigFailure> apply_fullscreen(bool value) override;
 
 private:
-    bool init_runtime(const elysia::bootstrap::StartupSettings& settings);
-    void enter_startup_scene();
+    Application() = default;
 
+    bool init_runtime(
+        const elysia::bootstrap::StartupSettings& settings,
+        const ApplicationDescriptor& descriptor);
+    void enter_initial_scene(
+        const IGameModule& game_module,
+        const ApplicationDescriptor& descriptor);
     void shutdown();
 
     void on_scene_manager_quit_requested() override;
-
 
     void init_assert(
         bool flag,
@@ -54,25 +64,20 @@ private:
         std::source_location location = std::source_location::current());
 
 private:
-    const int _logical_width = 1280;
-    const int _logical_height = 720;
+    double _target_fps = 60.0;
 
-    double FPS = 60;
-
-    Uint64 _last_counter = 0;
-    Uint64 _counter_freq = 0;
-
-    SDL_Event _event;
+    SDL_Event _event{};
     SDL_Window* _window = nullptr;
     SDL_Renderer* _renderer = nullptr;
 
     elysia::input::InputSystem _input_system;
     elysia::scene::SceneManager _scene_manager;
     elysia::io::ContentRegistry _content_registry;
+    std::optional<elysia::scene::SceneRuntimeContext> _scene_runtime_context;
 
-    bool _active = { true };
+    bool _active = true;
     bool _normal_exit_requested = false;
     bool _has_shutdown = false;
     bool _user_config_handler_registered = false;
-
 };
+}

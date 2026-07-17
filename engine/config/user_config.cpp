@@ -1,5 +1,7 @@
 #include "user_config_service.h"
 
+#include <cmath>
+
 namespace elysia::config
 {
 namespace
@@ -26,6 +28,69 @@ std::expected<void,UserConfigFailure> UserConfig::require_handler(std::string_vi
 {
     if (_change_handler) return {};
     return std::unexpected(UserConfigFailure{UserConfigError::ChangeHandlerUnavailable,std::string(setting),"A runtime settings change handler is not registered."});
+}
+
+std::expected<void,UserConfigFailure> UserConfig::validate_snapshot(
+    const elysia::bootstrap::UserConfigData& settings) const
+{
+    if (settings.window_width <= 0 || settings.window_height <= 0)
+        return invalid("window_size","Window width and height must be positive.");
+    if (!std::isfinite(settings.target_fps) || settings.target_fps <= 0.0)
+        return invalid("target_fps","Target FPS must be finite and positive.");
+    if (!is_volume(settings.audio.master_volume))
+        return invalid("master_volume","Volume must be within 0..100.");
+    if (!is_volume(settings.audio.music_volume))
+        return invalid("music_volume","Volume must be within 0..100.");
+    if (!is_volume(settings.audio.sound_volume))
+        return invalid("sound_volume","Volume must be within 0..100.");
+    if (settings.language.empty())
+        return invalid("language","Language must be non-empty.");
+    return {};
+}
+
+std::expected<UserConfigApplyStatus,UserConfigFailure> UserConfig::apply_snapshot(
+    const elysia::bootstrap::UserConfigData& settings,
+    bool continue_after_failure)
+{
+    if (const auto valid = validate_snapshot(settings); !valid)
+        return std::unexpected(valid.error());
+
+    std::optional<UserConfigFailure> first_failure;
+    UserConfigApplyStatus status = UserConfigApplyStatus::Applied;
+    const auto apply = [&](auto&& operation)
+    {
+        const auto result = operation();
+        if (!result)
+        {
+            if (!first_failure)
+                first_failure = result.error();
+            return continue_after_failure;
+        }
+        if (*result == UserConfigApplyStatus::PendingRestart)
+            status = UserConfigApplyStatus::PendingRestart;
+        return true;
+    };
+
+    if (!apply([&]() { return set_window_size(settings.window_width,settings.window_height); }))
+        return std::unexpected(*first_failure);
+    if (!apply([&]() { return set_fullscreen(settings.fullscreen); }))
+        return std::unexpected(*first_failure);
+    if (!apply([&]() { return set_target_fps(settings.target_fps); }))
+        return std::unexpected(*first_failure);
+    if (!apply([&]() { return set_master_volume(settings.audio.master_volume); }))
+        return std::unexpected(*first_failure);
+    if (!apply([&]() { return set_music_volume(settings.audio.music_volume); }))
+        return std::unexpected(*first_failure);
+    if (!apply([&]() { return set_sound_volume(settings.audio.sound_volume); }))
+        return std::unexpected(*first_failure);
+    if (!apply([&]() { return set_language(settings.language); }))
+        return std::unexpected(*first_failure);
+    if (!apply([&]() { return set_vsync(settings.vsync); }))
+        return std::unexpected(*first_failure);
+
+    if (first_failure)
+        return std::unexpected(*first_failure);
+    return status;
 }
 
 std::expected<UserConfigApplyStatus,UserConfigFailure> UserConfig::set_window_size(int width,int height)
@@ -106,6 +171,13 @@ std::expected<UserConfigApplyStatus,UserConfigFailure> UserConfig::set_language(
 }
 
 elysia::bootstrap::UserConfigData UserConfig::snapshot() const { return _current_settings; }
+UserConfigRuntimeState UserConfig::runtime_state() const
+{
+    return UserConfigRuntimeState{
+        .settings = _current_settings,
+        .restart_required = _vsync_restart_pending
+    };
+}
 bool UserConfig::is_dirty() const noexcept { return _current_settings != _persisted_snapshot; }
 bool UserConfig::restart_required() const noexcept { return _vsync_restart_pending; }
 void UserConfig::initialize(const elysia::bootstrap::UserConfigData& settings) noexcept { _current_settings = settings; _persisted_snapshot = settings; _vsync_restart_pending = false; }
@@ -113,4 +185,5 @@ void UserConfig::mark_persisted() noexcept { _persisted_snapshot = _current_sett
 void UserConfig::reset() noexcept { _current_settings = {}; _persisted_snapshot = {}; _change_handler = nullptr; _vsync_restart_pending = false; }
 void UserConfig::register_change_handler(IUserConfigChangeHandler& handler) noexcept { _change_handler = &handler; }
 void UserConfig::unregister_change_handler(IUserConfigChangeHandler& handler) noexcept { if (_change_handler == &handler) _change_handler = nullptr; }
+void UserConfig::restore_restart_required(bool restart_required) noexcept { _vsync_restart_pending = restart_required; }
 }

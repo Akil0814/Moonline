@@ -1,5 +1,4 @@
 {
-  "schema_version": 1,
   "audio": {
     "master_volume": 100,
     "music_volume": 100,
@@ -12,6 +11,7 @@
     "fps": 60.0,
     "vsync": true
   },
+  "schema_version": 1,
   "window": {
     "fullscreen": false,
     "height": 720,

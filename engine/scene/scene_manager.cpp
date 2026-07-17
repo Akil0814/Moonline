@@ -2,6 +2,7 @@
 
 #include "../camera/camera_manager.h"
 #include "../effects/effect_manager.h"
+#include "../tools/logger.h"
 
 #include <stdexcept>
 
@@ -12,19 +13,32 @@ SceneManager::~SceneManager()
     shutdown();
 }
 
+void SceneManager::set_runtime_context(const SceneRuntimeContext& context) noexcept
+{
+    _runtime_context = &context;
+
+    if (_current_scene)
+        _current_scene->bind_runtime_context(context);
+}
+
+void SceneManager::start(const SceneRoute& route)
+{
+    if (_current_scene)
+        throw std::logic_error("SceneManager::start called while a scene is already active.");
+
+    switch_to_registered_scene(route);
+}
+
 void SceneManager::start(
     SceneKey first_scene,
     const ScenePayload& payload
 )
 {
-    if (_current_scene)
-        throw std::logic_error("SceneManager::start called while a scene is already active.");
-
-    switch_to_registered_scene(
-        first_scene,
-        payload,
-        SceneReloadMode::Reuse
-    );
+    start(SceneRoute{
+        .target = first_scene,
+        .payload = payload,
+        .reload_mode = SceneReloadMode::Reuse
+    });
 }
 
 void SceneManager::on_input(
@@ -114,11 +128,7 @@ void SceneManager::process_pending_request()
     switch (request.type)
     {
     case SceneRequestType::Switch:
-        switch_to_registered_scene(
-            request.target,
-            request.payload,
-            request.reload_mode
-        );
+        switch_to_registered_scene(request.route);
         break;
 
     case SceneRequestType::Quit:
@@ -132,56 +142,58 @@ void SceneManager::process_pending_request()
 }
 
 void SceneManager::switch_to_registered_scene(
-    SceneKey target,
-    const ScenePayload& payload,
-    SceneReloadMode reload_mode
+    const SceneRoute& route
 )
 {
-    if (target == SceneKeys::Invalid)
-        throw std::logic_error("SceneManager::switch_to_registered_scene received SceneKeys::Invalid.");
+    if (!SceneKeys::is_supported(route.target))
+        throw_invalid_route_key(route.target);
 
-    const auto iter = _scene_providers.find(target);
+    ELYSIA_LOG(
+        "scene",
+        "Switching to SceneKey " << route.target
+        << " with reload mode "
+        << static_cast<int>(route.reload_mode));
+
+    const auto iter = _scene_providers.find(route.target);
 
     if (iter == _scene_providers.end())
-        throw std::logic_error("SceneManager::switch_to_registered_scene received an unregistered SceneKey.");
+    {
+        if (SceneKeys::is_game(route.target))
+            throw std::logic_error("SceneManager received a valid but unregistered game SceneKey.");
 
-    Scene* next_scene = iter->second(reload_mode);
+        throw std::logic_error("SceneManager received a valid but unregistered engine built-in SceneKey.");
+    }
 
-    switch_to_scene(
-        target,
-        next_scene,
-        payload,
-        reload_mode
-    );
+    Scene* next_scene = iter->second(route.reload_mode);
+
+    switch_to_scene(next_scene, route);
 }
 
 void SceneManager::switch_to_scene(
-    SceneKey target,
     Scene* next_scene,
-    const ScenePayload& payload,
-    SceneReloadMode reload_mode
+    const SceneRoute& route
 )
 {
     if (!next_scene)
         throw std::logic_error("SceneManager::switch_to_scene received a null scene from provider.");
 
+    if (_runtime_context)
+        next_scene->bind_runtime_context(*_runtime_context);
+
     if (_current_scene == next_scene)
     {
-        if (reload_mode == SceneReloadMode::Reuse)
-            return;
-
         detach_from_scene(_current_scene);
         _current_scene->on_exit();
         elysia::camera::CameraManager::instance()->reset(
             elysia::camera::CameraSlot::Main
         );
 
-        if (reload_mode == SceneReloadMode::Reset)
+        if (route.reload_mode == SceneReloadMode::Reset)
             _current_scene->reset();
 
         attach_to_scene(_current_scene);
-        _current_scene_key = target;
-        _current_scene->on_enter(payload);
+        _current_scene_key = route.target;
+        _current_scene->on_enter(route.payload);
         return;
     }
 
@@ -196,13 +208,21 @@ void SceneManager::switch_to_scene(
     );
 
     _current_scene = next_scene;
-    _current_scene_key = target;
+    _current_scene_key = route.target;
 
-    if (reload_mode == SceneReloadMode::Reset)
+    if (route.reload_mode == SceneReloadMode::Reset)
         _current_scene->reset();
 
     attach_to_scene(_current_scene);
-    _current_scene->on_enter(payload);
+    _current_scene->on_enter(route.payload);
+}
+
+void SceneManager::throw_invalid_route_key(SceneKey key)
+{
+    if (key == SceneKeys::Invalid)
+        throw std::logic_error("SceneManager received SceneKeys::Invalid.");
+
+    throw std::logic_error("SceneManager received a SceneKey in the reserved range.");
 }
 
 void SceneManager::attach_to_scene(Scene* scene)
@@ -238,8 +258,10 @@ void SceneManager::shutdown()
         elysia::camera::CameraSlot::Main
     );
 
+    _scene_factory.clear_runtime_contexts();
     _scene_factory.destroy_all_scene();
     _scene_providers.clear();
+    _runtime_context = nullptr;
 
     _pending_request = SceneRequest{};
     _has_pending_request = false;

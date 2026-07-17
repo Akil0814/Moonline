@@ -1,43 +1,38 @@
 Moonline/
-│
-├─ CMakeLists.txt
-├─ main.cpp                      -> program entry
-│
-├─ application/                  -> app startup and main loop
-│  ├─ CMakeLists.txt
-│  ├─ application.h
-│  └─ application.cpp
-│
-├─ engine/                       -> reusable game engine layer
-│  ├─ CMakeLists.txt
-│  ├─ game_object.h             
-│  ├─ animation/
-│  ├─ base/
-│  ├─ docs/                      -> engine developer docs
-│  ├─ io/
-│  ├─ resources/
-│  ├─ scene/
-│  └─ ui/
-│
-├─ gameplay/                     -> game-specific logic
-│  ├─ CMakeLists.txt
-│  └─ scene/
-│
-├─ thirdparty/                   -> external dependencies
-│  ├─ JSON/
-│  ├─ imgui/
-│  └─ SDL2/
 |
-├─ assets/                       -> game assets
-│       
-└─ docs/                         -> project-level docs
+|-- CMakeLists.txt
+|-- main.cpp                         -> assemble MoonlineGameModule and engine Application
+|
+|-- engine/                          -> reusable engine layer
+|   |-- CMakeLists.txt
+|   |-- application/                 -> startup, main loop, event boundary and IGameModule
+|   |-- bootstrap/                   -> runtime config and engine/project startup preload
+|   |-- config/
+|   |-- docs/                        -> engine developer documentation
+|   |-- input/
+|   |-- resources/
+|   |-- scene/
+|   |   `-- builtin/                 -> StartupLoadingScene and SettingsScene
+|   `-- ui/
+|
+|-- gameplay/                        -> Moonline-specific assembly and logic
+|   |-- CMakeLists.txt
+|   |-- application/                 -> MoonlineGameModule
+|   `-- scene/                       -> project Scene types and MoonlineSceneKeys
+|
+|-- assets/
+|   |-- engine/preload/              -> engine-owned Elysia branding
+|   `-- preload/                     -> optional project branding
+|
+|-- tests/
+|-- thirdparty/                      -> external dependencies
+`-- docs/                            -> project-level documentation
+
+Dependency direction:
+
+MoonLine -> gameplay_lib -> engine_lib -> SDL
 
 Notes:
-1. Keep engine generic so it can be reused by other 2D game projects.
-2. Put game-specific behavior in gameplay instead of pushing it back into engine.
-
-
-Manager 管生命周期和缓存
-Loader 管解析和构建
-Bootstrapper 管启动流程
-ResourceManager 管底层资源复用
+1. Application is part of the reusable engine and must not include gameplay types.
+2. Projects extend the runtime through IGameModule and game Scene keys 1..999.
+3. Engine built-in Scenes use the high key range above 0xFFFF0000.

@@ -6,10 +6,18 @@ namespace elysia::io
 {
 bool PathManager::init()
 {
+    return init({});
+}
+
+bool PathManager::init(const std::filesystem::path& start_path)
+{
     std::optional<std::filesystem::path> root_path;
     try
     {
-        root_path = find_project_root(std::filesystem::current_path());
+        root_path = find_project_root(
+            start_path.empty()
+                ? std::filesystem::current_path()
+                : start_path);
     }
     catch (const std::filesystem::filesystem_error& error)
     {

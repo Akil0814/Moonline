@@ -12,6 +12,7 @@ class PathManager : public elysia::tools::Singleton<PathManager>
 
 public:
     bool init();
+    bool init(const std::filesystem::path& start_path);
     bool ensure_runtime_dirs() const;
 
     const std::filesystem::path& root() const;

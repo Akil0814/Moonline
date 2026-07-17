@@ -15,6 +15,11 @@ class UiConfirmationDialog;
 
 namespace arcneco::scene
 {
+struct MainMenuEnterPayload
+{
+    bool replay_theme_music = false;
+};
+
 class MainMenuScene final : public elysia::scene::Scene
 {
 public:

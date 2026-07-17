@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <stdexcept>
 
 namespace elysia::scene
 {
@@ -290,17 +291,25 @@ void Scene::notify_scene_request(const SceneRequest& request)
 }
 
 void Scene::request_scene_switch(
+    const SceneRoute& route)
+{
+    SceneRequest request;
+    request.type = SceneRequestType::Switch;
+    request.route = route;
+
+    notify_scene_request(request);
+}
+
+void Scene::request_scene_switch(
     SceneKey target,
     const ScenePayload& payload,
     SceneReloadMode reload_mode)
 {
-    SceneRequest request;
-    request.type = SceneRequestType::Switch;
-    request.target = target;
-    request.payload = payload;
-    request.reload_mode = reload_mode;
-
-    notify_scene_request(request);
+    request_scene_switch(SceneRoute{
+        .target = target,
+        .payload = payload,
+        .reload_mode = reload_mode
+    });
 }
 
 void Scene::request_quit()
@@ -314,6 +323,24 @@ void Scene::request_quit()
 void Scene::on_scene_object_registered(elysia::core::SceneObject& object)
 {
     (void)object;
+}
+
+const SceneRuntimeContext& Scene::runtime_context() const
+{
+    if (!_runtime_context)
+        throw std::logic_error("Scene::runtime_context called before a runtime context was bound.");
+
+    return *_runtime_context;
+}
+
+void Scene::bind_runtime_context(const SceneRuntimeContext& context) noexcept
+{
+    _runtime_context = &context;
+}
+
+void Scene::clear_runtime_context() noexcept
+{
+    _runtime_context = nullptr;
 }
 
 const elysia::camera::Camera& Scene::camera() const noexcept

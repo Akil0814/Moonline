@@ -1,10 +1,10 @@
 #include "main_menu_scene.h"
 
-#include "../../application/scene/scene_keys.h"
-#include "../../application/scene/scene_payloads.h"
+#include "moonline_scene_keys.h"
 
 #include "../../engine/audio/audio_service.h"
 #include "../../engine/resources/resource_manager.h"
+#include "../../engine/scene/builtin/settings_scene.h"
 
 
 #include "../../engine/ui/composites/ui_confirmation_dialog.h"
@@ -22,7 +22,7 @@ void MainMenuScene::on_enter(const elysia::scene::ScenePayload& payload)
 {
     
     if (payload.has_value())//指针版 any_cast，不会抛异常
-        if (const MainMeunEnterPayload* p = std::any_cast<MainMeunEnterPayload>(&payload))
+        if (const MainMenuEnterPayload* p = std::any_cast<MainMenuEnterPayload>(&payload))
             if (p->replay_theme_music)
                 elysia::audio::AudioService::instance()->play_music("scene.main_meun_scene_main");
 
@@ -98,13 +98,25 @@ void MainMenuScene::build_menu_buttons()
     //start button
     std::unique_ptr<elysia::ui::UiButton> ui_button = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,button_wide,75 });
     ui_button->set_text_content(elysia::ui::ui_text_key("menu_scene.start"));
-    ui_button->set_on_click([this] {Scene::request_scene_switch(AppSceneKeys::CharacterSelect);});
+    ui_button->set_on_click([this] {
+        Scene::request_scene_switch(MoonlineSceneKeys::CharacterSelect);
+    });
     ui_list->add_back(std::move(ui_button));
 
     //setting button
     ui_button = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,button_wide,75 });
     ui_button->set_text_content(elysia::ui::ui_text_key("menu_scene.settings"));
-    ui_button->set_on_click([this] {Scene::request_scene_switch(AppSceneKeys::Setting);});
+    ui_button->set_on_click([this] {
+        Scene::request_scene_switch(
+            elysia::scene::builtin::Settings,
+            elysia::scene::builtin::SettingsScenePayload{
+                .return_route = elysia::scene::SceneRoute{
+                    .target = MoonlineSceneKeys::MainMenu,
+                    .payload = MainMenuEnterPayload{ .replay_theme_music = false },
+                    .reload_mode = elysia::scene::SceneReloadMode::Reuse
+                }
+            });
+    });
     ui_list->add_back(std::move(ui_button));
 
     //about button
@@ -147,14 +159,18 @@ void MainMenuScene::build_menu_buttons()
     auto* ui_test_scene_button = Scene::create_and_add_object<elysia::ui::UiButton>(
         elysia::core::Rect{ 20,20,180,50 },20);
     ui_test_scene_button->set_text_content(elysia::ui::ui_raw_text("UiTestScene"));
-    ui_test_scene_button->set_on_click([this]() { Scene::request_scene_switch(AppSceneKeys::UiTest); });
+    ui_test_scene_button->set_on_click([this]() {
+        Scene::request_scene_switch(MoonlineSceneKeys::UiTest);
+    });
     //test end
 
     //test begin
     auto* test_scene_button = Scene::create_and_add_object<elysia::ui::UiButton>(
         elysia::core::Rect{ 20,80,180,50 },20);
     test_scene_button->set_text_content(elysia::ui::ui_raw_text("TestScene"));
-    test_scene_button->set_on_click([this]() { Scene::request_scene_switch(AppSceneKeys::Test); });
+    test_scene_button->set_on_click([this]() {
+        Scene::request_scene_switch(MoonlineSceneKeys::Test);
+    });
     //test end
 
     SDL_Texture* tex =

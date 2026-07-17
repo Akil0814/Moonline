@@ -29,8 +29,6 @@ if(WIN32)
         )
     endif()
 
-    include_directories(SYSTEM ${SDL2_INCLUDE_DIR})
-
     if(MSVC)
         set(SDL2_LIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/SDL2/lib/msvc")
         set(SDL2_LIBRARIES
@@ -128,13 +126,8 @@ elseif(APPLE)
         ${SDL2_TTF_LIBRARY}
     )
 
-    include_directories(SYSTEM ${SDL2_INCLUDE_DIR})
 endif()
 
-
-
-add_subdirectory(thirdparty/imgui)
-add_subdirectory(application)
 add_subdirectory(engine)
 add_subdirectory(gameplay)
 
@@ -148,7 +141,7 @@ if(MOONLINE_ENABLE_ASAN AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     if(NOT MOONLINE_ASAN_AVAILABLE)
         message(FATAL_ERROR "MOONLINE_ENABLE_ASAN=ON, but this compiler has no usable AddressSanitizer runtime.")
     endif()
-    foreach(MOONLINE_ASAN_TARGET engine_lib gameplay_lib app_lib)
+    foreach(MOONLINE_ASAN_TARGET engine_lib gameplay_lib)
         target_compile_options(${MOONLINE_ASAN_TARGET} PRIVATE -fsanitize=address -fno-omit-frame-pointer)
         target_link_options(${MOONLINE_ASAN_TARGET} INTERFACE -fsanitize=address)
     endforeach()
@@ -160,9 +153,4 @@ endif()
 
 add_executable(MoonLine "main.cpp")
 
-target_include_directories(MoonLine PRIVATE
-	${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/imgui
-	${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/nlohmann
-)
-
-target_link_libraries(MoonLine app_lib gameplay_lib engine_lib imgui_lib ${SDL2_LIBRARIES})
+target_link_libraries(MoonLine PRIVATE gameplay_lib)

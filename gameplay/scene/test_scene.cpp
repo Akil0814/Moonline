@@ -1,6 +1,6 @@
 #include "test_scene.h"
 
-#include "../../application/scene/scene_keys.h"
+#include "moonline_scene_keys.h"
 #include "../../engine/input/raw_input_types.h"
 #include "../../engine/ui/widgets/image/ui_animation.h"
 
@@ -13,7 +13,7 @@ void TestScene::on_input(
     elysia::scene::Scene::on_input(input,events);
 
     if (input.state.is_just_pressed(elysia::input::RawInputControl::KeyEscape))
-        request_scene_switch(AppSceneKeys::MainMenu);
+        request_scene_switch(MoonlineSceneKeys::MainMenu);
 }
 
 void TestScene::on_enter(const elysia::scene::ScenePayload& payload)

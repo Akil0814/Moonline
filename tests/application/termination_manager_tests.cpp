@@ -1,5 +1,5 @@
-#include "application/application_event_boundary.h"
-#include "application/application_exit_policy.h"
+#include "engine/application/application_event_boundary.h"
+#include "engine/application/application_exit_policy.h"
 #include "engine/tools/termination_manager.h"
 #include "tests/support/test_assertions.h"
 
@@ -100,7 +100,7 @@ void test_event_boundary_and_exit_priority()
     auto* manager = tools::TerminationManager::instance();
 
     manager->reset_for_testing();
-    const bool standard_result = moonline::application::run_event_boundary("input",[]()
+    const bool standard_result = elysia::application::run_event_boundary("input",[]()
     {
         throw std::runtime_error("standard boundary exception");
     });
@@ -113,7 +113,7 @@ void test_event_boundary_and_exit_priority()
         "event boundaries must publish standard exception diagnostics");
 
     manager->reset_for_testing();
-    const bool unknown_result = moonline::application::run_event_boundary("render",[]()
+    const bool unknown_result = elysia::application::run_event_boundary("render",[]()
     {
         throw 7;
     });
@@ -125,17 +125,17 @@ void test_event_boundary_and_exit_priority()
         "event boundaries must publish unknown exception diagnostics");
 
     manager->reset_for_testing();
-    require(moonline::application::resolve_application_exit(false,*manager)
-            == moonline::application::ApplicationExitDecision::Continue,
+    require(elysia::application::resolve_application_exit(false,*manager)
+            == elysia::application::ApplicationExitDecision::Continue,
         "no request and no normal quit must continue");
-    require(moonline::application::resolve_application_exit(true,*manager)
-            == moonline::application::ApplicationExitDecision::NormalExit,
+    require(elysia::application::resolve_application_exit(true,*manager)
+            == elysia::application::ApplicationExitDecision::NormalExit,
         "normal quit without a fault must exit successfully");
 
     manager->reset_for_testing();
     manager->request_termination(tools::TerminationReason::FatalRuntimeFailure,"worker","same frame fault");
-    require(moonline::application::resolve_application_exit(true,*manager)
-            == moonline::application::ApplicationExitDecision::FaultExit,
+    require(elysia::application::resolve_application_exit(true,*manager)
+            == elysia::application::ApplicationExitDecision::FaultExit,
         "published termination requests must override normal quit requests");
 }
 }

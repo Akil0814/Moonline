@@ -85,5 +85,5 @@ gameplay scene
             -> engine/input/raw
 ```
 
-`application` 只负责主循环与 Scene 注册。标准 gameplay input 不依赖项目的 `gameplay/` 目录，也不依赖 UserConfig。
+`engine/application` 负责主循环和内建 Scene 注册；项目 Scene 由 `IGameModule` 注册。标准 gameplay input 不依赖项目的 `gameplay/` 目录，也不依赖 UserConfig。
 

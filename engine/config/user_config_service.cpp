@@ -33,6 +33,62 @@ std::expected<void,UserConfigFailure> UserConfigService::save_user_config()
     return {};
 }
 
+std::expected<UserConfigApplyStatus,UserConfigCommitFailure>
+UserConfigService::apply_and_save_user_config(
+    const elysia::bootstrap::UserConfigData& settings)
+{
+    return apply_and_save_user_config(settings,_user_config.runtime_state());
+}
+
+std::expected<UserConfigApplyStatus,UserConfigCommitFailure>
+UserConfigService::apply_and_save_user_config(
+    const elysia::bootstrap::UserConfigData& settings,
+    const UserConfigRuntimeState& rollback_state)
+{
+    if (!_initialized)
+    {
+        return std::unexpected(UserConfigCommitFailure{
+            UserConfigFailure{
+                UserConfigError::SaveFailed,
+                {},
+                "Config service is not initialized."
+            },
+            std::nullopt
+        });
+    }
+
+    const auto rollback = [&]() -> std::optional<UserConfigFailure>
+    {
+        const auto restored =
+            _user_config.apply_snapshot(rollback_state.settings,true);
+        _user_config.restore_restart_required(
+            rollback_state.restart_required);
+        if (!restored)
+            return restored.error();
+        return std::nullopt;
+    };
+
+    const auto applied = _user_config.apply_snapshot(settings);
+    if (!applied)
+    {
+        return std::unexpected(UserConfigCommitFailure{
+            applied.error(),
+            rollback()
+        });
+    }
+
+    const auto saved = save_user_config();
+    if (!saved)
+    {
+        return std::unexpected(UserConfigCommitFailure{
+            saved.error(),
+            rollback()
+        });
+    }
+
+    return *applied;
+}
+
 void UserConfigService::register_user_config_change_handler(IUserConfigChangeHandler& handler) noexcept { _user_config.register_change_handler(handler); }
 void UserConfigService::unregister_user_config_change_handler(IUserConfigChangeHandler& handler) noexcept { _user_config.unregister_change_handler(handler); }
 void UserConfigService::shutdown() noexcept { _user_config.reset(); _user_config_store.reset(); _user_config_path.clear(); _initialized = false; }

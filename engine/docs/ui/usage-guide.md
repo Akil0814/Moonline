@@ -18,7 +18,23 @@ auto* start = window->create_child<elysia::ui::UiButton>(
         ._margin = {0.0f, 0.0f, 0.0f, 0.0f}},
     elysia::core::Rect{0, 0, 180, 44},
     elysia::ui::UiButtonConfig{.content = elysia::ui::ui_text_key("menu_scene.start")});
-start->set_on_click([this] { request_scene_switch(AppSceneKeys::CharacterSelect); });
+start->set_on_click([this] {
+    request_scene_switch(MoonlineSceneKeys::CharacterSelect);
+});
+
+settings->set_on_click([this] {
+    request_scene_switch(
+        elysia::scene::builtin::Settings,
+        elysia::scene::builtin::SettingsScenePayload{
+            .return_route = elysia::scene::SceneRoute{
+                .target = MoonlineSceneKeys::MainMenu,
+                .payload = MainMenuEnterPayload{
+                    .replay_theme_music = false
+                },
+                .reload_mode = elysia::scene::SceneReloadMode::Reuse
+            }
+        });
+});
 ```
 
 `create_child` 和 `add_child` 会转移 `unique_ptr` 所有权；返回的裸指针仅在父节点仍持有

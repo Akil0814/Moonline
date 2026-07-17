@@ -30,6 +30,7 @@ public:
 	template<typename T>
 	bool destroy_scene();
 
+	void clear_runtime_contexts() noexcept;
 	bool destroy_all_scene();
 
 private:

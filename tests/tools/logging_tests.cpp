@@ -1,13 +1,12 @@
 #define SDL_MAIN_HANDLED
 
-#include "application/application_termination_logging.h"
+#include "engine/application/application_termination_logging.h"
 #include "engine/io/loaders/content_registry_loader.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/loading/content_manifest_pipeline.h"
 #include "engine/resources/pipeline/resource_request_builder.h"
 #include "engine/resources/resource_manager.h"
 #include "engine/tools/logger.h"
-#include "gameplay/scene/startup_loading_failure.h"
 #include "tests/support/test_assertions.h"
 
 #include <SDL.h>
@@ -222,8 +221,8 @@ void test_logger_console_sink()
         false
     };
     const unsigned int termination_decision_line = __LINE__ + 1;
-    moonline::application::log_fault_exit_if_needed(
-        moonline::application::ApplicationExitDecision::FaultExit,termination_info);
+    elysia::application::log_fault_exit_if_needed(
+        elysia::application::ApplicationExitDecision::FaultExit,termination_info);
     require(captured.messages.size() == 2
             && captured.messages[0].find("[ERROR]") != std::string::npos
             && captured.messages[0].find("[input]") != std::string::npos
@@ -237,7 +236,10 @@ void test_logger_console_sink()
     auto* termination_manager = tools::TerminationManager::instance();
     termination_manager->reset_for_testing();
     const unsigned int startup_termination_line = __LINE__ + 1;
-    arcneco::scene::request_startup_content_load_termination();
+    termination_manager->request_termination(
+        tools::TerminationReason::FatalRuntimeFailure,
+        "startup",
+        "Startup content loading failed");
     const auto startup_termination_info = termination_manager->termination_info();
     require(startup_termination_info.has_value()
             && startup_termination_info->reason == tools::TerminationReason::FatalRuntimeFailure
@@ -245,12 +247,12 @@ void test_logger_console_sink()
             && startup_termination_info->message == "Startup content loading failed"
             && startup_termination_info->location.line() == startup_termination_line,
         "startup content failures must publish a complete fatal termination request at the scene call site");
-    require(moonline::application::resolve_application_exit(false,*termination_manager)
-            == moonline::application::ApplicationExitDecision::FaultExit,
+    require(elysia::application::resolve_application_exit(false,*termination_manager)
+            == elysia::application::ApplicationExitDecision::FaultExit,
         "startup content failures must select a fault exit instead of a normal scene quit");
     const unsigned int startup_exit_decision_line = __LINE__ + 1;
-    moonline::application::log_fault_exit_if_needed(
-        moonline::application::ApplicationExitDecision::FaultExit,startup_termination_info);
+    elysia::application::log_fault_exit_if_needed(
+        elysia::application::ApplicationExitDecision::FaultExit,startup_termination_info);
     require(captured.messages.size() == 2
             && captured.messages[0].find("[ERROR]") != std::string::npos
             && captured.messages[0].find("[startup]") != std::string::npos
@@ -261,8 +263,8 @@ void test_logger_console_sink()
     termination_manager->reset_for_testing();
 
     captured.messages.clear();
-    moonline::application::log_fault_exit_if_needed(
-        moonline::application::ApplicationExitDecision::NormalExit,std::nullopt);
+    elysia::application::log_fault_exit_if_needed(
+        elysia::application::ApplicationExitDecision::NormalExit,std::nullopt);
     require(captured.messages.empty(),"normal exits must not emit a terminating event");
     logger->shutdown();
 

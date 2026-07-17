@@ -1,10 +1,15 @@
 #define SDL_MAIN_HANDLED
-#include "application/application.h"
+#include "engine/application/application.h"
+#include "gameplay/application/moonline_game_module.h"
+
+#include <cstdlib>
 
 int main(int argc, char** argv)
 {
-	if (!Application::instance()->init(argc, argv))
-		return -1;
+	moonline::application::MoonlineGameModule game_module;
+	auto* application = elysia::application::Application::instance();
+	if (!application->init(argc,argv,game_module))
+		return EXIT_FAILURE;
 
-	return Application::instance()->run(argc,argv);
+	return application->run();
 }

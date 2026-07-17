@@ -1,7 +1,6 @@
 #pragma once
 
-#include "scene_key.h"
-#include "scene_payload.h"
+#include "scene_route.h"
 
 namespace elysia::scene
 {
@@ -12,20 +11,10 @@ enum class SceneRequestType
     Quit
 };
 
-enum class SceneReloadMode
-{
-    Reuse,
-    Reset,
-    Recreate
-};
-
 struct SceneRequest
 {
     SceneRequestType type = SceneRequestType::None;
-    SceneKey target = SceneKeys::Invalid;
-    SceneReloadMode reload_mode = SceneReloadMode::Reuse;
-
-    ScenePayload payload{};
+    SceneRoute route{};
 };
 
 }

@@ -241,10 +241,10 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
     require(!effect_manager->spawn_floating_number_effect(request),
         "floating number spawning must fail without an active scene");
     scene::SceneManager scene_manager;
-    constexpr scene::SceneKey first_scene_key = 1101;
-    constexpr scene::SceneKey second_scene_key = 1102;
-    scene_manager.register_scene<TestScene>(first_scene_key);
-    scene_manager.register_scene<SecondTestScene>(second_scene_key);
+    constexpr scene::SceneKey first_scene_key = 111;
+    constexpr scene::SceneKey second_scene_key = 112;
+    scene_manager.register_game_scene<TestScene>(first_scene_key);
+    scene_manager.register_game_scene<SecondTestScene>(second_scene_key);
     scene_manager.start(first_scene_key);
 
     int scene_finished = 0;
@@ -272,7 +272,7 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
         "a pending floating number must attach before a scene switch");
     scene::SceneRequest switch_request;
     switch_request.type = scene::SceneRequestType::Switch;
-    switch_request.target = second_scene_key;
+    switch_request.route.target = second_scene_key;
     scene_manager.on_scene_request(switch_request);
     scene_manager.on_update(0.0);
     require(switch_finished == 0, "scene switching must not invoke pending floating number callbacks");

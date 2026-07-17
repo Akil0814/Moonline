@@ -1,6 +1,7 @@
 #define SDL_MAIN_HANDLED
 
 #include "engine/bootstrap/bootstrap_texture_cache.h"
+#include "engine/bootstrap/startup_preload_contract.h"
 #include "engine/bootstrap/startup_preload_loader.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/loading/content_runtime_cleanup.h"
@@ -68,50 +69,113 @@ void test_bootstrap_texture_cache_and_preload_lifetime()
         bootstrap::StartupPreloadLoader loader;
         loader.set_manifest_path(paths->configs() / "manifests" / "preload_manifest.json");
         require(loader.load(renderer),"startup loader must load the real preload manifest");
-        SDL_Texture* logo = loader.get_texture("Akil_icon_1024.png");
-        require(logo != nullptr,"startup loader must expose the preloaded logo");
+        SDL_Texture* logo = loader.get_texture("moonline.brand.logo");
+        require(logo != nullptr,"startup loader must expose the keyed project logo");
+        require(loader.get_texture(bootstrap::startup_preload::EngineLogoTextureKey) != nullptr,
+            "startup loader must always expose the engine-owned Elysia logo");
         require(resource_manager->resource_count() == resource_count_before,
             "bootstrap preload must not publish textures to ResourceManager");
 
         loading::clear_loaded_content();
         int width = 0;
         int height = 0;
-        require(loader.get_texture("Akil_icon_1024.png") == logo
+        require(loader.get_texture("moonline.brand.logo") == logo
             && SDL_QueryTexture(logo,nullptr,nullptr,&width,&height) == 0
             && width > 0
             && height > 0,
             "clearing game content must not invalidate bootstrap textures");
 
         require(!loader.load(nullptr),"a reload with a missing renderer must fail");
-        require(loader.get_texture("Akil_icon_1024.png") == logo,
+        require(loader.get_texture("moonline.brand.logo") == logo,
             "failed reloads must preserve the last complete bootstrap cache");
 
         require(loader.load(second_renderer),"renderer changes must rebuild bootstrap textures");
-        SDL_Texture* rebuilt_logo = loader.get_texture("Akil_icon_1024.png");
+        SDL_Texture* rebuilt_logo = loader.get_texture("moonline.brand.logo");
         require(rebuilt_logo && SDL_QueryTexture(rebuilt_logo,nullptr,nullptr,&width,&height) == 0,
             "rebuilt bootstrap textures must belong to a usable renderer cache");
 
         loader.release_textures();
-        require(loader.get_texture("Akil_icon_1024.png") == nullptr,
+        require(loader.get_texture("moonline.brand.logo") == nullptr,
             "released bootstrap textures must no longer be queryable");
-        require(loader.load(renderer) && loader.get_texture("Akil_icon_1024.png"),
+        require(loader.load(renderer) && loader.get_texture("moonline.brand.logo"),
             "release must retain manifest configuration for a later reload");
 
         const std::filesystem::path invalid_manifest =
             std::filesystem::temp_directory_path() / "moonline_invalid_preload_manifest.json";
         {
             std::ofstream output(invalid_manifest,std::ios::trunc);
-            output << R"({"textures":["Akil_icon_1024.png","missing-bootstrap-texture.png"]})";
+            output << R"({"textures":[{"key":"project.valid","file":"Akil_icon_1024.png"},{"key":"project.invalid"}]})";
         }
         bootstrap::StartupPreloadLoader failing_loader;
         failing_loader.set_manifest_path(invalid_manifest);
-        require(!failing_loader.load(renderer),"a partially invalid preload manifest must fail");
-        require(failing_loader.get_texture("Akil_icon_1024.png") == nullptr,
+        require(!failing_loader.load(renderer),"a malformed keyed preload manifest must fail");
+        require(failing_loader.get_texture("project.valid") == nullptr,
             "partial preload results must never become visible");
         std::error_code remove_error;
         std::filesystem::remove(invalid_manifest,remove_error);
 
+        const std::filesystem::path optional_missing_manifest =
+            std::filesystem::temp_directory_path() / "moonline_optional_preload_manifest.json";
+        {
+            std::ofstream output(optional_missing_manifest,std::ios::trunc);
+            output << R"({"textures":[{"key":"project.missing","file":"missing-bootstrap-texture.png"}]})";
+        }
+        bootstrap::StartupPreloadLoader optional_loader;
+        optional_loader.set_manifest_path(optional_missing_manifest);
+        require(optional_loader.load(renderer),
+            "a missing optional project logo must not fail engine startup preload");
+        require(optional_loader.get_texture("project.missing") == nullptr,
+            "a missing optional project logo must be skipped");
+        require(optional_loader.get_texture(
+            bootstrap::startup_preload::EngineLogoTextureKey) != nullptr,
+            "the required engine logo must remain available when project branding is skipped");
+        std::filesystem::remove(optional_missing_manifest,remove_error);
+
+        const std::filesystem::path original_working_directory =
+            std::filesystem::current_path();
+        const std::filesystem::path missing_engine_root =
+            std::filesystem::temp_directory_path()
+            / "moonline_missing_engine_logo_project";
+        std::filesystem::remove_all(missing_engine_root);
+        for (const char* directory : {
+            "assets/audio",
+            "assets/textures",
+            "assets/fonts",
+            "assets/configs/manifests",
+            "assets/preload" })
+        {
+            std::filesystem::create_directories(
+                missing_engine_root / directory);
+        }
+        {
+            std::ofstream marker(
+                missing_engine_root / "assets" / ".elysia_root");
+            std::ofstream manifest(
+                missing_engine_root
+                / "assets/configs/manifests/preload_manifest.json");
+            manifest << R"({"textures":[]})";
+        }
+
+        const bool temporary_paths_initialized = paths->init(
+            missing_engine_root / "fake-build" / "MoonLine.exe");
+        bootstrap::StartupPreloadLoader missing_engine_loader;
+        missing_engine_loader.set_manifest_path(
+            missing_engine_root
+            / "assets/configs/manifests/preload_manifest.json");
+        const bool missing_engine_loaded =
+            temporary_paths_initialized
+            && missing_engine_loader.load(renderer);
+        const bool original_paths_restored =
+            paths->init(original_working_directory);
+        std::filesystem::remove_all(missing_engine_root);
+
+        require(temporary_paths_initialized && original_paths_restored,
+            "engine logo failure test must restore PathManager to the source project");
+        require(!missing_engine_loaded,
+            "a missing engine-owned Elysia logo must fail startup preload");
+
         loader.release_textures();
+        optional_loader.release_textures();
         resource_manager->clear();
     }
 

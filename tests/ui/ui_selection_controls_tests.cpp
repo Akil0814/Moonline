@@ -4,6 +4,7 @@
 #include "engine/ui/composites/ui_tab_bar.h"
 #include "engine/ui/containers/ui_button_group.h"
 #include "engine/ui/containers/ui_radio_group.h"
+#include "engine/ui/presets/settings_panel.h"
 #include "engine/ui/widgets/ui_button.h"
 #include "engine/ui/widgets/ui_radio_button.h"
 #include "tests/support/test_assertions.h"
@@ -12,6 +13,7 @@
 #include <iostream>
 #include <memory>
 #include <optional>
+#include <string>
 #include <vector>
 
 namespace
@@ -92,6 +94,80 @@ void test_button_group_preserves_button_callback_after_selection()
     (void)second_raw->on_ui_input_event({ .action=ui::UiAction::Confirm,.type=ui::UiInputEventType::ActionReleased });
     require(callback_count == 1,"group decoration must preserve the original button callback");
 }
+
+void test_settings_panel_keeps_draft_local_and_normalizes_options()
+{
+    using namespace elysia;
+    ui::SettingsPanel panel(core::Rect{ 0,0,700,680 });
+    const ui::SettingsPanelDraft draft{
+        .resolution = { 1366,768 },
+        .fullscreen = true,
+        .master_volume = 80,
+        .music_volume = 70,
+        .sound_volume = 60,
+        .language = "en"
+    };
+    panel.set_draft(draft);
+    panel.set_options({
+        .resolutions = {
+            { 1920,1080 },
+            { 1280,720 },
+            { 1920,1080 },
+            { 0,0 }
+        },
+        .languages = { "en","zh_cn","en","" }
+    });
+
+    require(panel.draft() == draft,
+        "settings panel option refresh must not apply or replace its local draft");
+    require(panel.options().resolutions.size() == 3
+        && panel.options().resolutions[0] == ui::SettingsResolution{ 1280,720 }
+        && panel.options().resolutions[1] == ui::SettingsResolution{ 1366,768 }
+        && panel.options().resolutions[2] == ui::SettingsResolution{ 1920,1080 },
+        "settings panel must normalize resolutions and retain the active resolution");
+    require(panel.options().languages == std::vector<std::string>{ "en","zh_cn" },
+        "settings panel must deduplicate language identifiers from LocalizationManager");
+
+    int save_count = 0;
+    int back_count = 0;
+    ui::SettingsPanelDraft saved_draft;
+    panel.set_on_save([&](const ui::SettingsPanelDraft& value)
+    {
+        ++save_count;
+        saved_draft = value;
+    });
+    panel.set_on_back([&]() { ++back_count; });
+    panel.set_scope_focused(true);
+    require(panel.focus_first_available(),
+        "settings panel must expose its first field to keyboard focus");
+
+    const auto action = [&panel](ui::UiAction value,ui::UiInputEventType type)
+    {
+        return panel.on_ui_input_event(ui::UiInputEvent{
+            .action = value,
+            .type = type,
+            .device = input::InputDevice::Keyboard
+        });
+    };
+    (void)action(ui::UiAction::NavigateDown,ui::UiInputEventType::ActionPressed);
+    (void)action(ui::UiAction::Confirm,ui::UiInputEventType::ActionPressed);
+    (void)action(ui::UiAction::Confirm,ui::UiInputEventType::ActionReleased);
+    require(!panel.draft().fullscreen,
+        "editing a settings control must update only the panel draft");
+
+    for (int index = 0; index < 5; ++index)
+        (void)action(ui::UiAction::NavigateDown,ui::UiInputEventType::ActionPressed);
+    (void)action(ui::UiAction::Confirm,ui::UiInputEventType::ActionPressed);
+    (void)action(ui::UiAction::Confirm,ui::UiInputEventType::ActionReleased);
+    require(save_count == 1 && saved_draft == panel.draft(),
+        "the Save button must emit the complete local draft exactly once");
+
+    (void)action(ui::UiAction::NavigateRight,ui::UiInputEventType::ActionPressed);
+    (void)action(ui::UiAction::Confirm,ui::UiInputEventType::ActionPressed);
+    (void)action(ui::UiAction::Confirm,ui::UiInputEventType::ActionReleased);
+    require(back_count == 1,
+        "the Back button must invoke its navigation callback exactly once");
+}
 }
 
 int main()
@@ -100,6 +176,7 @@ int main()
     test_radio_render_defers_callback();
     test_group_preserves_button_override();
     test_button_group_preserves_button_callback_after_selection();
+    test_settings_panel_keeps_draft_local_and_normalizes_options();
     std::cout << "ui selection control tests passed\n";
     return EXIT_SUCCESS;
 }

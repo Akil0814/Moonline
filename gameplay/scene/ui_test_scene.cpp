@@ -1,6 +1,6 @@
 #include "ui_test_scene.h"
 
-#include "../../application/scene/scene_keys.h"
+#include "moonline_scene_keys.h"
 #include "../../engine/resources/resource_manager.h"
 #include "../../engine/ui/composites/ui_confirmation_dialog.h"
 #include "../../engine/ui/composites/ui_dialog.h"
@@ -354,6 +354,6 @@ void UiTestScene::clear_ui()
 
 void UiTestScene::request_back_to_menu()
 {
-    request_scene_switch(AppSceneKeys::MainMenu);
+    request_scene_switch(MoonlineSceneKeys::MainMenu);
 }
 }

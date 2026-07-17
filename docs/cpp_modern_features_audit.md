@@ -1,7 +1,7 @@
 # Moonline：C++11 及以上特性审查
 
 > 审查日期：2026-07-13  
-> 审查范围：`application/`、`engine/`、`gameplay/`、`tests/` 与 `main.cpp` 中的 `.cpp` / `.h` 文件；不含 `thirdparty/`、`build/`、`out/` 和二进制产物。  
+> 审查范围：`engine/`、`gameplay/`、`tests/` 与 `main.cpp` 中的 `.cpp` / `.h` 文件；不含 `thirdparty/`、`build/`、`out/` 和二进制产物。
 > 审查方式：静态检索结合代表性源码阅读。本文只记录在项目自有代码中能确认的实际使用，不将 `CMAKE_CXX_STANDARD 23` 视为“使用了全部 C++23 特性”。
 
 ## 结论概览
@@ -93,7 +93,7 @@
 ### if 初始化语句、内联变量、标准属性和算法
 
 - if 初始化语句：`engine/config/user_config.cpp` 使用 `if (const auto handler = ...; !handler)` 将结果作用域限制在判断语句中。
-- 内联变量：`application/scene/scene_keys.h:7-13` 的 `inline constexpr` 场景键可安全放在头文件中。
+- 内联变量：`engine/scene/scene_key.h` 的 engine 内建键与 gameplay 项目键可安全放在头文件中。
 - `[[nodiscard]]`：大量用于查询/计算接口，例如 `engine/core/time.h:18-23`，降低忽略返回值的风险。
 - `std::clamp`：例如 `engine/input/translator/gamepad_input_translator.cpp:243` 对手柄轴值做范围限制。
 
@@ -106,7 +106,7 @@
 ### `std::source_location`
 
 - `engine/tools/logger.h:53-68`：日志 API 的默认参数为 `std::source_location::current()`，调用点无需手写文件名和行号。
-- `application/application.h:47-53`、`gameplay/scene/startup_loading_failure.h:9-10`：启动失败与内容加载失败会携带调用位置。
+- `engine/application/application.h` 与 engine 内建 StartupLoadingScene：启动失败与内容加载失败会携带调用位置。
 
 它比 `__FILE__` / `__LINE__` 宏更适合封装成函数默认参数，也利于日志接口的复用。
 
@@ -136,7 +136,7 @@
 - `engine/config/user/user_config_store.h`：用户设置加载/保存返回 `std::expected`。
 - `engine/config/user_config.cpp`：设置校验或运行时应用失败时返回 `std::unexpected<UserConfigFailure>`；调用端通过 `if (...; !result)` 传播错误。
 - `engine/config/config_service.cpp:5-24`：配置服务初始化和保存将底层错误逐层封装/返回。
-- `application/application.h:30-36`、`application/application.cpp:339-380`：应用层实现运行时设置变更，并向配置层返回可诊断失败。
+- `engine/application/application.h/.cpp`：engine 应用层实现运行时设置变更，并向配置层返回可诊断失败。
 
 这是当前代码中最明确的 C++23 标准库特性使用点，适合在项目介绍中单独说明。
 

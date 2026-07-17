@@ -11,6 +11,7 @@
 
 #include "scene_request.h"
 #include "scene_request_observer.h"
+#include "scene_runtime_context.h"
 
 #include "../camera/camera_manager.h"
 #include "../core/depth_layer.h"
@@ -32,6 +33,9 @@
 
 namespace elysia::scene
 {
+class SceneFactory;
+class SceneManager;
+
 class Scene : public elysia::core::Subject<SceneRequestObserver>
 {
 public:
@@ -101,12 +105,14 @@ public:
 
 protected:
     void notify_scene_request(const SceneRequest& request);
+    void request_scene_switch(const SceneRoute& route);
     void request_scene_switch(
         SceneKey target,
         const ScenePayload& payload = {},
         SceneReloadMode reload_mode = SceneReloadMode::Reuse
     );
     void request_quit();
+    [[nodiscard]] const SceneRuntimeContext& runtime_context() const;
     void set_camera_viewport_size(const elysia::core::Vector2& viewport_size) noexcept;
     void set_render_camera_slot(elysia::camera::CameraSlot slot) noexcept;
     virtual void on_scene_object_registered(elysia::core::SceneObject& object);
@@ -116,6 +122,11 @@ protected:
     bool _paused = false;
 
 private:
+    friend class SceneFactory;
+    friend class SceneManager;
+
+    void bind_runtime_context(const SceneRuntimeContext& context) noexcept;
+    void clear_runtime_context() noexcept;
     void register_scene_object_interfaces(elysia::core::SceneObject* object);
     void dispatch_ui_frame(const elysia::ui::UiInputFrame& input);
     void dispatch_ui_events(const std::vector<elysia::ui::UiInputEvent>& events);
@@ -184,5 +195,6 @@ private:
     elysia::camera::CameraSlot _render_camera_slot = elysia::camera::CameraSlot::Main;
     elysia::physics::PhysicsSystem _physics_system;
     elysia::physics::CollisionSystem _collision_system;
+    const SceneRuntimeContext* _runtime_context = nullptr;
 };
 }

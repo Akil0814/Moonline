@@ -189,10 +189,10 @@ void test_animation_effect_creation_playback_and_scene_lifecycle(AnimationEffect
         "animation effect spawning must fail without an active scene");
 
     scene::SceneManager scene_manager;
-    constexpr scene::SceneKey first_scene_key = 1001;
-    constexpr scene::SceneKey second_scene_key = 1002;
-    scene_manager.register_scene<TestScene>(first_scene_key);
-    scene_manager.register_scene<SecondTestScene>(second_scene_key);
+    constexpr scene::SceneKey first_scene_key = 101;
+    constexpr scene::SceneKey second_scene_key = 102;
+    scene_manager.register_game_scene<TestScene>(first_scene_key);
+    scene_manager.register_game_scene<SecondTestScene>(second_scene_key);
     scene_manager.start(first_scene_key);
     effects::AnimationEffectSpawnRequest unknown_request;
     unknown_request.effect_key = "animation_effect_test.effect.unknown";
@@ -208,7 +208,7 @@ void test_animation_effect_creation_playback_and_scene_lifecycle(AnimationEffect
 
     scene::SceneRequest switch_request;
     switch_request.type = scene::SceneRequestType::Switch;
-    switch_request.target = second_scene_key;
+    switch_request.route.target = second_scene_key;
     scene_manager.on_scene_request(switch_request);
     scene_manager.on_update(0.0);
     int second_scene_started = 0;

@@ -16,13 +16,19 @@ constexpr const char* USER_CONFIG_FILE_NAME = "user_config.json";
 
 StartupParseResult Bootstrapper::parse_runtime_settings()
 {
+    return parse_runtime_settings({});
+}
+
+StartupParseResult Bootstrapper::parse_runtime_settings(
+    const std::filesystem::path& executable_path)
+{
     _startup_preload_loader.reset();
     elysia::config::UserConfigService::instance()->shutdown();
 
     StartupParseResult result;
 
     elysia::io::PathManager* path_manager = elysia::io::PathManager::instance();
-    if (!path_manager->init())
+    if (!path_manager->init(executable_path))
     {
         append_bootstrap_error(result.error, "Bootstrapper phase1 failed: path manager init failed.");
         return result;

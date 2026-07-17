@@ -9,8 +9,6 @@
 #include <memory>
 #include <string_view>
 
-class Application;
-
 namespace elysia::bootstrap { class Bootstrapper; }
 
 namespace elysia::config
@@ -34,12 +32,17 @@ class UserConfigService final : public elysia::tools::Singleton<UserConfigServic
 {
     friend elysia::tools::Singleton<UserConfigService>;
     friend class elysia::bootstrap::Bootstrapper;
-    friend class ::Application;
 
 public:
     [[nodiscard]] UserConfig& user_config() noexcept { return _user_config; }
     [[nodiscard]] const UserConfig& user_config() const noexcept { return _user_config; }
     [[nodiscard]] std::expected<void,UserConfigFailure> save_user_config();
+    [[nodiscard]] std::expected<UserConfigApplyStatus,UserConfigCommitFailure>
+        apply_and_save_user_config(const elysia::bootstrap::UserConfigData& settings);
+    [[nodiscard]] std::expected<UserConfigApplyStatus,UserConfigCommitFailure>
+        apply_and_save_user_config(
+            const elysia::bootstrap::UserConfigData& settings,
+            const UserConfigRuntimeState& rollback_state);
     void register_user_config_change_handler(IUserConfigChangeHandler& handler) noexcept;
     void unregister_user_config_change_handler(IUserConfigChangeHandler& handler) noexcept;
     [[nodiscard]] bool is_initialized() const noexcept { return _initialized; }

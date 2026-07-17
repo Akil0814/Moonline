@@ -3,8 +3,8 @@
 
 #include "../character/character_manager.h"
 
-#include "../../application/scene/scene_keys.h"
-#include "../../application/scene/scene_payloads.h"
+#include "main_menu_scene.h"
+#include "moonline_scene_keys.h"
 
 #include "../../engine/audio/audio_service.h"
 #include "../../engine/resources/resource_manager.h"
@@ -90,7 +90,9 @@ namespace arcneco::scene
         set_character_visuals_visible(false);
         set_character_details_visible(false);
         _main_window->set_on_cancel([this]{
-            Scene::request_scene_switch(AppSceneKeys::MainMenu, MainMeunEnterPayload{ .replay_theme_music = true });
+            Scene::request_scene_switch(
+                MoonlineSceneKeys::MainMenu,
+                MainMenuEnterPayload{ .replay_theme_music = true });
                });
 
     }
@@ -256,7 +258,9 @@ namespace arcneco::scene
             elysia::ui::UiButtonConfig{ .content = elysia::ui::ui_text_key("character_select_scene.actions.back") });
         back->set_on_click([this]()
         {
-                Scene::request_scene_switch(AppSceneKeys::MainMenu, MainMeunEnterPayload{ .replay_theme_music = true });
+                Scene::request_scene_switch(
+                    MoonlineSceneKeys::MainMenu,
+                    MainMenuEnterPayload{ .replay_theme_music = true });
         });
         _character_details.back_button = back.get();
         action_row->add_back(std::move(back));
