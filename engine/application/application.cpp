@@ -3,6 +3,7 @@
 #include "application_event_boundary.h"
 #include "application_exit_policy.h"
 #include "application_scene_composition.h"
+#include "application_sdl_presentation.h"
 #include "application_termination_logging.h"
 
 #include "../assist/engine_assist_catalog.h"
@@ -189,6 +190,13 @@ bool Application::init_runtime(
     if (!check_startup_step(sdl_initialized,"platform","SDL2 Error"))
         return false;
 
+    if (const auto presentation_result =
+            detail::configure_sdl_render_hints(descriptor.presentation.render);
+        !presentation_result)
+    {
+        return startup_fail("platform",presentation_result.error());
+    }
+
     const int img_flags = IMG_INIT_JPG | IMG_INIT_PNG;
     const int initialized_img_flags = IMG_Init(img_flags);
     _image_initialized = initialized_img_flags != 0;
@@ -257,15 +265,16 @@ bool Application::init_runtime(
     _renderer = SDL_CreateRenderer(_window,-1,renderer_flags);
     if (!check_startup_step(_renderer != nullptr,"platform","SDL_CreateRenderer Error"))
         return false;
-    if (!check_startup_step(
-        SDL_RenderSetLogicalSize(
+
+    if (const auto presentation_result =
+            detail::configure_sdl_renderer_presentation(
             _renderer,
             descriptor.logical_width,
-            descriptor.logical_height) == 0,
-        "platform",
-        "SDL_RenderSetLogicalSize Error"))
+            descriptor.logical_height,
+            descriptor.presentation.render);
+        !presentation_result)
     {
-        return false;
+        return startup_fail("platform",presentation_result.error());
     }
 
     _target_fps = settings.target_fps;
