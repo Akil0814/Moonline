@@ -13,12 +13,6 @@
 
 namespace elysia::application
 {
-enum class ApplicationScaleStrategy
-{
-    PixelPerfect,
-    AspectFit
-};
-
 enum class ApplicationTextureFilter
 {
     Nearest,
@@ -27,8 +21,6 @@ enum class ApplicationTextureFilter
 
 struct ApplicationRenderSettings
 {
-    ApplicationScaleStrategy scale_strategy =
-        ApplicationScaleStrategy::PixelPerfect;
     ApplicationTextureFilter texture_filter =
         ApplicationTextureFilter::Nearest;
 };

@@ -13,7 +13,6 @@ namespace
 using elysia::application::ApplicationDescriptor;
 using elysia::application::ApplicationEngineLogoVariant;
 using elysia::application::ApplicationFontSource;
-using elysia::application::ApplicationScaleStrategy;
 using elysia::application::ApplicationTextureFilter;
 using elysia::application::ApplicationTypographyProfile;
 using elysia::application::resolve_application_font_settings;
@@ -39,10 +38,6 @@ void require_default_presentation_settings()
 {
     const ApplicationDescriptor descriptor;
 
-    require(
-        descriptor.presentation.render.scale_strategy
-            == ApplicationScaleStrategy::PixelPerfect,
-        "application presentation must default to pixel-perfect scaling");
     require(
         descriptor.presentation.render.texture_filter
             == ApplicationTextureFilter::Nearest,
@@ -87,15 +82,9 @@ void require_default_presentation_settings()
 void require_render_settings_are_data_only()
 {
     ApplicationDescriptor descriptor;
-    descriptor.presentation.render.scale_strategy =
-        ApplicationScaleStrategy::AspectFit;
     descriptor.presentation.render.texture_filter =
         ApplicationTextureFilter::Linear;
 
-    require(
-        descriptor.presentation.render.scale_strategy
-            == ApplicationScaleStrategy::AspectFit,
-        "application presentation must retain the selected scale strategy");
     require(
         descriptor.presentation.render.texture_filter
             == ApplicationTextureFilter::Linear,

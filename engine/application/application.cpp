@@ -300,8 +300,7 @@ bool Application::init_runtime(
             detail::configure_sdl_renderer_presentation(
             _renderer,
             descriptor.logical_width,
-            descriptor.logical_height,
-            descriptor.presentation.render);
+            descriptor.logical_height);
         !presentation_result)
     {
         return startup_fail("platform",presentation_result.error());

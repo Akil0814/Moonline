@@ -22,20 +22,6 @@ resolve_scale_quality(ApplicationTextureFilter filter)
     return std::unexpected("Unsupported application texture filter.");
 }
 
-[[nodiscard]] std::expected<SDL_bool,std::string>
-resolve_integer_scale(ApplicationScaleStrategy strategy)
-{
-    switch (strategy)
-    {
-    case ApplicationScaleStrategy::PixelPerfect:
-        return SDL_TRUE;
-    case ApplicationScaleStrategy::AspectFit:
-        return SDL_FALSE;
-    }
-
-    return std::unexpected("Unsupported application scale strategy.");
-}
-
 [[nodiscard]] std::string sdl_failure(
     std::string_view operation,
     const char* error)
@@ -58,9 +44,6 @@ std::expected<void,std::string> configure_sdl_render_hints(
     const auto scale_quality = resolve_scale_quality(settings.texture_filter);
     if (!scale_quality)
         return std::unexpected(scale_quality.error());
-
-    if (!resolve_integer_scale(settings.scale_strategy))
-        return std::unexpected("Unsupported application scale strategy.");
 
     if (SDL_SetHintWithPriority(
             SDL_HINT_RENDER_SCALE_QUALITY,
@@ -86,13 +69,8 @@ std::expected<void,std::string> configure_sdl_render_hints(
 std::expected<void,std::string> configure_sdl_renderer_presentation(
     SDL_Renderer* renderer,
     int logical_width,
-    int logical_height,
-    const ApplicationRenderSettings& settings)
+    int logical_height)
 {
-    const auto integer_scale = resolve_integer_scale(settings.scale_strategy);
-    if (!integer_scale)
-        return std::unexpected(integer_scale.error());
-
     if (!renderer)
         return std::unexpected("SDL renderer presentation requires a renderer.");
 
@@ -105,7 +83,7 @@ std::expected<void,std::string> configure_sdl_renderer_presentation(
             sdl_failure("SDL_RenderSetLogicalSize",SDL_GetError()));
     }
 
-    if (SDL_RenderSetIntegerScale(renderer,*integer_scale) != 0)
+    if (SDL_RenderSetIntegerScale(renderer,SDL_FALSE) != 0)
     {
         return std::unexpected(
             sdl_failure("SDL_RenderSetIntegerScale",SDL_GetError()));

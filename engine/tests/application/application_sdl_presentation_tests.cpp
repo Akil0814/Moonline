@@ -11,7 +11,6 @@
 namespace
 {
 using elysia::application::ApplicationRenderSettings;
-using elysia::application::ApplicationScaleStrategy;
 using elysia::application::ApplicationTextureFilter;
 using elysia::application::detail::configure_sdl_render_hints;
 using elysia::application::detail::configure_sdl_renderer_presentation;
@@ -59,20 +58,12 @@ private:
     SDL_Renderer* _renderer = nullptr;
 };
 
-void require_scale_strategy(
-    SDL_Renderer* renderer,
-    ApplicationScaleStrategy strategy,
-    SDL_bool expected_integer_scale)
+void require_aspect_fit(SDL_Renderer* renderer)
 {
-    const ApplicationRenderSettings settings{
-        .scale_strategy = strategy,
-        .texture_filter = ApplicationTextureFilter::Nearest
-    };
     const auto result = configure_sdl_renderer_presentation(
         renderer,
         640,
-        360,
-        settings);
+        360);
     require(result.has_value(), "SDL renderer presentation must be applied");
 
     int logical_width = 0;
@@ -82,8 +73,8 @@ void require_scale_strategy(
         logical_width == 640 && logical_height == 360,
         "SDL renderer presentation must retain the logical size");
     require(
-        SDL_RenderGetIntegerScale(renderer) == expected_integer_scale,
-        "SDL renderer presentation must apply the requested integer scaling");
+        SDL_RenderGetIntegerScale(renderer) == SDL_FALSE,
+        "SDL renderer presentation must use aspect-fit scaling");
 }
 
 void require_texture_filter(
@@ -92,7 +83,6 @@ void require_texture_filter(
     SDL_ScaleMode expected_mode)
 {
     const ApplicationRenderSettings settings{
-        .scale_strategy = ApplicationScaleStrategy::AspectFit,
         .texture_filter = filter
     };
     const auto hint_result = configure_sdl_render_hints(settings);
@@ -124,30 +114,14 @@ void require_texture_filter(
     SDL_DestroyTexture(texture);
 }
 
-void require_invalid_settings_fail(SDL_Renderer* renderer)
+void require_invalid_settings_fail()
 {
     const ApplicationRenderSettings invalid_filter{
-        .scale_strategy = ApplicationScaleStrategy::PixelPerfect,
         .texture_filter = static_cast<ApplicationTextureFilter>(255)
     };
     require(
         !configure_sdl_render_hints(invalid_filter).has_value(),
         "unknown texture filters must fail SDL hint configuration");
-
-    const ApplicationRenderSettings invalid_strategy{
-        .scale_strategy = static_cast<ApplicationScaleStrategy>(255),
-        .texture_filter = ApplicationTextureFilter::Nearest
-    };
-    require(
-        !configure_sdl_render_hints(invalid_strategy).has_value(),
-        "unknown scale strategies must fail SDL hint configuration");
-    require(
-        !configure_sdl_renderer_presentation(
-            renderer,
-            640,
-            360,
-            invalid_strategy).has_value(),
-        "unknown scale strategies must fail renderer configuration");
 }
 }
 
@@ -155,14 +129,7 @@ int main()
 {
     SdlPresentationFixture fixture;
 
-    require_scale_strategy(
-        fixture.renderer(),
-        ApplicationScaleStrategy::PixelPerfect,
-        SDL_TRUE);
-    require_scale_strategy(
-        fixture.renderer(),
-        ApplicationScaleStrategy::AspectFit,
-        SDL_FALSE);
+    require_aspect_fit(fixture.renderer());
 
     require_texture_filter(
         fixture.renderer(),
@@ -173,6 +140,6 @@ int main()
         ApplicationTextureFilter::Linear,
         SDL_ScaleModeLinear);
 
-    require_invalid_settings_fail(fixture.renderer());
+    require_invalid_settings_fail();
     return EXIT_SUCCESS;
 }

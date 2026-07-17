@@ -19,8 +19,6 @@ elysia::application::ApplicationDescriptor MoonlineGameModule::descriptor() cons
     elysia::application::ApplicationDescriptor descriptor;
     descriptor.logical_width = 1280;
     descriptor.logical_height = 720;
-    descriptor.presentation.render.scale_strategy =
-        elysia::application::ApplicationScaleStrategy::PixelPerfect;
     descriptor.presentation.render.texture_filter =
         elysia::application::ApplicationTextureFilter::Nearest;
     descriptor.presentation.startup.engine_logo =

@@ -16,6 +16,5 @@ namespace elysia::application::detail
     configure_sdl_renderer_presentation(
         SDL_Renderer* renderer,
         int logical_width,
-        int logical_height,
-        const ApplicationRenderSettings& settings);
+        int logical_height);
 }
