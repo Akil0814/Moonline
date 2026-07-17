@@ -1,19 +1,34 @@
 #pragma once
 
-#include "actor_collision_rig.h"
-#include "gameplay_collision_types.h"
+#include "gameplay_collision_runtime.h"
+
+#include "../../tools/singleton.h"
+
+#include <string_view>
 
 namespace elysia::gameplay::collision
 {
-class GameplayCollisionService
+class GameplayCollisionService final
+    : public elysia::tools::Singleton<GameplayCollisionService>
 {
-public:
-    virtual ~GameplayCollisionService() = default;
+    friend elysia::tools::Singleton<GameplayCollisionService>;
 
-    virtual void bind_actor(const ActorCollisionRig& rig) = 0;
-    virtual void bind_collider(const ColliderBinding& binding) = 0;
-    virtual void bind_hit_box(const HitBoxBinding& binding) = 0;
-    virtual void unbind_collider(elysia::physics::ColliderId collider) = 0;
-    virtual void clear() noexcept = 0;
+public:
+    [[nodiscard]] bool attach_runtime(IGameplayCollisionRuntime& runtime) noexcept;
+    [[nodiscard]] bool detach_runtime(const IGameplayCollisionRuntime& runtime) noexcept;
+    [[nodiscard]] bool has_active_runtime() const noexcept;
+
+    [[nodiscard]] bool bind_actor(const ActorCollisionRig& rig);
+    [[nodiscard]] bool bind_collider(const ColliderBinding& binding);
+    [[nodiscard]] bool bind_hit_box(const HitBoxBinding& binding);
+    [[nodiscard]] bool unbind_collider(elysia::physics::ColliderId collider);
+    [[nodiscard]] bool request_drop_through(const DropThroughRequest& request);
+
+private:
+    GameplayCollisionService() = default;
+
+    [[nodiscard]] IGameplayCollisionRuntime* runtime_or_log(std::string_view operation) const noexcept;
+
+    IGameplayCollisionRuntime* _active_runtime = nullptr;
 };
 }

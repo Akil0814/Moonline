@@ -54,4 +54,10 @@ struct HitBoxBinding
     AttackInstanceId attack_instance = InvalidAttackInstanceId;
     AttackDefinitionId attack_definition = InvalidAttackDefinitionId;
 };
+
+struct DropThroughRequest
+{
+    elysia::physics::ColliderId actor = elysia::physics::InvalidColliderId;
+    elysia::physics::ColliderId target = elysia::physics::InvalidColliderId;
+};
 }

@@ -96,7 +96,7 @@ void Scene::on_update(double delta)
     if (!_paused)
     {
         _physics_system.step(_physics_body_entries, delta);
-        _collision_system.dispatch_events(_collider_entries);
+        _collision_system.dispatch_events(_collider_entries, delta);
     }
 
     auto* camera_manager = elysia::camera::CameraManager::instance();
