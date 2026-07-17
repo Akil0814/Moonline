@@ -442,20 +442,20 @@ TTF_Font* LocalizationManager::resolve_font(int point_size) const
 		return nullptr;
 	}
 
+	if (_engine_assist_cache)
+	{
+		if (TTF_Font* engine_font = _engine_assist_cache->find_font(
+			elysia::assist::EngineAssistCache::map_project_locale(_current_language),
+			point_size))
+		{
+			return engine_font;
+		}
+	}
+
 	elysia::resources::ResourceManager* resource_manager =
 		elysia::resources::ResourceManager::instance();
 	if (resource_manager->has_font(font_key))
 		return resource_manager->find_font(font_key);
-
-	if (_engine_assist_cache)
-	{
-		if (TTF_Font* fallback = _engine_assist_cache->find_font(
-			elysia::assist::EngineAssistCache::map_project_locale(_current_language),
-			point_size))
-		{
-			return fallback;
-		}
-	}
 
 	ELYSIA_LOG_WARN("localization","Resolve font failed: font is not loaded: "
 		<< font_key);

@@ -70,7 +70,7 @@ int main()
         source_root / "assets" / "configs" / "manifests" / "i18n_manifest.json",
         "en",
         &cache),
-        "LocalizationManager must initialize with Engine assist fallback");
+        "LocalizationManager must initialize with Engine assist defaults");
     require(localization->tr("common.save") == "Save",
         "project translations must remain the first lookup source");
     require(localization->tr("engine.settings.title") == "Settings",
@@ -78,7 +78,7 @@ int main()
 
     const elysia::localization::LocalizedTextStyle style{ .point_size = 20 };
     require(localization->get_text_texture("engine.settings.title", style) != nullptr,
-        "Engine font fallback must render text before project content fonts load");
+        "Engine default font must render text before project content fonts load");
 
     auto* resources = elysia::resources::ResourceManager::instance();
     require(resources->load_font(
@@ -90,12 +90,27 @@ int main()
     int localized_height = 0;
     require(localization->measure_raw_text("Moon", style, localized_width, localized_height),
         "localized measurement must succeed with a project font present");
+    int engine_width = 0;
+    int engine_height = 0;
+    require(TTF_SizeUTF8(cache.find_font("en", 20), "Moon", &engine_width, &engine_height) == 0,
+        "Engine font must measure the precedence probe text");
+    require(localized_width == engine_width && localized_height == engine_height,
+        "Engine fonts must take precedence over loaded project fonts");
+
+    localization->shutdown();
+    require(localization->init(
+        fixture.renderer(),
+        source_root / "assets" / "configs" / "manifests" / "i18n_manifest.json",
+        "en"),
+        "LocalizationManager must initialize without Engine assist cache");
+    require(localization->measure_raw_text("Moon", style, localized_width, localized_height),
+        "project font fallback must render when Engine cache is unavailable");
     int project_width = 0;
     int project_height = 0;
     require(TTF_SizeUTF8(resources->find_font("ui.latin.20"), "Moon", &project_width, &project_height) == 0,
-        "project font must measure the precedence probe text");
+        "project font must measure the fallback probe text");
     require(localized_width == project_width && localized_height == project_height,
-        "project fonts must take precedence over Engine font fallback");
+        "project fonts must remain usable without Engine assist cache");
 
     localization->shutdown();
     cache.shutdown();
