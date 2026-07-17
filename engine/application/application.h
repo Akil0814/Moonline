@@ -1,5 +1,6 @@
 #pragma once
 
+#include "application_run_result.h"
 #include "game_module.h"
 
 #include "../assist/engine_assist_cache.h"
@@ -33,7 +34,7 @@ public:
     ~Application();
 
     bool init(int argc,char** argv,const IGameModule& game_module);
-    int run();
+    ApplicationRunResult run();
 
     std::expected<void,elysia::config::UserConfigFailure> apply_master_volume(int value) override;
     std::expected<void,elysia::config::UserConfigFailure> apply_music_volume(int value) override;
@@ -49,18 +50,20 @@ private:
     bool init_runtime(
         const elysia::bootstrap::StartupSettings& settings,
         const ApplicationDescriptor& descriptor);
-    void enter_initial_scene(
+    bool enter_initial_scene(
         const IGameModule& game_module,
         const ApplicationDescriptor& descriptor);
     void shutdown();
 
     void on_scene_manager_quit_requested() override;
 
-    void init_assert(
+    bool check_startup_step(
         bool flag,
+        std::string_view category,
         const char* err_msg,
         std::source_location location = std::source_location::current());
-    [[noreturn]] void startup_fail(
+    bool startup_fail(
+        std::string_view category,
         const std::string& err_msg,
         std::source_location location = std::source_location::current());
 
@@ -81,5 +84,10 @@ private:
     bool _normal_exit_requested = false;
     bool _has_shutdown = false;
     bool _user_config_handler_registered = false;
+    bool _sdl_initialized = false;
+    bool _image_initialized = false;
+    bool _mixer_initialized = false;
+    bool _ttf_initialized = false;
+    bool _audio_device_open = false;
 };
 }
