@@ -11,7 +11,7 @@ namespace elysia::ui
 {
 class UiBar;
 class UiFadeImage;
-class UiLabel;
+class UiBlinkLabel;
 }
 
 namespace elysia::scene::builtin
@@ -56,7 +56,7 @@ private:
     elysia::ui::UiBar* _loading_bar = nullptr;
     elysia::ui::UiFadeImage* _engine_logo = nullptr;
     elysia::ui::UiFadeImage* _project_logo = nullptr;
-    elysia::ui::UiLabel* _start_prompt = nullptr;
+    elysia::ui::UiBlinkLabel* _start_prompt = nullptr;
 
     StartupLogoSequence _logo_sequence;
     StartupLoadingCompletion _completion;

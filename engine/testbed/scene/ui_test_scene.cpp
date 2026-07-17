@@ -34,7 +34,7 @@
 #include "../../ui/widgets/ui_slider.h"
 #include "../../ui/widgets/ui_text_input.h"
 #include "../../ui/window/ui_window.h"
-#include "../scene_runtime_context.h"
+#include "../../scene/scene_runtime_context.h"
 #include "../../input/raw_input_types.h"
 
 #include <array>
@@ -42,7 +42,7 @@
 #include <optional>
 #include <stdexcept>
 
-namespace elysia::scene::builtin
+namespace elysia::testbed
 {
 namespace
 {
@@ -97,9 +97,9 @@ UiListContainer* add_section(UiListContainer& page,const char* title,const char*
     return body_ptr;
 }
 
-bool is_valid_return_route(const SceneRoute& route) noexcept
+bool is_valid_return_route(const elysia::scene::SceneRoute& route) noexcept
 {
-    return SceneKeys::is_supported(route.target);
+    return elysia::scene::SceneKeys::is_supported(route.target);
 }
 }
 
@@ -117,14 +117,15 @@ void UiTestScene::on_input(
         }
     }
 
-    Scene::on_input(input,events);
+    elysia::scene::Scene::on_input(input,events);
 }
 
-void UiTestScene::on_enter(const ScenePayload& payload)
+void UiTestScene::on_enter(const elysia::scene::ScenePayload& payload)
 {
-    const EngineTestScenePayload* test_payload = try_scene_payload<EngineTestScenePayload>(payload);
+    const TestbedScenePayload* test_payload =
+        elysia::scene::try_scene_payload<TestbedScenePayload>(payload);
     if (!test_payload || !is_valid_return_route(test_payload->return_route))
-        throw std::logic_error("UiTestScene requires EngineTestScenePayload with a valid return route.");
+        throw std::logic_error("UiTestScene requires TestbedScenePayload with a valid return route.");
     const auto* cache = runtime_context().engine_assist_cache();
     if (!cache || !cache->initialized())
         throw std::logic_error("UiTestScene requires an initialized EngineAssistCache.");

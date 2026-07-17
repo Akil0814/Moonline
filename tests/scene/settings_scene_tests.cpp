@@ -145,7 +145,7 @@ void test_cancel_returns_to_each_callers_full_route()
     elysia::scene::SceneRuntimeContext context(nullptr,registry,1280,720);
     elysia::scene::SceneManager scene_manager;
     scene_manager.set_runtime_context(context);
-    scene_manager.register_builtin_scene<
+    scene_manager.register_engine_scene<
         elysia::scene::builtin::SettingsScene>(
             elysia::scene::builtin::Settings);
     scene_manager.register_game_scene<FirstReturnScene>(1);

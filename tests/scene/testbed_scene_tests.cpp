@@ -3,10 +3,13 @@
 #include "engine/assist/engine_assist_cache.h"
 #include "engine/assist/engine_assist_catalog.h"
 #include "engine/io/loaders/asset_config_types.h"
-#include "engine/scene/builtin/engine_feature_test_scene.h"
-#include "engine/scene/builtin/ui_test_scene.h"
 #include "engine/scene/scene_manager.h"
 #include "engine/scene/scene_runtime_context.h"
+#include "engine/testbed/scene/engine_feature_test_scene.h"
+#include "engine/testbed/scene/testbed_home_scene.h"
+#include "engine/testbed/scene/testbed_scene_payload.h"
+#include "engine/testbed/scene/ui_test_scene.h"
+#include "engine/testbed/testbed_scene_keys.h"
 #include "tests/support/test_assertions.h"
 
 #include <SDL.h>
@@ -113,15 +116,21 @@ void send_escape(elysia::scene::SceneManager& scene_manager)
 
 void test_payload_contract_names_each_scene()
 {
-    elysia::scene::builtin::UiTestScene ui_test_scene;
+    elysia::testbed::TestbedHomeScene home_scene;
+    require(throws_logic_error_containing(
+            [&home_scene] { home_scene.on_enter({}); },
+            "TestbedHomeScene"),
+        "TestbedHomeScene must name itself when the Testbed payload is missing");
+
+    elysia::testbed::UiTestScene ui_test_scene;
     require(throws_logic_error_containing(
             [&ui_test_scene] { ui_test_scene.on_enter({}); },
             "UiTestScene"),
-        "UiTestScene must name itself when the Engine test payload is missing");
+        "UiTestScene must name itself when the Testbed payload is missing");
 
-    elysia::scene::builtin::EngineFeatureTestScene feature_test_scene;
+    elysia::testbed::EngineFeatureTestScene feature_test_scene;
     const elysia::scene::ScenePayload invalid_payload =
-        elysia::scene::builtin::EngineTestScenePayload{
+        elysia::testbed::TestbedScenePayload{
             .return_route = elysia::scene::SceneRoute{ .target = 1000 }
         };
     require(throws_logic_error_containing(
@@ -145,16 +154,18 @@ void test_escape_returns_the_full_caller_route()
         fixture.renderer(),registry,1280,720,&cache);
     elysia::scene::SceneManager scene_manager;
     scene_manager.set_runtime_context(context);
-    scene_manager.register_builtin_scene<elysia::scene::builtin::UiTestScene>(
-        elysia::scene::builtin::UiTest);
-    scene_manager.register_builtin_scene<elysia::scene::builtin::EngineFeatureTestScene>(
-        elysia::scene::builtin::EngineFeatureTest);
+    scene_manager.register_engine_scene<elysia::testbed::TestbedHomeScene>(
+        elysia::testbed::SceneKeys::Home);
+    scene_manager.register_engine_scene<elysia::testbed::UiTestScene>(
+        elysia::testbed::SceneKeys::UiTest);
+    scene_manager.register_engine_scene<elysia::testbed::EngineFeatureTestScene>(
+        elysia::testbed::SceneKeys::EngineFeatureTest);
     scene_manager.register_game_scene<FirstReturnScene>(1);
     scene_manager.register_game_scene<SecondReturnScene>(2);
 
     scene_manager.start(elysia::scene::SceneRoute{
-        .target = elysia::scene::builtin::UiTest,
-        .payload = elysia::scene::builtin::EngineTestScenePayload{
+        .target = elysia::testbed::SceneKeys::UiTest,
+        .payload = elysia::testbed::TestbedScenePayload{
             .return_route = elysia::scene::SceneRoute{
                 .target = 1,
                 .payload = ReturnPayload{ .marker = 17 },
@@ -169,8 +180,8 @@ void test_escape_returns_the_full_caller_route()
     scene_manager.on_scene_request(elysia::scene::SceneRequest{
         .type = elysia::scene::SceneRequestType::Switch,
         .route = elysia::scene::SceneRoute{
-            .target = elysia::scene::builtin::EngineFeatureTest,
-            .payload = elysia::scene::builtin::EngineTestScenePayload{
+            .target = elysia::testbed::SceneKeys::EngineFeatureTest,
+            .payload = elysia::testbed::TestbedScenePayload{
                 .return_route = elysia::scene::SceneRoute{
                     .target = 2,
                     .payload = ReturnPayload{ .marker = 29 },
@@ -183,6 +194,45 @@ void test_escape_returns_the_full_caller_route()
     send_escape(scene_manager);
     require(scene_manager.current_scene_key() == 2 && SecondReturnScene::marker == 29,
         "EngineFeatureTestScene Escape must return the caller key and payload");
+
+    const elysia::scene::SceneRoute original_caller{
+        .target = 1,
+        .payload = ReturnPayload{ .marker = 41 },
+        .reload_mode = elysia::scene::SceneReloadMode::Reuse
+    };
+    scene_manager.on_scene_request(elysia::scene::SceneRequest{
+        .type = elysia::scene::SceneRequestType::Switch,
+        .route = elysia::scene::SceneRoute{
+            .target = elysia::testbed::SceneKeys::Home,
+            .payload = elysia::testbed::TestbedScenePayload{
+                .return_route = original_caller
+            }
+        }
+    });
+    scene_manager.on_update(0.0);
+
+    scene_manager.on_scene_request(elysia::scene::SceneRequest{
+        .type = elysia::scene::SceneRequestType::Switch,
+        .route = elysia::scene::SceneRoute{
+            .target = elysia::testbed::SceneKeys::UiTest,
+            .payload = elysia::testbed::TestbedScenePayload{
+                .return_route = elysia::scene::SceneRoute{
+                    .target = elysia::testbed::SceneKeys::Home,
+                    .payload = elysia::testbed::TestbedScenePayload{
+                        .return_route = original_caller
+                    },
+                    .reload_mode = elysia::scene::SceneReloadMode::Reuse
+                }
+            }
+        }
+    });
+    scene_manager.on_update(0.0);
+    send_escape(scene_manager);
+    require(scene_manager.current_scene_key() == elysia::testbed::SceneKeys::Home,
+        "Testbed child Escape must return to TestbedHomeScene");
+    send_escape(scene_manager);
+    require(scene_manager.current_scene_key() == 1 && FirstReturnScene::marker == 41,
+        "TestbedHomeScene must preserve and return the original caller route");
 
     scene_manager.shutdown();
     cache.shutdown();

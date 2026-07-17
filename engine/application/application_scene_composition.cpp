@@ -3,9 +3,8 @@
 #include "../scene/builtin/settings_scene.h"
 #include "../scene/builtin/startup_failure_scene.h"
 #include "../scene/builtin/startup_loading_scene.h"
-#include "../scene/builtin/ui_test_scene.h"
-#include "../scene/builtin/engine_feature_test_scene.h"
 #include "../scene/scene_manager.h"
+#include "../testbed/testbed_scene_composition.h"
 
 namespace elysia::application
 {
@@ -19,21 +18,16 @@ void compose_application_scenes(
     const IGameModule& game_module,
     const ApplicationDescriptor& descriptor)
 {
-    scene_manager.register_builtin_scene<
+    scene_manager.register_engine_scene<
         elysia::scene::builtin::StartupLoadingScene>(
             elysia::scene::builtin::StartupLoading);
-    scene_manager.register_builtin_scene<
+    scene_manager.register_engine_scene<
         elysia::scene::builtin::SettingsScene>(
             elysia::scene::builtin::Settings);
-    scene_manager.register_builtin_scene<
+    scene_manager.register_engine_scene<
         elysia::scene::builtin::StartupFailureScene>(
             elysia::scene::builtin::StartupFailure);
-    scene_manager.register_builtin_scene<
-        elysia::scene::builtin::UiTestScene>(
-            elysia::scene::builtin::UiTest);
-    scene_manager.register_builtin_scene<
-        elysia::scene::builtin::EngineFeatureTestScene>(
-            elysia::scene::builtin::EngineFeatureTest);
+    elysia::testbed::register_testbed_scenes(scene_manager);
 
     game_module.register_scenes(scene_manager);
     scene_manager.start(descriptor.initial_route);

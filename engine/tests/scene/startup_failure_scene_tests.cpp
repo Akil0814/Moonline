@@ -70,7 +70,7 @@ void test_scene_identity_and_payload_contract()
         elysia::scene::builtin::StartupFailure == 0xFFFF0005u,
         "startup failure must reserve the next available built-in scene key");
     require(
-        elysia::scene::SceneKeys::is_builtin(
+        elysia::scene::SceneKeys::is_engine(
             elysia::scene::builtin::StartupFailure),
         "startup failure key must belong to the built-in scene range");
 

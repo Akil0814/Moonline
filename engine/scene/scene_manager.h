@@ -38,7 +38,7 @@ public:
     void register_game_scene(SceneKey scene_key);
 
     template <typename T>
-    void register_builtin_scene(SceneKey scene_key);
+    void register_engine_scene(SceneKey scene_key);
 
     void set_runtime_context(const SceneRuntimeContext& context) noexcept;
 
@@ -110,9 +110,9 @@ void SceneManager::register_scene(SceneKey scene_key)
         return;
     }
 
-    if (SceneKeys::is_builtin(scene_key))
+    if (SceneKeys::is_engine(scene_key))
     {
-        register_builtin_scene<T>(scene_key);
+        register_engine_scene<T>(scene_key);
         return;
     }
 
@@ -129,10 +129,10 @@ void SceneManager::register_game_scene(SceneKey scene_key)
 }
 
 template <typename T>
-void SceneManager::register_builtin_scene(SceneKey scene_key)
+void SceneManager::register_engine_scene(SceneKey scene_key)
 {
-    if (!SceneKeys::is_builtin(scene_key))
-        throw std::logic_error("SceneManager::register_builtin_scene received a SceneKey outside the engine built-in range.");
+    if (!SceneKeys::is_engine(scene_key))
+        throw std::logic_error("SceneManager::register_engine_scene received a SceneKey outside the engine-owned range.");
 
     add_scene_provider<T>(scene_key);
 }

@@ -15,7 +15,7 @@ inline constexpr SceneKey GameBegin = 1;
 inline constexpr SceneKey GameEnd = 999;
 
 // This value is a range marker, not a usable scene key. Engine-owned
-// built-in scenes occupy the values strictly above it.
+// scenes occupy the values strictly above it.
 inline constexpr SceneKey EngineMarker = 0xFFFF0000u;
 inline constexpr SceneKey EngineBegin = EngineMarker + 1u;
 inline constexpr SceneKey EngineEnd = std::numeric_limits<SceneKey>::max();
@@ -25,14 +25,14 @@ inline constexpr SceneKey EngineEnd = std::numeric_limits<SceneKey>::max();
     return key >= GameBegin && key <= GameEnd;
 }
 
-[[nodiscard]] constexpr bool is_builtin(SceneKey key) noexcept
+[[nodiscard]] constexpr bool is_engine(SceneKey key) noexcept
 {
     return key >= EngineBegin;
 }
 
 [[nodiscard]] constexpr bool is_supported(SceneKey key) noexcept
 {
-    return is_game(key) || is_builtin(key);
+    return is_game(key) || is_engine(key);
 }
 
 [[nodiscard]] constexpr bool is_reserved(SceneKey key) noexcept
@@ -45,8 +45,6 @@ namespace builtin
 {
 inline constexpr SceneKey StartupLoading = 0xFFFF0001u;
 inline constexpr SceneKey Settings = 0xFFFF0002u;
-inline constexpr SceneKey UiTest = 0xFFFF0003u;
-inline constexpr SceneKey EngineFeatureTest = 0xFFFF0004u;
 inline constexpr SceneKey StartupFailure = 0xFFFF0005u;
 }
 
