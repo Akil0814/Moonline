@@ -3,6 +3,7 @@
 #include "../containers/ui_list_container.h"
 
 #include <functional>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -45,6 +46,11 @@ struct SettingsPanelOptions
     std::vector<SettingsWindowSize> window_sizes;
     std::vector<std::string> languages;
 };
+
+[[nodiscard]] std::vector<SettingsWindowSize>
+make_settings_window_size_options(
+    std::optional<SettingsWindowSize> usable_size,
+    SettingsWindowSize current_size);
 
 using SettingsPanelSaveCallback = std::function<void(const SettingsPanelDraft&)>;
 using SettingsPanelBackCallback = std::function<void()>;

@@ -99,6 +99,23 @@ void test_button_group_preserves_button_callback_after_selection()
 void test_settings_panel_keeps_draft_local_and_normalizes_options()
 {
     using namespace elysia;
+    require(
+        ui::make_settings_window_size_options(
+            ui::SettingsWindowSize{ 1600,900 },
+            ui::SettingsWindowSize{ 2560,1440 })
+            == std::vector<ui::SettingsWindowSize>{
+                { 960,540 },
+                { 1280,720 },
+                { 1600,900 },
+                { 2560,1440 }
+            },
+        "usable display bounds must filter presets while retaining the current value");
+    require(
+        ui::make_settings_window_size_options(
+            std::nullopt,
+            ui::SettingsWindowSize{ 1280,720 }).size() == 6,
+        "failed display bounds queries must retain every preset without duplicates");
+
     ui::SettingsPanel panel(core::Rect{ 0,0,700,680 });
     const ui::SettingsPanelDraft draft{
         .window_mode = ui::SettingsWindowMode::Windowed,

@@ -13,7 +13,7 @@
   },
   "schema_version": 2,
   "window": {
-    "mode": "borderless_fullscreen",
+    "mode": "windowed",
     "windowed_size": {
       "height": 720,
       "width": 1280

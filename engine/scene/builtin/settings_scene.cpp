@@ -11,8 +11,8 @@
 #include <SDL.h>
 
 #include <algorithm>
-#include <array>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -50,32 +50,21 @@ elysia::ui::SettingsPanelDraft make_draft(
 elysia::ui::SettingsPanelOptions make_panel_options(
     const elysia::bootstrap::UserConfigData& settings)
 {
-    constexpr std::array<elysia::ui::SettingsWindowSize,6>
-        window_size_presets{{
-            { 960,540 },
-            { 1280,720 },
-            { 1600,900 },
-            { 1920,1080 },
-            { 2560,1440 },
-            { 3840,2160 }
-        }};
-
-    std::vector<elysia::ui::SettingsWindowSize> window_sizes;
     SDL_Rect usable_bounds{};
-    const bool has_usable_bounds =
-        SDL_GetDisplayUsableBounds(0,&usable_bounds) == 0;
-    window_sizes.reserve(window_size_presets.size() + 1u);
-    for (const auto& window_size : window_size_presets)
+    std::optional<elysia::ui::SettingsWindowSize> usable_size;
+    if (SDL_GetDisplayUsableBounds(0,&usable_bounds) == 0)
     {
-        if (!has_usable_bounds
-            || (window_size.width <= usable_bounds.w
-                && window_size.height <= usable_bounds.h))
-            window_sizes.push_back(window_size);
+        usable_size = {
+            usable_bounds.w,
+            usable_bounds.h
+        };
     }
-    window_sizes.push_back({
-        settings.window.windowed_size.width,
-        settings.window.windowed_size.height
-    });
+    auto window_sizes = elysia::ui::make_settings_window_size_options(
+        usable_size,
+        {
+            settings.window.windowed_size.width,
+            settings.window.windowed_size.height
+        });
 
     const auto& supported_languages =
         elysia::localization::LocalizationManager::instance()

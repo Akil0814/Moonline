@@ -168,11 +168,19 @@ ParseResult parse(const std::filesystem::path& path,const Data& defaults)
 
 Json serialize(const Data& data)
 {
+    const char* mode = "invalid";
+    switch (data.window.mode)
+    {
+    case elysia::bootstrap::WindowMode::Windowed:
+        mode = "windowed";
+        break;
+    case elysia::bootstrap::WindowMode::BorderlessFullscreen:
+        mode = "borderless_fullscreen";
+        break;
+    }
     return {{"schema_version",k_schema_version},
         {"window",{
-            {"mode",data.window.mode == elysia::bootstrap::WindowMode::Windowed
-                ? "windowed"
-                : "borderless_fullscreen"},
+            {"mode",mode},
             {"windowed_size",{
                 {"width",data.window.windowed_size.width},
                 {"height",data.window.windowed_size.height}

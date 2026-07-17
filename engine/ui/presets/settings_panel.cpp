@@ -10,6 +10,7 @@
 #include "../window/ui_window.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <limits>
 #include <memory>
@@ -106,6 +107,32 @@ std::vector<std::string> normalized_languages(std::vector<std::string> languages
     }
     return result;
 }
+}
+
+std::vector<SettingsWindowSize> make_settings_window_size_options(
+    std::optional<SettingsWindowSize> usable_size,
+    SettingsWindowSize current_size)
+{
+    constexpr std::array<SettingsWindowSize,6> presets{{
+        { 960,540 },
+        { 1280,720 },
+        { 1600,900 },
+        { 1920,1080 },
+        { 2560,1440 },
+        { 3840,2160 }
+    }};
+
+    std::vector<SettingsWindowSize> result;
+    result.reserve(presets.size() + 1u);
+    for (const SettingsWindowSize& preset : presets)
+    {
+        if (!usable_size
+            || (preset.width <= usable_size->width
+                && preset.height <= usable_size->height))
+            result.push_back(preset);
+    }
+    result.push_back(current_size);
+    return normalized_window_sizes(std::move(result));
 }
 
 SettingsPanel::SettingsPanel(const elysia::core::Rect& rect,int order)

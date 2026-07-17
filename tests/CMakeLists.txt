@@ -211,3 +211,6 @@ foreach(CONFIG_TEST_TARGET IN ITEMS app_config_tests user_config_tests config_se
         SDL
     )
 endforeach()
+target_compile_definitions(bootstrap_config_integration_tests
+    PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+)

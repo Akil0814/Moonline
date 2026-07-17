@@ -1,3 +1,5 @@
+#define SDL_MAIN_HANDLED
+
 #include "engine/application/application_window_settings.h"
 #include "tests/support/test_assertions.h"
 

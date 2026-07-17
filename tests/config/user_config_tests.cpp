@@ -108,6 +108,12 @@ int main()
     require(unknown_field && unknown_field->rebuilt,
         "unknown UserConfig fields must rebuild defaults");
 
+    const auto missing_field_path = dir / "missing_field.json";
+    write(missing_field_path,R"({"schema_version":2,"window":{"mode":"windowed","windowed_size":{"width":1600,"height":900}},"render":{"fps":60,"vsync":true},"audio":{"master_volume":100,"music_volume":100,"sound_volume":100}})");
+    const auto missing_field = store.load(missing_field_path,defaults);
+    require(missing_field && missing_field->rebuilt,
+        "missing UserConfig fields must rebuild defaults");
+
     write(path,"{broken");
     write(path.string()+".bak",valid_v2);
     auto recovered = store.load(path,defaults);
@@ -115,6 +121,15 @@ int main()
         && recovered->settings.window.windowed_size
             == elysia::bootstrap::WindowSize{ 1600,900 },
         "a valid v2 backup must recover a corrupt primary");
+
+    const auto temporary_recovery_path = dir / "temporary_recovery.json";
+    write(temporary_recovery_path.string()+".tmp",valid_v2);
+    const auto temporary_recovery =
+        store.load(temporary_recovery_path,defaults);
+    require(temporary_recovery && temporary_recovery->recovered
+        && temporary_recovery->settings.window.windowed_size
+            == elysia::bootstrap::WindowSize{ 1600,900 },
+        "a valid temporary v2 file must recover a missing primary");
 
     write(path,R"({"schema_version":99})");
     require(!store.load(path,defaults),"future UserConfig version must stop loading without downgrade recovery");

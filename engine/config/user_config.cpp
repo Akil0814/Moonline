@@ -32,6 +32,10 @@ std::expected<void,UserConfigFailure> UserConfig::require_handler(std::string_vi
 std::expected<void,UserConfigFailure> UserConfig::validate_snapshot(
     const elysia::bootstrap::UserConfigData& settings) const
 {
+    if (settings.window.mode != elysia::bootstrap::WindowMode::Windowed
+        && settings.window.mode
+            != elysia::bootstrap::WindowMode::BorderlessFullscreen)
+        return invalid("window_settings","Unknown window mode.");
     if (settings.window.windowed_size.width <= 0
         || settings.window.windowed_size.height <= 0)
         return invalid("window_size","Window width and height must be positive.");
@@ -95,6 +99,10 @@ std::expected<UserConfigApplyStatus,UserConfigFailure>
 UserConfig::set_window_settings(
     const elysia::bootstrap::WindowSettings& settings)
 {
+    if (settings.mode != elysia::bootstrap::WindowMode::Windowed
+        && settings.mode
+            != elysia::bootstrap::WindowMode::BorderlessFullscreen)
+        return invalid("window_settings","Unknown window mode.");
     if (settings.windowed_size.width <= 0
         || settings.windowed_size.height <= 0)
     {
