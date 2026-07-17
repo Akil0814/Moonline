@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../engine/scene/scene_key.h"
+#include "../../engine/scene/routing/scene_key.h"
 
 namespace MoonlineSceneKeys
 {

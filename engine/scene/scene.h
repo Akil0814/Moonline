@@ -9,9 +9,9 @@
 #include <utility>
 #include <vector>
 
-#include "scene_request.h"
-#include "scene_request_observer.h"
-#include "scene_runtime_context.h"
+#include "routing/scene_request.h"
+#include "routing/scene_request_observer.h"
+#include "runtime/scene_runtime_context.h"
 
 #include "../camera/camera_manager.h"
 #include "../core/depth_layer.h"

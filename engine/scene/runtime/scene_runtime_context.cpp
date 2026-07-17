@@ -1,6 +1,6 @@
 #include "scene_runtime_context.h"
 
-#include "../io/loaders/asset_config_types.h"
+#include "../../io/loaders/asset_config_types.h"
 
 namespace elysia::scene
 {

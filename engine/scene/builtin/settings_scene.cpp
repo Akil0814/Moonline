@@ -6,7 +6,7 @@
 #include "../../ui/layout/ui_layout_types.h"
 #include "../../ui/presets/settings_panel.h"
 #include "../../ui/window/ui_window.h"
-#include "../scene_runtime_context.h"
+#include "../runtime/scene_runtime_context.h"
 
 #include <SDL.h>
 

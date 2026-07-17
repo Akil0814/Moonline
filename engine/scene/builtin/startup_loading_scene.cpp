@@ -8,7 +8,7 @@
 #include "../../ui/widgets/image/ui_fade_image.h"
 #include "../../ui/widgets/label/ui_blink_label.h"
 #include "../../ui/widgets/ui_bar.h"
-#include "../scene_runtime_context.h"
+#include "../runtime/scene_runtime_context.h"
 
 #include <algorithm>
 #include <stdexcept>
