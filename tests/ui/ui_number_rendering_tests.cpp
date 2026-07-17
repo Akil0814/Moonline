@@ -1,12 +1,16 @@
 #define SDL_MAIN_HANDLED
 
+#include "engine/assist/engine_assist_cache.h"
+#include "engine/assist/engine_assist_catalog.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/localization/localization_manager.h"
 #include "engine/resources/resource_manager.h"
+#include "engine/typography/font_resolver.h"
 #include "engine/ui/widgets/number/ui_number.h"
 #include "tests/support/test_assertions.h"
 
 #include <SDL.h>
+#include <SDL_image.h>
 #include <SDL_ttf.h>
 
 #include <cstdlib>
@@ -33,6 +37,8 @@ void test_ui_number_uses_shared_localized_glyphs()
 {
     using namespace elysia;
     require(SDL_Init(SDL_INIT_VIDEO) == 0,"UI number tests must initialize SDL video");
+    require((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) == IMG_INIT_PNG,
+        "UI number tests must initialize PNG support");
     require(TTF_Init() == 0,"UI number tests must initialize SDL_ttf");
     SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0,256,128,32,SDL_PIXELFORMAT_RGBA32);
     require(surface != nullptr,"UI number tests must create a software surface");
@@ -44,15 +50,26 @@ void test_ui_number_uses_shared_localized_glyphs()
     auto* localization = localization::LocalizationManager::instance();
     require(paths->init(),"UI number tests must initialize paths");
     resources->clear();
-    require(resources->load_font("ui.latin.30",paths->fonts() / "fusion-pixel-10px-proportional-latin.ttf",30)
-        && resources->load_font("ui.zh_hans.30",paths->fonts() / "fusion-pixel-10px-proportional-zh_hans.ttf",30),
-        "UI number tests must load localized number fonts");
+    assist::EngineAssistCache engine_cache;
+    require(engine_cache.initialize(
+        renderer,
+        assist::EngineAssistCatalog(*paths)).has_value(),
+        "UI number tests must initialize Engine assist fonts");
+    typography::FontResolver font_resolver;
     localization->shutdown();
     require(localization->init(
         renderer,
         paths->configs() / "manifests" / "i18n_manifest.json",
-        "en"
+        "en",
+        &font_resolver,
+        &engine_cache
     ),"UI number tests must initialize localization");
+    require(font_resolver.configure(
+        application::ApplicationFontSettings{},
+        engine_cache,
+        *resources,
+        localization->supported_languages()).has_value(),
+        "UI number tests must configure Engine fonts");
 
     {
         ui::UiNumber number(core::Rect{ 10,20,200,60 });
@@ -106,10 +123,13 @@ void test_ui_number_uses_shared_localized_glyphs()
     }
 
     localization->shutdown();
+    font_resolver.shutdown();
     resources->clear();
+    engine_cache.shutdown();
     SDL_DestroyRenderer(renderer);
     SDL_FreeSurface(surface);
     TTF_Quit();
+    IMG_Quit();
     SDL_Quit();
 }
 }

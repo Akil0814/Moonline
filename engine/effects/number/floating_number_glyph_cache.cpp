@@ -7,7 +7,10 @@
 
 namespace elysia::effects
 {
-bool FloatingNumberGlyphCache::configure(SDL_Renderer* renderer, TTF_Font* font) noexcept
+bool FloatingNumberGlyphCache::configure(
+    SDL_Renderer* renderer,
+    TTF_Font* font,
+    std::uint64_t font_generation) noexcept
 {
     if (!renderer || !font)
     {
@@ -15,12 +18,15 @@ bool FloatingNumberGlyphCache::configure(SDL_Renderer* renderer, TTF_Font* font)
         return false;
     }
 
-    if (_renderer == renderer && _font == font)
+    if (_renderer == renderer
+        && _font == font
+        && _font_generation == font_generation)
         return true;
 
     reset();
     _renderer = renderer;
     _font = font;
+    _font_generation = font_generation;
     return true;
 }
 
@@ -77,6 +83,7 @@ void FloatingNumberGlyphCache::reset() noexcept
         color_glyphs.clear();
     _renderer = nullptr;
     _font = nullptr;
+    _font_generation = 0;
 }
 
 elysia::core::Color FloatingNumberGlyphCache::color_value(FloatingNumberColor color) noexcept

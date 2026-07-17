@@ -9,6 +9,7 @@
 #include <SDL_ttf.h>
 
 #include <filesystem>
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -17,6 +18,11 @@
 namespace elysia::assist
 {
 class EngineAssistCache;
+}
+
+namespace elysia::typography
+{
+class FontResolver;
 }
 
 namespace elysia::localization
@@ -30,6 +36,7 @@ public:
 		SDL_Renderer* renderer,
 		const std::filesystem::path& manifest_path,
 		std::string initial_language,
+		const elysia::typography::FontResolver* font_resolver,
 		const elysia::assist::EngineAssistCache* engine_assist_cache = nullptr
 	);
 	void shutdown();
@@ -44,6 +51,7 @@ public:
 	);
 	bool measure_raw_text(std::string_view text,const LocalizedTextStyle& style,int& out_width,int& out_height) const;
 	[[nodiscard]] SDL_Renderer* renderer() const noexcept;
+	[[nodiscard]] std::uint64_t font_generation() const noexcept;
 
 	bool set_language(std::string language);
 	const std::string& current_language() const;
@@ -62,8 +70,7 @@ private:
 		const TranslationTable& table,
 		std::string_view key
 	) const;
-	std::string map_font_key(const std::string& language, int point_size) const;
-	TTF_Font* resolve_font(int point_size) const;
+	TTF_Font* resolve_text_font(elysia::ui::UiTypographyRole role) const;
 	CachedTexturePtr create_text_texture(
 		std::string_view key,
 		const LocalizedTextStyle& style
@@ -81,6 +88,7 @@ private:
 	TextTextureCache _text_texture_cache;
 	std::unordered_map<std::string, TranslationTable> _translation_tables;
 	std::string _current_language;
+	const elysia::typography::FontResolver* _font_resolver = nullptr;
 	const elysia::assist::EngineAssistCache* _engine_assist_cache = nullptr;
 	bool _initialized = false;
 };

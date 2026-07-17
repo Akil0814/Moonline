@@ -10,7 +10,7 @@ namespace
 {
 using elysia::application::ApplicationDescriptor;
 using elysia::application::ApplicationEngineLogoVariant;
-using elysia::application::ApplicationProjectFontReplacement;
+using elysia::application::ApplicationFontSource;
 using elysia::application::ApplicationScaleStrategy;
 using elysia::application::ApplicationTextureFilter;
 using elysia::application::ApplicationTypographyProfile;
@@ -34,8 +34,20 @@ void require_default_presentation_settings()
             == ApplicationTextureFilter::Nearest,
         "application presentation must default to nearest filtering");
     require(
-        !descriptor.presentation.fonts.project_font_replacement.has_value(),
+        descriptor.presentation.fonts.ui.source
+                == ApplicationFontSource::EngineBuiltIn
+            && descriptor.presentation.fonts.floating_number.source
+                == ApplicationFontSource::EngineBuiltIn,
         "application presentation must use engine fonts by default");
+    require(
+        descriptor.presentation.fonts.floating_number.point_size == 20,
+        "application presentation must default floating numbers to 20pt");
+    require(
+        descriptor.presentation.fonts.ui.typography.point_sizes()
+            == ApplicationTypographyProfile::PointSizes{
+                30,30,70,50,30,20,30,20,30,60,30,20,30,30,30,10,40
+            },
+        "application presentation must preserve the complete default UI typography profile");
     require(
         descriptor.presentation.startup.engine_logo
             == ApplicationEngineLogoVariant::White,
@@ -82,17 +94,15 @@ void require_complete_typography_profile()
     }
 
     ApplicationDescriptor descriptor;
-    descriptor.presentation.fonts.project_font_replacement =
-        ApplicationProjectFontReplacement{ .typography = profile };
-
+    descriptor.presentation.fonts.ui.source = ApplicationFontSource::Project;
+    descriptor.presentation.fonts.ui.typography = profile;
     require(
-        descriptor.presentation.fonts.project_font_replacement.has_value(),
-        "project font replacement must be distinguishable from engine fonts");
+        descriptor.presentation.fonts.ui.source == ApplicationFontSource::Project,
+        "project UI fonts must be distinguishable from engine fonts");
     require(
-        descriptor.presentation.fonts.project_font_replacement
-                ->typography.point_sizes()
+        descriptor.presentation.fonts.ui.typography.point_sizes()
             == point_sizes,
-        "project font replacement must retain the complete typography profile");
+        "project UI fonts must retain the complete typography profile");
 }
 
 void require_engine_logo_variants_are_data_only()

@@ -19,6 +19,11 @@ class Scene;
 class SceneManager;
 }
 
+namespace elysia::typography
+{
+class FontResolver;
+}
+
 namespace elysia::effects
 {
 enum class EffectAnchor
@@ -82,6 +87,9 @@ class EffectManager : public elysia::tools::Singleton<EffectManager>
 	friend elysia::tools::Singleton<EffectManager>;
 
 public:
+	void set_font_resolver(
+		const elysia::typography::FontResolver* font_resolver) noexcept;
+
 	bool register_animation_effect(const elysia::resources::AnimationEffectBuildRequest& request);
 	bool register_animation_effect(const std::vector<elysia::resources::AnimationEffectBuildRequest>& requests);
 
@@ -100,6 +108,7 @@ private:
 
 	std::unordered_map<std::string, AnimationEffectDefinition> _animation_effect_definitions;
 	FloatingNumberGlyphCache _floating_number_glyph_cache;
+	const elysia::typography::FontResolver* _font_resolver = nullptr;
 	elysia::scene::Scene* _active_scene = nullptr;
 };
 

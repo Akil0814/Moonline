@@ -5,6 +5,7 @@
 #include "../../assist/engine_assist_cache.h"
 #include "../../tools/logger.h"
 #include "../../tools/termination_manager.h"
+#include "../../typography/font_resolver.h"
 #include "../../ui/widgets/image/ui_fade_image.h"
 #include "../../ui/widgets/label/ui_blink_label.h"
 #include "../../ui/widgets/ui_bar.h"
@@ -54,6 +55,15 @@ void StartupLoadingScene::on_enter(const ScenePayload& payload)
     _startup_payload = *startup_payload;
     _completion.reset(_startup_payload.wait_for_confirmation);
     _paused = false;
+
+    elysia::typography::FontResolver* font_resolver =
+        runtime_context().font_resolver();
+    if (!font_resolver)
+    {
+        handle_failure("StartupLoadingScene requires FontResolver.");
+        return;
+    }
+    font_resolver->deactivate_project_fonts();
 
     if (!create_presentation())
         return;
@@ -304,12 +314,37 @@ void StartupLoadingScene::mark_intro_finished()
 
 void StartupLoadingScene::mark_loading_finished()
 {
+    elysia::typography::FontResolver* font_resolver =
+        runtime_context().font_resolver();
+    if (!activate_project_fonts(font_resolver))
+        return;
+
     if (_loading_bar)
     {
         _loading_bar->destroy();
         _loading_bar = nullptr;
     }
     handle_completion_action(_completion.mark_loading_finished());
+}
+
+bool StartupLoadingScene::activate_project_fonts(
+    elysia::typography::FontResolver* font_resolver)
+{
+    if (!font_resolver)
+    {
+        handle_failure("Startup font activation failed: FontResolver is unavailable.");
+        return false;
+    }
+
+    if (const auto activation = font_resolver->activate_project_fonts();
+        !activation)
+    {
+        handle_failure(
+            "Startup font activation failed: " + activation.error().message);
+        return false;
+    }
+
+    return true;
 }
 
 void StartupLoadingScene::handle_logo_action(StartupLogoAction action)

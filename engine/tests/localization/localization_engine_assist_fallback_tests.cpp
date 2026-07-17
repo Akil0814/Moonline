@@ -1,10 +1,12 @@
 #define SDL_MAIN_HANDLED
 
+#include "engine/application/application_presentation_settings.h"
 #include "engine/assist/engine_assist_cache.h"
 #include "engine/assist/engine_assist_catalog.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/localization/localization_manager.h"
 #include "engine/resources/resource_manager.h"
+#include "engine/typography/font_resolver.h"
 #include "tests/support/test_assertions.h"
 
 #include <SDL.h>
@@ -12,6 +14,7 @@
 #include <SDL_ttf.h>
 
 #include <filesystem>
+#include <array>
 
 namespace
 {
@@ -65,19 +68,39 @@ int main()
         "localization fallback tests must initialize Engine assist cache");
 
     auto* localization = elysia::localization::LocalizationManager::instance();
+    elysia::typography::FontResolver font_resolver;
     require(localization->init(
         fixture.renderer(),
         source_root / "assets" / "configs" / "manifests" / "i18n_manifest.json",
         "en",
+        &font_resolver,
         &cache),
         "LocalizationManager must initialize with Engine assist defaults");
+
+    elysia::application::ApplicationTypographyProfile::PointSizes point_sizes{};
+    point_sizes.fill(20);
+    elysia::application::ApplicationFontSettings font_settings;
+    font_settings.ui.source =
+        elysia::application::ApplicationFontSource::Project;
+    font_settings.ui.typography =
+        elysia::application::ApplicationTypographyProfile(point_sizes);
+    require(font_resolver.configure(
+        font_settings,
+        cache,
+        *elysia::resources::ResourceManager::instance(),
+        localization->supported_languages()).has_value(),
+        "FontResolver must configure after localization publishes its languages");
     require(localization->tr("common.save") == "Save",
         "project translations must remain the first lookup source");
     require(localization->tr("engine.settings.title") == "Settings",
         "missing Engine namespace keys must fall back to Engine translations");
 
-    const elysia::localization::LocalizedTextStyle style{ .point_size = 20 };
-    require(localization->get_text_texture("engine.settings.title", style) != nullptr,
+    const elysia::localization::LocalizedTextStyle style{
+        .typography_role = elysia::ui::UiTypographyRole::ButtonCompact
+    };
+    SDL_Texture* engine_text_texture =
+        localization->get_text_texture("engine.settings.title",style);
+    require(engine_text_texture != nullptr,
         "Engine default font must render text before project content fonts load");
 
     auto* resources = elysia::resources::ResourceManager::instance();
@@ -86,6 +109,16 @@ int main()
         path_manager->fonts() / "fusion-pixel-10px-proportional-latin.ttf",
         20),
         "test must load a project font for precedence validation");
+    require(resources->load_font(
+        "ui.zh_hans.20",
+        path_manager->fonts() / "fusion-pixel-10px-proportional-zh_hans.ttf",
+        20),
+        "test must load the Simplified Chinese project font");
+    require(resources->load_font(
+        "ui.ja.20",
+        path_manager->fonts() / "fusion-pixel-10px-proportional-ja.ttf",
+        20),
+        "test must load the Japanese project font");
     int localized_width = 0;
     int localized_height = 0;
     require(localization->measure_raw_text("Moon", style, localized_width, localized_height),
@@ -95,24 +128,26 @@ int main()
     require(TTF_SizeUTF8(cache.find_font("en", 20), "Moon", &engine_width, &engine_height) == 0,
         "Engine font must measure the precedence probe text");
     require(localized_width == engine_width && localized_height == engine_height,
-        "Engine fonts must take precedence over loaded project fonts");
+        "Engine fonts must remain active until project activation");
 
-    localization->shutdown();
-    require(localization->init(
-        fixture.renderer(),
-        source_root / "assets" / "configs" / "manifests" / "i18n_manifest.json",
-        "en"),
-        "LocalizationManager must initialize without Engine assist cache");
+    require(font_resolver.activate_project_fonts().has_value(),
+        "complete project fonts must activate");
+    SDL_Texture* project_text_texture =
+        localization->get_text_texture("engine.settings.title",style);
+    require(project_text_texture
+        && project_text_texture != engine_text_texture,
+        "font generation changes must not reuse Engine text textures");
     require(localization->measure_raw_text("Moon", style, localized_width, localized_height),
-        "project font fallback must render when Engine cache is unavailable");
+        "active project fonts must render localized text");
     int project_width = 0;
     int project_height = 0;
     require(TTF_SizeUTF8(resources->find_font("ui.latin.20"), "Moon", &project_width, &project_height) == 0,
         "project font must measure the fallback probe text");
     require(localized_width == project_width && localized_height == project_height,
-        "project fonts must remain usable without Engine assist cache");
+        "LocalizationManager must render through the active project font");
 
     localization->shutdown();
+    font_resolver.shutdown();
     cache.shutdown();
     return 0;
 }

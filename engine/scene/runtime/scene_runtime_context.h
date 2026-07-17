@@ -12,6 +12,11 @@ namespace elysia::assist
 class EngineAssistCache;
 }
 
+namespace elysia::typography
+{
+class FontResolver;
+}
+
 namespace elysia::scene
 {
 class SceneRuntimeContext
@@ -22,7 +27,8 @@ public:
         const elysia::io::ContentRegistry& content_registry,
         int logical_width,
         int logical_height,
-        const elysia::assist::EngineAssistCache* engine_assist_cache = nullptr
+        const elysia::assist::EngineAssistCache* engine_assist_cache = nullptr,
+        elysia::typography::FontResolver* font_resolver = nullptr
     ) noexcept;
 
     [[nodiscard]] SDL_Renderer* renderer() const noexcept;
@@ -30,6 +36,7 @@ public:
     [[nodiscard]] int logical_width() const noexcept;
     [[nodiscard]] int logical_height() const noexcept;
     [[nodiscard]] const elysia::assist::EngineAssistCache* engine_assist_cache() const noexcept;
+    [[nodiscard]] elysia::typography::FontResolver* font_resolver() const noexcept;
 
 private:
     SDL_Renderer* _renderer = nullptr;
@@ -37,5 +44,6 @@ private:
     int _logical_width = 0;
     int _logical_height = 0;
     const elysia::assist::EngineAssistCache* _engine_assist_cache = nullptr;
+    elysia::typography::FontResolver* _font_resolver = nullptr;
 };
 }

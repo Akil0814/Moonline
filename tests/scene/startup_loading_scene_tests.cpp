@@ -3,6 +3,7 @@
 #include "engine/scene/builtin/startup_loading_scene.h"
 #include "engine/scene/routing/scene_request_observer.h"
 #include "engine/tools/termination_manager.h"
+#include "engine/typography/font_resolver.h"
 #include "tests/support/test_assertions.h"
 
 #include <cstdlib>
@@ -26,13 +27,21 @@ public:
 
     static void finish_loading_then_intro(StartupLoadingScene& scene)
     {
-        scene.mark_loading_finished();
+        scene.handle_completion_action(
+            scene._completion.mark_loading_finished());
         scene.mark_intro_finished();
     }
 
     static void fail(StartupLoadingScene& scene,std::string_view message)
     {
         scene.handle_failure(message);
+    }
+
+    static bool activate_fonts(
+        StartupLoadingScene& scene,
+        elysia::typography::FontResolver* font_resolver)
+    {
+        return scene.activate_project_fonts(font_resolver);
     }
 };
 }
@@ -173,6 +182,32 @@ void test_failure_without_route_requests_fatal_termination()
         "startup failure without a route must request fatal termination");
     termination->reset_for_testing();
 }
+
+void test_font_activation_failure_uses_startup_failure_route()
+{
+    using namespace elysia::scene;
+    using namespace elysia::scene::builtin;
+
+    StartupLoadingScene scene;
+    RequestProbe probe;
+    scene.attach(&probe);
+    StartupLoadingSceneTestAccess::prime(
+        scene,
+        StartupLoadingScenePayload{
+            .success_route = SceneRoute{ .target = 1 },
+            .failure_route = SceneRoute{ .target = 9 }
+        });
+
+    elysia::typography::FontResolver unconfigured_resolver;
+    require(!StartupLoadingSceneTestAccess::activate_fonts(
+            scene,
+            &unconfigured_resolver),
+        "startup loading must reject an unconfigured FontResolver");
+    require(probe.request_count == 1
+        && probe.request.route.target == 9,
+        "font activation failure must use the configured startup failure route");
+    scene.detach(&probe);
+}
 }
 
 int main()
@@ -180,5 +215,6 @@ int main()
     test_payload_contract_names_startup_scene();
     test_success_and_failure_routes_are_forwarded_unchanged();
     test_failure_without_route_requests_fatal_termination();
+    test_font_activation_failure_uses_startup_failure_route();
     return EXIT_SUCCESS;
 }

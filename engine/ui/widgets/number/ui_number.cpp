@@ -94,7 +94,7 @@ void UiNumber::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
 
     const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
     elysia::localization::LocalizedTextStyle text_style;
-    text_style.point_size = typography.point_size;
+    text_style.typography_role = _typography_role;
     text_style.color = style.text;
 
     std::vector<SDL_Texture*> textures;

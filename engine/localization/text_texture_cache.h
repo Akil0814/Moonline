@@ -5,6 +5,7 @@
 #include <SDL.h>
 
 #include <functional>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -24,7 +25,9 @@ struct TextTextureCacheKey
 	std::string language;
 	std::string translation_key;
 	bool is_raw_text = false;
-	int point_size = 0;
+	elysia::ui::UiTypographyRole typography_role =
+		elysia::ui::UiTypographyRole::Label;
+	std::uint64_t font_generation = 0;
 	elysia::core::Color color{};
 	int wrap_width = 0;
 
@@ -43,12 +46,14 @@ public:
 
 	SDL_Texture* get_or_create(
 		const std::string& language,
+		std::uint64_t font_generation,
 		std::string_view translation_key,
 		const LocalizedTextStyle& style,
 		const TextureFactory& texture_factory
 	);
 	SDL_Texture* get_or_create_raw(
 		const std::string& language,
+		std::uint64_t font_generation,
 		std::string_view raw_text,
 		const LocalizedTextStyle& style,
 		const TextureFactory& texture_factory

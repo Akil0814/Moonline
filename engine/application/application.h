@@ -12,6 +12,7 @@
 #include "../scene/scene_manager_observer.h"
 #include "../scene/runtime/scene_runtime_context.h"
 #include "../tools/singleton.h"
+#include "../typography/font_resolver.h"
 
 #include <SDL.h>
 
@@ -78,6 +79,7 @@ private:
     elysia::scene::SceneManager _scene_manager;
     elysia::io::ContentRegistry _content_registry;
     elysia::assist::EngineAssistCache _engine_assist_cache;
+    elysia::typography::FontResolver _font_resolver;
     std::optional<elysia::scene::SceneRuntimeContext> _scene_runtime_context;
 
     bool _active = true;

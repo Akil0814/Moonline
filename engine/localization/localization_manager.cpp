@@ -6,7 +6,7 @@
 #include "../io/json/json_loader.h"
 #include "../io/loaders/i18n_manifest_loader.h"
 #include "../io/path/path_manager.h"
-#include "../resources/resource_manager.h"
+#include "../typography/font_resolver.h"
 
 #include <SDL_ttf.h>
 
@@ -57,6 +57,7 @@ bool LocalizationManager::init(
 	SDL_Renderer* renderer,
 	const std::filesystem::path& manifest_path,
 	std::string initial_language,
+	const elysia::typography::FontResolver* font_resolver,
 	const elysia::assist::EngineAssistCache* engine_assist_cache
 )
 {
@@ -65,6 +66,12 @@ bool LocalizationManager::init(
 	if (!renderer)
 	{
 		ELYSIA_LOG_WARN("localization","Localization init failed: renderer is null.");
+		return false;
+	}
+	if (!font_resolver)
+	{
+		ELYSIA_LOG_WARN("localization",
+			"Localization init failed: FontResolver is null.");
 		return false;
 	}
 
@@ -99,6 +106,7 @@ bool LocalizationManager::init(
 	}
 
 	_renderer = renderer;
+	_font_resolver = font_resolver;
 	_engine_assist_cache = engine_assist_cache;
 	_manifest_path = manifest_path;
 	_i18n_root = path_manager->assets() / "i18n";
@@ -129,6 +137,7 @@ void LocalizationManager::shutdown()
 	_manifest_path.clear();
 	_i18n_root.clear();
 	_current_language.clear();
+	_font_resolver = nullptr;
 	_engine_assist_cache = nullptr;
 	_renderer = nullptr;
 	_initialized = false;
@@ -182,6 +191,7 @@ SDL_Texture* LocalizationManager::get_text_texture(
 
 	return _text_texture_cache.get_or_create(
 		_current_language,
+		_font_resolver ? _font_resolver->generation() : 0,
 		key,
 		style,
 		[this, key, style]()
@@ -200,6 +210,7 @@ SDL_Texture* LocalizationManager::get_raw_text_texture(
 
 	return _text_texture_cache.get_or_create_raw(
 		_current_language,
+		_font_resolver ? _font_resolver->generation() : 0,
 		text,
 		style,
 		[this, text, style]()
@@ -232,7 +243,7 @@ bool LocalizationManager::measure_raw_text(
 	if (!_initialized)
 		return false;
 
-	TTF_Font* font = resolve_font(style.point_size);
+	TTF_Font* font = resolve_text_font(style.typography_role);
 	if (!font)
 		return false;
 
@@ -276,6 +287,11 @@ bool LocalizationManager::measure_raw_text(
 SDL_Renderer* LocalizationManager::renderer() const noexcept
 {
 	return _renderer;
+}
+
+std::uint64_t LocalizationManager::font_generation() const noexcept
+{
+	return _font_resolver ? _font_resolver->generation() : 0;
 }
 
 bool LocalizationManager::set_language(std::string language)
@@ -409,57 +425,25 @@ std::string_view LocalizationManager::lookup_translation(
 	return iterator->second;
 }
 
-std::string LocalizationManager::map_font_key(
-	const std::string& language,
-	int point_size
-) const
+TTF_Font* LocalizationManager::resolve_text_font(
+	elysia::ui::UiTypographyRole role) const
 {
-	const std::string suffix = "." + std::to_string(point_size);
-	if (language == "en")
-		return "ui.latin" + suffix;
-	if (language == "zh_cn" || language == "zh-Hans")
-		return "ui.zh_hans" + suffix;
-	if (language == "zh_hant" || language == "zh-Hant")
-		return "ui.zh_hant" + suffix;
-	if (language == "ja")
-		return "ui.ja" + suffix;
-	if (language == "ko")
-		return "ui.ko" + suffix;
-
-	return {};
-}
-
-TTF_Font* LocalizationManager::resolve_font(int point_size) const
-{
-	if (point_size <= 0)
-		return nullptr;
-
-	const std::string font_key = map_font_key(_current_language, point_size);
-	if (font_key.empty())
+	if (!_font_resolver)
 	{
-		ELYSIA_LOG_WARN("localization","Resolve font failed: font mapping is missing for language "
-			<< _current_language << ", size " << point_size);
+		ELYSIA_LOG_WARN("localization",
+			"Resolve text font failed: FontResolver is unavailable.");
 		return nullptr;
 	}
 
-	if (_engine_assist_cache)
+	const auto resolved = _font_resolver->resolve_ui(role,_current_language);
+	if (!resolved)
 	{
-		if (TTF_Font* engine_font = _engine_assist_cache->find_font(
-			elysia::assist::EngineAssistCache::map_project_locale(_current_language),
-			point_size))
-		{
-			return engine_font;
-		}
+		ELYSIA_LOG_WARN("localization",
+			"Resolve text font failed: " << resolved.error().message);
+		return nullptr;
 	}
 
-	elysia::resources::ResourceManager* resource_manager =
-		elysia::resources::ResourceManager::instance();
-	if (resource_manager->has_font(font_key))
-		return resource_manager->find_font(font_key);
-
-	ELYSIA_LOG_WARN("localization","Resolve font failed: font is not loaded: "
-		<< font_key);
-	return nullptr;
+	return resolved->font;
 }
 
 CachedTexturePtr LocalizationManager::create_text_texture(
@@ -470,14 +454,7 @@ CachedTexturePtr LocalizationManager::create_text_texture(
 	if (!_renderer)
 		return {};
 
-	if (style.point_size <= 0)
-	{
-		ELYSIA_LOG_WARN("localization","Create text texture failed: invalid point size for key "
-			<< key);
-		return {};
-	}
-
-	TTF_Font* font = resolve_font(style.point_size);
+	TTF_Font* font = resolve_text_font(style.typography_role);
 	if (!font)
 		return {};
 
@@ -534,13 +511,7 @@ CachedTexturePtr LocalizationManager::create_raw_text_texture(
 	if (!_renderer)
 		return {};
 
-	if (style.point_size <= 0)
-	{
-		ELYSIA_LOG_WARN("localization","Create raw text texture failed: invalid point size.");
-		return {};
-	}
-
-	TTF_Font* font = resolve_font(style.point_size);
+	TTF_Font* font = resolve_text_font(style.typography_role);
 	if (!font)
 		return {};
 

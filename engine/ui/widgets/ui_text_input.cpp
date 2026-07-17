@@ -103,7 +103,8 @@ struct UiTextInput::EditingTextTexture
     std::string display_text;
     std::string language;
     SDL_Renderer* renderer = nullptr;
-    int point_size = 0;
+    UiTypographyRole typography_role = UiTypographyRole::Input;
+    std::uint64_t font_generation = 0;
     elysia::core::Color color{};
 };
 
@@ -291,7 +292,8 @@ void UiTextInput::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
         const UiResolvedTextStyle typography = resolve_ui_typography(
             show_placeholder ? _placeholder_typography_role : _typography_role);
         elysia::localization::LocalizedTextStyle text_style;
-        text_style.point_size = typography.point_size;
+        text_style.typography_role =
+            show_placeholder ? _placeholder_typography_role : _typography_role;
         text_style.color = show_placeholder ? current_placeholder_color() : current_text_color();
         text_style.wrap_width = 0;
 
@@ -311,7 +313,10 @@ void UiTextInput::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
                 && _editing_text_texture->display_text == layout.display_text
                 && _editing_text_texture->language == language
                 && _editing_text_texture->renderer == renderer
-                && _editing_text_texture->point_size == text_style.point_size
+                && _editing_text_texture->typography_role
+                    == text_style.typography_role
+                && _editing_text_texture->font_generation
+                    == localization_manager->font_generation()
                 && _editing_text_texture->color == text_style.color;
 
             if (!has_matching_texture)
@@ -325,7 +330,9 @@ void UiTextInput::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
                     next_texture->display_text = layout.display_text;
                     next_texture->language = language;
                     next_texture->renderer = renderer;
-                    next_texture->point_size = text_style.point_size;
+                    next_texture->typography_role = text_style.typography_role;
+                    next_texture->font_generation =
+                        localization_manager->font_generation();
                     next_texture->color = text_style.color;
                     _editing_text_texture = std::move(next_texture);
                 }
@@ -633,9 +640,8 @@ std::size_t UiTextInput::codepoint_index_at_x(int mouse_x) const
     if (layout.content_rect.is_empty())
         return codepoint_count;
 
-    const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
     elysia::localization::LocalizedTextStyle style;
-    style.point_size = typography.point_size;
+    style.typography_role = _typography_role;
     style.color = current_text_color();
     style.wrap_width = 0;
 
@@ -732,9 +738,8 @@ UiTextInput::TextLayout UiTextInput::compute_text_layout() const
     if (!localization_manager)
         return layout;
 
-    const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
     elysia::localization::LocalizedTextStyle style;
-    style.point_size = typography.point_size;
+    style.typography_role = _typography_role;
     style.color = current_text_color();
     style.wrap_width = 0;
 
@@ -765,7 +770,13 @@ UiTextInput::TextLayout UiTextInput::compute_text_layout() const
             layout.composition_display_start_codepoint_index + layout.composition_display_length));
     (void)localization_manager->measure_raw_text(highlight_full_prefix,style,highlight_full_width,highlight_full_height);
 
-    layout.text_height = static_cast<float>(std::max({ total_text_height, caret_prefix_height, highlight_prefix_height, highlight_full_height, typography.point_size }));
+    layout.text_height = static_cast<float>(std::max({
+        total_text_height,
+        caret_prefix_height,
+        highlight_prefix_height,
+        highlight_full_height,
+        1
+    }));
     const float available_width = std::max(0.0f,layout.content_rect.width());
     layout.scroll_x = std::max(0.0f,static_cast<float>(caret_prefix_width) - available_width + 8.0f);
     layout.text_x = layout.content_rect.x() - layout.scroll_x;

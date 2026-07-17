@@ -60,9 +60,9 @@ void test_cache_domains_and_lifetime(GlyphCacheFixture& fixture)
 {
     using namespace elysia::effects;
     FloatingNumberGlyphCache cache;
-    require(!cache.configure(nullptr,fixture.font),"cache must reject a missing renderer");
-    require(!cache.configure(fixture.renderer,nullptr),"cache must reject a missing font");
-    require(cache.configure(fixture.renderer,fixture.font),"cache must accept complete dependencies");
+    require(!cache.configure(nullptr,fixture.font,1),"cache must reject a missing renderer");
+    require(!cache.configure(fixture.renderer,nullptr,1),"cache must reject a missing font");
+    require(cache.configure(fixture.renderer,fixture.font,1),"cache must accept complete dependencies");
     require(!FloatingNumberGlyphCache::supports('A'),"letters must not be accepted as number glyphs");
     require(!cache.glyph(FloatingNumberColor::White,'A').has_value(),"unsupported glyph lookup must fail safely");
 
@@ -85,12 +85,21 @@ void test_cache_domains_and_lifetime(GlyphCacheFixture& fixture)
     require(retained && SDL_QueryTexture(retained.get(),nullptr,nullptr,&width,&height) == 0,
         "live effects must retain textures across cache reset");
 
-    require(cache.configure(fixture.renderer,fixture.font),"cache must reconfigure after reset");
+    require(cache.configure(fixture.renderer,fixture.font,1),"cache must reconfigure after reset");
     const auto before_renderer_change = cache.glyph(FloatingNumberColor::White,'5');
     require(before_renderer_change.has_value(),"configured cache must create glyphs");
-    require(cache.configure(fixture.second_renderer,fixture.font),"renderer changes must reconfigure the cache");
+    require(cache.configure(fixture.renderer,fixture.font,2),
+        "font generation changes must reconfigure the cache");
+    const auto after_generation_change = cache.glyph(
+        FloatingNumberColor::White,
+        '5');
+    require(after_generation_change
+        && after_generation_change->texture.get()
+            != before_renderer_change->texture.get(),
+        "font generation changes must invalidate cached glyphs");
+    require(cache.configure(fixture.second_renderer,fixture.font,2),"renderer changes must reconfigure the cache");
     const auto after_renderer_change = cache.glyph(FloatingNumberColor::White,'5');
-    require(after_renderer_change && after_renderer_change->texture.get() != before_renderer_change->texture.get(),
+    require(after_renderer_change && after_renderer_change->texture.get() != after_generation_change->texture.get(),
         "renderer changes must invalidate cached textures");
 
     cache.reset();

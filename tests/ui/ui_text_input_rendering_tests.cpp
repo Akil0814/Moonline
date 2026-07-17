@@ -1,14 +1,18 @@
 #define SDL_MAIN_HANDLED
 
+#include "engine/assist/engine_assist_cache.h"
+#include "engine/assist/engine_assist_catalog.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/loading/content_manifest_pipeline.h"
 #include "engine/localization/localization_manager.h"
 #include "engine/resources/pipeline/resource_request_builder.h"
 #include "engine/resources/resource_manager.h"
+#include "engine/typography/font_resolver.h"
 #include "engine/ui/widgets/ui_text_input.h"
 #include "tests/support/test_assertions.h"
 
 #include <SDL.h>
+#include <SDL_image.h>
 #include <SDL_ttf.h>
 
 #include <cstdlib>
@@ -36,6 +40,8 @@ void test_text_input_uses_private_editing_texture()
     using namespace elysia;
 
     require(SDL_Init(SDL_INIT_VIDEO) == 0,"text input texture test must initialize SDL video");
+    require((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) == IMG_INIT_PNG,
+        "text input texture test must initialize PNG support");
     require(TTF_Init() == 0,"text input texture test must initialize SDL_ttf");
 
     SDL_Surface* target_surface = SDL_CreateRGBSurfaceWithFormat(
@@ -50,24 +56,34 @@ void test_text_input_uses_private_editing_texture()
     require(path_manager->init(),"text input texture test must initialize the project path manager");
 
     resource_manager->clear();
-    require(resource_manager->load_font("ui.latin.20",path_manager->fonts() / "fusion-pixel-10px-proportional-latin.ttf",20)
-            && resource_manager->load_font("ui.latin.30",path_manager->fonts() / "fusion-pixel-10px-proportional-latin.ttf",30)
-            && resource_manager->load_font("ui.zh_hans.20",path_manager->fonts() / "fusion-pixel-10px-proportional-zh_hans.ttf",20),
-        "text input texture test must load the required localized fonts");
+    assist::EngineAssistCache engine_cache;
+    require(engine_cache.initialize(
+        renderer,
+        assist::EngineAssistCatalog(*path_manager)).has_value(),
+        "text input texture test must initialize Engine assist fonts");
+    typography::FontResolver font_resolver;
 
     localization_manager->shutdown();
     require(localization_manager->init(
             renderer,
             path_manager->configs() / "manifests" / "i18n_manifest.json",
-            "en"),
+            "en",
+            &font_resolver,
+            &engine_cache),
         "text input texture test must initialize localization");
+    require(font_resolver.configure(
+        application::ApplicationFontSettings{},
+        engine_cache,
+        *resource_manager,
+        localization_manager->supported_languages()).has_value(),
+        "text input texture test must configure Engine fonts");
 
     {
         ui::UiTextInput input(core::Rect{ 0,0,240,48 });
         input.set_text("draft");
 
         localization::LocalizedTextStyle input_style;
-        input_style.point_size = 30;
+        input_style.typography_role = ui::UiTypographyRole::Input;
         input_style.color = input.style().text.enabled;
         SDL_Texture* shared_texture = localization_manager->get_raw_text_texture("draft",input_style);
         require(shared_texture != nullptr,"text input texture test must create the comparison cache texture");
@@ -150,7 +166,8 @@ void test_text_input_uses_private_editing_texture()
         input.clear_text();
         input.set_placeholder_content(ui::ui_raw_text("placeholder"));
         localization::LocalizedTextStyle placeholder_style;
-        placeholder_style.point_size = 20;
+        placeholder_style.typography_role =
+            ui::UiTypographyRole::InputPlaceholder;
         placeholder_style.color = input.style().placeholder.enabled;
         SDL_Texture* placeholder_texture = localization_manager->get_raw_text_texture("placeholder",placeholder_style);
         require(placeholder_texture != nullptr,"text input texture test must create the placeholder cache texture");
@@ -169,10 +186,13 @@ void test_text_input_uses_private_editing_texture()
     }
 
     localization_manager->shutdown();
+    font_resolver.shutdown();
     resource_manager->clear();
+    engine_cache.shutdown();
     SDL_DestroyRenderer(renderer);
     SDL_FreeSurface(target_surface);
     TTF_Quit();
+    IMG_Quit();
     SDL_Quit();
 }
 }
@@ -183,4 +203,3 @@ int main()
     std::cout << "ui text input rendering tests passed\n";
     return EXIT_SUCCESS;
 }
-
