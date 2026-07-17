@@ -1,88 +1,20 @@
 {
   "common": {
-    "save": "Save",
-    "back": "Back",
-    "confirm": "Confirm",
-    "cancel": "Cancel",
-    "close": "Close",
-    "coming_soon": "Coming soon"
+    "save": "Save", "back": "Back", "confirm": "Confirm", "cancel": "Cancel", "close": "Close", "coming_soon": "Coming soon"
   },
   "menu_scene": {
-    "project_name": "MoonLine",
-    "start": "Start",
-    "settings": "Settings",
-    "exit": "Exit",
-    "exit_confirm": {
-      "title": "Confirm Exit",
-      "message": "Exit MoonLine?",
-      "cancel": "Cancel",
-      "close": "X"
-    },
-    "about": "About"
+    "project_name": "MoonLine", "start": "Start", "settings": "Settings", "exit": "Exit", "about": "About",
+    "exit_confirm": { "title": "Confirm Exit", "message": "Exit MoonLine?", "cancel": "Cancel", "close": "X" }
   },
   "setting_scene": {
     "title": "Settings",
-    "sections": {
-      "display": "Display",
-      "audio": "Audio",
-      "general": "General"
-    },
-    "fields": {
-      "resolution": "Resolution",
-      "fullscreen": "Fullscreen",
-      "master_volume": "Master volume",
-      "music_volume": "Music volume",
-      "sound_volume": "Sound volume",
-      "language": "Language"
-    },
-    "languages": {
-      "en": "English",
-      "zh_cn": "Simplified Chinese",
-      "ja": "Japanese"
-    },
-    "actions": {
-      "save": "Save",
-      "back": "Back"
-    }
+    "sections": { "display": "Display", "audio": "Audio", "general": "General" },
+    "fields": { "resolution": "Resolution", "fullscreen": "Fullscreen", "master_volume": "Master volume", "music_volume": "Music volume", "sound_volume": "Sound volume", "language": "Language" },
+    "languages": { "en": "English", "zh_cn": "Simplified Chinese", "ja": "Japanese" },
+    "actions": { "save": "Save", "back": "Back" }
   },
   "character_select_scene": {
-    "title": "Select Character",
-    "character_info": "Character Info",
-    "details_placeholder": "Character details will appear here.",
-    "attributes": "Attributes",
-    "skills": "Skills",
-    "coming_soon": "Coming soon",
-    "select_prompt": "Choose a character to view their details.",
-    "no_characters": "No characters are available.",
-    "actions": {
-      "confirm": "Confirm",
-      "back": "Back"
-    }
-  },
-  "ui_test_scene": {
-    "theme_blue_glass_moon": "Glass Moon",
-    "theme_elysia_light": "Elysia Light",
-    "theme_elysia_dark": "Elysia Dark",
-    "theme_evangelion_unit_00": "EVA-00",
-    "theme_evangelion_unit_01": "EVA-01",
-    "theme_evangelion_unit_02": "EVA-02",
-    "theme_quiet_slate": "Quiet Slate",
-    "reading_dialog": {
-      "title": "Reading Dialog",
-      "body": "MoonLine's reusable reading dialog is designed for long-form UI copy.\n\nThis sample body intentionally spans multiple paragraphs so the viewport must scroll instead of shrinking the text.\n\nIn production, the same dialog can host lore, tutorials, settings explanations, or patch notes while keeping focus and modal behavior consistent.",
-      "close": "Close",
-      "open": "Open I18N Dialog",
-      "open_raw": "Open Raw Dialog"
-    },
-    "status": { "ready": "UI workbench ready" },
-    "pages": { "overview": "Overview", "controls": "Controls", "media": "Content & Media", "containers": "Containers", "overlays": "Overlays & Focus", "theme": "Theme & I18N" },
-    "sections": { "overview": "Theme-aware dashboard and representative visual roles.", "controls": "Interactive controls update the status line.", "media": "Text, numbers, bars, images and animation resources.", "containers": "Composition, slots, scrolling and nested tabs.", "overlays": "Window-managed overlays, dialogs, popups and focus recovery.", "theme": "All builtin themes update the registered UI tree immediately." },
-    "actions": { "replay": "Replay", "reset": "Rebuild Workbench" },
-    "controls": { "labeled_check": "Filled labeled checkbox", "labeled_radio": "Labeled radio option", "placeholder": "Type up to sixteen characters" },
-    "media": { "long_text": "This localized text block verifies wrapping, typography and themed content rendering.", "texture_unavailable": "Texture sample unavailable in this runtime.", "animation_unavailable": "Animation sample unavailable in this runtime." },
-    "containers": { "chrome": "Chrome slots", "nested_tab": "Nested tab" },
-    "overlays": { "open_overlay": "Open non-modal overlay", "open_dialog": "Open reading dialog", "open_confirm": "Open confirmation dialog", "tooltip": "Hover for tooltip", "tooltip_text": "Tooltip content follows focus and pointer state." },
-    "dialog": { "title": "Workbench reading dialog", "body": "This dialog verifies modal placement, focus restoration and localized long-form copy." },
-    "confirm": { "title": "Confirm workbench action", "message": "This confirmation dialog is part of the overlay coverage." }
+    "title": "Select Character", "character_info": "Character Info", "details_placeholder": "Character details will appear here.", "attributes": "Attributes", "skills": "Skills", "coming_soon": "Coming soon", "select_prompt": "Choose a character to view their details.", "no_characters": "No characters are available.",
+    "actions": { "confirm": "Confirm", "back": "Back" }
   }
 }

@@ -16,7 +16,7 @@ const std::array<EngineAssistAssetDescriptor, 5> kFontDescriptors = {
     EngineAssistAssetDescriptor{"engine.font.ko", "fonts/NotoSansKR-Regular.ttf"},
 };
 
-const std::array<EngineAssistAssetDescriptor, 5> kTextureDescriptors = {
+const std::array<EngineAssistAssetDescriptor, 6> kTextureDescriptors = {
     EngineAssistAssetDescriptor{"engine.brand.elysia.default", "textures/elysia.png"},
     EngineAssistAssetDescriptor{"engine.brand.elysia.black", "textures/elysia_black.png"},
     EngineAssistAssetDescriptor{
@@ -25,6 +25,7 @@ const std::array<EngineAssistAssetDescriptor, 5> kTextureDescriptors = {
     },
     EngineAssistAssetDescriptor{"engine.brand.elysia.light_edge", "textures/elysia_light_edge.png"},
     EngineAssistAssetDescriptor{"engine.brand.elysia.white", "textures/elysia_white.png"},
+    EngineAssistAssetDescriptor{"engine.test.sprite", "textures/engine_test.png"},
 };
 
 const std::array<EngineAssistLocaleDescriptor, 5> kLocaleDescriptors = {
@@ -33,6 +34,18 @@ const std::array<EngineAssistLocaleDescriptor, 5> kLocaleDescriptors = {
     EngineAssistLocaleDescriptor{"zh-Hant", "i18n/zh-Hant/engine.json"},
     EngineAssistLocaleDescriptor{"ja", "i18n/ja/engine.json"},
     EngineAssistLocaleDescriptor{"ko", "i18n/ko/engine.json"},
+};
+
+const std::array<EngineAssistAnimationDescriptor, 1> kAnimationDescriptors = {
+    EngineAssistAnimationDescriptor{
+        .key = "engine.test.idle",
+        .texture_key = "engine.test.sprite",
+        .frame_width = 32,
+        .frame_height = 32,
+        .frame_count = 8,
+        .fps = 8.0,
+        .loop = true
+    },
 };
 
 constexpr std::string_view kRequiredMarkerFileName = ".elysia_engine_required";
@@ -71,6 +84,11 @@ std::span<const EngineAssistAssetDescriptor> EngineAssistCatalog::textures() con
 std::span<const EngineAssistLocaleDescriptor> EngineAssistCatalog::locales() const noexcept
 {
     return kLocaleDescriptors;
+}
+
+std::span<const EngineAssistAnimationDescriptor> EngineAssistCatalog::animations() const noexcept
+{
+    return kAnimationDescriptors;
 }
 
 std::filesystem::path EngineAssistCatalog::resolve(
@@ -130,6 +148,19 @@ EngineAssistCatalog::validate_required_files() const
     {
         if (const auto result = validate_asset(descriptor); !result)
             return result;
+    }
+
+    for (const EngineAssistAnimationDescriptor& descriptor : kAnimationDescriptors)
+    {
+        if (descriptor.key.empty() || descriptor.texture_key.empty()
+            || descriptor.frame_width <= 0 || descriptor.frame_height <= 0
+            || descriptor.frame_count == 0 || descriptor.fps <= 0.0)
+        {
+            return std::unexpected(EngineAssistValidationError{
+                .code = EngineAssistValidationErrorCode::RequiredFileMissing,
+                .path = _root
+            });
+        }
     }
 
     return {};

@@ -4,6 +4,7 @@
 #include "engine/assist/engine_assist_catalog.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/loading/content_runtime_cleanup.h"
+#include "engine/ui/widgets/image/ui_animation.h"
 #include "tests/support/test_assertions.h"
 
 #include <SDL.h>
@@ -64,22 +65,51 @@ int main()
     const auto initialized = cache.initialize(fixture.renderer(), catalog);
     require(initialized.has_value(), "Engine assist cache must load all repository assist resources");
     require(cache.initialized(), "successful cache initialization must publish a live cache");
-    require(cache.texture_count() == 5, "cache must own all five Engine textures");
+    require(cache.texture_count() == 6, "cache must own all six Engine textures");
     require(cache.font_count() == 35, "cache must own five font faces at seven fixed sizes");
     require(cache.locale_count() == 5, "cache must own all five Engine translation tables");
     require(cache.find_texture("engine.brand.elysia.white") != nullptr,
         "cache must expose the Engine startup logo by stable key");
+    require(cache.find_texture("engine.test.sprite") != nullptr,
+        "cache must expose the Engine test sprite by stable key");
     require(cache.find_font("zh-Hans", 30) != nullptr,
         "cache must expose Engine fonts by locale and point size");
     require(cache.find_translation("ja", "engine.settings.title") != nullptr,
         "cache must expose parsed Engine translations");
     require(elysia::assist::EngineAssistCache::map_project_locale("zh_cn") == "zh-Hans",
         "project Simplified Chinese must map to the Engine BCP-47 locale");
+    require(cache.animation_count() == 1, "cache must register the Engine test animation");
+    const auto* animation_definition = cache.find_animation("engine.test.idle");
+    require(animation_definition != nullptr && animation_definition->atlas != nullptr
+            && animation_definition->atlas->size() == 8 && animation_definition->fps == 8.0
+            && animation_definition->loop,
+        "cache must expose the complete Engine test animation definition");
+    const auto* first_frame = animation_definition->atlas->frame_at(0);
+    const auto* last_frame = animation_definition->atlas->frame_at(7);
+    require(first_frame != nullptr && last_frame != nullptr
+            && first_frame->_source_rect.has_value() && last_frame->_source_rect.has_value()
+            && first_frame->_source_rect->width() == 32.0f && first_frame->_source_rect->height() == 32.0f
+            && last_frame->_source_rect->x() == 224.0f,
+        "Engine test animation atlas must expose eight 32 px source rectangles");
+    const auto animation = cache.create_animation("engine.test.idle");
+    require(animation != nullptr && animation->current_frame_index() == 0
+            && animation->current_frame() == first_frame,
+        "cache must create an initialized Engine test animation instance");
+
+    elysia::ui::UiAnimation ui_animation(
+        elysia::core::Rect{ 0.0f,0.0f,32.0f,32.0f });
+    require(ui_animation.set_engine_animation(cache,"engine.test.idle")
+            && ui_animation.is_looping(),
+        "UiAnimation must bind looping Engine Assist animations without AnimationManager");
 
     elysia::loading::clear_loaded_content();
     require(cache.find_texture("engine.brand.elysia.white") != nullptr
             && cache.find_font("en", 20) != nullptr,
         "clearing project content must not invalidate Engine assist resources");
+    require(cache.create_animation("engine.test.idle") != nullptr,
+        "clearing project content must not invalidate Engine assist animations");
+    require(ui_animation.set_engine_animation(cache,"engine.test.idle"),
+        "UiAnimation Engine Assist binding must survive project content cleanup");
 
     const std::filesystem::path missing_root = std::filesystem::temp_directory_path()
         / ("elysia_assist_cache_missing_"
@@ -89,12 +119,13 @@ int main()
         elysia::assist::EngineAssistCatalog(missing_root));
     require(!failed_reinitialize.has_value(),
         "invalid Engine assist resources must reject initialization");
-    require(cache.texture_count() == 5 && cache.font_count() == 35 && cache.locale_count() == 5,
+    require(cache.texture_count() == 6 && cache.font_count() == 35 && cache.locale_count() == 5
+            && cache.animation_count() == 1,
         "a failed initialization must preserve the last complete cache transactionally");
 
     cache.shutdown();
     require(!cache.initialized() && cache.texture_count() == 0 && cache.font_count() == 0
-            && cache.locale_count() == 0,
+            && cache.locale_count() == 0 && cache.animation_count() == 0,
         "cache shutdown must release all Engine-owned runtime resources");
     return 0;
 }

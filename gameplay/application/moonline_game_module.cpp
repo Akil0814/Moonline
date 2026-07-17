@@ -3,8 +3,6 @@
 #include "../scene/character_select_scene.h"
 #include "../scene/main_menu_scene.h"
 #include "../scene/moonline_scene_keys.h"
-#include "../scene/test_scene.h"
-#include "../scene/ui_test_scene.h"
 
 #include "../../engine/scene/builtin/startup_loading_scene.h"
 #include "../../engine/scene/scene_manager.h"
@@ -51,9 +49,5 @@ void MoonlineGameModule::register_scenes(elysia::scene::SceneManager& scene_mana
         MoonlineSceneKeys::MainMenu);
     scene_manager.register_game_scene<arcneco::scene::CharacterSelectScene>(
         MoonlineSceneKeys::CharacterSelect);
-    scene_manager.register_game_scene<arcneco::scene::UiTestScene>(
-        MoonlineSceneKeys::UiTest);
-    scene_manager.register_game_scene<arcneco::scene::TestScene>(
-        MoonlineSceneKeys::Test);
 }
 }

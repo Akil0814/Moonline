@@ -103,6 +103,16 @@ add_moonline_test(settings_scene_tests
     SDL
 )
 
+add_moonline_test(engine_test_scene_tests
+    LABEL scene
+    SOURCES scene/engine_test_scene_tests.cpp
+    LIBRARIES ${SDL2_LIBRARIES}
+    SDL
+)
+target_compile_definitions(engine_test_scene_tests
+    PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+)
+
 add_moonline_test(physics_framework_contract_tests
     LABEL physics
     SOURCES physics/physics_framework_contract_tests.cpp

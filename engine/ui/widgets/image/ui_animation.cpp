@@ -1,10 +1,16 @@
 #include "ui_animation.h"
 
+#include "../../../assist/engine_assist_cache.h"
 #include "../../../animation/animation_manager.h"
 #include "../../../core/render/render_command.h"
 
 namespace elysia::ui
 {
+UiAnimation::UiAnimation(const elysia::core::Rect& rect, int order)
+    : UiElement(rect, order)
+{
+}
+
 UiAnimation::UiAnimation(
     std::string_view animation_key,
     const elysia::core::Vector2& position,
@@ -42,6 +48,7 @@ bool UiAnimation::set_animation_key(std::string_view animation_key)
     {
         _animation_key.clear();
         _animation.reset();
+        _default_loop.reset();
         return false;
     }
 
@@ -50,6 +57,34 @@ bool UiAnimation::set_animation_key(std::string_view animation_key)
 
     _animation_key = animation_key;
     _animation = std::move(animation);
+    const auto* definition = elysia::animation::AnimationManager::instance()
+        ->find_definition(animation_key);
+    _default_loop = definition ? std::optional<bool>(definition->loop) : std::nullopt;
+    _animation->reset();
+    return true;
+}
+
+bool UiAnimation::set_engine_animation(
+    const elysia::assist::EngineAssistCache& engine_assist_cache,
+    std::string_view animation_key)
+{
+    std::unique_ptr<elysia::animation::Animation> animation =
+        engine_assist_cache.create_animation(animation_key);
+    const auto* definition = engine_assist_cache.find_animation(animation_key);
+    if (!animation || !definition)
+    {
+        _animation_key.clear();
+        _animation.reset();
+        _default_loop.reset();
+        return false;
+    }
+
+    if (_loop_override)
+        animation->set_loop(*_loop_override);
+
+    _animation_key = animation_key;
+    _animation = std::move(animation);
+    _default_loop = definition->loop;
     _animation->reset();
     return true;
 }
@@ -71,9 +106,7 @@ bool UiAnimation::is_looping() const noexcept
     if (_loop_override)
         return *_loop_override;
 
-    const elysia::animation::AnimationDefinition* definition =
-        elysia::animation::AnimationManager::instance()->find_definition(_animation_key);
-    return definition && definition->loop;
+    return _default_loop.value_or(false);
 }
 
 void UiAnimation::play()

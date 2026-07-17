@@ -4,6 +4,7 @@
 
 #include <expected>
 #include <filesystem>
+#include <cstddef>
 #include <span>
 #include <string_view>
 
@@ -19,6 +20,26 @@ struct EngineAssistLocaleDescriptor
 {
     std::string_view locale;
     std::filesystem::path relative_path;
+};
+
+struct EngineAssistAnimationDescriptor
+{
+    std::string_view key;
+    std::string_view texture_key;
+    int frame_width = 0;
+    int frame_height = 0;
+    std::size_t frame_count = 0;
+    double fps = 0.0;
+    bool loop = false;
+
+    [[nodiscard]] bool has_expected_texture_dimensions(int width, int height) const noexcept
+    {
+        return frame_width > 0
+            && frame_height > 0
+            && frame_count > 0
+            && width == frame_width * static_cast<int>(frame_count)
+            && height == frame_height;
+    }
 };
 
 enum class EngineAssistValidationErrorCode
@@ -45,6 +66,7 @@ public:
     [[nodiscard]] std::span<const EngineAssistAssetDescriptor> fonts() const noexcept;
     [[nodiscard]] std::span<const EngineAssistAssetDescriptor> textures() const noexcept;
     [[nodiscard]] std::span<const EngineAssistLocaleDescriptor> locales() const noexcept;
+    [[nodiscard]] std::span<const EngineAssistAnimationDescriptor> animations() const noexcept;
     [[nodiscard]] std::filesystem::path resolve(
         const std::filesystem::path& relative_path) const;
     [[nodiscard]] std::expected<void, EngineAssistValidationError>

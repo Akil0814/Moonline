@@ -4,6 +4,8 @@
 #include "../resources/texture/surface_loader.h"
 #include "../resources/texture/texture_loader.h"
 
+#include <SDL.h>
+
 #include <array>
 #include <exception>
 #include <string>
@@ -96,6 +98,8 @@ std::expected<void, std::string> EngineAssistCache::initialize(
         _textures = std::move(prepared->textures);
         _fonts = std::move(prepared->fonts);
         _translations = std::move(prepared->translations);
+        _atlases = std::move(prepared->atlases);
+        _animations = std::move(prepared->animations);
         _renderer = renderer;
         return {};
     }
@@ -108,6 +112,8 @@ std::expected<void, std::string> EngineAssistCache::initialize(
 
 void EngineAssistCache::shutdown() noexcept
 {
+    _animations.clear();
+    _atlases.clear();
     _translations.clear();
     _fonts.clear();
     _textures.clear();
@@ -151,6 +157,27 @@ const std::string* EngineAssistCache::find_translation(
         : &translation_found->second;
 }
 
+const EngineAssistAnimationDefinition* EngineAssistCache::find_animation(
+    std::string_view key) const noexcept
+{
+    const auto found = _animations.find(std::string(key));
+    return found == _animations.end() ? nullptr : &found->second;
+}
+
+std::unique_ptr<elysia::animation::Animation> EngineAssistCache::create_animation(
+    std::string_view key) const
+{
+    const EngineAssistAnimationDefinition* definition = find_animation(key);
+    if (!definition || !definition->atlas || definition->fps <= 0.0)
+        return nullptr;
+
+    auto animation = std::make_unique<elysia::animation::Animation>();
+    animation->set_atlas(definition->atlas);
+    animation->set_loop(definition->loop);
+    animation->set_interval_seconds(1.0 / definition->fps);
+    return animation;
+}
+
 std::size_t EngineAssistCache::texture_count() const noexcept
 {
     return _textures.size();
@@ -164,6 +191,11 @@ std::size_t EngineAssistCache::font_count() const noexcept
 std::size_t EngineAssistCache::locale_count() const noexcept
 {
     return _translations.size();
+}
+
+std::size_t EngineAssistCache::animation_count() const noexcept
+{
+    return _animations.size();
 }
 
 std::string EngineAssistCache::font_key(std::string_view locale, int point_size)
@@ -225,6 +257,56 @@ std::expected<EngineAssistCache::PreparedState, std::string> EngineAssistCache::
             if (!raw_font)
                 return std::unexpected(make_prepare_error("Engine assist font load failed", path));
             prepared.fonts.emplace(font_key(locale, point_size), EngineAssistFontPtr(raw_font));
+        }
+    }
+
+    for (const EngineAssistAnimationDescriptor& descriptor : catalog.animations())
+    {
+        const auto texture_found = prepared.textures.find(std::string(descriptor.texture_key));
+        if (texture_found == prepared.textures.end() || !texture_found->second)
+        {
+            return std::unexpected(
+                "Engine assist animation texture is not registered: " + std::string(descriptor.texture_key));
+        }
+
+        int texture_width = 0;
+        int texture_height = 0;
+        if (SDL_QueryTexture(texture_found->second.get(), nullptr, nullptr,
+                &texture_width, &texture_height) != 0
+            || !descriptor.has_expected_texture_dimensions(texture_width, texture_height))
+        {
+            return std::unexpected(
+                "Engine assist animation texture dimensions are invalid: " + std::string(descriptor.key));
+        }
+
+        auto atlas = std::make_unique<elysia::resources::Atlas>(std::string(descriptor.key));
+        for (std::size_t frame_index = 0; frame_index < descriptor.frame_count; ++frame_index)
+        {
+            const elysia::core::Rect source_rect(
+                static_cast<float>(frame_index * static_cast<std::size_t>(descriptor.frame_width)),
+                0.0f,
+                static_cast<float>(descriptor.frame_width),
+                static_cast<float>(descriptor.frame_height));
+            if (!atlas->add_frame({}, texture_found->second.get(), source_rect))
+            {
+                return std::unexpected(
+                    "Engine assist animation atlas build failed: " + std::string(descriptor.key));
+            }
+        }
+
+        const elysia::resources::Atlas* atlas_pointer = atlas.get();
+        if (!prepared.atlases.emplace(std::string(descriptor.key), std::move(atlas)).second
+            || !prepared.animations.emplace(
+                std::string(descriptor.key),
+                EngineAssistAnimationDefinition{
+                    .key = std::string(descriptor.key),
+                    .atlas = atlas_pointer,
+                    .fps = descriptor.fps,
+                    .loop = descriptor.loop
+                }).second)
+        {
+            return std::unexpected(
+                "Engine assist animation key is duplicated: " + std::string(descriptor.key));
         }
     }
 

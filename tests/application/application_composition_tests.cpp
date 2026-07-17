@@ -8,7 +8,9 @@
 #include "tests/support/test_assertions.h"
 
 #include <cstdlib>
+#include <functional>
 #include <stdexcept>
+#include <string>
 
 namespace
 {
@@ -72,6 +74,32 @@ public:
     mutable int descriptor_calls = 0;
     mutable int registration_calls = 0;
 };
+
+bool throws_logic_error_containing(
+    const std::function<void()>& operation,
+    std::string_view expected)
+{
+    try
+    {
+        operation();
+    }
+    catch (const std::logic_error& error)
+    {
+        return std::string(error.what()).find(expected) != std::string::npos;
+    }
+    return false;
+}
+
+void request_scene(
+    elysia::scene::SceneManager& scene_manager,
+    elysia::scene::SceneKey target)
+{
+    scene_manager.on_scene_request(elysia::scene::SceneRequest{
+        .type = elysia::scene::SceneRequestType::Switch,
+        .route = elysia::scene::SceneRoute{ .target = target }
+    });
+    scene_manager.on_update(0.0);
+}
 }
 
 int main()
@@ -107,6 +135,19 @@ int main()
     require(InitialScene::received_width == 960
         && InitialScene::received_height == 540,
         "the module logical viewport must be available before the first scene enters");
+
+    require(throws_logic_error_containing(
+            [&scene_manager] { request_scene(scene_manager,99); },
+            "unregistered game"),
+        "the Moonline module must no longer register the former game UiTest key");
+    require(throws_logic_error_containing(
+            [&scene_manager] { request_scene(scene_manager,elysia::scene::builtin::UiTest); },
+            "UiTestScene"),
+        "Application composition must register the built-in UiTest scene");
+    require(throws_logic_error_containing(
+            [&scene_manager] { request_scene(scene_manager,elysia::scene::builtin::EngineFeatureTest); },
+            "EngineFeatureTestScene"),
+        "Application composition must register the built-in Engine feature test scene");
 
     scene_manager.shutdown();
     return EXIT_SUCCESS;

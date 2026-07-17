@@ -64,8 +64,9 @@ int main()
         "assist root must be resolved below the project assets root"
     );
     require(catalog.fonts().size() == 5, "assist catalog must describe five font faces");
-    require(catalog.textures().size() == 5, "assist catalog must describe five Elysia textures");
+    require(catalog.textures().size() == 6, "assist catalog must describe all six Engine textures");
     require(catalog.locales().size() == 5, "assist catalog must describe five locales");
+    require(catalog.animations().size() == 1, "assist catalog must describe the Engine test animation");
     require(
         keys_of(catalog.fonts()) == std::set<std::string>{
             "engine.font.ja",
@@ -83,9 +84,18 @@ int main()
             "engine.brand.elysia.default",
             "engine.brand.elysia.light_edge",
             "engine.brand.elysia.white",
+            "engine.test.sprite",
         },
         "assist texture keys must be stable"
     );
+    const auto animation = catalog.animations().front();
+    require(animation.key == "engine.test.idle" && animation.texture_key == "engine.test.sprite"
+            && animation.frame_width == 32 && animation.frame_height == 32
+            && animation.frame_count == 8 && animation.fps == 8.0 && animation.loop,
+        "Engine test animation descriptor must retain its hardcoded strip contract");
+    require(animation.has_expected_texture_dimensions(256, 32)
+            && !animation.has_expected_texture_dimensions(255, 32),
+        "Engine test animation descriptor must reject invalid strip dimensions");
     require(
         locales_of(catalog.locales()) == std::set<std::string>{
             "en", "ja", "ko", "zh-Hans", "zh-Hant"

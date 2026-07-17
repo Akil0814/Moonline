@@ -5,6 +5,7 @@
 #include "../../engine/audio/audio_service.h"
 #include "../../engine/resources/resource_manager.h"
 #include "../../engine/scene/builtin/settings_scene.h"
+#include "../../engine/scene/builtin/engine_test_scene_payload.h"
 
 
 #include "../../engine/ui/composites/ui_confirmation_dialog.h"
@@ -160,16 +161,32 @@ void MainMenuScene::build_menu_buttons()
         elysia::core::Rect{ 20,20,180,50 },20);
     ui_test_scene_button->set_text_content(elysia::ui::ui_raw_text("UiTestScene"));
     ui_test_scene_button->set_on_click([this]() {
-        Scene::request_scene_switch(MoonlineSceneKeys::UiTest);
+        Scene::request_scene_switch(
+            elysia::scene::builtin::UiTest,
+            elysia::scene::builtin::EngineTestScenePayload{
+                .return_route = {
+                    .target = MoonlineSceneKeys::MainMenu,
+                    .payload = MainMenuEnterPayload{ .replay_theme_music = false },
+                    .reload_mode = elysia::scene::SceneReloadMode::Reuse
+                }
+            });
     });
     //test end
 
     //test begin
     auto* test_scene_button = Scene::create_and_add_object<elysia::ui::UiButton>(
         elysia::core::Rect{ 20,80,180,50 },20);
-    test_scene_button->set_text_content(elysia::ui::ui_raw_text("TestScene"));
+    test_scene_button->set_text_content(elysia::ui::ui_raw_text("Engine Feature Test"));
     test_scene_button->set_on_click([this]() {
-        Scene::request_scene_switch(MoonlineSceneKeys::Test);
+        Scene::request_scene_switch(
+            elysia::scene::builtin::EngineFeatureTest,
+            elysia::scene::builtin::EngineTestScenePayload{
+                .return_route = {
+                    .target = MoonlineSceneKeys::MainMenu,
+                    .payload = MainMenuEnterPayload{ .replay_theme_music = false },
+                    .reload_mode = elysia::scene::SceneReloadMode::Reuse
+                }
+            });
     });
     //test end
 

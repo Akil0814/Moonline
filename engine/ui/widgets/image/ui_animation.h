@@ -9,12 +9,18 @@
 #include <string>
 #include <string_view>
 
+namespace elysia::assist
+{
+class EngineAssistCache;
+}
+
 namespace elysia::ui
 {
 // Displays a registered frame animation inside the UI render pipeline.
 class UiAnimation final : public UiElement, public elysia::core::Updatable
 {
 public:
+    UiAnimation(const elysia::core::Rect& rect, int order = 0);
     UiAnimation(std::string_view animation_key, const elysia::core::Vector2& position,
         const elysia::core::Vector2& size, int order = 0);
     UiAnimation(std::string_view animation_key, const elysia::core::Rect& rect, int order = 0);
@@ -24,6 +30,10 @@ public:
     // Binds a registered animation and immediately starts it from its first frame.
     // Returns false when the key is not registered.
     bool set_animation_key(std::string_view animation_key);
+    // Binds a persistent Engine Assist animation without using the project AnimationManager.
+    bool set_engine_animation(
+        const elysia::assist::EngineAssistCache& engine_assist_cache,
+        std::string_view animation_key);
     [[nodiscard]] const std::string& animation_key() const noexcept;
 
     // Overrides the registered animation's loop setting for this widget. The override is retained
@@ -46,5 +56,6 @@ private:
     std::string _animation_key;
     std::unique_ptr<elysia::animation::Animation> _animation;
     std::optional<bool> _loop_override;
+    std::optional<bool> _default_loop;
 };
 }

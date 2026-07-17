@@ -1,88 +1,18 @@
 {
-  "common": {
-    "save": "保存",
-    "back": "戻る",
-    "confirm": "確定",
-    "cancel": "キャンセル",
-    "close": "閉じる",
-    "coming_soon": "近日公開"
-  },
+  "common": { "save": "保存", "back": "戻る", "confirm": "確定", "cancel": "キャンセル", "close": "閉じる", "coming_soon": "近日公開" },
   "menu_scene": {
-    "project_name": "MoonLine",
-    "start": "開始",
-    "settings": "設定",
-    "exit": "終了",
-    "exit_confirm": {
-      "title": "終了確認",
-      "message": "MoonLine を終了しますか？",
-      "cancel": "キャンセル",
-      "close": "X"
-    },
-    "about": "情報"
+    "project_name": "MoonLine", "start": "開始", "settings": "設定", "exit": "終了", "about": "情報",
+    "exit_confirm": { "title": "終了確認", "message": "MoonLine を終了しますか？", "cancel": "キャンセル", "close": "X" }
   },
   "setting_scene": {
     "title": "設定",
-    "sections": {
-      "display": "画面",
-      "audio": "オーディオ",
-      "general": "一般"
-    },
-    "fields": {
-      "resolution": "解像度",
-      "fullscreen": "フルスクリーン",
-      "master_volume": "マスター音量",
-      "music_volume": "音楽音量",
-      "sound_volume": "効果音音量",
-      "language": "言語"
-    },
-    "languages": {
-      "en": "English",
-      "zh_cn": "簡体中国語",
-      "ja": "日本語"
-    },
-    "actions": {
-      "save": "保存",
-      "back": "戻る"
-    }
+    "sections": { "display": "画面", "audio": "オーディオ", "general": "一般" },
+    "fields": { "resolution": "解像度", "fullscreen": "フルスクリーン", "master_volume": "マスター音量", "music_volume": "音楽音量", "sound_volume": "効果音音量", "language": "言語" },
+    "languages": { "en": "English", "zh_cn": "簡体中国語", "ja": "日本語" },
+    "actions": { "save": "保存", "back": "戻る" }
   },
   "character_select_scene": {
-    "title": "キャラクター選択",
-    "character_info": "キャラクター情報",
-    "details_placeholder": "キャラクターの詳細がここに表示されます。",
-    "attributes": "ステータス",
-    "skills": "スキル",
-    "coming_soon": "近日公開",
-    "select_prompt": "キャラクターを選択して詳細を確認してください。",
-    "no_characters": "利用可能なキャラクターがいません。",
-    "actions": {
-      "confirm": "確定",
-      "back": "戻る"
-    }
-  },
-  "ui_test_scene": {
-    "theme_blue_glass_moon": "グラスムーン",
-    "theme_elysia_light": "エリシア・ライト",
-    "theme_elysia_dark": "エリシア・ダーク",
-    "theme_evangelion_unit_00": "EVA-00",
-    "theme_evangelion_unit_01": "EVA-01",
-    "theme_evangelion_unit_02": "EVA-02",
-    "theme_quiet_slate": "クワイエットスレート",
-    "reading_dialog": {
-      "title": "読書ダイアログ",
-      "body": "MoonLine の再利用可能な読書ダイアログは、長文の UI コピーを扱うためのものです。\n\nこのサンプル本文はわざと複数段落にしてあり、ビューポートがテキストを縮小するのではなく、スクロールで見せるようになっています。\n\n実運用では、世界観、チュートリアル、設定説明、パッチノートなどを、一貫したフォーカスとモーダル振る舞いで表示できます。",
-      "close": "閉じる",
-      "open": "I18N ダイアログを開く",
-      "open_raw": "Raw ダイアログを開く"
-    },
-    "status": { "ready": "UI ワークベンチの準備完了" },
-    "pages": { "overview": "概要", "controls": "コントロール", "media": "コンテンツとメディア", "containers": "コンテナ", "overlays": "オーバーレイとフォーカス", "theme": "テーマと I18N" },
-    "sections": { "overview": "テーマ対応ダッシュボードと視覚ロールの例。", "controls": "操作するとステータス行が更新されます。", "media": "テキスト、数値、バー、画像、アニメーション。", "containers": "合成、スロット、スクロール、ネストしたタブ。", "overlays": "ウィンドウ管理のオーバーレイ、ダイアログ、ポップアップ、フォーカス復元。", "theme": "すべての組み込みテーマは登録済み UI ツリーを直ちに更新します。" },
-    "actions": { "replay": "再生", "reset": "ワークベンチを再構築" },
-    "controls": { "labeled_check": "ラベル付き塗りつぶしチェックボックス", "labeled_radio": "ラベル付きラジオ項目", "placeholder": "16 文字まで入力" },
-    "media": { "long_text": "このローカライズ済みテキストブロックは、折り返し、文字組み、テーマ対応レンダリングを検証します。", "texture_unavailable": "この実行環境ではテクスチャサンプルを利用できません。", "animation_unavailable": "この実行環境ではアニメーションサンプルを利用できません。" },
-    "containers": { "chrome": "Chrome スロット", "nested_tab": "ネストしたタブ" },
-    "overlays": { "open_overlay": "非モーダルオーバーレイを開く", "open_dialog": "読書ダイアログを開く", "open_confirm": "確認ダイアログを開く", "tooltip": "ホバーでツールチップ", "tooltip_text": "ツールチップ内容はフォーカスとポインター状態に追従します。" },
-    "dialog": { "title": "ワークベンチ読書ダイアログ", "body": "このダイアログはモーダル配置、フォーカス復元、ローカライズ済み長文を検証します。" },
-    "confirm": { "title": "ワークベンチ操作を確認", "message": "この確認ダイアログはオーバーレイ対象の一部です。" }
+    "title": "キャラクター選択", "character_info": "キャラクター情報", "details_placeholder": "キャラクターの詳細がここに表示されます。", "attributes": "ステータス", "skills": "スキル", "coming_soon": "近日公開", "select_prompt": "キャラクターを選択して詳細を確認してください。", "no_characters": "利用可能なキャラクターがいません。",
+    "actions": { "confirm": "確定", "back": "戻る" }
   }
 }
