@@ -132,10 +132,22 @@ void test_horizontal_strip_manifest_schema()
 
 	const std::filesystem::path duplicate_font_property_path = test_root / "duplicate_font_property.json";
 	std::ofstream(duplicate_font_property_path)
-		<< R"({"sizes":[10,20,30,40,50,60,70],"fonts":[{"key":"ui.test","file":"first.ttf","file":"second.ttf"}]})";
+		<< R"({"fonts":[{"key":"ui.test","file":"first.ttf","file":"second.ttf"}]})";
 	elysia::io::FontManifest font_manifest;
 	require(!elysia::io::FontsManifestLoader{}.load(duplicate_font_property_path, font_manifest),
 		"font manifests must reject duplicate JSON object properties before parsing");
+
+	const std::filesystem::path valid_font_manifest_path = test_root / "valid_fonts.json";
+	std::ofstream(valid_font_manifest_path)
+		<< R"({"fonts":[{"key":"ui.test","file":"test.ttf"}]})";
+	require(elysia::io::FontsManifestLoader{}.load(valid_font_manifest_path, font_manifest),
+		"font manifests must accept font families without a sizes field");
+
+	const std::filesystem::path legacy_font_sizes_path = test_root / "legacy_font_sizes.json";
+	std::ofstream(legacy_font_sizes_path)
+		<< R"({"sizes":[10,20,30,40,50,60,70],"fonts":[{"key":"ui.test","file":"test.ttf"}]})";
+	require(!elysia::io::FontsManifestLoader{}.load(legacy_font_sizes_path, font_manifest),
+		"font manifests must reject the removed sizes field");
 
 	const std::filesystem::path duplicate_i18n_property_path = test_root / "duplicate_i18n_property.json";
 	std::ofstream(duplicate_i18n_property_path)

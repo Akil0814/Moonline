@@ -9,6 +9,7 @@
 
 #include <expected>
 #include <memory>
+#include <span>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -46,7 +47,8 @@ public:
 
     [[nodiscard]] std::expected<void, std::string> initialize(
         SDL_Renderer* renderer,
-        const EngineAssistCatalog& catalog);
+        const EngineAssistCatalog& catalog,
+        std::span<const int> point_sizes);
     void shutdown() noexcept;
 
     [[nodiscard]] bool initialized() const noexcept;
@@ -91,7 +93,8 @@ private:
 
     [[nodiscard]] std::expected<PreparedState, std::string> prepare(
         SDL_Renderer* renderer,
-        const EngineAssistCatalog& catalog) const;
+        const EngineAssistCatalog& catalog,
+        std::span<const int> point_sizes) const;
 
 private:
     TextureMap _textures;

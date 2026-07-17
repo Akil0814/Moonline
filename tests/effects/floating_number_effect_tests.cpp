@@ -92,10 +92,16 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
     localization_manager->shutdown();
     resource_manager->clear();
     require(path_manager->init(), "floating number tests must initialize the project path manager");
+    const auto resolved_font_settings =
+        application::resolve_application_font_settings(
+            application::ApplicationFontSettings{});
+    require(resolved_font_settings.has_value(),
+        "floating number default font settings must resolve");
     assist::EngineAssistCache engine_cache;
     require(engine_cache.initialize(
         renderer,
-        assist::EngineAssistCatalog(*path_manager)).has_value(),
+        assist::EngineAssistCatalog(*path_manager),
+        resolved_font_settings->engine_point_sizes()).has_value(),
         "floating number tests must initialize Engine assist fonts");
     typography::FontResolver font_resolver;
     require(localization_manager->init(
@@ -105,7 +111,7 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
         &font_resolver,
         &engine_cache), "floating number tests must initialize localization");
     require(font_resolver.configure(
-        application::ApplicationFontSettings{},
+        *resolved_font_settings,
         engine_cache,
         *resource_manager,
         localization_manager->supported_languages()).has_value(),

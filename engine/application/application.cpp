@@ -98,6 +98,11 @@ bool Application::init(
     if (descriptor.logical_width <= 0 || descriptor.logical_height <= 0)
         return startup_fail("game_module","Game module logical viewport must be positive.");
 
+    const auto resolved_font_settings =
+        resolve_application_font_settings(descriptor.presentation.fonts);
+    if (!resolved_font_settings)
+        return startup_fail("typography",resolved_font_settings.error());
+
     const std::filesystem::path executable_path =
         argc > 0 && argv && argv[0]
             ? std::filesystem::path(argv[0])
@@ -123,7 +128,8 @@ bool Application::init(
         *elysia::io::PathManager::instance());
     if (const auto engine_assist_result = _engine_assist_cache.initialize(
             _renderer,
-            engine_assist_catalog);
+            engine_assist_catalog,
+            resolved_font_settings->engine_point_sizes());
         !engine_assist_result)
     {
         return startup_fail(
@@ -142,7 +148,7 @@ bool Application::init(
     }
 
     if (const auto font_result = _font_resolver.configure(
-            descriptor.presentation.fonts,
+            *resolved_font_settings,
             _engine_assist_cache,
             *elysia::resources::ResourceManager::instance(),
             elysia::localization::LocalizationManager::instance()

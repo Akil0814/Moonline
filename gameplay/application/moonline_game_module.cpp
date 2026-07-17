@@ -27,14 +27,8 @@ elysia::application::ApplicationDescriptor MoonlineGameModule::descriptor() cons
         elysia::application::ApplicationEngineLogoVariant::White;
     descriptor.presentation.fonts.ui.source =
         elysia::application::ApplicationFontSource::Project;
-    descriptor.presentation.fonts.ui.typography =
-        elysia::application::ApplicationTypographyProfile(
-            elysia::application::ApplicationTypographyProfile::PointSizes{
-                30,30,70,50,30,20,30,20,30,60,30,20,30,30,30,10,40
-            });
     descriptor.presentation.fonts.floating_number.source =
         elysia::application::ApplicationFontSource::Project;
-    descriptor.presentation.fonts.floating_number.point_size = 20;
     descriptor.initial_route = SceneRoute{
         .target = elysia::scene::builtin::StartupLoading,
         .payload = StartupLoadingScenePayload{

@@ -4,7 +4,12 @@
 
 #include <array>
 #include <cstddef>
+#include <expected>
+#include <optional>
+#include <span>
+#include <string>
 #include <utility>
+#include <vector>
 
 namespace elysia::application
 {
@@ -91,14 +96,13 @@ enum class ApplicationFontSource
 struct ApplicationUiFontSettings
 {
     ApplicationFontSource source = ApplicationFontSource::EngineBuiltIn;
-    ApplicationTypographyProfile typography =
-        ApplicationTypographyProfile::engine_defaults();
+    std::optional<ApplicationTypographyProfile> typography_override;
 };
 
 struct ApplicationFloatingNumberFontSettings
 {
     ApplicationFontSource source = ApplicationFontSource::EngineBuiltIn;
-    int point_size = 20;
+    std::optional<int> point_size_override;
 };
 
 struct ApplicationFontSettings
@@ -106,6 +110,44 @@ struct ApplicationFontSettings
     ApplicationUiFontSettings ui;
     ApplicationFloatingNumberFontSettings floating_number;
 };
+
+class ResolvedApplicationFontSettings
+{
+public:
+    static constexpr int DefaultFloatingNumberPointSize = 20;
+
+    [[nodiscard]] ApplicationFontSource ui_source() const noexcept;
+    [[nodiscard]] const ApplicationTypographyProfile&
+        ui_typography() const noexcept;
+    [[nodiscard]] ApplicationFontSource
+        floating_number_source() const noexcept;
+    [[nodiscard]] int floating_number_point_size() const noexcept;
+    [[nodiscard]] std::span<const int> engine_point_sizes() const noexcept;
+    [[nodiscard]] std::span<const int> project_point_sizes() const noexcept;
+
+private:
+    friend std::expected<ResolvedApplicationFontSettings, std::string>
+        resolve_application_font_settings(const ApplicationFontSettings&);
+
+    ResolvedApplicationFontSettings(
+        ApplicationFontSource ui_source,
+        ApplicationTypographyProfile ui_typography,
+        ApplicationFontSource floating_number_source,
+        int floating_number_point_size,
+        std::vector<int> engine_point_sizes,
+        std::vector<int> project_point_sizes);
+
+private:
+    ApplicationFontSource _ui_source;
+    ApplicationTypographyProfile _ui_typography;
+    ApplicationFontSource _floating_number_source;
+    int _floating_number_point_size;
+    std::vector<int> _engine_point_sizes;
+    std::vector<int> _project_point_sizes;
+};
+
+[[nodiscard]] std::expected<ResolvedApplicationFontSettings, std::string>
+    resolve_application_font_settings(const ApplicationFontSettings& settings);
 
 enum class ApplicationEngineLogoVariant
 {

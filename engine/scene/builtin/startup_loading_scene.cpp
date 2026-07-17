@@ -71,7 +71,8 @@ void StartupLoadingScene::on_enter(const ScenePayload& payload)
     begin_logo_sequence();
     if (!_content_loader.start(
         runtime_context().renderer(),
-        runtime_context().content_registry()
+        runtime_context().content_registry(),
+        font_resolver->project_point_sizes()
     ))
     {
         handle_failure(_content_loader.error_message());

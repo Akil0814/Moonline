@@ -46,7 +46,6 @@ struct FontManifestEntry
 
 struct FontManifest
 {
-	std::vector<int> point_sizes;
 	std::vector<FontManifestEntry> fonts;
 };
 

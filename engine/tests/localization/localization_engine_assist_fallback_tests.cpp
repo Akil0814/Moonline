@@ -64,7 +64,8 @@ int main()
     elysia::assist::EngineAssistCache cache;
     require(cache.initialize(
         fixture.renderer(),
-        elysia::assist::EngineAssistCatalog(source_root)).has_value(),
+        elysia::assist::EngineAssistCatalog(source_root),
+        std::array{20}).has_value(),
         "localization fallback tests must initialize Engine assist cache");
 
     auto* localization = elysia::localization::LocalizationManager::instance();
@@ -82,10 +83,14 @@ int main()
     elysia::application::ApplicationFontSettings font_settings;
     font_settings.ui.source =
         elysia::application::ApplicationFontSource::Project;
-    font_settings.ui.typography =
+    font_settings.ui.typography_override =
         elysia::application::ApplicationTypographyProfile(point_sizes);
+    const auto resolved_font_settings =
+        elysia::application::resolve_application_font_settings(font_settings);
+    require(resolved_font_settings.has_value(),
+        "localization fallback font settings must resolve");
     require(font_resolver.configure(
-        font_settings,
+        *resolved_font_settings,
         cache,
         *elysia::resources::ResourceManager::instance(),
         localization->supported_languages()).has_value(),

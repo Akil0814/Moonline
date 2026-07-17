@@ -6,17 +6,16 @@
 
 #include <SDL.h>
 
-#include <array>
+#include <algorithm>
 #include <exception>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace elysia::assist
 {
 namespace
 {
-constexpr std::array<int, 7> kPointSizes{10, 20, 30, 40, 50, 60, 70};
-
 bool flatten_translation_json(
     const elysia::io::json& node,
     const std::string& prefix,
@@ -79,7 +78,8 @@ EngineAssistCache::~EngineAssistCache()
 
 std::expected<void, std::string> EngineAssistCache::initialize(
     SDL_Renderer* renderer,
-    const EngineAssistCatalog& catalog)
+    const EngineAssistCatalog& catalog,
+    std::span<const int> point_sizes)
 {
     if (!renderer)
         return std::unexpected("Engine assist cache initialization failed: renderer is null.");
@@ -91,7 +91,7 @@ std::expected<void, std::string> EngineAssistCache::initialize(
 
     try
     {
-        auto prepared = prepare(renderer, catalog);
+        auto prepared = prepare(renderer, catalog, point_sizes);
         if (!prepared)
             return std::unexpected(prepared.error());
 
@@ -217,13 +217,35 @@ std::string_view EngineAssistCache::map_project_locale(
 
 std::expected<EngineAssistCache::PreparedState, std::string> EngineAssistCache::prepare(
     SDL_Renderer* renderer,
-    const EngineAssistCatalog& catalog) const
+    const EngineAssistCatalog& catalog,
+    std::span<const int> point_sizes) const
 {
     if (const auto validation = catalog.validate_required_files(); !validation)
     {
         return std::unexpected(
             "Engine assist required resource validation failed: " + validation.error().path.string());
     }
+
+    if (point_sizes.empty())
+    {
+        return std::unexpected(
+            "Engine assist font initialization requires at least one point size.");
+    }
+
+    std::vector<int> normalized_point_sizes(point_sizes.begin(),point_sizes.end());
+    if (std::ranges::any_of(
+            normalized_point_sizes,
+            [](int point_size) { return point_size <= 0; }))
+    {
+        return std::unexpected(
+            "Engine assist font point sizes must be positive.");
+    }
+    std::ranges::sort(normalized_point_sizes);
+    normalized_point_sizes.erase(
+        std::unique(
+            normalized_point_sizes.begin(),
+            normalized_point_sizes.end()),
+        normalized_point_sizes.end());
 
     PreparedState prepared;
     elysia::resources::SurfaceLoader surface_loader;
@@ -251,7 +273,7 @@ std::expected<EngineAssistCache::PreparedState, std::string> EngineAssistCache::
         const std::filesystem::path path = catalog.resolve(descriptor.relative_path);
         const std::string_view locale = std::string_view(descriptor.key).substr(
             std::string_view("engine.font.").size());
-        for (const int point_size : kPointSizes)
+        for (const int point_size : normalized_point_sizes)
         {
             TTF_Font* raw_font = TTF_OpenFont(path.string().c_str(), point_size);
             if (!raw_font)

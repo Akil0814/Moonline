@@ -16,6 +16,7 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 
+#include <array>
 #include <cstdlib>
 #include <filesystem>
 #include <functional>
@@ -145,7 +146,8 @@ void test_escape_returns_the_full_caller_route()
     elysia::assist::EngineAssistCache cache;
     require(cache.initialize(
                 fixture.renderer(),
-                elysia::assist::EngineAssistCatalog(std::filesystem::path{ MOONLINE_SOURCE_DIR }))
+                elysia::assist::EngineAssistCatalog(std::filesystem::path{ MOONLINE_SOURCE_DIR }),
+                std::array{10,20,30,40,50,60,70})
                 .has_value(),
         "Engine test scene tests must initialize Engine Assist resources");
 

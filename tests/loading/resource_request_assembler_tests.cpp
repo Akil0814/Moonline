@@ -12,6 +12,7 @@
 #include "tests/support/test_assertions.h"
 
 #include <algorithm>
+#include <array>
 #include <cstdlib>
 #include <cstdint>
 #include <iostream>
@@ -275,8 +276,33 @@ void test_runtime_resource_request_assembly()
 
 	elysia::loading::ResourceLoadPlan load_plan;
 	elysia::loading::ResourceRequestAssembler request_assembler;
-	require(request_assembler.assemble(config_result, load_plan),
+	require(request_assembler.assemble(
+			config_result,
+			std::array{10,20,30,40,50,60,70},
+			load_plan),
 		"request assembler must build generic animation requests");
+	require(load_plan.font_requests().size() == 35,
+		"five project font families at seven resolved sizes must create 35 requests");
+
+	elysia::loading::ResourceLoadPlan no_project_fonts_plan;
+	require(request_assembler.assemble(
+			config_result,
+			std::span<const int>{},
+			no_project_fonts_plan)
+			&& no_project_fonts_plan.font_requests().empty(),
+		"an empty project size set must create no project font requests");
+
+	elysia::loading::ResourceLoadPlan custom_project_fonts_plan;
+	require(request_assembler.assemble(
+			config_result,
+			std::array{24},
+			custom_project_fonts_plan)
+			&& custom_project_fonts_plan.font_requests().size() == 5,
+		"a custom resolved size must create one request per project font family");
+	for (const auto& request : custom_project_fonts_plan.font_requests())
+		require(request.point_size == 24 && request.key.ends_with(".24"),
+			"custom project font requests must use the externally resolved size");
+
 	verify_complete_module_mapping(config_result, load_plan);
 	verify_repository_mapping_snapshot(load_plan);
 

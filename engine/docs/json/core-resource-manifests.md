@@ -8,7 +8,6 @@
 
 ```json
 {
-  "sizes": [10, 20, 30, 40, 50, 60, 70],
   "fonts": [
     { "key": "ui.latin", "file": "fusion-pixel.ttf" }
   ]
@@ -17,12 +16,11 @@
 
 | 字段 | 类型 | 规则 |
 | --- | --- | --- |
-| `sizes` | array<integer> | 必须严格等于 `[10,20,30,40,50,60,70]` |
 | `fonts` | array<object> | 必填且非空 |
 | `fonts[].key` | string | 必填、非空、合法点分 key |
 | `fonts[].file` | string | 必填、非空，基于 `assets/fonts/` |
 
-每个字体条目为七个固定尺寸各生成一个 Font 请求，key 为 `<font key>.<size>`，例如 `ui.latin.30`。派生的数字尺寸也通过统一 key builder 校验。字体文件的读取与字体创建在资源提交阶段完成。
+字体 manifest 只描述项目字体族文件，不保存字号。字号由 Application 字体设置统一解析；项目未提供覆盖值时使用引擎默认 Typography Profile 和 20pt 浮动数字。每个字体条目根据最终项目字号集合生成 Font 请求，key 为 `<font key>.<size>`，例如 `ui.latin.30`。若 Application 未选择任何项目字体来源，则不会生成项目字体请求。派生的数字尺寸也通过统一 key builder 校验。字体文件的读取与字体创建在资源提交阶段完成。
 
 字体条目在数组中的 JSON pointer 会进入 `ResourceOrigin`。相同派生 Font key 即使来自不同字体条目，也会在请求计划的 Font registry 查重阶段报告 first/second 两个来源。
 

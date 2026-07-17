@@ -61,7 +61,10 @@ void GameContentLoader::reset()
 	_completed_work_units = 0;
 }
 
-bool GameContentLoader::start(SDL_Renderer* renderer, const elysia::io::ContentRegistry& content_registry)
+bool GameContentLoader::start(
+	SDL_Renderer* renderer,
+	const elysia::io::ContentRegistry& content_registry,
+	std::span<const int> project_font_point_sizes)
 {
 	reset();
 	clear_loaded_content();
@@ -92,7 +95,10 @@ bool GameContentLoader::start(SDL_Renderer* renderer, const elysia::io::ContentR
 	_config_snapshot = config_result.config_snapshot;
 
 	ResourceRequestAssembler assembler;
-	if (!assembler.assemble(config_result, _load_plan))
+	if (!assembler.assemble(
+		config_result,
+		project_font_point_sizes,
+		_load_plan))
 	{
 		fail("GameContentLoader start failed: " + assembler.error_message());
 		return false;

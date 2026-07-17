@@ -11,12 +11,6 @@ namespace
 {
 using elysia::application::ApplicationFontSource;
 
-[[nodiscard]] bool valid_source(ApplicationFontSource source) noexcept
-{
-    return source == ApplicationFontSource::EngineBuiltIn
-        || source == ApplicationFontSource::Project;
-}
-
 [[nodiscard]] FontResolveError error(
     FontResolveErrorCode code,
     std::string message)
@@ -47,36 +41,13 @@ using elysia::application::ApplicationFontSource;
 }
 
 std::expected<void,FontResolveError> FontResolver::configure(
-    const elysia::application::ApplicationFontSettings& settings,
+    const elysia::application::ResolvedApplicationFontSettings& settings,
     const elysia::assist::EngineAssistCache& engine_assist_cache,
     const elysia::resources::ResourceManager& resource_manager,
     std::span<const std::string> supported_languages)
 {
     shutdown();
 
-    if (!valid_source(settings.ui.source)
-        || !valid_source(settings.floating_number.source))
-    {
-        return std::unexpected(error(
-            FontResolveErrorCode::InvalidSource,
-            "Application font source is invalid."));
-    }
-
-    for (const int point_size : settings.ui.typography.point_sizes())
-    {
-        if (point_size <= 0)
-        {
-            return std::unexpected(error(
-                FontResolveErrorCode::InvalidPointSize,
-                "Application UI typography point sizes must be positive."));
-        }
-    }
-    if (settings.floating_number.point_size <= 0)
-    {
-        return std::unexpected(error(
-            FontResolveErrorCode::InvalidPointSize,
-            "Application floating-number point size must be positive."));
-    }
     if (supported_languages.empty())
     {
         return std::unexpected(error(
@@ -104,7 +75,7 @@ std::expected<void,FontResolveError> FontResolver::configure(
 
 void FontResolver::shutdown() noexcept
 {
-    _settings = {};
+    _settings.reset();
     _engine_assist_cache = nullptr;
     _resource_manager = nullptr;
     _supported_languages.clear();
@@ -117,6 +88,13 @@ std::expected<ResolvedFont,FontResolveError> FontResolver::resolve_ui(
     elysia::ui::UiTypographyRole role,
     std::string_view language) const
 {
+    if (!_configured || !_settings)
+    {
+        return std::unexpected(error(
+            FontResolveErrorCode::NotConfigured,
+            "FontResolver is not configured."));
+    }
+
     const std::size_t role_index = static_cast<std::size_t>(role);
     if (role_index >= elysia::application::ApplicationTypographyProfile::RoleCount)
     {
@@ -126,14 +104,21 @@ std::expected<ResolvedFont,FontResolveError> FontResolver::resolve_ui(
     }
 
     return resolve(
-        _settings.ui.source,
+        _settings->ui_source(),
         language,
-        _settings.ui.typography.point_size(role));
+        _settings->ui_typography().point_size(role));
 }
 
 std::expected<ResolvedFont,FontResolveError> FontResolver::resolve_effect(
     EffectTypographyRole role) const
 {
+    if (!_configured || !_settings)
+    {
+        return std::unexpected(error(
+            FontResolveErrorCode::NotConfigured,
+            "FontResolver is not configured."));
+    }
+
     if (role != EffectTypographyRole::FloatingNumber)
     {
         return std::unexpected(error(
@@ -142,9 +127,9 @@ std::expected<ResolvedFont,FontResolveError> FontResolver::resolve_effect(
     }
 
     return resolve(
-        _settings.floating_number.source,
+        _settings->floating_number_source(),
         "en",
-        _settings.floating_number.point_size);
+        _settings->floating_number_point_size());
 }
 
 std::expected<void,FontResolveError> FontResolver::activate_project_fonts()
@@ -157,8 +142,8 @@ std::expected<void,FontResolveError> FontResolver::activate_project_fonts()
     }
 
     const bool project_fonts_requested =
-        _settings.ui.source == ApplicationFontSource::Project
-        || _settings.floating_number.source == ApplicationFontSource::Project;
+        _settings->ui_source() == ApplicationFontSource::Project
+        || _settings->floating_number_source() == ApplicationFontSource::Project;
     if (!project_fonts_requested || _project_fonts_active)
         return {};
 
@@ -192,6 +177,13 @@ bool FontResolver::project_fonts_active() const noexcept
 std::uint64_t FontResolver::generation() const noexcept
 {
     return _generation;
+}
+
+std::span<const int> FontResolver::project_point_sizes() const noexcept
+{
+    return _settings
+        ? _settings->project_point_sizes()
+        : std::span<const int>{};
 }
 
 std::expected<ResolvedFont,FontResolveError> FontResolver::resolve(
@@ -282,8 +274,8 @@ std::expected<TTF_Font*,FontResolveError> FontResolver::find_font(
 std::expected<void,FontResolveError> FontResolver::validate_engine_fonts() const
 {
     std::unordered_set<int> ui_sizes(
-        _settings.ui.typography.point_sizes().begin(),
-        _settings.ui.typography.point_sizes().end());
+        _settings->ui_typography().point_sizes().begin(),
+        _settings->ui_typography().point_sizes().end());
     for (const std::string& language : _supported_languages)
     {
         for (const int point_size : ui_sizes)
@@ -302,7 +294,7 @@ std::expected<void,FontResolveError> FontResolver::validate_engine_fonts() const
     if (const auto font = find_font(
             ApplicationFontSource::EngineBuiltIn,
             "en",
-            _settings.floating_number.point_size);
+            _settings->floating_number_point_size());
         !font)
     {
         return std::unexpected(font.error());
@@ -313,11 +305,11 @@ std::expected<void,FontResolveError> FontResolver::validate_engine_fonts() const
 
 std::expected<void,FontResolveError> FontResolver::validate_project_fonts() const
 {
-    if (_settings.ui.source == ApplicationFontSource::Project)
+    if (_settings->ui_source() == ApplicationFontSource::Project)
     {
         std::unordered_set<int> ui_sizes(
-            _settings.ui.typography.point_sizes().begin(),
-            _settings.ui.typography.point_sizes().end());
+            _settings->ui_typography().point_sizes().begin(),
+            _settings->ui_typography().point_sizes().end());
         for (const std::string& language : _supported_languages)
         {
             for (const int point_size : ui_sizes)
@@ -334,12 +326,12 @@ std::expected<void,FontResolveError> FontResolver::validate_project_fonts() cons
         }
     }
 
-    if (_settings.floating_number.source == ApplicationFontSource::Project)
+    if (_settings->floating_number_source() == ApplicationFontSource::Project)
     {
         if (const auto font = find_font(
-                ApplicationFontSource::Project,
-                "en",
-                _settings.floating_number.point_size);
+            ApplicationFontSource::Project,
+            "en",
+            _settings->floating_number_point_size());
             !font)
         {
             return std::unexpected(font.error());

@@ -56,10 +56,16 @@ void test_text_input_uses_private_editing_texture()
     require(path_manager->init(),"text input texture test must initialize the project path manager");
 
     resource_manager->clear();
+    const auto resolved_font_settings =
+        application::resolve_application_font_settings(
+            application::ApplicationFontSettings{});
+    require(resolved_font_settings.has_value(),
+        "text input default font settings must resolve");
     assist::EngineAssistCache engine_cache;
     require(engine_cache.initialize(
         renderer,
-        assist::EngineAssistCatalog(*path_manager)).has_value(),
+        assist::EngineAssistCatalog(*path_manager),
+        resolved_font_settings->engine_point_sizes()).has_value(),
         "text input texture test must initialize Engine assist fonts");
     typography::FontResolver font_resolver;
 
@@ -72,7 +78,7 @@ void test_text_input_uses_private_editing_texture()
             &engine_cache),
         "text input texture test must initialize localization");
     require(font_resolver.configure(
-        application::ApplicationFontSettings{},
+        *resolved_font_settings,
         engine_cache,
         *resource_manager,
         localization_manager->supported_languages()).has_value(),

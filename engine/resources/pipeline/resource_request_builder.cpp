@@ -78,6 +78,7 @@ std::optional<size_t> effect_segment(const elysia::io::EffectDefinitionConfigEnt
 
 bool ResourceRequestBuilder::append_font_requests(
 	const elysia::io::FontManifest& manifest,
+	std::span<const int> point_sizes,
 	std::vector<FontLoadRequest>& requests) const
 {
 	const auto root = elysia::io::PathManager::instance()->fonts();
@@ -85,7 +86,7 @@ bool ResourceRequestBuilder::append_font_requests(
 	{
 		std::string error;
 		if (!ResourceKeyBuilder::validate_key(entry.key, error)) return log_key_error("Build font requests failed", error);
-		for (const int size : manifest.point_sizes)
+		for (const int size : point_sizes)
 		{
 			if (size <= 0) return false;
 			std::string key;

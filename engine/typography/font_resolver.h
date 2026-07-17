@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <expected>
+#include <optional>
 #include <span>
 #include <string>
 #include <string_view>
@@ -66,7 +67,7 @@ public:
     FontResolver& operator=(FontResolver&&) = delete;
 
     [[nodiscard]] std::expected<void,FontResolveError> configure(
-        const elysia::application::ApplicationFontSettings& settings,
+        const elysia::application::ResolvedApplicationFontSettings& settings,
         const elysia::assist::EngineAssistCache& engine_assist_cache,
         const elysia::resources::ResourceManager& resource_manager,
         std::span<const std::string> supported_languages);
@@ -85,6 +86,7 @@ public:
     [[nodiscard]] bool configured() const noexcept;
     [[nodiscard]] bool project_fonts_active() const noexcept;
     [[nodiscard]] std::uint64_t generation() const noexcept;
+    [[nodiscard]] std::span<const int> project_point_sizes() const noexcept;
 
 private:
     [[nodiscard]] std::expected<ResolvedFont,FontResolveError> resolve(
@@ -101,7 +103,8 @@ private:
         validate_project_fonts() const;
 
 private:
-    elysia::application::ApplicationFontSettings _settings;
+    std::optional<elysia::application::ResolvedApplicationFontSettings>
+        _settings;
     const elysia::assist::EngineAssistCache* _engine_assist_cache = nullptr;
     const elysia::resources::ResourceManager* _resource_manager = nullptr;
     std::vector<std::string> _supported_languages;

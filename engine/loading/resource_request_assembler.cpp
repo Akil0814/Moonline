@@ -36,6 +36,7 @@ bool append_module_effects(
 
 bool ResourceRequestAssembler::assemble(
 	const ContentManifestResult& config,
+	std::span<const int> project_font_point_sizes,
 	ResourceLoadPlan& plan) const
 {
 	plan.clear();
@@ -77,7 +78,10 @@ bool ResourceRequestAssembler::assemble(
 				return fail("Resource request assembly failed while building module textures: " + name);
 
 	// Phase 5: fonts and audio.
-	if (!builder.append_font_requests(config.font_manifest, plan.font_requests())
+	if (!builder.append_font_requests(
+			config.font_manifest,
+			project_font_point_sizes,
+			plan.font_requests())
 		|| !builder.append_audio_requests(config.audio_manifest, plan.sound_requests(), plan.music_requests()))
 		return fail("Resource request assembly failed while building core font/audio resources.");
 	for (const auto& [name, module] : config.additional_modules)

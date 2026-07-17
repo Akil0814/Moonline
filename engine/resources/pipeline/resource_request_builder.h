@@ -4,6 +4,7 @@
 #include "../resource_types.h"
 
 #include <string>
+#include <span>
 #include <vector>
 
 namespace elysia::resources
@@ -11,7 +12,10 @@ namespace elysia::resources
 class ResourceRequestBuilder
 {
 public:
-	bool append_font_requests(const elysia::io::FontManifest&, std::vector<FontLoadRequest>&) const;
+	bool append_font_requests(
+		const elysia::io::FontManifest&,
+		std::span<const int> point_sizes,
+		std::vector<FontLoadRequest>&) const;
 	bool append_audio_requests(const elysia::io::AudioManifest&, std::vector<SoundLoadRequest>&, std::vector<MusicLoadRequest>&) const;
 	bool append_texture_manifest_requests(const elysia::io::TextureManifest&, const std::filesystem::path&, std::vector<TextureLoadRequest>&) const;
 	bool append_animation_manifest_requests(const elysia::io::AnimationManifest&, const std::filesystem::path&,

@@ -12,6 +12,7 @@
 #include <SDL_ttf.h>
 
 #include <chrono>
+#include <array>
 #include <filesystem>
 
 namespace
@@ -61,8 +62,12 @@ int main()
     const std::filesystem::path source_root = MOONLINE_SOURCE_DIR;
     elysia::assist::EngineAssistCatalog catalog(source_root);
     elysia::assist::EngineAssistCache cache;
+    constexpr std::array default_point_sizes{10,20,30,40,50,60,70};
 
-    const auto initialized = cache.initialize(fixture.renderer(), catalog);
+    const auto initialized = cache.initialize(
+        fixture.renderer(),
+        catalog,
+        default_point_sizes);
     require(initialized.has_value(), "Engine assist cache must load all repository assist resources");
     require(cache.initialized(), "successful cache initialization must publish a live cache");
     require(cache.texture_count() == 6, "cache must own all six Engine textures");
@@ -74,6 +79,17 @@ int main()
         "cache must expose the Engine test sprite by stable key");
     require(cache.find_font("zh-Hans", 30) != nullptr,
         "cache must expose Engine fonts by locale and point size");
+
+    elysia::assist::EngineAssistCache custom_size_cache;
+    constexpr std::array custom_point_sizes{24};
+    require(custom_size_cache.initialize(
+            fixture.renderer(),
+            catalog,
+            custom_point_sizes).has_value()
+            && custom_size_cache.font_count() == 5
+            && custom_size_cache.find_font("en",24) != nullptr,
+        "cache must dynamically load Application-requested point sizes");
+    custom_size_cache.shutdown();
     require(cache.find_translation("ja", "engine.settings.title") != nullptr,
         "cache must expose parsed Engine translations");
     require(elysia::assist::EngineAssistCache::map_project_locale("zh_cn") == "zh-Hans",
@@ -116,7 +132,8 @@ int main()
             + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
     const auto failed_reinitialize = cache.initialize(
         fixture.renderer(),
-        elysia::assist::EngineAssistCatalog(missing_root));
+        elysia::assist::EngineAssistCatalog(missing_root),
+        default_point_sizes);
     require(!failed_reinitialize.has_value(),
         "invalid Engine assist resources must reject initialization");
     require(cache.texture_count() == 6 && cache.font_count() == 35 && cache.locale_count() == 5

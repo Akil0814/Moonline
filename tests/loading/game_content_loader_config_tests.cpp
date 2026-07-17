@@ -15,6 +15,8 @@
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
 
+#include <array>
+
 namespace
 {
 using moonline::tests::require;
@@ -59,7 +61,8 @@ int main()
 		"game content loader config test must parse the content registry once before loading");
 
     elysia::loading::GameContentLoader loader;
-	require(loader.start(renderer, content_registry), "game content loader must start with a valid deferred config snapshot");
+    constexpr std::array project_font_point_sizes{10,20,30,40,50,60,70};
+	require(loader.start(renderer, content_registry, project_font_point_sizes), "game content loader must start with a valid deferred config snapshot");
     require(!configs->is_initialized(),
         "ConfigService must remain unavailable while resources are still loading");
 	run_to_completion(loader);
@@ -77,7 +80,7 @@ int main()
 		&& effects->find_animation_effect_definition("effect.test") != nullptr,
 		"resetting a finished loader must preserve published content for the next scene");
 
-	require(loader.start(renderer, content_registry),
+	require(loader.start(renderer, content_registry, project_font_point_sizes),
 		"starting a new loading cycle must clear the previous published content first");
 	require(!configs->is_initialized()
 		&& resources->resource_count() == 0
@@ -86,7 +89,7 @@ int main()
 		"a new loading cycle must not expose the old content while it is preparing");
 	run_to_completion(loader);
 
-	require(!loader.start(nullptr, content_registry),
+	require(!loader.start(nullptr, content_registry, project_font_point_sizes),
 		"an invalid renderer must fail the new content loading cycle");
 	require(loader.has_failed()
 		&& !configs->is_initialized()

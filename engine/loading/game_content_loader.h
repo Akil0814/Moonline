@@ -11,6 +11,7 @@
 #include <deque>
 #include <memory>
 #include <mutex>
+#include <span>
 #include <string>
 #include <thread>
 #include <variant>
@@ -44,7 +45,10 @@ public:
 
 	void reset();
 
-	bool start(SDL_Renderer* renderer, const elysia::io::ContentRegistry& content_registry);
+	bool start(
+		SDL_Renderer* renderer,
+		const elysia::io::ContentRegistry& content_registry,
+		std::span<const int> project_font_point_sizes);
 	void update();
 
 	bool is_running() const;

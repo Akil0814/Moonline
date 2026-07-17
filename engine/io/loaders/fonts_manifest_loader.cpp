@@ -4,7 +4,6 @@
 #include "../json/json_duplicate_key_checker.h"
 #include "../json/json_loader.h"
 #include "../../resources/pipeline/resource_key_builder.h"
-#include <array>
 #include <utility>
 
 namespace elysia::io
@@ -36,13 +35,6 @@ bool FontsManifestLoader::load(
 		return false;
 	}
 
-	if (!loader.root().contains("sizes") || !loader.root().at("sizes").is_array())
-	{
-		ELYSIA_LOG_WARN("io","Load fonts manifest failed: sizes is missing or not an array: "
-			<< manifest_path);
-		return false;
-	}
-
 	if (!loader.root().contains("fonts") || !loader.root().at("fonts").is_array())
 	{
 		ELYSIA_LOG_WARN("io","Load fonts manifest failed: fonts is missing or not an array: "
@@ -50,25 +42,17 @@ bool FontsManifestLoader::load(
 		return false;
 	}
 
-	FontManifest parsed_manifest;
-	constexpr std::array<int,7> required_sizes{ 10,20,30,40,50,60,70 };
-	const json& sizes = loader.root().at("sizes");
-	if (sizes.size() != required_sizes.size())
+	for (auto field = loader.root().begin(); field != loader.root().end(); ++field)
 	{
-		ELYSIA_LOG_WARN("io","Load fonts manifest failed: sizes must contain the complete 10-70 step-10 scale.");
-		return false;
-	}
-
-	for (std::size_t index = 0; index < required_sizes.size(); ++index)
-	{
-		if (!sizes.at(index).is_number_integer() || sizes.at(index).get<int>() != required_sizes[index])
+		if (field.key() != "fonts")
 		{
-			ELYSIA_LOG_WARN("io","Load fonts manifest failed: sizes must equal 10,20,30,40,50,60,70.");
+			ELYSIA_LOG_WARN("io","Load fonts manifest failed: unknown root field: "
+				<< field.key());
 			return false;
 		}
-		parsed_manifest.point_sizes.push_back(required_sizes[index]);
 	}
 
+	FontManifest parsed_manifest;
 	const json& fonts = loader.root().at("fonts");
 	size_t font_index = 0;
 	for (const json& font : fonts)
