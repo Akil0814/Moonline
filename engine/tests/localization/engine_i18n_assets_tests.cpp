@@ -148,7 +148,7 @@ const std::set<std::string> expected_keys = {
 int main()
 {
     const std::filesystem::path i18n_directory =
-        std::filesystem::path(MOONLINE_SOURCE_DIR) / "engine" / "assets" / "i18n";
+        std::filesystem::path(MOONLINE_SOURCE_DIR) / "assets" / "engine" / "i18n";
     const std::set<std::string> locales = {"en", "zh-Hans", "zh-Hant", "ja", "ko"};
     std::set<std::string> reference_keys;
 

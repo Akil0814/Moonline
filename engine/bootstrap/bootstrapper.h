@@ -18,8 +18,7 @@ class Bootstrapper : public elysia::tools::Singleton<Bootstrapper>
 
 public:
     StartupParseResult parse_runtime_settings();
-    StartupParseResult parse_runtime_settings(
-        const std::filesystem::path& executable_path);
+    StartupParseResult parse_runtime_settings(const std::filesystem::path& executable_path);
     bool preload_startup_resources(SDL_Renderer* renderer);
     void release_preload_textures() noexcept;
     SDL_Texture* get_preload_texture(std::string_view key);
