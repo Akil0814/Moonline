@@ -50,7 +50,6 @@ struct UserConfigLoadResult
 {
     elysia::bootstrap::UserConfigData settings;
     std::string warning;
-    bool migrated = false;
     bool recovered = false;
     bool rebuilt = false;
     bool rebuilt_user_config = false;

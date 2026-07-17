@@ -2,6 +2,7 @@
 
 #include "engine/ui/composites/ui_labeled_radio_button.h"
 #include "engine/ui/composites/ui_tab_bar.h"
+#include "engine/ui/composites/ui_dropdown.h"
 #include "engine/ui/containers/ui_button_group.h"
 #include "engine/ui/containers/ui_radio_group.h"
 #include "engine/ui/presets/settings_panel.h"
@@ -100,8 +101,8 @@ void test_settings_panel_keeps_draft_local_and_normalizes_options()
     using namespace elysia;
     ui::SettingsPanel panel(core::Rect{ 0,0,700,680 });
     const ui::SettingsPanelDraft draft{
-        .resolution = { 1366,768 },
-        .fullscreen = true,
+        .window_mode = ui::SettingsWindowMode::Windowed,
+        .window_size = { 1366,768 },
         .master_volume = 80,
         .music_volume = 70,
         .sound_volume = 60,
@@ -109,7 +110,7 @@ void test_settings_panel_keeps_draft_local_and_normalizes_options()
     };
     panel.set_draft(draft);
     panel.set_options({
-        .resolutions = {
+        .window_sizes = {
             { 1920,1080 },
             { 1280,720 },
             { 1920,1080 },
@@ -120,11 +121,11 @@ void test_settings_panel_keeps_draft_local_and_normalizes_options()
 
     require(panel.draft() == draft,
         "settings panel option refresh must not apply or replace its local draft");
-    require(panel.options().resolutions.size() == 3
-        && panel.options().resolutions[0] == ui::SettingsResolution{ 1280,720 }
-        && panel.options().resolutions[1] == ui::SettingsResolution{ 1366,768 }
-        && panel.options().resolutions[2] == ui::SettingsResolution{ 1920,1080 },
-        "settings panel must normalize resolutions and retain the active resolution");
+    require(panel.options().window_sizes.size() == 3
+        && panel.options().window_sizes[0] == ui::SettingsWindowSize{ 1280,720 }
+        && panel.options().window_sizes[1] == ui::SettingsWindowSize{ 1366,768 }
+        && panel.options().window_sizes[2] == ui::SettingsWindowSize{ 1920,1080 },
+        "settings panel must normalize window sizes and retain the active value");
     require(panel.options().languages == std::vector<std::string>{ "en","zh_cn" },
         "settings panel must deduplicate language identifiers from LocalizationManager");
 
@@ -137,34 +138,55 @@ void test_settings_panel_keeps_draft_local_and_normalizes_options()
         saved_draft = value;
     });
     panel.set_on_back([&]() { ++back_count; });
-    panel.set_scope_focused(true);
-    require(panel.focus_first_available(),
-        "settings panel must expose its first field to keyboard focus");
-
-    const auto action = [&panel](ui::UiAction value,ui::UiInputEventType type)
+    auto dropdown_at = [&panel](std::size_t row_index)
     {
-        return panel.on_ui_input_event(ui::UiInputEvent{
-            .action = value,
-            .type = type,
-            .device = input::InputDevice::Keyboard
+        auto* row = dynamic_cast<ui::UiListContainer*>(
+            panel.child_at(row_index));
+        return row
+            ? dynamic_cast<ui::UiDropdown*>(row->child_at(1))
+            : nullptr;
+    };
+    ui::UiDropdown* mode_dropdown = dropdown_at(2);
+    ui::UiDropdown* size_dropdown = dropdown_at(3);
+    require(mode_dropdown && size_dropdown,
+        "settings panel must expose display mode and window size dropdowns");
+    require(mode_dropdown->set_selected_index(1)
+        && panel.draft().window_mode
+            == ui::SettingsWindowMode::BorderlessFullscreen
+        && !size_dropdown->is_enabled()
+        && panel.draft().window_size == draft.window_size,
+        "borderless fullscreen must disable window size without discarding its draft");
+    require(mode_dropdown->set_selected_index(0)
+        && panel.draft().window_mode == ui::SettingsWindowMode::Windowed
+        && size_dropdown->is_enabled()
+        && panel.draft().window_size == draft.window_size,
+        "switching back to Windowed must restore the saved window size selection");
+
+    auto* actions = dynamic_cast<ui::UiListContainer*>(panel.child_at(11));
+    auto* save = actions
+        ? dynamic_cast<ui::UiButton*>(actions->child_at(0))
+        : nullptr;
+    auto* back = actions
+        ? dynamic_cast<ui::UiButton*>(actions->child_at(1))
+        : nullptr;
+    require(save && back,"settings panel must expose Save and Back actions");
+    const auto activate = [](ui::UiButton& button)
+    {
+        button.set_focused(true);
+        (void)button.on_ui_input_event({
+            .action = ui::UiAction::Confirm,
+            .type = ui::UiInputEventType::ActionPressed
+        });
+        (void)button.on_ui_input_event({
+            .action = ui::UiAction::Confirm,
+            .type = ui::UiInputEventType::ActionReleased
         });
     };
-    (void)action(ui::UiAction::NavigateDown,ui::UiInputEventType::ActionPressed);
-    (void)action(ui::UiAction::Confirm,ui::UiInputEventType::ActionPressed);
-    (void)action(ui::UiAction::Confirm,ui::UiInputEventType::ActionReleased);
-    require(!panel.draft().fullscreen,
-        "editing a settings control must update only the panel draft");
-
-    for (int index = 0; index < 5; ++index)
-        (void)action(ui::UiAction::NavigateDown,ui::UiInputEventType::ActionPressed);
-    (void)action(ui::UiAction::Confirm,ui::UiInputEventType::ActionPressed);
-    (void)action(ui::UiAction::Confirm,ui::UiInputEventType::ActionReleased);
+    activate(*save);
     require(save_count == 1 && saved_draft == panel.draft(),
         "the Save button must emit the complete local draft exactly once");
 
-    (void)action(ui::UiAction::NavigateRight,ui::UiInputEventType::ActionPressed);
-    (void)action(ui::UiAction::Confirm,ui::UiInputEventType::ActionPressed);
-    (void)action(ui::UiAction::Confirm,ui::UiInputEventType::ActionReleased);
+    activate(*back);
     require(back_count == 1,
         "the Back button must invoke its navigation callback exactly once");
 }

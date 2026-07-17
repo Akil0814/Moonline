@@ -7,6 +7,7 @@
 #include <optional>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace
 {
@@ -32,11 +33,20 @@ public:
         return {};
     }
     std::expected<void,elysia::config::UserConfigFailure> apply_target_fps(double) override { return {}; }
-    std::expected<void,elysia::config::UserConfigFailure> apply_window_size(int,int) override { return {}; }
-    std::expected<void,elysia::config::UserConfigFailure> apply_fullscreen(bool) override { return {}; }
+    std::expected<void,elysia::config::UserConfigFailure>
+    apply_window_settings(
+        const elysia::bootstrap::WindowSettings& settings) override
+    {
+        window_settings_calls.push_back(settings);
+        if (fail_window_settings && settings == *fail_window_settings)
+            return failure("window_settings");
+        return {};
+    }
 
     std::optional<int> fail_master_value;
+    std::optional<elysia::bootstrap::WindowSettings> fail_window_settings;
     std::string fail_language;
+    std::vector<elysia::bootstrap::WindowSettings> window_settings_calls;
 
 private:
     static std::unexpected<elysia::config::UserConfigFailure> failure(std::string setting)
@@ -58,17 +68,53 @@ int main()
     Data defaults; defaults.language="en";
     elysia::config::UserConfigStore store;
 
-    write(path,R"({"window":{"width":1600},"localization":{"language":""}})");
-    auto migrated = store.load(path,defaults);
-    require(migrated && migrated->migrated,"v0 UserConfig must migrate");
-    require(migrated->settings.window_width == 1600 && migrated->settings.language == "en","v0 must overlay defaults and normalize empty language");
+    const std::string valid_v2 =
+        R"({"schema_version":2,"window":{"mode":"borderless_fullscreen","windowed_size":{"width":1600,"height":900}},"render":{"fps":60,"vsync":true},"audio":{"master_volume":100,"music_volume":100,"sound_volume":100},"localization":{"language":"en"}})";
+    write(path,valid_v2);
+    auto loaded = store.load(path,defaults);
+    require(loaded && !loaded->rebuilt
+        && loaded->settings.window.mode
+            == elysia::bootstrap::WindowMode::BorderlessFullscreen
+        && loaded->settings.window.windowed_size
+            == elysia::bootstrap::WindowSize{ 1600,900 },
+        "strict UserConfig v2 must load");
+    require(store.save(path,loaded->settings).has_value(),
+        "valid UserConfig v2 must save");
     auto roundtrip = store.load(path,defaults);
-    require(roundtrip && !roundtrip->migrated && roundtrip->settings == migrated->settings,"saved v1 UserConfig must round-trip");
+    require(roundtrip && roundtrip->settings == loaded->settings,
+        "saved UserConfig v2 must round-trip");
+
+    const auto old_v0_path = dir / "old_v0.json";
+    write(old_v0_path,R"({"window":{"width":1600}})");
+    const auto old_v0 = store.load(old_v0_path,defaults);
+    require(old_v0 && old_v0->rebuilt && old_v0->settings == defaults,
+        "UserConfig v0 must be archived and rebuilt from AppConfig defaults");
+
+    const auto old_v1_path = dir / "old_v1.json";
+    write(old_v1_path,R"({"schema_version":1,"window":{"width":1600,"height":900,"fullscreen":false},"render":{"fps":60,"vsync":true},"audio":{"master_volume":100,"music_volume":100,"sound_volume":100},"localization":{"language":"en"}})");
+    const auto old_v1 = store.load(old_v1_path,defaults);
+    require(old_v1 && old_v1->rebuilt && old_v1->settings == defaults,
+        "UserConfig v1 must be archived and rebuilt from AppConfig defaults");
+
+    const auto invalid_mode_path = dir / "invalid_mode.json";
+    write(invalid_mode_path,R"({"schema_version":2,"window":{"mode":"exclusive_fullscreen","windowed_size":{"width":1600,"height":900}},"render":{"fps":60,"vsync":true},"audio":{"master_volume":100,"music_volume":100,"sound_volume":100},"localization":{"language":"en"}})");
+    const auto invalid_mode = store.load(invalid_mode_path,defaults);
+    require(invalid_mode && invalid_mode->rebuilt,
+        "unknown UserConfig window modes must rebuild defaults");
+
+    const auto unknown_field_path = dir / "unknown_field.json";
+    write(unknown_field_path,R"({"schema_version":2,"window":{"mode":"windowed","windowed_size":{"width":1600,"height":900},"fullscreen":false},"render":{"fps":60,"vsync":true},"audio":{"master_volume":100,"music_volume":100,"sound_volume":100},"localization":{"language":"en"}})");
+    const auto unknown_field = store.load(unknown_field_path,defaults);
+    require(unknown_field && unknown_field->rebuilt,
+        "unknown UserConfig fields must rebuild defaults");
 
     write(path,"{broken");
-    write(path.string()+".bak",R"({"schema_version":1,"window":{"width":1920,"height":1080,"fullscreen":false},"render":{"fps":60,"vsync":true},"audio":{"master_volume":100,"music_volume":100,"sound_volume":100},"localization":{"language":"en"}})");
+    write(path.string()+".bak",valid_v2);
     auto recovered = store.load(path,defaults);
-    require(recovered && recovered->recovered && recovered->settings.window_width == 1920,"backup must recover corrupt primary");
+    require(recovered && recovered->recovered
+        && recovered->settings.window.windowed_size
+            == elysia::bootstrap::WindowSize{ 1600,900 },
+        "a valid v2 backup must recover a corrupt primary");
 
     write(path,R"({"schema_version":99})");
     require(!store.load(path,defaults),"future UserConfig version must stop loading without downgrade recovery");
@@ -86,21 +132,24 @@ int main()
     require(service->save_user_config().has_value() && !service->user_config().is_dirty(),"save must mark UserConfig persisted");
 
     Data committed = service->user_config().snapshot();
-    committed.window_width = 1600;
-    committed.window_height = 900;
-    committed.fullscreen = true;
+    committed.window = {
+        elysia::bootstrap::WindowMode::BorderlessFullscreen,
+        { 1600,900 }
+    };
     committed.audio.master_volume = 45;
     committed.audio.music_volume = 35;
     committed.audio.sound_volume = 25;
     committed.language = "zh_cn";
     const auto commit_result = service->apply_and_save_user_config(committed);
     require(commit_result.has_value() && service->user_config().snapshot() == committed
-        && !service->user_config().is_dirty(),
-        "batch commit must apply every setting and mark the committed snapshot persisted");
+        && !service->user_config().is_dirty()
+        && !handler.window_settings_calls.empty()
+        && handler.window_settings_calls.front() == committed.window,
+        "batch commit must apply complete window settings as one transaction");
 
     const Data baseline = service->user_config().snapshot();
     Data rejected = baseline;
-    rejected.window_width = 1920;
+    rejected.window.windowed_size = { 1920,1080 };
     rejected.audio.master_volume = 20;
     rejected.language = "unsupported";
     handler.fail_language = "unsupported";

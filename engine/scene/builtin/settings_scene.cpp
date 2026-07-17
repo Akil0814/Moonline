@@ -11,6 +11,7 @@
 #include <SDL.h>
 
 #include <algorithm>
+#include <array>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -30,11 +31,15 @@ elysia::ui::SettingsPanelDraft make_draft(
     const elysia::bootstrap::UserConfigData& settings)
 {
     return elysia::ui::SettingsPanelDraft{
-        .resolution = {
-            settings.window_width,
-            settings.window_height
+        .window_mode =
+            settings.window.mode
+                == elysia::bootstrap::WindowMode::Windowed
+            ? elysia::ui::SettingsWindowMode::Windowed
+            : elysia::ui::SettingsWindowMode::BorderlessFullscreen,
+        .window_size = {
+            settings.window.windowed_size.width,
+            settings.window.windowed_size.height
         },
-        .fullscreen = settings.fullscreen,
         .master_volume = settings.audio.master_volume,
         .music_volume = settings.audio.music_volume,
         .sound_volume = settings.audio.sound_volume,
@@ -45,25 +50,38 @@ elysia::ui::SettingsPanelDraft make_draft(
 elysia::ui::SettingsPanelOptions make_panel_options(
     const elysia::bootstrap::UserConfigData& settings)
 {
-    std::vector<elysia::ui::SettingsResolution> resolutions;
-    const int display_mode_count = SDL_GetNumDisplayModes(0);
-    if (display_mode_count > 0)
+    constexpr std::array<elysia::ui::SettingsWindowSize,6>
+        window_size_presets{{
+            { 960,540 },
+            { 1280,720 },
+            { 1600,900 },
+            { 1920,1080 },
+            { 2560,1440 },
+            { 3840,2160 }
+        }};
+
+    std::vector<elysia::ui::SettingsWindowSize> window_sizes;
+    SDL_Rect usable_bounds{};
+    const bool has_usable_bounds =
+        SDL_GetDisplayUsableBounds(0,&usable_bounds) == 0;
+    window_sizes.reserve(window_size_presets.size() + 1u);
+    for (const auto& window_size : window_size_presets)
     {
-        resolutions.reserve(static_cast<std::size_t>(display_mode_count) + 1u);
-        for (int index = 0; index < display_mode_count; ++index)
-        {
-            SDL_DisplayMode mode{};
-            if (SDL_GetDisplayMode(0,index,&mode) == 0)
-                resolutions.push_back({ mode.w,mode.h });
-        }
+        if (!has_usable_bounds
+            || (window_size.width <= usable_bounds.w
+                && window_size.height <= usable_bounds.h))
+            window_sizes.push_back(window_size);
     }
-    resolutions.push_back({ settings.window_width,settings.window_height });
+    window_sizes.push_back({
+        settings.window.windowed_size.width,
+        settings.window.windowed_size.height
+    });
 
     const auto& supported_languages =
         elysia::localization::LocalizationManager::instance()
             ->supported_languages();
     return elysia::ui::SettingsPanelOptions{
-        .resolutions = std::move(resolutions),
+        .window_sizes = std::move(window_sizes),
         .languages = supported_languages
     };
 }
@@ -191,9 +209,15 @@ void SettingsScene::save_draft(
     auto* config_service = elysia::config::UserConfigService::instance();
     elysia::bootstrap::UserConfigData requested =
         config_service->user_config().snapshot();
-    requested.window_width = draft.resolution.width;
-    requested.window_height = draft.resolution.height;
-    requested.fullscreen = draft.fullscreen;
+    requested.window = {
+        draft.window_mode == elysia::ui::SettingsWindowMode::Windowed
+            ? elysia::bootstrap::WindowMode::Windowed
+            : elysia::bootstrap::WindowMode::BorderlessFullscreen,
+        {
+            draft.window_size.width,
+            draft.window_size.height
+        }
+    };
     requested.audio.master_volume = draft.master_volume;
     requested.audio.music_volume = draft.music_volume;
     requested.audio.sound_volume = draft.sound_volume;

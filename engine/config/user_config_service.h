@@ -23,8 +23,8 @@ public:
     virtual std::expected<void,UserConfigFailure> apply_sound_volume(int value) = 0;
     virtual std::expected<void,UserConfigFailure> apply_language(std::string_view language) = 0;
     virtual std::expected<void,UserConfigFailure> apply_target_fps(double value) = 0;
-    virtual std::expected<void,UserConfigFailure> apply_window_size(int width,int height) = 0;
-    virtual std::expected<void,UserConfigFailure> apply_fullscreen(bool value) = 0;
+    virtual std::expected<void,UserConfigFailure> apply_window_settings(
+        const elysia::bootstrap::WindowSettings& settings) = 0;
 };
 
 class UserConfigStore;

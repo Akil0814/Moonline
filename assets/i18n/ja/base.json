@@ -7,7 +7,7 @@
   "setting_scene": {
     "title": "設定",
     "sections": { "display": "画面", "audio": "オーディオ", "general": "一般" },
-    "fields": { "resolution": "解像度", "fullscreen": "フルスクリーン", "master_volume": "マスター音量", "music_volume": "音楽音量", "sound_volume": "効果音音量", "language": "言語" },
+    "fields": { "window_mode": "表示モード", "window_size": "ウィンドウサイズ", "master_volume": "マスター音量", "music_volume": "音楽音量", "sound_volume": "効果音音量", "language": "言語" },
     "languages": { "en": "English", "zh_cn": "簡体中国語", "ja": "日本語" },
     "actions": { "save": "保存", "back": "戻る" }
   },

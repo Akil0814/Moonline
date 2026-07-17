@@ -6,7 +6,6 @@
 #include "../text/ui_typography.h"
 #include "../widgets/label/ui_label.h"
 #include "../widgets/ui_button.h"
-#include "../widgets/ui_checkbox.h"
 #include "../widgets/ui_slider.h"
 #include "../window/ui_window.h"
 
@@ -76,23 +75,23 @@ std::unique_ptr<UiSlider> make_volume_slider(float width)
         config);
 }
 
-std::vector<SettingsResolution> normalized_resolutions(
-    std::vector<SettingsResolution> resolutions)
+std::vector<SettingsWindowSize> normalized_window_sizes(
+    std::vector<SettingsWindowSize> window_sizes)
 {
-    std::erase_if(resolutions,[](const SettingsResolution& resolution)
+    std::erase_if(window_sizes,[](const SettingsWindowSize& window_size)
     {
-        return resolution.width <= 0 || resolution.height <= 0;
+        return window_size.width <= 0 || window_size.height <= 0;
     });
-    std::sort(resolutions.begin(),resolutions.end(),[](const auto& left,const auto& right)
+    std::sort(window_sizes.begin(),window_sizes.end(),[](const auto& left,const auto& right)
     {
         if (left.width != right.width)
             return left.width < right.width;
         return left.height < right.height;
     });
-    resolutions.erase(
-        std::unique(resolutions.begin(),resolutions.end()),
-        resolutions.end());
-    return resolutions;
+    window_sizes.erase(
+        std::unique(window_sizes.begin(),window_sizes.end()),
+        window_sizes.end());
+    return window_sizes;
 }
 
 std::vector<std::string> normalized_languages(std::vector<std::string> languages)
@@ -128,8 +127,8 @@ void SettingsPanel::reset() noexcept
     _draft = {};
     _on_save = {};
     _on_back = {};
-    _resolution_dropdown = nullptr;
-    _fullscreen_checkbox = nullptr;
+    _window_mode_dropdown = nullptr;
+    _window_size_dropdown = nullptr;
     _master_volume_slider = nullptr;
     _music_volume_slider = nullptr;
     _sound_volume_slider = nullptr;
@@ -142,17 +141,19 @@ void SettingsPanel::reset() noexcept
 
 void SettingsPanel::set_options(SettingsPanelOptions options)
 {
-    options.resolutions = normalized_resolutions(std::move(options.resolutions));
+    options.window_sizes =
+        normalized_window_sizes(std::move(options.window_sizes));
     options.languages = normalized_languages(std::move(options.languages));
 
-    if (_draft.resolution.width > 0 && _draft.resolution.height > 0
+    if (_draft.window_size.width > 0 && _draft.window_size.height > 0
         && std::find(
-            options.resolutions.begin(),
-            options.resolutions.end(),
-            _draft.resolution) == options.resolutions.end())
+            options.window_sizes.begin(),
+            options.window_sizes.end(),
+            _draft.window_size) == options.window_sizes.end())
     {
-        options.resolutions.push_back(_draft.resolution);
-        options.resolutions = normalized_resolutions(std::move(options.resolutions));
+        options.window_sizes.push_back(_draft.window_size);
+        options.window_sizes =
+            normalized_window_sizes(std::move(options.window_sizes));
     }
 
     if (!_draft.language.empty()
@@ -163,7 +164,7 @@ void SettingsPanel::set_options(SettingsPanelOptions options)
     }
 
     _options = std::move(options);
-    rebuild_resolution_options();
+    rebuild_window_size_options();
     rebuild_language_options();
     sync_controls_from_draft();
 }
@@ -179,10 +180,10 @@ void SettingsPanel::set_draft(const SettingsPanelDraft& draft)
 
     SettingsPanelOptions options = _options;
     bool options_changed = false;
-    if (_draft.resolution.width > 0 && _draft.resolution.height > 0
-        && find_resolution_index(_draft.resolution) == kNotFound)
+    if (_draft.window_size.width > 0 && _draft.window_size.height > 0
+        && find_window_size_index(_draft.window_size) == kNotFound)
     {
-        options.resolutions.push_back(_draft.resolution);
+        options.window_sizes.push_back(_draft.window_size);
         options_changed = true;
     }
     if (!_draft.language.empty() && find_language_index(_draft.language) == kNotFound)
@@ -237,16 +238,20 @@ void SettingsPanel::register_with_window(UiWindow& window)
         return;
     unregister_from_window();
     _window = &window;
-    if (_resolution_dropdown)
-        _resolution_dropdown->register_with_window(window);
+    if (_window_mode_dropdown)
+        _window_mode_dropdown->register_with_window(window);
+    if (_window_size_dropdown)
+        _window_size_dropdown->register_with_window(window);
     if (_language_dropdown)
         _language_dropdown->register_with_window(window);
 }
 
 void SettingsPanel::unregister_from_window() noexcept
 {
-    if (_resolution_dropdown)
-        _resolution_dropdown->unregister_from_window();
+    if (_window_mode_dropdown)
+        _window_mode_dropdown->unregister_from_window();
+    if (_window_size_dropdown)
+        _window_size_dropdown->unregister_from_window();
     if (_language_dropdown)
         _language_dropdown->unregister_from_window();
     _window = nullptr;
@@ -276,33 +281,41 @@ void SettingsPanel::build_controls()
     display->set_visual_role(UiLabelVisualRole::Subtitle);
     add_back(std::move(display));
 
-    auto resolution = std::make_unique<UiDropdown>(
+    auto window_mode = std::make_unique<UiDropdown>(
         elysia::core::Rect{ 0,0,control_width,kRowHeight });
-    _resolution_dropdown = resolution.get();
-    _resolution_dropdown->set_on_selection_changed([this](std::size_t index)
+    _window_mode_dropdown = window_mode.get();
+    _window_mode_dropdown->set_options({
+        UiDropdownOption{ ui_raw_text("Windowed") },
+        UiDropdownOption{ ui_raw_text("Borderless Fullscreen") }
+    });
+    _window_mode_dropdown->set_on_selection_changed([this](std::size_t index)
     {
-        if (!_syncing_controls && index < _options.resolutions.size())
-            _draft.resolution = _options.resolutions[index];
+        if (_syncing_controls || index > 1)
+            return;
+        _draft.window_mode = index == 0
+            ? SettingsWindowMode::Windowed
+            : SettingsWindowMode::BorderlessFullscreen;
+        sync_window_size_enabled();
     });
     add_back(make_field_row(
-        "Resolution",
+        "Display mode",
         field_width,
         label_width,
-        std::move(resolution)));
+        std::move(window_mode)));
 
-    auto fullscreen = std::make_unique<UiCheckbox>(
-        elysia::core::Rect{ 0,0,kRowHeight,kRowHeight });
-    _fullscreen_checkbox = fullscreen.get();
-    _fullscreen_checkbox->set_on_toggled([this](UiCheckboxState state)
+    auto window_size = std::make_unique<UiDropdown>(
+        elysia::core::Rect{ 0,0,control_width,kRowHeight });
+    _window_size_dropdown = window_size.get();
+    _window_size_dropdown->set_on_selection_changed([this](std::size_t index)
     {
-        if (!_syncing_controls)
-            _draft.fullscreen = state == UiCheckboxState::Checked;
+        if (!_syncing_controls && index < _options.window_sizes.size())
+            _draft.window_size = _options.window_sizes[index];
     });
     add_back(make_field_row(
-        "Fullscreen",
+        "Window size",
         field_width,
         label_width,
-        std::move(fullscreen)));
+        std::move(window_size)));
 
     auto audio = make_label("Audio",field_width,kSectionHeight,UiTypographyRole::Subtitle);
     audio->set_visual_role(UiLabelVisualRole::Subtitle);
@@ -403,22 +416,22 @@ void SettingsPanel::build_controls()
     add_back(std::move(actions));
 }
 
-void SettingsPanel::rebuild_resolution_options()
+void SettingsPanel::rebuild_window_size_options()
 {
-    if (!_resolution_dropdown)
+    if (!_window_size_dropdown)
         return;
     std::vector<UiDropdownOption> options;
-    options.reserve(_options.resolutions.size());
-    for (const SettingsResolution& resolution : _options.resolutions)
+    options.reserve(_options.window_sizes.size());
+    for (const SettingsWindowSize& window_size : _options.window_sizes)
     {
         options.push_back(UiDropdownOption{
             ui_raw_text(
-                std::to_string(resolution.width)
+                std::to_string(window_size.width)
                 + " x "
-                + std::to_string(resolution.height))
+                + std::to_string(window_size.height))
         });
     }
-    _resolution_dropdown->set_options(std::move(options));
+    _window_size_dropdown->set_options(std::move(options));
 }
 
 void SettingsPanel::rebuild_language_options()
@@ -435,12 +448,15 @@ void SettingsPanel::rebuild_language_options()
 void SettingsPanel::sync_controls_from_draft()
 {
     _syncing_controls = true;
-    const std::size_t resolution_index = find_resolution_index(_draft.resolution);
-    if (_resolution_dropdown && resolution_index != kNotFound)
-        (void)_resolution_dropdown->set_selected_index(resolution_index);
-
-    if (_fullscreen_checkbox)
-        _fullscreen_checkbox->set_checked(_draft.fullscreen);
+    if (_window_mode_dropdown)
+    {
+        (void)_window_mode_dropdown->set_selected_index(
+            _draft.window_mode == SettingsWindowMode::Windowed ? 0u : 1u);
+    }
+    const std::size_t window_size_index =
+        find_window_size_index(_draft.window_size);
+    if (_window_size_dropdown && window_size_index != kNotFound)
+        (void)_window_size_dropdown->set_selected_index(window_size_index);
     if (_master_volume_slider)
         _master_volume_slider->set_value(static_cast<float>(_draft.master_volume));
     if (_music_volume_slider)
@@ -452,19 +468,29 @@ void SettingsPanel::sync_controls_from_draft()
     if (_language_dropdown && language_index != kNotFound)
         (void)_language_dropdown->set_selected_index(language_index);
     _syncing_controls = false;
+    sync_window_size_enabled();
 }
 
-std::size_t SettingsPanel::find_resolution_index(
-    const SettingsResolution& resolution) const noexcept
+void SettingsPanel::sync_window_size_enabled()
+{
+    if (_window_size_dropdown)
+    {
+        _window_size_dropdown->set_enabled(
+            _draft.window_mode == SettingsWindowMode::Windowed);
+    }
+}
+
+std::size_t SettingsPanel::find_window_size_index(
+    const SettingsWindowSize& window_size) const noexcept
 {
     const auto iterator = std::find(
-        _options.resolutions.begin(),
-        _options.resolutions.end(),
-        resolution);
-    if (iterator == _options.resolutions.end())
+        _options.window_sizes.begin(),
+        _options.window_sizes.end(),
+        window_size);
+    if (iterator == _options.window_sizes.end())
         return kNotFound;
     return static_cast<std::size_t>(
-        std::distance(_options.resolutions.begin(),iterator));
+        std::distance(_options.window_sizes.begin(),iterator));
 }
 
 std::size_t SettingsPanel::find_language_index(

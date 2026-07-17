@@ -14,9 +14,8 @@ namespace
 [[nodiscard]] bool is_volume(int value) noexcept { return value >= 0 && value <= 100; }
 }
 
-int UserConfig::window_width() const noexcept { return _current_settings.window_width; }
-int UserConfig::window_height() const noexcept { return _current_settings.window_height; }
-bool UserConfig::fullscreen() const noexcept { return _current_settings.fullscreen; }
+const elysia::bootstrap::WindowSettings&
+UserConfig::window_settings() const noexcept { return _current_settings.window; }
 double UserConfig::target_fps() const noexcept { return _current_settings.target_fps; }
 bool UserConfig::vsync() const noexcept { return _current_settings.vsync; }
 int UserConfig::master_volume() const noexcept { return _current_settings.audio.master_volume; }
@@ -33,7 +32,8 @@ std::expected<void,UserConfigFailure> UserConfig::require_handler(std::string_vi
 std::expected<void,UserConfigFailure> UserConfig::validate_snapshot(
     const elysia::bootstrap::UserConfigData& settings) const
 {
-    if (settings.window_width <= 0 || settings.window_height <= 0)
+    if (settings.window.windowed_size.width <= 0
+        || settings.window.windowed_size.height <= 0)
         return invalid("window_size","Window width and height must be positive.");
     if (!std::isfinite(settings.target_fps) || settings.target_fps <= 0.0)
         return invalid("target_fps","Target FPS must be finite and positive.");
@@ -71,9 +71,7 @@ std::expected<UserConfigApplyStatus,UserConfigFailure> UserConfig::apply_snapsho
         return true;
     };
 
-    if (!apply([&]() { return set_window_size(settings.window_width,settings.window_height); }))
-        return std::unexpected(*first_failure);
-    if (!apply([&]() { return set_fullscreen(settings.fullscreen); }))
+    if (!apply([&]() { return set_window_settings(settings.window); }))
         return std::unexpected(*first_failure);
     if (!apply([&]() { return set_target_fps(settings.target_fps); }))
         return std::unexpected(*first_failure);
@@ -93,22 +91,28 @@ std::expected<UserConfigApplyStatus,UserConfigFailure> UserConfig::apply_snapsho
     return status;
 }
 
-std::expected<UserConfigApplyStatus,UserConfigFailure> UserConfig::set_window_size(int width,int height)
+std::expected<UserConfigApplyStatus,UserConfigFailure>
+UserConfig::set_window_settings(
+    const elysia::bootstrap::WindowSettings& settings)
 {
-    if (width <= 0 || height <= 0) return invalid("window_size","Window width and height must be positive.");
-    if (width == _current_settings.window_width && height == _current_settings.window_height) return UserConfigApplyStatus::Applied;
-    if (const auto handler = require_handler("window_size"); !handler) return std::unexpected(handler.error());
-    if (const auto applied = _change_handler->apply_window_size(width,height); !applied) return std::unexpected(applied.error());
-    _current_settings.window_width = width; _current_settings.window_height = height;
-    return UserConfigApplyStatus::Applied;
-}
-
-std::expected<UserConfigApplyStatus,UserConfigFailure> UserConfig::set_fullscreen(bool value)
-{
-    if (value == _current_settings.fullscreen) return UserConfigApplyStatus::Applied;
-    if (const auto handler = require_handler("fullscreen"); !handler) return std::unexpected(handler.error());
-    if (const auto applied = _change_handler->apply_fullscreen(value); !applied) return std::unexpected(applied.error());
-    _current_settings.fullscreen = value;
+    if (settings.windowed_size.width <= 0
+        || settings.windowed_size.height <= 0)
+    {
+        return invalid(
+            "window_settings",
+            "Window width and height must be positive.");
+    }
+    if (settings == _current_settings.window)
+        return UserConfigApplyStatus::Applied;
+    if (const auto handler = require_handler("window_settings"); !handler)
+        return std::unexpected(handler.error());
+    if (const auto applied =
+            _change_handler->apply_window_settings(settings);
+        !applied)
+    {
+        return std::unexpected(applied.error());
+    }
+    _current_settings.window = settings;
     return UserConfigApplyStatus::Applied;
 }
 

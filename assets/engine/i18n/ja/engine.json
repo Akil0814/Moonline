@@ -23,8 +23,8 @@
         "general": "一般"
       },
       "fields": {
-        "resolution": "解像度",
-        "fullscreen": "フルスクリーン",
+        "window_mode": "表示モード",
+        "window_size": "ウィンドウサイズ",
         "master_volume": "マスター音量",
         "music_volume": "音楽音量",
         "sound_volume": "効果音音量",

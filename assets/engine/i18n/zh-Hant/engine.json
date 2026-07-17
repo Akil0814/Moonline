@@ -23,8 +23,8 @@
         "general": "一般"
       },
       "fields": {
-        "resolution": "解析度",
-        "fullscreen": "全螢幕",
+        "window_mode": "顯示模式",
+        "window_size": "視窗大小",
         "master_volume": "主音量",
         "music_volume": "音樂音量",
         "sound_volume": "音效音量",

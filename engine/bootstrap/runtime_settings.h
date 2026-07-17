@@ -8,11 +8,31 @@
 
 namespace elysia::bootstrap
 {
+enum class WindowMode
+{
+    Windowed,
+    BorderlessFullscreen
+};
+
+struct WindowSize
+{
+    int width = 1280;
+    int height = 720;
+
+    friend bool operator==(const WindowSize&,const WindowSize&) = default;
+};
+
+struct WindowSettings
+{
+    WindowMode mode = WindowMode::Windowed;
+    WindowSize windowed_size{};
+
+    friend bool operator==(const WindowSettings&,const WindowSettings&) = default;
+};
+
 struct UserConfigData
 {
-    int window_width = 1280;
-    int window_height = 720;
-    bool fullscreen = false;
+    WindowSettings window;
     double target_fps = 60.0;
     bool vsync = true;
     std::string language;
@@ -42,7 +62,6 @@ struct StartupParseResult
     std::filesystem::path i18n_manifest_path;
     std::string error;
     std::string warning;
-    bool migrated_user_config = false;
     bool recovered_user_config = false;
     bool rebuilt_user_config = false;
 
