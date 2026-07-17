@@ -23,6 +23,8 @@ elysia::application::ApplicationDescriptor MoonlineGameModule::descriptor() cons
         elysia::application::ApplicationScaleStrategy::PixelPerfect;
     descriptor.presentation.render.texture_filter =
         elysia::application::ApplicationTextureFilter::Nearest;
+    descriptor.presentation.startup.engine_logo =
+        elysia::application::ApplicationEngineLogoVariant::White;
     descriptor.initial_route = SceneRoute{
         .target = elysia::scene::builtin::StartupLoading,
         .payload = StartupLoadingScenePayload{

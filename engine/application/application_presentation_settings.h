@@ -70,9 +70,25 @@ struct ApplicationFontSettings
         project_font_replacement = std::nullopt;
 };
 
+enum class ApplicationEngineLogoVariant
+{
+    Default,
+    Black,
+    BlackAlphaInverse,
+    LightEdge,
+    White
+};
+
+struct ApplicationStartupPresentationSettings
+{
+    ApplicationEngineLogoVariant engine_logo =
+        ApplicationEngineLogoVariant::White;
+};
+
 struct ApplicationPresentationSettings
 {
     ApplicationRenderSettings render;
     ApplicationFontSettings fonts;
+    ApplicationStartupPresentationSettings startup;
 };
 }

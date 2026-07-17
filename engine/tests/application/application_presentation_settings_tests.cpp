@@ -9,6 +9,7 @@
 namespace
 {
 using elysia::application::ApplicationDescriptor;
+using elysia::application::ApplicationEngineLogoVariant;
 using elysia::application::ApplicationProjectFontReplacement;
 using elysia::application::ApplicationScaleStrategy;
 using elysia::application::ApplicationTextureFilter;
@@ -35,6 +36,10 @@ void require_default_presentation_settings()
     require(
         !descriptor.presentation.fonts.project_font_replacement.has_value(),
         "application presentation must use engine fonts by default");
+    require(
+        descriptor.presentation.startup.engine_logo
+            == ApplicationEngineLogoVariant::White,
+        "application startup presentation must default to the white engine logo");
 }
 
 void require_render_settings_are_data_only()
@@ -89,6 +94,26 @@ void require_complete_typography_profile()
             == point_sizes,
         "project font replacement must retain the complete typography profile");
 }
+
+void require_engine_logo_variants_are_data_only()
+{
+    constexpr std::array variants{
+        ApplicationEngineLogoVariant::Default,
+        ApplicationEngineLogoVariant::Black,
+        ApplicationEngineLogoVariant::BlackAlphaInverse,
+        ApplicationEngineLogoVariant::LightEdge,
+        ApplicationEngineLogoVariant::White
+    };
+
+    ApplicationDescriptor descriptor;
+    for (const ApplicationEngineLogoVariant variant : variants)
+    {
+        descriptor.presentation.startup.engine_logo = variant;
+        require(
+            descriptor.presentation.startup.engine_logo == variant,
+            "application presentation must retain the selected engine logo variant");
+    }
+}
 }
 
 int main()
@@ -96,5 +121,6 @@ int main()
     require_default_presentation_settings();
     require_render_settings_are_data_only();
     require_complete_typography_profile();
+    require_engine_logo_variants_are_data_only();
     return EXIT_SUCCESS;
 }
