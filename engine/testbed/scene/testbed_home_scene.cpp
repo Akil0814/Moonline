@@ -120,6 +120,14 @@ void TestbedHomeScene::build_ui()
     });
     list->add_back(std::move(engine_feature_test));
 
+    auto elysia_scene = make_button("Elysia Scene (1111)");
+    elysia_scene->set_on_click([this]() {
+        request_scene_switch(
+            SceneKeys::Elysia,
+            TestbedScenePayload{ .return_route = make_home_route() });
+    });
+    list->add_back(std::move(elysia_scene));
+
     auto startup_failure = make_button("Startup Failure (Terminates App)");
     startup_failure->set_visual_role(elysia::ui::UiButtonVisualRole::Danger);
     startup_failure->set_on_click([this]() {

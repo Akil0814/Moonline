@@ -110,7 +110,7 @@ void SceneManager::register_scene(SceneKey scene_key)
         return;
     }
 
-    if (SceneKeys::is_engine(scene_key))
+    if (SceneKeys::is_engine(scene_key) || SceneKeys::is_easter_egg(scene_key))
     {
         register_engine_scene<T>(scene_key);
         return;
@@ -131,8 +131,8 @@ void SceneManager::register_game_scene(SceneKey scene_key)
 template <typename T>
 void SceneManager::register_engine_scene(SceneKey scene_key)
 {
-    if (!SceneKeys::is_engine(scene_key))
-        throw std::logic_error("SceneManager::register_engine_scene received a SceneKey outside the engine-owned range.");
+    if (!SceneKeys::is_engine(scene_key) && !SceneKeys::is_easter_egg(scene_key))
+        throw std::logic_error("SceneManager::register_engine_scene received a SceneKey outside the engine-owned keys.");
 
     add_scene_provider<T>(scene_key);
 }
