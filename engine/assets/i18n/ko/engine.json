@@ -1,0 +1,44 @@
+{
+  "engine": {
+    "common": {
+      "save": "저장",
+      "back": "뒤로",
+      "confirm": "확인",
+      "cancel": "취소",
+      "close": "닫기"
+    },
+    "startup": {
+      "press_any_button": "아무 버튼이나 눌러 시작"
+    },
+    "settings": {
+      "title": "설정",
+      "sections": {
+        "display": "디스플레이",
+        "audio": "오디오",
+        "general": "일반"
+      },
+      "fields": {
+        "resolution": "해상도",
+        "fullscreen": "전체 화면",
+        "master_volume": "마스터 볼륨",
+        "music_volume": "음악 볼륨",
+        "sound_volume": "효과음 볼륨",
+        "language": "언어"
+      },
+      "actions": {
+        "save": "저장",
+        "back": "뒤로"
+      },
+      "languages": {
+        "en": "영어",
+        "zh-Hans": "중국어 간체",
+        "zh-Hant": "중국어 번체",
+        "ja": "일본어",
+        "ko": "한국어"
+      },
+      "status": {
+        "saved": "설정이 저장되었습니다."
+      }
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "engine": {
+    "common": {
+      "save": "儲存",
+      "back": "返回",
+      "confirm": "確認",
+      "cancel": "取消",
+      "close": "關閉"
+    },
+    "startup": {
+      "press_any_button": "按任意鍵開始"
+    },
+    "settings": {
+      "title": "設定",
+      "sections": {
+        "display": "顯示",
+        "audio": "音訊",
+        "general": "一般"
+      },
+      "fields": {
+        "resolution": "解析度",
+        "fullscreen": "全螢幕",
+        "master_volume": "主音量",
+        "music_volume": "音樂音量",
+        "sound_volume": "音效音量",
+        "language": "語言"
+      },
+      "actions": {
+        "save": "儲存",
+        "back": "返回"
+      },
+      "languages": {
+        "en": "英語",
+        "zh-Hans": "簡體中文",
+        "zh-Hant": "繁體中文",
+        "ja": "日語",
+        "ko": "韓語"
+      },
+      "status": {
+        "saved": "設定已儲存。"
+      }
+    }
+  }
+}

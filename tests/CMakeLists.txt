@@ -101,6 +101,14 @@ add_moonline_test(settings_scene_tests
     SDL
 )
 
+add_moonline_test(engine_i18n_assets_tests
+    LABEL localization
+    SOURCES localization/engine_i18n_assets_tests.cpp
+)
+target_compile_definitions(engine_i18n_assets_tests
+    PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+)
+
 add_moonline_test(physics_framework_contract_tests
     LABEL physics
     SOURCES physics/physics_framework_contract_tests.cpp

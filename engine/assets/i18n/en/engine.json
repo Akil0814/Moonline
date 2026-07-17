@@ -1,0 +1,44 @@
+{
+  "engine": {
+    "common": {
+      "save": "Save",
+      "back": "Back",
+      "confirm": "Confirm",
+      "cancel": "Cancel",
+      "close": "Close"
+    },
+    "startup": {
+      "press_any_button": "PRESS ANY BUTTON TO START"
+    },
+    "settings": {
+      "title": "Settings",
+      "sections": {
+        "display": "Display",
+        "audio": "Audio",
+        "general": "General"
+      },
+      "fields": {
+        "resolution": "Resolution",
+        "fullscreen": "Fullscreen",
+        "master_volume": "Master volume",
+        "music_volume": "Music volume",
+        "sound_volume": "Sound volume",
+        "language": "Language"
+      },
+      "actions": {
+        "save": "Save",
+        "back": "Back"
+      },
+      "languages": {
+        "en": "English",
+        "zh-Hans": "Simplified Chinese",
+        "zh-Hant": "Traditional Chinese",
+        "ja": "Japanese",
+        "ko": "Korean"
+      },
+      "status": {
+        "saved": "Settings saved."
+      }
+    }
+  }
+}

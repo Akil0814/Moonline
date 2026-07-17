@@ -1,0 +1,44 @@
+{
+  "engine": {
+    "common": {
+      "save": "保存",
+      "back": "戻る",
+      "confirm": "確認",
+      "cancel": "キャンセル",
+      "close": "閉じる"
+    },
+    "startup": {
+      "press_any_button": "いずれかのボタンを押して開始"
+    },
+    "settings": {
+      "title": "設定",
+      "sections": {
+        "display": "表示",
+        "audio": "オーディオ",
+        "general": "一般"
+      },
+      "fields": {
+        "resolution": "解像度",
+        "fullscreen": "フルスクリーン",
+        "master_volume": "マスター音量",
+        "music_volume": "音楽音量",
+        "sound_volume": "効果音音量",
+        "language": "言語"
+      },
+      "actions": {
+        "save": "保存",
+        "back": "戻る"
+      },
+      "languages": {
+        "en": "英語",
+        "zh-Hans": "簡体中国語",
+        "zh-Hant": "繁体中国語",
+        "ja": "日本語",
+        "ko": "韓国語"
+      },
+      "status": {
+        "saved": "設定を保存しました。"
+      }
+    }
+  }
+}
