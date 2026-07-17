@@ -1,5 +1,7 @@
 #pragma once
 
+#include "application_presentation_settings.h"
+
 #include "../scene/scene_route.h"
 
 namespace elysia::scene
@@ -14,6 +16,7 @@ struct ApplicationDescriptor
     int logical_width = 1280;
     int logical_height = 720;
     elysia::scene::SceneRoute initial_route{};
+    ApplicationPresentationSettings presentation{};
 };
 
 class IGameModule
