@@ -30,6 +30,8 @@ endfunction()
 
 find_package(Threads REQUIRED)
 
+add_subdirectory("${PROJECT_SOURCE_DIR}/engine/tests" "${CMAKE_CURRENT_BINARY_DIR}/engine-tests")
+
 add_moonline_test(glyph_run_layout_tests
     LABEL core
     SOURCES core/glyph_run_layout_tests.cpp
@@ -99,14 +101,6 @@ add_moonline_test(settings_scene_tests
     SOURCES scene/settings_scene_tests.cpp
     LIBRARIES ${SDL2_LIBRARIES}
     SDL
-)
-
-add_moonline_test(engine_i18n_assets_tests
-    LABEL localization
-    SOURCES localization/engine_i18n_assets_tests.cpp
-)
-target_compile_definitions(engine_i18n_assets_tests
-    PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
 )
 
 add_moonline_test(physics_framework_contract_tests

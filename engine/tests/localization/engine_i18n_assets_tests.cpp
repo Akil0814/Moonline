@@ -1,3 +1,4 @@
+// Engine-owned translation asset contract.
 #include "engine/io/json/strict_json.h"
 #include "tests/support/test_assertions.h"
 

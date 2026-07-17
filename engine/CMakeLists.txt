@@ -1,4 +1,5 @@
 file(GLOB_RECURSE ENGINE CONFIGURE_DEPENDS "*.cpp")
+list(FILTER ENGINE EXCLUDE REGEX "/tests/")
 
 add_library(engine_lib ${ENGINE})
 
