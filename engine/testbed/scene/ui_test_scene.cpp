@@ -34,7 +34,7 @@
 #include "../../ui/widgets/ui_slider.h"
 #include "../../ui/widgets/ui_text_input.h"
 #include "../../ui/window/ui_window.h"
-#include "../../scene/scene_runtime_context.h"
+#include "../../scene/runtime/scene_runtime_context.h"
 #include "../../input/raw_input_types.h"
 
 #include <array>

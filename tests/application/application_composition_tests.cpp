@@ -4,7 +4,7 @@
 #include "engine/io/loaders/asset_config_types.h"
 #include "engine/scene/scene.h"
 #include "engine/scene/scene_manager.h"
-#include "engine/scene/scene_runtime_context.h"
+#include "engine/scene/runtime/scene_runtime_context.h"
 #include "engine/testbed/testbed_scene_keys.h"
 #include "tests/support/test_assertions.h"
 

@@ -1,7 +1,7 @@
 #define SDL_MAIN_HANDLED
 
 #include "engine/scene/builtin/startup_failure_scene.h"
-#include "engine/scene/scene_key.h"
+#include "engine/scene/routing/scene_key.h"
 #include "engine/tools/termination_manager.h"
 #include "engine/ui/composites/ui_confirmation_dialog.h"
 #include "tests/support/test_assertions.h"

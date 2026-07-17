@@ -1,6 +1,6 @@
 ﻿#include "scene.h"
 
-#include "scene_input_order.h"
+#include "detail/scene_input_order.h"
 
 #include "../core/interface/updatable.h"
 #include "../core/render/render_command_projection.h"

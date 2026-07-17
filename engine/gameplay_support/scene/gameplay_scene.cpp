@@ -1,6 +1,6 @@
 #include "gameplay_scene.h"
 
-#include "../../scene/scene_input_order.h"
+#include "../../scene/detail/scene_input_order.h"
 
 #include <algorithm>
 

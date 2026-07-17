@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "scene.h"
-#include "scene_factory.h"
+#include "detail/scene_factory.h"
 #include "scene_manager_observer.h"
-#include "scene_request.h"
-#include "scene_request_observer.h"
+#include "routing/scene_request.h"
+#include "routing/scene_request_observer.h"
 
 #include "../core/event/subject.h"
 

@@ -10,7 +10,7 @@
 #include "../io/loaders/asset_config_types.h"
 #include "../scene/scene_manager.h"
 #include "../scene/scene_manager_observer.h"
-#include "../scene/scene_runtime_context.h"
+#include "../scene/runtime/scene_runtime_context.h"
 #include "../tools/singleton.h"
 
 #include <SDL.h>

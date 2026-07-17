@@ -78,7 +78,7 @@
 
 - `std::optional`：在 70 个自有源码文件中出现；例如 `engine/camera/camera_controller.h:18-47` 用可选矩形表达可缺省的相机焦点和世界边界。
 - `std::variant`：`engine/ui/widgets/ui_button.h:43-48` 使用 `UiButtonContent` 表示按钮可承载的多种内容；`engine/loading/game_content_loader.h:51-54` 为预加载任务建立类型安全的联合数据。
-- `std::any`：`engine/scene/scene_payload.h` 定义场景负载，`gameplay/scene/main_menu_scene.cpp:25` 通过指针版 `std::any_cast` 做无异常类型检查。
+- `std::any`：`engine/scene/routing/scene_payload.h` 定义场景负载，`gameplay/scene/main_menu_scene.cpp:25` 通过指针版 `std::any_cast` 做无异常类型检查。
 
 ### `std::string_view` 与 `std::filesystem`
 
@@ -93,7 +93,7 @@
 ### if 初始化语句、内联变量、标准属性和算法
 
 - if 初始化语句：`engine/config/user_config.cpp` 使用 `if (const auto handler = ...; !handler)` 将结果作用域限制在判断语句中。
-- 内联变量：`engine/scene/scene_key.h` 的 engine 内建键与 gameplay 项目键可安全放在头文件中。
+- 内联变量：`engine/scene/routing/scene_key.h` 的 engine 内建键与 gameplay 项目键可安全放在头文件中。
 - `[[nodiscard]]`：大量用于查询/计算接口，例如 `engine/core/time.h:18-23`，降低忽略返回值的风险。
 - `std::clamp`：例如 `engine/input/translator/gamepad_input_translator.cpp:243` 对手柄轴值做范围限制。
 

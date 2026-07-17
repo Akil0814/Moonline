@@ -1,7 +1,7 @@
 #define SDL_MAIN_HANDLED
 
 #include "engine/scene/builtin/startup_loading_scene.h"
-#include "engine/scene/scene_request_observer.h"
+#include "engine/scene/routing/scene_request_observer.h"
 #include "engine/tools/termination_manager.h"
 #include "tests/support/test_assertions.h"
 

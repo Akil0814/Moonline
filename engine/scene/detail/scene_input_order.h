@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../core/game_object.h"
-#include "../ui/core/ui_element.h"
+#include "../../core/game_object.h"
+#include "../../ui/core/ui_element.h"
 
 #include <algorithm>
 #include <functional>

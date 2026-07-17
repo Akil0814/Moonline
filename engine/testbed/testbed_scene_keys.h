@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../scene/scene_key.h"
+#include "../scene/routing/scene_key.h"
 
 namespace elysia::testbed::SceneKeys
 {

@@ -2,11 +2,11 @@
 
 #include "engine/io/loaders/asset_config_types.h"
 #include "engine/scene/scene.h"
-#include "engine/scene/scene_key.h"
+#include "engine/scene/routing/scene_key.h"
 #include "engine/scene/scene_manager.h"
-#include "engine/scene/scene_payload.h"
-#include "engine/scene/scene_route.h"
-#include "engine/scene/scene_runtime_context.h"
+#include "engine/scene/routing/scene_payload.h"
+#include "engine/scene/routing/scene_route.h"
+#include "engine/scene/runtime/scene_runtime_context.h"
 #include "tests/support/test_assertions.h"
 
 #include <cstdlib>
