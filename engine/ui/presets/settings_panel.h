@@ -3,30 +3,36 @@
 #include "../containers/ui_list_container.h"
 
 #include <functional>
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace elysia::ui
 {
 class UiButton;
-class UiCheckbox;
 class UiDropdown;
 class UiLabel;
 class UiSlider;
 class UiWindow;
 
-struct SettingsResolution
+enum class SettingsWindowMode
+{
+    Windowed,
+    BorderlessFullscreen
+};
+
+struct SettingsWindowSize
 {
     int width = 0;
     int height = 0;
 
-    friend bool operator==(const SettingsResolution&,const SettingsResolution&) = default;
+    friend bool operator==(const SettingsWindowSize&,const SettingsWindowSize&) = default;
 };
 
 struct SettingsPanelDraft
 {
-    SettingsResolution resolution{};
-    bool fullscreen = false;
+    SettingsWindowMode window_mode = SettingsWindowMode::Windowed;
+    SettingsWindowSize window_size{};
     int master_volume = 100;
     int music_volume = 100;
     int sound_volume = 100;
@@ -37,9 +43,14 @@ struct SettingsPanelDraft
 
 struct SettingsPanelOptions
 {
-    std::vector<SettingsResolution> resolutions;
+    std::vector<SettingsWindowSize> window_sizes;
     std::vector<std::string> languages;
 };
+
+[[nodiscard]] std::vector<SettingsWindowSize>
+make_settings_window_size_options(
+    std::optional<SettingsWindowSize> usable_size,
+    SettingsWindowSize current_size);
 
 using SettingsPanelSaveCallback = std::function<void(const SettingsPanelDraft&)>;
 using SettingsPanelBackCallback = std::function<void()>;
@@ -75,10 +86,12 @@ public:
 
 private:
     void build_controls();
-    void rebuild_resolution_options();
+    void rebuild_window_size_options();
     void rebuild_language_options();
     void sync_controls_from_draft();
-    [[nodiscard]] std::size_t find_resolution_index(const SettingsResolution& resolution) const noexcept;
+    void sync_window_size_enabled();
+    [[nodiscard]] std::size_t find_window_size_index(
+        const SettingsWindowSize& window_size) const noexcept;
     [[nodiscard]] std::size_t find_language_index(const std::string& language) const noexcept;
 
 private:
@@ -86,8 +99,8 @@ private:
     SettingsPanelDraft _draft;
     SettingsPanelSaveCallback _on_save;
     SettingsPanelBackCallback _on_back;
-    UiDropdown* _resolution_dropdown = nullptr;
-    UiCheckbox* _fullscreen_checkbox = nullptr;
+    UiDropdown* _window_mode_dropdown = nullptr;
+    UiDropdown* _window_size_dropdown = nullptr;
     UiSlider* _master_volume_slider = nullptr;
     UiSlider* _music_volume_slider = nullptr;
     UiSlider* _sound_volume_slider = nullptr;

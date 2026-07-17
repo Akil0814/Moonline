@@ -42,8 +42,9 @@ public:
     std::expected<void,elysia::config::UserConfigFailure> apply_sound_volume(int value) override;
     std::expected<void,elysia::config::UserConfigFailure> apply_language(std::string_view language) override;
     std::expected<void,elysia::config::UserConfigFailure> apply_target_fps(double value) override;
-    std::expected<void,elysia::config::UserConfigFailure> apply_window_size(int width,int height) override;
-    std::expected<void,elysia::config::UserConfigFailure> apply_fullscreen(bool value) override;
+    std::expected<void,elysia::config::UserConfigFailure>
+        apply_window_settings(
+            const elysia::bootstrap::WindowSettings& settings) override;
 
 private:
     Application() = default;

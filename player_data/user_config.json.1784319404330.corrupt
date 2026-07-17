@@ -11,12 +11,10 @@
     "fps": 60.0,
     "vsync": true
   },
-  "schema_version": 2,
+  "schema_version": 1,
   "window": {
-    "mode": "windowed",
-    "windowed_size": {
-      "height": 720,
-      "width": 1280
-    }
+    "fullscreen": false,
+    "height": 720,
+    "width": 1280
   }
 }

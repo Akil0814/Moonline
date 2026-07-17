@@ -5,6 +5,7 @@
 #include "engine/io/loaders/asset_config_types.h"
 #include "engine/scene/scene_manager.h"
 #include "engine/scene/runtime/scene_runtime_context.h"
+#include "engine/testbed/scene/elysia_scene.h"
 #include "engine/testbed/scene/engine_feature_test_scene.h"
 #include "engine/testbed/scene/testbed_home_scene.h"
 #include "engine/testbed/scene/testbed_scene_payload.h"
@@ -129,6 +130,12 @@ void test_payload_contract_names_each_scene()
             "UiTestScene"),
         "UiTestScene must name itself when the Testbed payload is missing");
 
+    elysia::testbed::ElysiaScene elysia_scene;
+    require(throws_logic_error_containing(
+            [&elysia_scene] { elysia_scene.on_enter({}); },
+            "ElysiaScene"),
+        "ElysiaScene must name itself when the Testbed payload is missing");
+
     elysia::testbed::EngineFeatureTestScene feature_test_scene;
     const elysia::scene::ScenePayload invalid_payload =
         elysia::testbed::TestbedScenePayload{
@@ -162,6 +169,8 @@ void test_escape_returns_the_full_caller_route()
         elysia::testbed::SceneKeys::UiTest);
     scene_manager.register_engine_scene<elysia::testbed::EngineFeatureTestScene>(
         elysia::testbed::SceneKeys::EngineFeatureTest);
+    scene_manager.register_engine_scene<elysia::testbed::ElysiaScene>(
+        elysia::testbed::SceneKeys::Elysia);
     scene_manager.register_game_scene<FirstReturnScene>(1);
     scene_manager.register_game_scene<SecondReturnScene>(2);
 
@@ -196,6 +205,24 @@ void test_escape_returns_the_full_caller_route()
     send_escape(scene_manager);
     require(scene_manager.current_scene_key() == 2 && SecondReturnScene::marker == 29,
         "EngineFeatureTestScene Escape must return the caller key and payload");
+
+    scene_manager.on_scene_request(elysia::scene::SceneRequest{
+        .type = elysia::scene::SceneRequestType::Switch,
+        .route = elysia::scene::SceneRoute{
+            .target = elysia::testbed::SceneKeys::Elysia,
+            .payload = elysia::testbed::TestbedScenePayload{
+                .return_route = elysia::scene::SceneRoute{
+                    .target = 2,
+                    .payload = ReturnPayload{ .marker = 33 },
+                    .reload_mode = elysia::scene::SceneReloadMode::Reuse
+                }
+            }
+        }
+    });
+    scene_manager.on_update(0.0);
+    send_escape(scene_manager);
+    require(scene_manager.current_scene_key() == 2 && SecondReturnScene::marker == 33,
+        "ElysiaScene Escape must return the caller key and payload");
 
     const elysia::scene::SceneRoute original_caller{
         .target = 1,

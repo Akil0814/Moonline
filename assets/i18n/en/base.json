@@ -9,7 +9,7 @@
   "setting_scene": {
     "title": "Settings",
     "sections": { "display": "Display", "audio": "Audio", "general": "General" },
-    "fields": { "resolution": "Resolution", "fullscreen": "Fullscreen", "master_volume": "Master volume", "music_volume": "Music volume", "sound_volume": "Sound volume", "language": "Language" },
+    "fields": { "window_mode": "Display mode", "window_size": "Window size", "master_volume": "Master volume", "music_volume": "Music volume", "sound_volume": "Sound volume", "language": "Language" },
     "languages": { "en": "English", "zh_cn": "Simplified Chinese", "ja": "Japanese" },
     "actions": { "save": "Save", "back": "Back" }
   },

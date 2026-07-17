@@ -23,8 +23,8 @@
         "general": "General"
       },
       "fields": {
-        "resolution": "Resolution",
-        "fullscreen": "Fullscreen",
+        "window_mode": "Display mode",
+        "window_size": "Window size",
         "master_volume": "Master volume",
         "music_volume": "Music volume",
         "sound_volume": "Sound volume",

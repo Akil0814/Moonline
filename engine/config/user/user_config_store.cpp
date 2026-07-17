@@ -14,9 +14,9 @@ namespace
 {
 using Data = elysia::bootstrap::UserConfigData;
 using Json = elysia::io::json;
-constexpr int k_schema_version = 1;
+constexpr int k_schema_version = 2;
 
-enum class ParseKind { ValidV1, ValidV0, Invalid, Future };
+enum class ParseKind { Valid, Invalid, Future };
 struct ParseResult { ParseKind kind = ParseKind::Invalid; Data data; std::string error; };
 
 bool allowed_fields(const Json& object,std::initializer_list<std::string_view> fields,
@@ -48,6 +48,31 @@ bool boolean(const Json& node,const char* key,bool& out,std::string& error,bool 
     out = node.at(key).get<bool>(); return true;
 }
 
+bool window_mode(
+    const Json& node,
+    elysia::bootstrap::WindowMode& out,
+    std::string& error)
+{
+    if (!node.is_string())
+    {
+        error = "window.mode must be a string.";
+        return false;
+    }
+    const std::string value = node.get<std::string>();
+    if (value == "windowed")
+    {
+        out = elysia::bootstrap::WindowMode::Windowed;
+        return true;
+    }
+    if (value == "borderless_fullscreen")
+    {
+        out = elysia::bootstrap::WindowMode::BorderlessFullscreen;
+        return true;
+    }
+    error = "window.mode must be windowed or borderless_fullscreen.";
+    return false;
+}
+
 bool volume(const Json& node,const char* key,int& out,std::string& error,bool required)
 {
     if (!node.contains(key)) return !required;
@@ -63,72 +88,104 @@ ParseResult parse(const std::filesystem::path& path,const Data& defaults)
     if (!loaded) return {ParseKind::Invalid,{},loaded.error()};
     const Json& root = *loaded;
     if (!root.is_object()) return {ParseKind::Invalid,{},"UserConfig root must be an object."};
-    const bool v1 = root.contains("schema_version");
-    if (v1)
-    {
-        if (!root.at("schema_version").is_number_integer()) return {ParseKind::Invalid,{},"UserConfig schema_version must be an integer."};
-        const int version = root.at("schema_version").get<int>();
-        if (version > k_schema_version) return {ParseKind::Future,{},"UserConfig schema_version is newer than this application."};
-        if (version != k_schema_version) return {ParseKind::Invalid,{},"Unsupported UserConfig schema_version."};
-    }
+    if (!root.contains("schema_version")
+        || !root.at("schema_version").is_number_integer())
+        return {ParseKind::Invalid,{},"UserConfig schema_version must be an integer."};
+    const int version = root.at("schema_version").get<int>();
+    if (version > k_schema_version)
+        return {ParseKind::Future,{},"UserConfig schema_version is newer than this application."};
+    if (version != k_schema_version)
+        return {ParseKind::Invalid,{},"Unsupported UserConfig schema_version."};
     Data data = defaults;
     std::string error;
-    if (!allowed_fields(root,v1
-            ? std::initializer_list<std::string_view>{"schema_version","window","render","audio","localization"}
-            : std::initializer_list<std::string_view>{"window","render","audio","localization"},v1,"root",error))
+    if (!allowed_fields(
+            root,
+            {"schema_version","window","render","audio","localization"},
+            true,
+            "root",
+            error))
         return {ParseKind::Invalid,{},error};
     auto section = [&](const char* name,const Json*& out)
     {
-        if (!root.contains(name)) return !v1;
         if (!root.at(name).is_object()) { error = std::string(name) + " must be an object."; return false; }
         out = &root.at(name); return true;
     };
     const Json* node = nullptr;
     if (!section("window",node)) return {ParseKind::Invalid,{},error};
-    if (node && (!allowed_fields(*node,{"width","height","fullscreen"},v1,"window",error)
-        || !positive_int(*node,"width",data.window_width,error,v1)
-        || !positive_int(*node,"height",data.window_height,error,v1)
-        || !boolean(*node,"fullscreen",data.fullscreen,error,v1))) return {ParseKind::Invalid,{},error};
+    if (!allowed_fields(*node,{"mode","windowed_size"},true,"window",error)
+        || !window_mode(
+            node->at("mode"),
+            data.window.mode,
+            error)
+        || !allowed_fields(
+            node->at("windowed_size"),
+            {"width","height"},
+            true,
+            "window.windowed_size",
+            error)
+        || !positive_int(
+            node->at("windowed_size"),
+            "width",
+            data.window.windowed_size.width,
+            error,
+            true)
+        || !positive_int(
+            node->at("windowed_size"),
+            "height",
+            data.window.windowed_size.height,
+            error,
+            true))
+        return {ParseKind::Invalid,{},error};
     node = nullptr;
     if (!section("render",node)) return {ParseKind::Invalid,{},error};
-    if (node)
-    {
-        if (!allowed_fields(*node,{"fps","vsync"},v1,"render",error)) return {ParseKind::Invalid,{},error};
-        if ((v1 || node->contains("fps")))
-        {
-            if (!node->contains("fps") || !node->at("fps").is_number()) return {ParseKind::Invalid,{},"fps must be numeric."};
-            data.target_fps = node->at("fps").get<double>();
-            if (!std::isfinite(data.target_fps) || data.target_fps <= 0.0) return {ParseKind::Invalid,{},"fps must be finite and positive."};
-        }
-        if (!boolean(*node,"vsync",data.vsync,error,v1)) return {ParseKind::Invalid,{},error};
-    }
+    if (!allowed_fields(*node,{"fps","vsync"},true,"render",error))
+        return {ParseKind::Invalid,{},error};
+    if (!node->at("fps").is_number())
+        return {ParseKind::Invalid,{},"fps must be numeric."};
+    data.target_fps = node->at("fps").get<double>();
+    if (!std::isfinite(data.target_fps) || data.target_fps <= 0.0)
+        return {ParseKind::Invalid,{},"fps must be finite and positive."};
+    if (!boolean(*node,"vsync",data.vsync,error,true))
+        return {ParseKind::Invalid,{},error};
     node = nullptr;
     if (!section("audio",node)) return {ParseKind::Invalid,{},error};
-    if (node && (!allowed_fields(*node,{"master_volume","music_volume","sound_volume"},v1,"audio",error)
-        || !volume(*node,"master_volume",data.audio.master_volume,error,v1)
-        || !volume(*node,"music_volume",data.audio.music_volume,error,v1)
-        || !volume(*node,"sound_volume",data.audio.sound_volume,error,v1))) return {ParseKind::Invalid,{},error};
+    if (!allowed_fields(*node,{"master_volume","music_volume","sound_volume"},true,"audio",error)
+        || !volume(*node,"master_volume",data.audio.master_volume,error,true)
+        || !volume(*node,"music_volume",data.audio.music_volume,error,true)
+        || !volume(*node,"sound_volume",data.audio.sound_volume,error,true))
+        return {ParseKind::Invalid,{},error};
     node = nullptr;
     if (!section("localization",node)) return {ParseKind::Invalid,{},error};
-    if (node)
-    {
-        if (!allowed_fields(*node,{"language"},v1,"localization",error)) return {ParseKind::Invalid,{},error};
-        if (node->contains("language"))
-        {
-            if (!node->at("language").is_string()) return {ParseKind::Invalid,{},"language must be a string."};
-            const std::string language = node->at("language").get<std::string>();
-            data.language = language.empty() && !v1 ? defaults.language : language;
-            if (data.language.empty()) return {ParseKind::Invalid,{},"language must be non-empty."};
-        }
-        else if (v1) return {ParseKind::Invalid,{},"Missing UserConfig field: localization.language"};
-    }
-    return {v1 ? ParseKind::ValidV1 : ParseKind::ValidV0,std::move(data),{}};
+    if (!allowed_fields(*node,{"language"},true,"localization",error))
+        return {ParseKind::Invalid,{},error};
+    if (!node->at("language").is_string())
+        return {ParseKind::Invalid,{},"language must be a string."};
+    data.language = node->at("language").get<std::string>();
+    if (data.language.empty())
+        return {ParseKind::Invalid,{},"language must be non-empty."};
+    return {ParseKind::Valid,std::move(data),{}};
 }
 
 Json serialize(const Data& data)
 {
+    const char* mode = "invalid";
+    switch (data.window.mode)
+    {
+    case elysia::bootstrap::WindowMode::Windowed:
+        mode = "windowed";
+        break;
+    case elysia::bootstrap::WindowMode::BorderlessFullscreen:
+        mode = "borderless_fullscreen";
+        break;
+    }
     return {{"schema_version",k_schema_version},
-        {"window",{{"width",data.window_width},{"height",data.window_height},{"fullscreen",data.fullscreen}}},
+        {"window",{
+            {"mode",mode},
+            {"windowed_size",{
+                {"width",data.window.windowed_size.width},
+                {"height",data.window.windowed_size.height}
+            }}
+        }},
         {"render",{{"fps",data.target_fps},{"vsync",data.vsync}}},
         {"audio",{{"master_volume",data.audio.master_volume},{"music_volume",data.audio.music_volume},{"sound_volume",data.audio.sound_volume}}},
         {"localization",{{"language",data.language}}}};
@@ -147,7 +204,7 @@ std::expected<void,UserConfigFailure> UserConfigStore::save(const std::filesyste
         if (!path.parent_path().empty()) std::filesystem::create_directories(path.parent_path());
         { std::ofstream output(tmp,std::ios::trunc); if (!output) return std::unexpected(failure(UserConfigError::SaveFailed,"Open temporary UserConfig failed: " + tmp)); output << serialize(data).dump(2); if (!output.good()) return std::unexpected(failure(UserConfigError::SaveFailed,"Write temporary UserConfig failed: " + tmp)); }
         const auto verified = parse(tmp,data);
-        if (verified.kind != ParseKind::ValidV1) return std::unexpected(failure(UserConfigError::SaveFailed,"Temporary UserConfig verification failed: " + verified.error));
+        if (verified.kind != ParseKind::Valid) return std::unexpected(failure(UserConfigError::SaveFailed,"Temporary UserConfig verification failed: " + verified.error));
         if (std::filesystem::exists(bak)) std::filesystem::remove(bak);
         const bool had_primary = std::filesystem::exists(path);
         if (had_primary) std::filesystem::rename(path,bak);
@@ -173,11 +230,9 @@ std::expected<UserConfigLoadResult,UserConfigFailure> UserConfigStore::load(
     {
         const auto primary = parse(path,defaults);
         if (primary.kind == ParseKind::Future) return std::unexpected(failure(UserConfigError::LoadFailed,primary.error));
-        if (primary.kind == ParseKind::ValidV1 || primary.kind == ParseKind::ValidV0)
+        if (primary.kind == ParseKind::Valid)
         {
             result.settings = primary.data;
-            result.migrated = primary.kind == ParseKind::ValidV0;
-            if (result.migrated) { if (auto saved = save(path,result.settings); !saved) return std::unexpected(saved.error()); }
             return result;
         }
         result.warning = primary.error;
@@ -194,9 +249,9 @@ std::expected<UserConfigLoadResult,UserConfigFailure> UserConfigStore::load(
         if (!std::filesystem::exists(candidate)) continue;
         const auto recovered = parse(candidate,defaults);
         if (recovered.kind == ParseKind::Future) return std::unexpected(failure(UserConfigError::LoadFailed,recovered.error));
-        if (recovered.kind == ParseKind::ValidV1 || recovered.kind == ParseKind::ValidV0)
+        if (recovered.kind == ParseKind::Valid)
         {
-            result.settings = recovered.data; result.recovered = true; result.migrated = recovered.kind == ParseKind::ValidV0;
+            result.settings = recovered.data; result.recovered = true;
             if (auto saved = save(path,result.settings); !saved) return std::unexpected(saved.error());
             return result;
         }

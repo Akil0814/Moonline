@@ -5,9 +5,33 @@
 #include "engine/config/user_config_service.h"
 #include "tests/support/test_assertions.h"
 
+#include <filesystem>
+
 int main()
 {
-    const auto result = elysia::bootstrap::Bootstrapper::instance()->parse_runtime_settings();
+    const std::filesystem::path source_root = MOONLINE_SOURCE_DIR;
+    const std::filesystem::path test_root =
+        std::filesystem::temp_directory_path()
+        / "moonline_bootstrap_config_integration_tests";
+    std::filesystem::remove_all(test_root);
+    for (const char* directory : {
+            "assets/audio",
+            "assets/textures",
+            "assets/fonts" })
+    {
+        std::filesystem::create_directories(test_root / directory);
+    }
+    std::filesystem::copy_file(
+        source_root / "assets/content_registry.json",
+        test_root / "assets/content_registry.json");
+    std::filesystem::copy(
+        source_root / "assets/configs",
+        test_root / "assets/configs",
+        std::filesystem::copy_options::recursive);
+
+    const auto result =
+        elysia::bootstrap::Bootstrapper::instance()
+            ->parse_runtime_settings(test_root);
     moonline::tests::require(result.success,"Bootstrapper must load AppConfig and UserConfig");
 	moonline::tests::require(
 		result.content_registry.required.configs.filename() == "config_manifest.json"
@@ -22,5 +46,6 @@ int main()
         "UserConfig startup behavior must remain integrated");
     configs->shutdown();
     elysia::config::UserConfigService::instance()->shutdown();
+    std::filesystem::remove_all(test_root);
     return 0;
 }

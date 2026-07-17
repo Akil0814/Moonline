@@ -51,6 +51,13 @@ add_moonline_test(application_sdl_presentation_tests
     SDL
 )
 
+add_moonline_test(application_window_settings_tests
+    LABEL application
+    SOURCES application/application_window_settings_tests.cpp
+    LIBRARIES ${SDL2_LIBRARIES}
+    SDL
+)
+
 add_moonline_test(font_resolver_tests
     LABEL typography
     SOURCES typography/font_resolver_tests.cpp

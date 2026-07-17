@@ -140,6 +140,11 @@ void test_scene_key_domains_and_payload_helpers()
     static_assert(SceneKeys::is_game(999));
     static_assert(!SceneKeys::is_game(1000));
     static_assert(SceneKeys::is_reserved(1000));
+    static_assert(SceneKeys::ElysiaEasterEgg == 1111);
+    static_assert(SceneKeys::is_easter_egg(1111));
+    static_assert(SceneKeys::is_supported(1111));
+    static_assert(!SceneKeys::is_reserved(1111));
+    static_assert(SceneKeys::is_reserved(1110));
     static_assert(SceneKeys::is_reserved(SceneKeys::EngineMarker));
     static_assert(!SceneKeys::is_engine(SceneKeys::EngineMarker));
     static_assert(SceneKeys::is_engine(SceneKeys::EngineBegin));
@@ -168,13 +173,23 @@ void test_registration_and_route_key_errors_are_distinct()
         "game range"), "game registration must reject reserved keys");
     require(throws_logic_error_containing(
         [&manager] { manager.register_engine_scene<FirstProbeScene>(SceneKeys::EngineMarker); },
-        "engine-owned range"), "engine-owned registration must reject the engine marker");
+        "engine-owned keys"), "engine-owned registration must reject the engine marker");
     require(throws_logic_error_containing(
         [&manager] { manager.register_engine_scene<FirstProbeScene>(999); },
-        "engine-owned range"), "engine-owned registration must reject game keys");
+        "engine-owned keys"), "engine-owned registration must reject game keys");
     require(throws_logic_error_containing(
         [&manager] { manager.register_scene<FirstProbeScene>(1000); },
         "reserved range"), "generic registration must reject reserved keys");
+
+    SceneManager easter_egg_manager;
+    easter_egg_manager.register_scene<FirstProbeScene>(
+        SceneKeys::ElysiaEasterEgg);
+    require(throws_logic_error_containing(
+        [&easter_egg_manager] {
+            easter_egg_manager.register_engine_scene<SecondProbeScene>(
+                SceneKeys::ElysiaEasterEgg);
+        },
+        "duplicate"), "the Elysia Easter egg key must use engine-owned registration");
 
     manager.register_game_scene<FirstProbeScene>(1);
     require(throws_logic_error_containing(

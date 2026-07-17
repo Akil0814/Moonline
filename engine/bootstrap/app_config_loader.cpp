@@ -41,6 +41,34 @@ bool volume(const Json& node,const char* key,int& value,std::string& error)
     if (parsed < 0 || parsed > 100) { error = std::string("AppConfig volume must be within 0..100: ") + key; return false; }
     value = static_cast<int>(parsed); return true;
 }
+
+bool window_mode(
+    const Json& node,
+    WindowMode& value,
+    std::string& error)
+{
+    if (!node.is_string())
+    {
+        error = "AppConfig window.mode must be a string.";
+        return false;
+    }
+
+    const std::string mode = node.get<std::string>();
+    if (mode == "windowed")
+    {
+        value = WindowMode::Windowed;
+        return true;
+    }
+    if (mode == "borderless_fullscreen")
+    {
+        value = WindowMode::BorderlessFullscreen;
+        return true;
+    }
+
+    error =
+        "AppConfig window.mode must be windowed or borderless_fullscreen.";
+    return false;
+}
 }
 
 std::expected<AppConfig,AppConfigLoader::Failure> AppConfigLoader::load(
@@ -52,9 +80,19 @@ std::expected<AppConfig,AppConfigLoader::Failure> AppConfigLoader::load(
     std::string error;
     if (!exact_fields(root,{"schema_version","window","render","audio","localization"},"root",error))
         return std::unexpected(Failure{error});
-    if (!root.at("schema_version").is_number_integer() || root.at("schema_version").get<int>() != 1)
-        return std::unexpected(Failure{"AppConfig schema_version must be 1."});
-    if (!exact_fields(root.at("window"),{"title","width","height","fullscreen"},"window",error)
+    if (!root.at("schema_version").is_number_integer()
+        || root.at("schema_version").get<int>() != 2)
+        return std::unexpected(Failure{"AppConfig schema_version must be 2."});
+    if (!exact_fields(
+            root.at("window"),
+            {"title","mode","windowed_size"},
+            "window",
+            error)
+        || !exact_fields(
+            root.at("window").at("windowed_size"),
+            {"width","height"},
+            "window.windowed_size",
+            error)
         || !exact_fields(root.at("render"),{"fps","vsync"},"render",error)
         || !exact_fields(root.at("audio"),{"master_volume","music_volume","sound_volume"},"audio",error)
         || !exact_fields(root.at("localization"),{"language"},"localization",error))
@@ -64,11 +102,23 @@ std::expected<AppConfig,AppConfigLoader::Failure> AppConfigLoader::load(
     const Json& window = root.at("window");
     if (!window.at("title").is_string() || (result.window_title = window.at("title").get<std::string>()).empty())
         return std::unexpected(Failure{"AppConfig window.title must be a non-empty string."});
-    if (!positive_int(window,"width",result.user_defaults.window_width,error)
-        || !positive_int(window,"height",result.user_defaults.window_height,error))
+    if (!window_mode(
+            window.at("mode"),
+            result.user_defaults.window.mode,
+            error))
         return std::unexpected(Failure{error});
-    if (!window.at("fullscreen").is_boolean()) return std::unexpected(Failure{"AppConfig window.fullscreen must be boolean."});
-    result.user_defaults.fullscreen = window.at("fullscreen").get<bool>();
+    const Json& windowed_size = window.at("windowed_size");
+    if (!positive_int(
+            windowed_size,
+            "width",
+            result.user_defaults.window.windowed_size.width,
+            error)
+        || !positive_int(
+            windowed_size,
+            "height",
+            result.user_defaults.window.windowed_size.height,
+            error))
+        return std::unexpected(Failure{error});
 
     const Json& render = root.at("render");
     if (!render.at("fps").is_number()) return std::unexpected(Failure{"AppConfig render.fps must be numeric."});

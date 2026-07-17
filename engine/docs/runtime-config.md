@@ -37,12 +37,16 @@ Bootstrap 不解析或发布 gameplay 配置。内容加载、资源组装或资
 
 ## AppConfig 与 UserConfig
 
-`assets/configs/global/app_config.json` 使用严格 version 1 schema，提供窗口标题和窗口、渲染、音频、本地化的默认值：
+`assets/configs/global/app_config.json` 使用严格 version 2 schema，提供窗口标题和窗口、渲染、音频、本地化的默认值。逻辑分辨率不属于用户配置，只由 `ApplicationDescriptor` 提供：
 
 ```json
 {
-  "schema_version": 1,
-  "window": { "title": "Moonline", "width": 1280, "height": 720, "fullscreen": false },
+  "schema_version": 2,
+  "window": {
+    "title": "Moonline",
+    "mode": "windowed",
+    "windowed_size": { "width": 1280, "height": 720 }
+  },
   "render": { "fps": 60, "vsync": true },
   "audio": { "master_volume": 100, "music_volume": 100, "sound_volume": 100 },
   "localization": { "language": "en" }
@@ -51,7 +55,9 @@ Bootstrap 不解析或发布 gameplay 配置。内容加载、资源组装或资
 
 未知、缺失、重复或非法字段会使启动失败。窗口宽高和 FPS 必须为正，音量范围为 `0..100`，标题和语言不能为空。
 
-`player_data/user_config.json` 保存完整的 window、render、audio 与 localization 快照，但不保存窗口标题。它支持旧 v0 文件迁移、`.tmp`/`.bak` 恢复和损坏主文件归档；未来版本文件不会被自动覆盖。
+`player_data/user_config.json` 保存完整的 window、render、audio 与 localization 快照，但不保存窗口标题。AppConfig 和 UserConfig 都只接受严格 v2；旧 v0/v1 UserConfig 会作为无效配置归档，并以 AppConfig 默认值重建。`.tmp`/`.bak` 恢复、损坏主文件归档和未来版本保护继续保留。
+
+窗口模式只接受 `windowed` 和 `borderless_fullscreen`。`windowed_size` 始终记录窗口模式使用的大小；进入无边框桌面全屏不会覆盖它。
 
 内建 `SettingsScene` 使用草稿式提交：控件编辑不会立即修改运行时；Save 通过
 `UserConfigService::apply_and_save_user_config()` 批量应用并持久化。事务显式携带进入页面（或上次保存成功）时的

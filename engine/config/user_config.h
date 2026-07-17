@@ -13,9 +13,8 @@ class IUserConfigChangeHandler;
 class UserConfig
 {
 public:
-    [[nodiscard]] int window_width() const noexcept;
-    [[nodiscard]] int window_height() const noexcept;
-    [[nodiscard]] bool fullscreen() const noexcept;
+    [[nodiscard]] const elysia::bootstrap::WindowSettings&
+        window_settings() const noexcept;
     [[nodiscard]] double target_fps() const noexcept;
     [[nodiscard]] bool vsync() const noexcept;
     [[nodiscard]] int master_volume() const noexcept;
@@ -23,8 +22,8 @@ public:
     [[nodiscard]] int sound_volume() const noexcept;
     [[nodiscard]] std::string_view language() const noexcept;
 
-    [[nodiscard]] std::expected<UserConfigApplyStatus,UserConfigFailure> set_window_size(int width,int height);
-    [[nodiscard]] std::expected<UserConfigApplyStatus,UserConfigFailure> set_fullscreen(bool value);
+    [[nodiscard]] std::expected<UserConfigApplyStatus,UserConfigFailure>
+        set_window_settings(const elysia::bootstrap::WindowSettings& settings);
     [[nodiscard]] std::expected<UserConfigApplyStatus,UserConfigFailure> set_target_fps(double value);
     [[nodiscard]] std::expected<UserConfigApplyStatus,UserConfigFailure> set_vsync(bool value);
     [[nodiscard]] std::expected<UserConfigApplyStatus,UserConfigFailure> set_master_volume(int value);

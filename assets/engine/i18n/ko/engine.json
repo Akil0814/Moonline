@@ -23,8 +23,8 @@
         "general": "일반"
       },
       "fields": {
-        "resolution": "해상도",
-        "fullscreen": "전체 화면",
+        "window_mode": "표시 모드",
+        "window_size": "창 크기",
         "master_volume": "마스터 볼륨",
         "music_volume": "음악 볼륨",
         "sound_volume": "효과음 볼륨",

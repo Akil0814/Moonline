@@ -1,6 +1,7 @@
 #include "application.h"
 
 #include "application_event_boundary.h"
+#include "application_window_settings.h"
 #include "application_exit_policy.h"
 #include "application_scene_composition.h"
 #include "application_sdl_presentation.h"
@@ -266,18 +267,24 @@ bool Application::init_runtime(
         settings.window_title.c_str(),
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        settings.window_width,
-        settings.window_height,
+        settings.window.windowed_size.width,
+        settings.window.windowed_size.height,
         SDL_WINDOW_SHOWN);
     if (!check_startup_step(_window != nullptr,"platform","SDL_CreateWindow Error"))
         return false;
 
-    if (settings.fullscreen
+    if (settings.window.mode
+            == elysia::bootstrap::WindowMode::BorderlessFullscreen
         && SDL_SetWindowFullscreen(_window,SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)
     {
-        ELYSIA_LOG_WARN("application","Failed to enter fullscreen: " << SDL_GetError());
+        ELYSIA_LOG_WARN(
+            "application",
+            "Failed to enter borderless fullscreen: " << SDL_GetError());
         SDL_ClearError();
-        SDL_SetWindowSize(_window,settings.window_width,settings.window_height);
+        SDL_SetWindowSize(
+            _window,
+            settings.window.windowed_size.width,
+            settings.window.windowed_size.height);
         SDL_SetWindowPosition(_window,SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED);
     }
 
@@ -561,23 +568,42 @@ Application::apply_target_fps(double value)
 }
 
 std::expected<void,elysia::config::UserConfigFailure>
-Application::apply_window_size(int width,int height)
+Application::apply_window_settings(
+    const elysia::bootstrap::WindowSettings& settings)
 {
     if (!_window)
-        return runtime_apply_failure("window_size","Application window is unavailable.");
-    SDL_SetWindowSize(_window,width,height);
-    return {};
-}
-
-std::expected<void,elysia::config::UserConfigFailure>
-Application::apply_fullscreen(bool value)
-{
-    if (!_window)
-        return runtime_apply_failure("fullscreen","Application window is unavailable.");
-
-    const Uint32 flags = value ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
-    if (SDL_SetWindowFullscreen(_window,flags) != 0)
-        return runtime_apply_failure("fullscreen",SDL_GetError());
+        return runtime_apply_failure(
+            "window_settings",
+            "Application window is unavailable.");
+    const auto result = detail::apply_window_settings(
+        settings,
+        detail::ApplicationWindowOperations{
+            .set_fullscreen = [this](Uint32 flags)
+            {
+                return SDL_SetWindowFullscreen(_window,flags);
+            },
+            .set_size = [this](int width,int height)
+            {
+                SDL_SetWindowSize(_window,width,height);
+            },
+            .center = [this]()
+            {
+                SDL_SetWindowPosition(
+                    _window,
+                    SDL_WINDOWPOS_CENTERED,
+                    SDL_WINDOWPOS_CENTERED);
+            },
+            .error_message = []()
+            {
+                return std::string(SDL_GetError());
+            }
+        });
+    if (!result)
+    {
+        return runtime_apply_failure(
+            "window_settings",
+            result.error());
+    }
     return {};
 }
 }

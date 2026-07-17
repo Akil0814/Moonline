@@ -3,7 +3,7 @@
   "setting_scene": {
     "title": "设置",
     "sections": { "display": "显示", "audio": "音频", "general": "通用" },
-    "fields": { "resolution": "分辨率", "fullscreen": "全屏", "master_volume": "主音量", "music_volume": "音乐音量", "sound_volume": "音效音量", "language": "语言" },
+    "fields": { "window_mode": "显示模式", "window_size": "窗口大小", "master_volume": "主音量", "music_volume": "音乐音量", "sound_volume": "音效音量", "language": "语言" },
     "languages": { "en": "English", "zh-Hans": "简体中文", "zh-Hant": "繁體中文", "ja": "日本語", "ko": "한국어" },
     "actions": { "save": "保存", "back": "返回" }
   }

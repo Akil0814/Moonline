@@ -80,7 +80,6 @@ StartupParseResult Bootstrapper::parse_runtime_settings(
     result.startup_settings.window_title = app_config_result->window_title;
     result.i18n_manifest_path = content_registry.required.i18n;
     result.rebuilt_user_config = config_result->rebuilt_user_config;
-	result.migrated_user_config = config_result->migrated;
 	result.recovered_user_config = config_result->recovered;
 	_startup_preload_loader.set_manifest_path(content_registry.bootstrap.preload_manifest);
 	result.content_registry = std::move(content_registry);

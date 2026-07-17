@@ -23,8 +23,8 @@
         "general": "通用"
       },
       "fields": {
-        "resolution": "分辨率",
-        "fullscreen": "全屏",
+        "window_mode": "显示模式",
+        "window_size": "窗口大小",
         "master_volume": "主音量",
         "music_volume": "音乐音量",
         "sound_volume": "音效音量",

@@ -71,9 +71,8 @@ public:
     std::expected<void,elysia::config::UserConfigFailure>
         apply_target_fps(double) override { return {}; }
     std::expected<void,elysia::config::UserConfigFailure>
-        apply_window_size(int,int) override { return {}; }
-    std::expected<void,elysia::config::UserConfigFailure>
-        apply_fullscreen(bool) override { return {}; }
+        apply_window_settings(
+            const elysia::bootstrap::WindowSettings&) override { return {}; }
 };
 
 bool throws_logic_error_containing(
