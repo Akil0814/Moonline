@@ -14,6 +14,11 @@ class UiFadeImage;
 class UiBlinkLabel;
 }
 
+namespace elysia::typography
+{
+class FontResolver;
+}
+
 namespace elysia::scene::builtin
 {
 class StartupLoadingScene final : public Scene
@@ -42,6 +47,8 @@ private:
     void on_project_logo_finished();
     void mark_intro_finished();
     void mark_loading_finished();
+    bool activate_project_fonts(
+        elysia::typography::FontResolver* font_resolver);
     void handle_logo_action(StartupLogoAction action);
     void handle_completion_action(StartupLoadingAction action);
     void transition_to_success();

@@ -1,5 +1,7 @@
 #define SDL_MAIN_HANDLED
 
+#include "engine/assist/engine_assist_cache.h"
+#include "engine/assist/engine_assist_catalog.h"
 #include "engine/core/time.h"
 #include "engine/effects/effect_manager.h"
 #include "engine/io/path/path_manager.h"
@@ -7,9 +9,11 @@
 #include "engine/resources/resource_manager.h"
 #include "engine/scene/scene.h"
 #include "engine/scene/scene_manager.h"
+#include "engine/typography/font_resolver.h"
 #include "tests/support/test_assertions.h"
 
 #include <SDL.h>
+#include <SDL_image.h>
 #include <SDL_ttf.h>
 
 #include <cmath>
@@ -47,6 +51,8 @@ struct FloatingNumberEffectFixture
     FloatingNumberEffectFixture()
     {
         require(SDL_Init(SDL_INIT_VIDEO) == 0, "floating number tests must initialize SDL video");
+        require((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) == IMG_INIT_PNG,
+            "floating number tests must initialize PNG support");
         require(TTF_Init() == 0, "floating number tests must initialize SDL_ttf");
         surface = SDL_CreateRGBSurfaceWithFormat(0, 128, 128, 32, SDL_PIXELFORMAT_RGBA32);
         require(surface != nullptr, "floating number tests must create a surface");
@@ -62,6 +68,7 @@ struct FloatingNumberEffectFixture
         SDL_DestroyRenderer(renderer);
         SDL_FreeSurface(surface);
         TTF_Quit();
+        IMG_Quit();
         SDL_Quit();
     }
 
@@ -85,23 +92,31 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
     localization_manager->shutdown();
     resource_manager->clear();
     require(path_manager->init(), "floating number tests must initialize the project path manager");
+    assist::EngineAssistCache engine_cache;
+    require(engine_cache.initialize(
+        renderer,
+        assist::EngineAssistCatalog(*path_manager)).has_value(),
+        "floating number tests must initialize Engine assist fonts");
+    typography::FontResolver font_resolver;
     require(localization_manager->init(
         renderer,
         path_manager->configs() / "manifests" / "i18n_manifest.json",
-        "en"), "floating number tests must initialize localization");
+        "en",
+        &font_resolver,
+        &engine_cache), "floating number tests must initialize localization");
+    require(font_resolver.configure(
+        application::ApplicationFontSettings{},
+        engine_cache,
+        *resource_manager,
+        localization_manager->supported_languages()).has_value(),
+        "floating number tests must configure Engine fonts");
+    effect_manager->set_font_resolver(&font_resolver);
 
     effects::FloatingNumberEffectSpawnRequest request;
     request.text = "12%";
     request.color = effects::FloatingNumberColor::Yellow;
     request.position = core::Vector2(50.0f, 50.0f);
     request.target_height = 20.0f;
-    require(effect_manager->create_floating_number_effect(request) == nullptr,
-        "floating number creation must fail safely when the digit font is missing");
-    require(resource_manager->load_font(
-        "ui.latin.20",
-        path_manager->fonts() / "fusion-pixel-10px-proportional-latin.ttf",
-        20), "floating number tests must load the base digit font");
-
     request.text.clear();
     require(effect_manager->create_floating_number_effect(request) == nullptr,
         "empty floating number text must be rejected");
@@ -291,6 +306,10 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
     require(!effect_manager->spawn_floating_number_effect(scene_request),
         "floating number spawning must fail after active scene shutdown");
 
+    effect_manager->set_font_resolver(nullptr);
+    localization_manager->shutdown();
+    font_resolver.shutdown();
+    engine_cache.shutdown();
 }
 
 int main()

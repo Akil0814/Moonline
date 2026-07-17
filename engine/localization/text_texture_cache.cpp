@@ -23,7 +23,8 @@ bool TextTextureCacheKey::operator==(const TextTextureCacheKey& other) const
 	return language == other.language
 		&& translation_key == other.translation_key
 		&& is_raw_text == other.is_raw_text
-		&& point_size == other.point_size
+		&& typography_role == other.typography_role
+		&& font_generation == other.font_generation
 		&& wrap_width == other.wrap_width
 		&& color == other.color;
 }
@@ -33,7 +34,9 @@ size_t TextTextureCacheKeyHash::operator()(const TextTextureCacheKey& key) const
 	size_t seed = std::hash<std::string>{}(key.language);
 	hash_combine(seed, std::hash<std::string>{}(key.translation_key));
 	hash_combine(seed, std::hash<bool>{}(key.is_raw_text));
-	hash_combine(seed, std::hash<int>{}(key.point_size));
+	hash_combine(seed, std::hash<int>{}(
+		static_cast<int>(key.typography_role)));
+	hash_combine(seed, std::hash<std::uint64_t>{}(key.font_generation));
 	hash_combine(seed, std::hash<int>{}(key.wrap_width));
 	hash_combine(seed, std::hash<unsigned int>{}(key.color.r));
 	hash_combine(seed, std::hash<unsigned int>{}(key.color.g));
@@ -44,6 +47,7 @@ size_t TextTextureCacheKeyHash::operator()(const TextTextureCacheKey& key) const
 
 SDL_Texture* TextTextureCache::get_or_create(
 	const std::string& language,
+	std::uint64_t font_generation,
 	std::string_view translation_key,
 	const LocalizedTextStyle& style,
 	const TextureFactory& texture_factory
@@ -53,7 +57,8 @@ SDL_Texture* TextTextureCache::get_or_create(
 	key.language = language;
 	key.translation_key = std::string(translation_key);
 	key.is_raw_text = false;
-	key.point_size = style.point_size;
+	key.typography_role = style.typography_role;
+	key.font_generation = font_generation;
 	key.color = style.color;
 	key.wrap_width = style.wrap_width;
 
@@ -75,6 +80,7 @@ SDL_Texture* TextTextureCache::get_or_create(
 
 SDL_Texture* TextTextureCache::get_or_create_raw(
 	const std::string& language,
+	std::uint64_t font_generation,
 	std::string_view raw_text,
 	const LocalizedTextStyle& style,
 	const TextureFactory& texture_factory
@@ -84,7 +90,8 @@ SDL_Texture* TextTextureCache::get_or_create_raw(
 	key.language = language;
 	key.translation_key = std::string(raw_text);
 	key.is_raw_text = true;
-	key.point_size = style.point_size;
+	key.typography_role = style.typography_role;
+	key.font_generation = font_generation;
 	key.color = style.color;
 	key.wrap_width = style.wrap_width;
 

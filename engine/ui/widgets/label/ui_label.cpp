@@ -68,7 +68,7 @@ void UiLabel::submit_ui_render_commands(std::vector<elysia::core::UiRenderComman
 
     const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
     elysia::localization::LocalizedTextStyle text_style;
-    text_style.point_size = typography.point_size;
+    text_style.typography_role = _typography_role;
     text_style.color = style.text;
     text_style.wrap_width = typography.wrap_allowed ? std::max(0,static_cast<int>(content_rect().width())) : 0;
 

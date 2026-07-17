@@ -3,8 +3,8 @@
 
 #include "../animation/animation_manager.h"
 #include "../localization/localization_manager.h"
-#include "../resources/resource_manager.h"
 #include "../scene/scene.h"
+#include "../typography/font_resolver.h"
 
 #include <algorithm>
 #include <cmath>
@@ -83,6 +83,16 @@ void apply_effect_anchor(AnimationEffect& effect, const AnimationEffectSpawnRequ
 {
 	effect.set_position(get_effect_top_left(request.position, effect.size(), request.anchor));
 }
+}
+
+void EffectManager::set_font_resolver(
+	const elysia::typography::FontResolver* font_resolver) noexcept
+{
+	if (_font_resolver == font_resolver)
+		return;
+
+	_floating_number_glyph_cache.reset();
+	_font_resolver = font_resolver;
 }
 
 bool EffectManager::register_animation_effect(const std::vector<elysia::resources::AnimationEffectBuildRequest>& requests)
@@ -250,8 +260,27 @@ std::unique_ptr<FloatingNumberEffect> EffectManager::create_floating_number_effe
 	elysia::localization::LocalizationManager* localization_manager =
 		elysia::localization::LocalizationManager::instance();
 	SDL_Renderer* renderer = localization_manager ? localization_manager->renderer() : nullptr;
-	TTF_Font* font = elysia::resources::ResourceManager::instance()->find_font("ui.latin.20");
-	if (!_floating_number_glyph_cache.configure(renderer,font))
+	if (!_font_resolver)
+	{
+		ELYSIA_LOG_WARN("effects",
+			"Create floating number effect failed: FontResolver is unavailable.");
+		return nullptr;
+	}
+
+	const auto resolved_font = _font_resolver->resolve_effect(
+		elysia::typography::EffectTypographyRole::FloatingNumber);
+	if (!resolved_font)
+	{
+		ELYSIA_LOG_WARN("effects",
+			"Create floating number effect failed: "
+			<< resolved_font.error().message);
+		return nullptr;
+	}
+
+	if (!_floating_number_glyph_cache.configure(
+			renderer,
+			resolved_font->font,
+			resolved_font->generation))
 	{
 		ELYSIA_LOG_WARN("effects", "Create floating number effect failed: glyph cache dependencies are unavailable.");
 		return nullptr;

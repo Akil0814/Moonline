@@ -10,9 +10,11 @@
 #include "../audio/audio_service.h"
 #include "../bootstrap/bootstrapper.h"
 #include "../core/time.h"
+#include "../effects/effect_manager.h"
 #include "../loading/content_runtime_cleanup.h"
 #include "../localization/localization_manager.h"
 #include "../io/path/path_manager.h"
+#include "../resources/resource_manager.h"
 #include "../tools/logger.h"
 
 #include <exception>
@@ -133,10 +135,24 @@ bool Application::init(
         _renderer,
         parse_result.i18n_manifest_path,
         runtime_settings.language,
+        &_font_resolver,
         &_engine_assist_cache))
     {
         return startup_fail("localization","Localization initialization failed.");
     }
+
+    if (const auto font_result = _font_resolver.configure(
+            descriptor.presentation.fonts,
+            _engine_assist_cache,
+            *elysia::resources::ResourceManager::instance(),
+            elysia::localization::LocalizationManager::instance()
+                ->supported_languages());
+        !font_result)
+    {
+        return startup_fail("typography",font_result.error().message);
+    }
+    elysia::effects::EffectManager::instance()->set_font_resolver(
+        &_font_resolver);
 
     elysia::config::UserConfigService::instance()->register_user_config_change_handler(*this);
     _user_config_handler_registered = true;
@@ -175,7 +191,8 @@ bool Application::init(
         _content_registry,
         descriptor.logical_width,
         descriptor.logical_height,
-        &_engine_assist_cache);
+        &_engine_assist_cache,
+        &_font_resolver);
     _scene_manager.set_runtime_context(*_scene_runtime_context);
 
     return enter_initial_scene(game_module,descriptor);
@@ -426,6 +443,10 @@ void Application::shutdown()
 
     elysia::localization::LocalizationManager::instance()->shutdown();
     elysia::bootstrap::Bootstrapper::instance()->release_preload_textures();
+    _font_resolver.deactivate_project_fonts();
+    elysia::effects::EffectManager::instance()->set_font_resolver(nullptr);
+    elysia::loading::clear_loaded_content();
+    _font_resolver.shutdown();
     _engine_assist_cache.shutdown();
     if (_user_config_handler_registered)
     {
@@ -435,7 +456,6 @@ void Application::shutdown()
     }
     elysia::config::UserConfigService::instance()->shutdown();
     elysia::audio::AudioService::instance()->shutdown();
-    elysia::loading::clear_loaded_content();
 
     SDL_DestroyRenderer(_renderer);
     _renderer = nullptr;

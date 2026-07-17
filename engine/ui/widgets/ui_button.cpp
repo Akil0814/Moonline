@@ -214,7 +214,7 @@ void UiButton::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
 
     const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
     elysia::localization::LocalizedTextStyle text_style;
-    text_style.point_size = typography.point_size;
+    text_style.typography_role = _typography_role;
     text_style.color = current_text_color();
     text_style.wrap_width = typography.wrap_allowed ? std::max(0,static_cast<int>(content_rect().width())) : 0;
 

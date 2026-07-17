@@ -8,6 +8,7 @@
 
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <optional>
 #include <string_view>
@@ -41,10 +42,12 @@ struct FloatingNumberGlyph
 class FloatingNumberGlyphCache
 {
 public:
-    static constexpr int k_point_size = 20;
     static constexpr std::size_t k_color_count = static_cast<std::size_t>(FloatingNumberColor::Count);
 
-    [[nodiscard]] bool configure(SDL_Renderer* renderer, TTF_Font* font) noexcept;
+    [[nodiscard]] bool configure(
+        SDL_Renderer* renderer,
+        TTF_Font* font,
+        std::uint64_t font_generation) noexcept;
     [[nodiscard]] std::optional<FloatingNumberGlyph> glyph(FloatingNumberColor color, char ch);
     [[nodiscard]] std::optional<std::vector<FloatingNumberGlyph>> resolve(
         std::string_view text,
@@ -66,5 +69,6 @@ private:
     std::array<std::unordered_map<char,FloatingNumberGlyph>,k_color_count> _glyphs;
     SDL_Renderer* _renderer = nullptr;
     TTF_Font* _font = nullptr;
+    std::uint64_t _font_generation = 0;
 };
 }

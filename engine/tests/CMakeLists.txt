@@ -51,6 +51,16 @@ add_moonline_test(application_sdl_presentation_tests
     SDL
 )
 
+add_moonline_test(font_resolver_tests
+    LABEL typography
+    SOURCES typography/font_resolver_tests.cpp
+    LIBRARIES ${SDL2_LIBRARIES}
+    SDL
+)
+target_compile_definitions(font_resolver_tests
+    PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+)
+
 add_moonline_test(startup_failure_scene_tests
     LABEL scene
     SOURCES scene/startup_failure_scene_tests.cpp
