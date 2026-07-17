@@ -29,12 +29,14 @@ public:
 private:
     void translate_event(const SDL_Event& event, InputDevice event_device);
     InputTranslator* select_translator(InputDevice device);
-    RawInputEvent convert_mouse_event_to_logical(const RawInputEvent& event) const;
+    RawInputEvent normalize_mouse_event(const RawInputEvent& event) const;
     void update_mouse_frame_cache(const RawInputEvent& event);
+    void refresh_mouse_position();
     void convert_window_to_logical(int window_x, int window_y, int& logical_x, int& logical_y) const;
     void apply_event(const RawInputEvent& event);
     void append_event(const RawInputEvent& event);
     bool should_clear_state_for_event(const SDL_Event& event) const;
+    bool is_window_size_changed_event(const SDL_Event& event) const;
 
 private:
     RawInputState _state;

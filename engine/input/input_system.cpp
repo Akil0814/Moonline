@@ -4,6 +4,17 @@
 
 namespace elysia::input
 {
+namespace
+{
+[[nodiscard]] bool has_mouse_position(const RawInputEvent& event) noexcept
+{
+    return event.device == InputDevice::Mouse
+        && (event.type == RawInputEventType::MouseMoved
+            || event.type == RawInputEventType::MouseWheel
+            || event.mouse_button != 0);
+}
+}
+
 void InputSystem::init()
 {
     _controller_manager.init();
@@ -36,6 +47,12 @@ void InputSystem::process_event(const SDL_Event& event)
         _state.clear();
         _device_tracker.reset();
         _gamepad_translator.reset();
+        return;
+    }
+
+    if (is_window_size_changed_event(event))
+    {
+        refresh_mouse_position();
         return;
     }
 
@@ -98,7 +115,7 @@ void InputSystem::translate_event(const SDL_Event& event, InputDevice event_devi
 
     for (const RawInputEvent& input_event : input_events)
     {
-        append_event(convert_mouse_event_to_logical(input_event));
+        append_event(normalize_mouse_event(input_event));
     }
 }
 
@@ -117,27 +134,35 @@ InputTranslator* InputSystem::select_translator(InputDevice device)
     return nullptr;
 }
 
-RawInputEvent InputSystem::convert_mouse_event_to_logical(const RawInputEvent& event) const
+RawInputEvent InputSystem::normalize_mouse_event(const RawInputEvent& event) const
 {
-    if (event.device != InputDevice::Mouse)
-    {
-        return event;
-    }
-
     RawInputEvent converted_event = event;
-    const bool has_position = event.type == RawInputEventType::MouseMoved
-        || event.mouse_button != 0;
-    if (!has_position)
+    if (!has_mouse_position(event))
     {
         return converted_event;
     }
 
-    convert_window_to_logical(
-        event.mouse_x,
-        event.mouse_y,
-        converted_event.mouse_x,
-        converted_event.mouse_y
-    );
+    // SDL_RenderSetLogicalSize filters mouse motion and button events into
+    // logical coordinates before SDL_PollEvent returns them. Wheel events do
+    // not carry a position, so their SDL_GetMouseState coordinates still need
+    // to be normalized here.
+    if (event.type == RawInputEventType::MouseWheel)
+    {
+        if (_has_mouse_position)
+        {
+            converted_event.mouse_x = _mouse_x;
+            converted_event.mouse_y = _mouse_y;
+        }
+        else
+        {
+            convert_window_to_logical(
+                event.mouse_x,
+                event.mouse_y,
+                converted_event.mouse_x,
+                converted_event.mouse_y
+            );
+        }
+    }
 
     if (event.type == RawInputEventType::MouseMoved)
     {
@@ -163,14 +188,7 @@ RawInputEvent InputSystem::convert_mouse_event_to_logical(const RawInputEvent& e
 
 void InputSystem::update_mouse_frame_cache(const RawInputEvent& event)
 {
-    if (event.device != InputDevice::Mouse)
-    {
-        return;
-    }
-
-    const bool has_position = event.type == RawInputEventType::MouseMoved
-        || event.mouse_button != 0;
-    if (!has_position)
+    if (!has_mouse_position(event))
     {
         return;
     }
@@ -185,6 +203,25 @@ void InputSystem::update_mouse_frame_cache(const RawInputEvent& event)
     }
 
     _has_mouse_position = true;
+}
+
+void InputSystem::refresh_mouse_position()
+{
+    RawInputEvent mouse_event;
+    mouse_event.type = RawInputEventType::MouseMoved;
+    mouse_event.device = InputDevice::Mouse;
+    SDL_GetMouseState(&mouse_event.mouse_x,&mouse_event.mouse_y);
+
+    RawInputEvent converted_event = mouse_event;
+    convert_window_to_logical(
+        mouse_event.mouse_x,
+        mouse_event.mouse_y,
+        converted_event.mouse_x,
+        converted_event.mouse_y
+    );
+    converted_event.mouse_delta_x = 0;
+    converted_event.mouse_delta_y = 0;
+    append_event(converted_event);
 }
 
 void InputSystem::convert_window_to_logical(int window_x, int window_y, int& logical_x, int& logical_y) const
@@ -235,6 +272,12 @@ bool InputSystem::should_clear_state_for_event(const SDL_Event& event) const
 {
     return event.type == SDL_WINDOWEVENT
         && event.window.event == SDL_WINDOWEVENT_FOCUS_LOST;
+}
+
+bool InputSystem::is_window_size_changed_event(const SDL_Event& event) const
+{
+    return event.type == SDL_WINDOWEVENT
+        && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED;
 }
 
 }

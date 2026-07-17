@@ -46,6 +46,7 @@ add_moonline_test(bootstrap_texture_cache_tests
 
 foreach(INPUT_TEST_TARGET IN ITEMS
     input_action_mapping_tests
+    input_system_pointer_coordinates_tests
     gameplay_support_tests
     gameplay_scene_input_tests
 )
