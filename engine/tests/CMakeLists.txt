@@ -33,3 +33,8 @@ add_moonline_test(engine_assist_cache_tests
 target_compile_definitions(engine_assist_cache_tests
     PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
 )
+
+add_moonline_test(random_generator_tests
+    LABEL tools
+    SOURCES tools/random_generator_tests.cpp
+)

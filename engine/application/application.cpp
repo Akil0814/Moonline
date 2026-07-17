@@ -14,8 +14,6 @@
 #include "../io/path/path_manager.h"
 #include "../tools/logger.h"
 
-#include <cstdlib>
-#include <ctime>
 #include <exception>
 #include <filesystem>
 #include <utility>
@@ -264,8 +262,6 @@ void Application::enter_initial_scene(
 
 int Application::run()
 {
-    std::srand(static_cast<unsigned>(std::time(nullptr)));
-
     Uint64 last_counter = SDL_GetPerformanceCounter();
     const Uint64 counter_freq = SDL_GetPerformanceFrequency();
     elysia::core::Time::instance()->reset();
