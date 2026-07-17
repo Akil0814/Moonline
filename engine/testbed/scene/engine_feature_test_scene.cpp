@@ -3,17 +3,17 @@
 #include "../../assist/engine_assist_cache.h"
 #include "../../input/raw_input_types.h"
 #include "../../ui/widgets/image/ui_animation.h"
-#include "../scene_runtime_context.h"
+#include "../../scene/scene_runtime_context.h"
 
 #include <stdexcept>
 
-namespace elysia::scene::builtin
+namespace elysia::testbed
 {
 namespace
 {
-bool is_valid_return_route(const SceneRoute& route) noexcept
+bool is_valid_return_route(const elysia::scene::SceneRoute& route) noexcept
 {
-    return SceneKeys::is_supported(route.target);
+    return elysia::scene::SceneKeys::is_supported(route.target);
 }
 }
 
@@ -21,7 +21,7 @@ void EngineFeatureTestScene::on_input(
     const elysia::input::RawInputFrame& input,
     const std::vector<elysia::input::RawInputEvent>& events)
 {
-    Scene::on_input(input,events);
+    elysia::scene::Scene::on_input(input,events);
     for (const elysia::input::RawInputEvent& event : events)
     {
         if (event.control == elysia::input::RawInputControl::KeyEscape
@@ -33,12 +33,12 @@ void EngineFeatureTestScene::on_input(
     }
 }
 
-void EngineFeatureTestScene::on_enter(const ScenePayload& payload)
+void EngineFeatureTestScene::on_enter(const elysia::scene::ScenePayload& payload)
 {
-    const EngineTestScenePayload* test_payload =
-        try_scene_payload<EngineTestScenePayload>(payload);
+    const TestbedScenePayload* test_payload =
+        elysia::scene::try_scene_payload<TestbedScenePayload>(payload);
     if (!test_payload || !is_valid_return_route(test_payload->return_route))
-        throw std::logic_error("EngineFeatureTestScene requires EngineTestScenePayload with a valid return route.");
+        throw std::logic_error("EngineFeatureTestScene requires TestbedScenePayload with a valid return route.");
 
     _return_route = test_payload->return_route;
     _paused = false;

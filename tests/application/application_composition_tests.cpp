@@ -5,6 +5,7 @@
 #include "engine/scene/scene.h"
 #include "engine/scene/scene_manager.h"
 #include "engine/scene/scene_runtime_context.h"
+#include "engine/testbed/testbed_scene_keys.h"
 #include "tests/support/test_assertions.h"
 
 #include <cstdlib>
@@ -141,13 +142,17 @@ int main()
             "unregistered game"),
         "the Moonline module must no longer register the former game UiTest key");
     require(throws_logic_error_containing(
-            [&scene_manager] { request_scene(scene_manager,elysia::scene::builtin::UiTest); },
-            "UiTestScene"),
-        "Application composition must register the built-in UiTest scene");
+            [&scene_manager] { request_scene(scene_manager,elysia::testbed::SceneKeys::Home); },
+            "TestbedHomeScene"),
+        "Application composition must register the Testbed home scene");
     require(throws_logic_error_containing(
-            [&scene_manager] { request_scene(scene_manager,elysia::scene::builtin::EngineFeatureTest); },
+            [&scene_manager] { request_scene(scene_manager,elysia::testbed::SceneKeys::UiTest); },
+            "UiTestScene"),
+        "Application composition must register the Testbed UI scene");
+    require(throws_logic_error_containing(
+            [&scene_manager] { request_scene(scene_manager,elysia::testbed::SceneKeys::EngineFeatureTest); },
             "EngineFeatureTestScene"),
-        "Application composition must register the built-in Engine feature test scene");
+        "Application composition must register the Testbed Engine feature scene");
 
     scene_manager.shutdown();
     return EXIT_SUCCESS;

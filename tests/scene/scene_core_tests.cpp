@@ -141,8 +141,8 @@ void test_scene_key_domains_and_payload_helpers()
     static_assert(!SceneKeys::is_game(1000));
     static_assert(SceneKeys::is_reserved(1000));
     static_assert(SceneKeys::is_reserved(SceneKeys::EngineMarker));
-    static_assert(!SceneKeys::is_builtin(SceneKeys::EngineMarker));
-    static_assert(SceneKeys::is_builtin(SceneKeys::EngineBegin));
+    static_assert(!SceneKeys::is_engine(SceneKeys::EngineMarker));
+    static_assert(SceneKeys::is_engine(SceneKeys::EngineBegin));
     static_assert(builtin::StartupLoading == 0xFFFF0001u);
     static_assert(builtin::Settings == 0xFFFF0002u);
 
@@ -167,11 +167,11 @@ void test_registration_and_route_key_errors_are_distinct()
         [&manager] { manager.register_game_scene<FirstProbeScene>(1000); },
         "game range"), "game registration must reject reserved keys");
     require(throws_logic_error_containing(
-        [&manager] { manager.register_builtin_scene<FirstProbeScene>(SceneKeys::EngineMarker); },
-        "built-in range"), "built-in registration must reject the engine marker");
+        [&manager] { manager.register_engine_scene<FirstProbeScene>(SceneKeys::EngineMarker); },
+        "engine-owned range"), "engine-owned registration must reject the engine marker");
     require(throws_logic_error_containing(
-        [&manager] { manager.register_builtin_scene<FirstProbeScene>(999); },
-        "built-in range"), "built-in registration must reject game keys");
+        [&manager] { manager.register_engine_scene<FirstProbeScene>(999); },
+        "engine-owned range"), "engine-owned registration must reject game keys");
     require(throws_logic_error_containing(
         [&manager] { manager.register_scene<FirstProbeScene>(1000); },
         "reserved range"), "generic registration must reject reserved keys");
@@ -192,12 +192,12 @@ void test_registration_and_route_key_errors_are_distinct()
         "unregistered game"), "unregistered game keys must identify their domain");
     require(throws_logic_error_containing(
         [&manager] { manager.start(SceneRoute{ .target = builtin::Settings }); },
-        "unregistered engine built-in"), "unregistered built-in keys must identify their domain");
+        "unregistered engine-owned"), "unregistered engine-owned keys must identify their domain");
 
-    manager.register_builtin_scene<SecondProbeScene>(builtin::Settings);
+    manager.register_engine_scene<SecondProbeScene>(builtin::Settings);
     require(throws_logic_error_containing(
-        [&manager] { manager.register_builtin_scene<FirstProbeScene>(builtin::Settings); },
-        "duplicate"), "built-in registration must share duplicate-key protection");
+        [&manager] { manager.register_engine_scene<FirstProbeScene>(builtin::Settings); },
+        "duplicate"), "engine-owned registration must share duplicate-key protection");
 }
 
 void test_route_copy_reload_modes_and_runtime_context_binding()

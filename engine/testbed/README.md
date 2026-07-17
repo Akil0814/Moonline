@@ -1,0 +1,13 @@
+# Engine Testbed
+
+`engine/testbed` owns interactive, runtime engine experiments that may depend on
+multiple engine subsystems. It is a leaf module: production engine subsystems
+must not depend on Testbed code.
+
+- Put each camera, physics, effects, or other subsystem showcase in its own scene.
+- Put Testbed-only runtime `GameObject` types in `engine/testbed/objects/` when
+  they are introduced.
+- Keep automated unit and integration tests under `engine/tests/` or `tests/`;
+  those directories are not runtime Testbed code.
+- Do not place production startup, settings, or failure scenes here; they remain
+  under `engine/scene/builtin/`.

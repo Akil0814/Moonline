@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../scene.h"
-#include "engine_test_scene_payload.h"
+#include "../../scene/scene.h"
+#include "testbed_scene_payload.h"
 #include "../../ui/style/ui_theme_manager.h"
 
 #include <array>
@@ -14,15 +14,15 @@ class UiLabel;
 class UiWindow;
 }
 
-namespace elysia::scene::builtin
+namespace elysia::testbed
 {
-class UiTestScene final : public Scene
+class UiTestScene final : public elysia::scene::Scene
 {
 public:
     void on_input(
         const elysia::input::RawInputFrame& input,
         const std::vector<elysia::input::RawInputEvent>& events) override;
-    void on_enter(const ScenePayload& payload) override;
+    void on_enter(const elysia::scene::ScenePayload& payload) override;
     void on_exit() override;
     void reset() override;
 
@@ -36,7 +36,7 @@ private:
     void set_status_key(const char* key);
 
 private:
-    SceneRoute _return_route;
+    elysia::scene::SceneRoute _return_route;
     elysia::ui::UiWindow* _root_window = nullptr;
     elysia::ui::UiThemeManager _theme_manager;
     std::vector<elysia::ui::UiThemeRegistration> _theme_registrations;

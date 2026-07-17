@@ -4,10 +4,9 @@
 
 #include "../../engine/audio/audio_service.h"
 #include "../../engine/resources/resource_manager.h"
-#include "../../engine/scene/builtin/startup_failure_scene_payload.h"
 #include "../../engine/scene/builtin/settings_scene.h"
-#include "../../engine/scene/builtin/engine_test_scene_payload.h"
-
+#include "../../engine/testbed/scene/testbed_scene_payload.h"
+#include "../../engine/testbed/testbed_scene_keys.h"
 
 #include "../../engine/ui/composites/ui_confirmation_dialog.h"
 #include "../../engine/ui/widgets/ui_button.h"
@@ -157,14 +156,13 @@ void MainMenuScene::build_menu_buttons()
     if (auto* list = dynamic_cast<elysia::ui::UiListContainer*>(list_added))
         _main_menu_window->register_focus_scope(*list);
 
-    //test begin
-    auto* ui_test_scene_button = Scene::create_and_add_object<elysia::ui::UiButton>(
+    auto* testbed_button = Scene::create_and_add_object<elysia::ui::UiButton>(
         elysia::core::Rect{ 20,20,180,50 },20);
-    ui_test_scene_button->set_text_content(elysia::ui::ui_raw_text("UiTestScene"));
-    ui_test_scene_button->set_on_click([this]() {
+    testbed_button->set_text_content(elysia::ui::ui_raw_text("Engine Testbed"));
+    testbed_button->set_on_click([this]() {
         Scene::request_scene_switch(
-            elysia::scene::builtin::UiTest,
-            elysia::scene::builtin::EngineTestScenePayload{
+            elysia::testbed::SceneKeys::Home,
+            elysia::testbed::TestbedScenePayload{
                 .return_route = {
                     .target = MoonlineSceneKeys::MainMenu,
                     .payload = MainMenuEnterPayload{ .replay_theme_music = false },
@@ -172,40 +170,6 @@ void MainMenuScene::build_menu_buttons()
                 }
             });
     });
-    //test end
-
-    //test begin
-    auto* test_scene_button = Scene::create_and_add_object<elysia::ui::UiButton>(
-        elysia::core::Rect{ 20,80,180,50 },20);
-    test_scene_button->set_text_content(elysia::ui::ui_raw_text("Engine Feature Test"));
-    test_scene_button->set_on_click([this]() {
-        Scene::request_scene_switch(
-            elysia::scene::builtin::EngineFeatureTest,
-            elysia::scene::builtin::EngineTestScenePayload{
-                .return_route = {
-                    .target = MoonlineSceneKeys::MainMenu,
-                    .payload = MainMenuEnterPayload{ .replay_theme_music = false },
-                    .reload_mode = elysia::scene::SceneReloadMode::Reuse
-                }
-            });
-    });
-    //test end
-
-    //test begin
-    auto* startup_failure_scene_button =
-        Scene::create_and_add_object<elysia::ui::UiButton>(
-            elysia::core::Rect{ 20,140,180,50 },20);
-    startup_failure_scene_button->set_text_content(
-        elysia::ui::ui_raw_text("Startup Failure"));
-    startup_failure_scene_button->set_on_click([this]() {
-        Scene::request_scene_switch(
-            elysia::scene::builtin::StartupFailure,
-            elysia::scene::builtin::StartupFailureScenePayload{
-                .diagnostic_message =
-                    "Injected startup failure from the main menu test."
-            });
-    });
-    //test end
 
     SDL_Texture* tex =
         elysia::resources::ResourceManager::instance()->find_texture("ui.moon");

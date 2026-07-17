@@ -161,7 +161,7 @@ void SceneManager::switch_to_registered_scene(
         if (SceneKeys::is_game(route.target))
             throw std::logic_error("SceneManager received a valid but unregistered game SceneKey.");
 
-        throw std::logic_error("SceneManager received a valid but unregistered engine built-in SceneKey.");
+        throw std::logic_error("SceneManager received a valid but unregistered engine-owned SceneKey.");
     }
 
     Scene* next_scene = iter->second(route.reload_mode);
