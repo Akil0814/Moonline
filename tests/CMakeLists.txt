@@ -30,8 +30,6 @@ endfunction()
 
 find_package(Threads REQUIRED)
 
-add_subdirectory("${PROJECT_SOURCE_DIR}/engine/tests" "${CMAKE_CURRENT_BINARY_DIR}/engine-tests")
-
 add_moonline_test(glyph_run_layout_tests
     LABEL core
     SOURCES core/glyph_run_layout_tests.cpp
@@ -42,6 +40,24 @@ add_moonline_test(bootstrap_texture_cache_tests
     SOURCES bootstrap/bootstrap_texture_cache_tests.cpp
     LIBRARIES ${SDL2_LIBRARIES}
     SDL
+)
+
+add_moonline_test(engine_assist_catalog_tests
+    LABEL bootstrap
+    SOURCES assist/engine_assist_catalog_tests.cpp
+)
+target_compile_definitions(engine_assist_catalog_tests
+    PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+)
+
+add_moonline_test(engine_assist_cache_tests
+    LABEL bootstrap
+    SOURCES assist/engine_assist_cache_tests.cpp
+    LIBRARIES ${SDL2_LIBRARIES}
+    SDL
+)
+target_compile_definitions(engine_assist_cache_tests
+    PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
 )
 
 foreach(INPUT_TEST_TARGET IN ITEMS
@@ -67,6 +83,25 @@ add_moonline_test(termination_manager_tests
 add_moonline_test(application_composition_tests
     LABEL application
     SOURCES application/application_composition_tests.cpp
+    LIBRARIES ${SDL2_LIBRARIES}
+    SDL
+)
+
+add_moonline_test(application_presentation_settings_tests
+    LABEL application
+    SOURCES application/application_presentation_settings_tests.cpp
+)
+
+add_moonline_test(application_sdl_presentation_tests
+    LABEL application
+    SOURCES application/application_sdl_presentation_tests.cpp
+    LIBRARIES ${SDL2_LIBRARIES}
+    SDL
+)
+
+add_moonline_test(application_window_settings_tests
+    LABEL application
+    SOURCES application/application_window_settings_tests.cpp
     LIBRARIES ${SDL2_LIBRARIES}
     SDL
 )
@@ -111,6 +146,16 @@ add_moonline_test(testbed_scene_tests
     SDL
 )
 target_compile_definitions(testbed_scene_tests
+    PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+)
+
+add_moonline_test(application_failure_scene_tests
+    LABEL scene
+    SOURCES scene/application_failure_scene_tests.cpp
+    LIBRARIES ${SDL2_LIBRARIES}
+    SDL
+)
+target_compile_definitions(application_failure_scene_tests
     PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
 )
 
@@ -204,6 +249,39 @@ add_moonline_test(logging_tests
     SOURCES tools/logging_tests.cpp
     LIBRARIES ${SDL2_LIBRARIES}
     SDL
+)
+
+add_moonline_test(random_generator_tests
+    LABEL tools
+    SOURCES tools/random_generator_tests.cpp
+)
+
+add_moonline_test(engine_i18n_assets_tests
+    LABEL localization
+    SOURCES localization/engine_i18n_assets_tests.cpp
+)
+target_compile_definitions(engine_i18n_assets_tests
+    PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+)
+
+add_moonline_test(localization_engine_assist_fallback_tests
+    LABEL localization
+    SOURCES localization/localization_engine_assist_fallback_tests.cpp
+    LIBRARIES ${SDL2_LIBRARIES}
+    SDL
+)
+target_compile_definitions(localization_engine_assist_fallback_tests
+    PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+)
+
+add_moonline_test(font_resolver_tests
+    LABEL typography
+    SOURCES typography/font_resolver_tests.cpp
+    LIBRARIES ${SDL2_LIBRARIES}
+    SDL
+)
+target_compile_definitions(font_resolver_tests
+    PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
 )
 
 foreach(CONFIG_TEST_TARGET IN ITEMS app_config_tests user_config_tests config_service_tests bootstrap_config_integration_tests)
