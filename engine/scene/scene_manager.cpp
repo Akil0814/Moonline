@@ -29,18 +29,6 @@ void SceneManager::start(const SceneRoute& route)
     switch_to_registered_scene(route);
 }
 
-void SceneManager::start(
-    SceneKey first_scene,
-    const ScenePayload& payload
-)
-{
-    start(SceneRoute{
-        .target = first_scene,
-        .payload = payload,
-        .reload_mode = SceneReloadMode::Reuse
-    });
-}
-
 void SceneManager::on_input(
     const elysia::input::RawInputFrame& input,
     const std::vector<elysia::input::RawInputEvent>& events

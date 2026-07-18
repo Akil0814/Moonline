@@ -353,14 +353,6 @@ elysia::camera::CameraSlot Scene::render_camera_slot() const noexcept
     return _render_camera_slot;
 }
 
-void Scene::set_camera_viewport_size(const elysia::core::Vector2& viewport_size) noexcept
-{
-    elysia::camera::CameraManager::instance()->set_viewport_size(
-        elysia::camera::CameraSlot::Main,
-        viewport_size
-    );
-}
-
 void Scene::set_render_camera_slot(elysia::camera::CameraSlot slot) noexcept
 {
     assert(slot != elysia::camera::CameraSlot::Count);

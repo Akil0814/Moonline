@@ -266,7 +266,10 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
     constexpr scene::SceneKey second_scene_key = 112;
     scene_manager.register_game_scene<TestScene>(first_scene_key);
     scene_manager.register_game_scene<SecondTestScene>(second_scene_key);
-    scene_manager.start(first_scene_key);
+    scene_manager.start(scene::SceneRoute{
+        .target = first_scene_key,
+        .reload_mode = scene::SceneReloadMode::Reuse
+    });
 
     int scene_finished = 0;
     effects::FloatingNumberEffectSpawnRequest scene_request;

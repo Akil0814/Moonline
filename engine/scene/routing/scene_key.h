@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <limits>
 
 namespace elysia::scene
 {
@@ -19,7 +18,6 @@ inline constexpr SceneKey ElysiaEasterEgg = 1111;
 // scenes occupy the values strictly above it.
 inline constexpr SceneKey EngineMarker = 0xFFFF0000u;
 inline constexpr SceneKey EngineBegin = EngineMarker + 1u;
-inline constexpr SceneKey EngineEnd = std::numeric_limits<SceneKey>::max();
 
 [[nodiscard]] constexpr bool is_game(SceneKey key) noexcept
 {

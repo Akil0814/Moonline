@@ -168,8 +168,11 @@ void test_scene_defaults_and_main_lifecycle()
     }
 
     elysia::scene::SceneManager scene_manager;
-    scene_manager.register_scene<CameraScene>(1);
-    scene_manager.start(1);
+    scene_manager.register_game_scene<CameraScene>(1);
+    scene_manager.start(elysia::scene::SceneRoute{
+        .target = 1,
+        .reload_mode = elysia::scene::SceneReloadMode::Reuse
+    });
 
     require(cameras->camera(CameraSlot::Main).center() == Vector2::zero(),
         "entering the first managed scene must reset Main");

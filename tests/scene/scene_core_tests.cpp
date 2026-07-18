@@ -177,12 +177,8 @@ void test_registration_and_route_key_errors_are_distinct()
     require(throws_logic_error_containing(
         [&manager] { manager.register_engine_scene<FirstProbeScene>(999); },
         "engine-owned keys"), "engine-owned registration must reject game keys");
-    require(throws_logic_error_containing(
-        [&manager] { manager.register_scene<FirstProbeScene>(1000); },
-        "reserved range"), "generic registration must reject reserved keys");
-
     SceneManager easter_egg_manager;
-    easter_egg_manager.register_scene<FirstProbeScene>(
+    easter_egg_manager.register_engine_scene<FirstProbeScene>(
         SceneKeys::ElysiaEasterEgg);
     require(throws_logic_error_containing(
         [&easter_egg_manager] {

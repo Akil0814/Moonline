@@ -193,7 +193,10 @@ void test_animation_effect_creation_playback_and_scene_lifecycle(AnimationEffect
     constexpr scene::SceneKey second_scene_key = 102;
     scene_manager.register_game_scene<TestScene>(first_scene_key);
     scene_manager.register_game_scene<SecondTestScene>(second_scene_key);
-    scene_manager.start(first_scene_key);
+    scene_manager.start(scene::SceneRoute{
+        .target = first_scene_key,
+        .reload_mode = scene::SceneReloadMode::Reuse
+    });
     effects::AnimationEffectSpawnRequest unknown_request;
     unknown_request.effect_key = "animation_effect_test.effect.unknown";
     require(!effect_manager->spawn_animation_effect(unknown_request),

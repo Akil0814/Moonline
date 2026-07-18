@@ -58,7 +58,6 @@ public:
 
     void pause() { _paused = true; }
     void resume() { _paused = false; }
-    [[nodiscard]] bool is_paused() const { return _paused; }
     [[nodiscard]] const elysia::camera::Camera& camera() const noexcept;
     [[nodiscard]] elysia::camera::CameraSlot render_camera_slot() const noexcept;
 
@@ -113,7 +112,6 @@ protected:
     );
     void request_quit();
     [[nodiscard]] const SceneRuntimeContext& runtime_context() const;
-    void set_camera_viewport_size(const elysia::core::Vector2& viewport_size) noexcept;
     void set_render_camera_slot(elysia::camera::CameraSlot slot) noexcept;
     virtual void on_scene_object_registered(elysia::core::SceneObject& object);
     [[nodiscard]] virtual std::optional<elysia::core::Rect> resolve_camera_focus_rect() const;

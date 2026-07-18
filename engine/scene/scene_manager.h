@@ -32,9 +32,6 @@ public:
     SceneManager& operator=(SceneManager&&) = delete;
 
     template <typename T>
-    void register_scene(SceneKey scene_key);
-
-    template <typename T>
     void register_game_scene(SceneKey scene_key);
 
     template <typename T>
@@ -43,10 +40,6 @@ public:
     void set_runtime_context(const SceneRuntimeContext& context) noexcept;
 
     void start(const SceneRoute& route);
-    void start(
-        SceneKey first_scene,
-        const ScenePayload& payload = ScenePayload{}
-    );
 
     void on_input(
         const elysia::input::RawInputFrame& input,
@@ -97,27 +90,6 @@ private:
     bool _has_pending_request = false;
     bool _is_processing_request = false;
 };
-
-template <typename T>
-void SceneManager::register_scene(SceneKey scene_key)
-{
-    if (scene_key == SceneKeys::Invalid)
-        throw std::logic_error("SceneManager::register_scene received SceneKeys::Invalid.");
-
-    if (SceneKeys::is_game(scene_key))
-    {
-        register_game_scene<T>(scene_key);
-        return;
-    }
-
-    if (SceneKeys::is_engine(scene_key) || SceneKeys::is_easter_egg(scene_key))
-    {
-        register_engine_scene<T>(scene_key);
-        return;
-    }
-
-    throw std::logic_error("SceneManager::register_scene received a SceneKey in the reserved range.");
-}
 
 template <typename T>
 void SceneManager::register_game_scene(SceneKey scene_key)
