@@ -71,6 +71,31 @@ void test_nested_focus_and_dropdown_navigation()
     require(!raw_dropdown->is_open(),"dropdown should close after confirmation");
 }
 
+void test_dropdown_option_rebuild_repairs_cached_focus()
+{
+    elysia::ui::UiWindow window(elysia::core::Rect{ 0,0,640,480 });
+    elysia::ui::UiDropdown dropdown(elysia::core::Rect{ 20,20,200,40 });
+    dropdown.set_options({
+        { elysia::ui::ui_raw_text("one") },
+        { elysia::ui::ui_raw_text("two") }
+    });
+    dropdown.register_with_window(window);
+    dropdown.open();
+    require(dropdown.is_open(),"dropdown should open before rebuilding its options");
+    dropdown.close();
+
+    dropdown.set_options({
+        { elysia::ui::ui_raw_text("three") },
+        { elysia::ui::ui_raw_text("four") }
+    });
+    dropdown.unregister_from_window();
+    dropdown.register_with_window(window);
+    dropdown.open();
+
+    require(dropdown.is_open(),"dropdown should reopen after rebuilding its option focus tree");
+    require(dropdown.selected_index() == 0,"rebuilt dropdown should retain a valid selection");
+}
+
 elysia::ui::UiInputEvent navigation_event(elysia::ui::UiAction action)
 {
     return elysia::ui::UiInputEvent{
@@ -198,6 +223,7 @@ int main()
 {
     test_empty_focus_scopes();
     test_nested_focus_and_dropdown_navigation();
+    test_dropdown_option_rebuild_repairs_cached_focus();
     test_deep_nested_focus_propagation();
     test_nested_focus_boundary_navigation();
     test_nested_focus_repair_after_visibility_and_removal();

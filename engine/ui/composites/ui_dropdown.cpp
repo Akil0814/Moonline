@@ -388,6 +388,11 @@ void UiDropdown::rebuild_option_buttons()
         });
         _popup_list->add_back(std::move(button));
     }
+
+    // clear_children() invalidates the list's previously cached focus entries.
+    // Rebuild them immediately so a later close/unregister cannot apply focus
+    // state through pointers to the destroyed option buttons.
+    _popup_list->set_focused_target(nullptr);
 }
 
 void UiDropdown::sync_visual_state()
