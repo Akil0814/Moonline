@@ -428,18 +428,102 @@ void UiWindow::detach_tooltip_content(UiElement& content) noexcept
     detach_external_style_subtree(content);
 }
 
-bool UiWindow::is_tooltip_pointer_blocked(int mouse_x,int mouse_y) const noexcept
+elysia::core::Rect UiWindow::tooltip_trigger_visible_rect(const UiElement& trigger) const noexcept
 {
-    const UiTransientPopup* popup = active_transient_popup();
-    return popup
-        && popup->is_open()
-        && popup->contains_popup_point(mouse_x,mouse_y);
+    if (trigger.is_destroyed() || !trigger.is_visible() || !trigger.is_active())
+        return elysia::core::Rect::zero();
+
+    elysia::core::Rect visible_rect = trigger.presentation_screen_rect().intersection(
+        content_rect().translated(accumulated_presentation_translation()));
+    if (visible_rect.is_empty())
+        return elysia::core::Rect::zero();
+
+    const UiChildHost* ancestor = trigger.layout_parent();
+    while (ancestor)
+    {
+        if (ancestor->is_destroyed() || !ancestor->is_visible() || !ancestor->is_active())
+            return elysia::core::Rect::zero();
+
+        if (ancestor->clips_children())
+        {
+            visible_rect = visible_rect.intersection(
+                ancestor->content_rect().translated(ancestor->accumulated_presentation_translation()));
+            if (visible_rect.is_empty())
+                return elysia::core::Rect::zero();
+        }
+
+        if (ancestor == this)
+            return visible_rect;
+        ancestor = ancestor->layout_parent();
+    }
+
+    return elysia::core::Rect::zero();
 }
 
-bool UiWindow::blocks_background_tooltips() const noexcept
+bool UiWindow::tooltip_pointer_reaches_trigger(
+    const UiElement& trigger,
+    int mouse_x,
+    int mouse_y
+) const noexcept
 {
+    const elysia::core::Rect visible_rect = tooltip_trigger_visible_rect(trigger);
+    const elysia::core::Vector2 pointer(
+        static_cast<float>(mouse_x),
+        static_cast<float>(mouse_y));
+    if (visible_rect.is_empty() || !visible_rect.contains(pointer))
+        return false;
+
     const UiTransientPopup* popup = active_transient_popup();
-    return popup && popup->is_open();
+    if (popup && popup->is_open() && popup->contains_popup_point(mouse_x,mouse_y))
+        return false;
+
+    if (const OverlayEntry* modal = active_modal_overlay();
+        modal && modal->element && !contains_child_element(*modal->element,&trigger))
+    {
+        return false;
+    }
+
+    if (const OverlayEntry* overlay = active_overlay();
+        overlay && overlay->element && !overlay->options.modal
+        && !contains_child_element(*overlay->element,&trigger)
+        && contains_overlay_point(*overlay,mouse_x,mouse_y))
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool UiWindow::tooltip_focus_reaches_trigger(const UiElement& trigger) const noexcept
+{
+    // Mouse focus mirrors pointer hover. Requiring the pointer path prevents a
+    // clipped or occluded control's local focus state from bypassing hit testing.
+    if (_focus_input_device == elysia::input::InputDevice::Mouse)
+        return false;
+
+    const elysia::core::Rect visible_rect = tooltip_trigger_visible_rect(trigger);
+    if (visible_rect.is_empty())
+        return false;
+
+    if (const UiTransientPopup* popup = active_transient_popup(); popup && popup->is_open())
+        return false;
+
+    if (const OverlayEntry* modal = active_modal_overlay();
+        modal && modal->element && !contains_child_element(*modal->element,&trigger))
+    {
+        return false;
+    }
+
+    if (const OverlayEntry* overlay = active_overlay();
+        overlay && overlay->element && !overlay->options.modal
+        && !contains_child_element(*overlay->element,&trigger))
+    {
+        const elysia::core::Rect overlay_rect = overlay->element->presentation_screen_rect();
+        if (overlay_rect.is_empty() || overlay_rect.intersects(visible_rect))
+            return false;
+    }
+
+    return true;
 }
 
 elysia::core::Rect UiWindow::content_bounds() const noexcept

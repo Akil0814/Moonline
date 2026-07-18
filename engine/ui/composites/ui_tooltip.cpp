@@ -163,7 +163,8 @@ void UiTooltip::observe_pointer(int mouse_x,int mouse_y) noexcept
 
 void UiTooltip::submit_tooltip_render_commands(std::vector<elysia::core::UiRenderCommand>& out_commands) const
 {
-    if (!_open || !_content || !_content->is_visible() || _content->is_destroyed())
+    if (!_open || !_content || !_content->is_visible() || _content->is_destroyed()
+        || !trigger_is_active())
         return;
     const_cast<UiTooltip*>(this)->sync_content_position();
     _content->submit_ui_render_commands(out_commands);
@@ -192,12 +193,13 @@ void UiTooltip::sync_content_position() noexcept
 
 bool UiTooltip::trigger_is_active() const noexcept
 {
-    const bool pointer_blocked = _window && _has_pointer
-        && _window->is_tooltip_pointer_blocked(_mouse_x,_mouse_y);
-    const bool hovered = _has_pointer && !pointer_blocked && _trigger->presentation_screen_rect().contains(
-        elysia::core::Vector2(static_cast<float>(_mouse_x),static_cast<float>(_mouse_y)));
+    if (!_window || !_trigger)
+        return false;
+
+    const bool hovered = _has_pointer
+        && _window->tooltip_pointer_reaches_trigger(*_trigger,_mouse_x,_mouse_y);
     const auto* focusable = dynamic_cast<const UiFocusable*>(_trigger);
-    const bool focus_blocked = _window && _window->blocks_background_tooltips();
-    return hovered || (!focus_blocked && focusable && focusable->is_focused());
+    return hovered || (focusable && focusable->is_focused()
+        && _window->tooltip_focus_reaches_trigger(*_trigger));
 }
 }

@@ -16,6 +16,7 @@
 namespace elysia::ui
 {
 class UiThemeManager;
+class UiWindow;
 
 enum class UiChildStyleRelation
 {
@@ -26,6 +27,7 @@ enum class UiChildStyleRelation
 class UiChildHost : public UiElement, public elysia::core::Updatable, public UiInputFrameReceiver, public UiInputEventReceiver
 {
     friend class UiElement;
+    friend class UiWindow;
 
 public:
     // Stable record retained by cached traversal handles after a child is removed.
