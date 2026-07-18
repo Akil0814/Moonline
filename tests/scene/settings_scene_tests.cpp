@@ -72,7 +72,7 @@ public:
         apply_target_fps(double) override { return {}; }
     std::expected<void,elysia::config::UserConfigFailure>
         apply_window_settings(
-            const elysia::bootstrap::WindowSettings&) override { return {}; }
+            const elysia::config::WindowSettings&) override { return {}; }
 };
 
 bool throws_logic_error_containing(
@@ -129,7 +129,7 @@ void test_cancel_returns_to_each_callers_full_route()
     std::filesystem::remove_all(directory);
     std::filesystem::create_directories(directory);
 
-    elysia::bootstrap::UserConfigData defaults;
+    elysia::config::UserConfigData defaults;
     defaults.language = "en";
     const std::filesystem::path config_path = directory / "user_config.json";
     auto* config_service = elysia::config::UserConfigService::instance();
@@ -137,7 +137,7 @@ void test_cancel_returns_to_each_callers_full_route()
         "settings scene test must initialize UserConfigService");
     ConfigHandler handler;
     config_service->register_user_config_change_handler(handler);
-    const elysia::bootstrap::UserConfigData original =
+    const elysia::config::UserConfigData original =
         config_service->user_config().snapshot();
 
     elysia::io::ContentRegistry registry;

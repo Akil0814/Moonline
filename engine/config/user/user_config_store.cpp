@@ -1,18 +1,17 @@
 #include "user_config_store.h"
 
+#include "user_config_json_fields.h"
 #include "../../io/json/strict_json.h"
 
 #include <chrono>
-#include <cmath>
 #include <fstream>
-#include <limits>
 #include <set>
 
 namespace elysia::config
 {
 namespace
 {
-using Data = elysia::bootstrap::UserConfigData;
+using Data = UserConfigData;
 using Json = elysia::io::json;
 constexpr int k_schema_version = 2;
 
@@ -30,56 +29,6 @@ bool allowed_fields(const Json& object,std::initializer_list<std::string_view> f
     if (require_all) for (const auto& key : allowed)
         if (!object.contains(key)) { error = "Missing UserConfig field: " + std::string(path) + "." + key; return false; }
     return true;
-}
-
-bool positive_int(const Json& node,const char* key,int& out,std::string& error,bool required)
-{
-    if (!node.contains(key)) return !required;
-    if (!node.at(key).is_number_integer()) { error = std::string(key) + " must be an integer."; return false; }
-    const auto value = node.at(key).get<std::int64_t>();
-    if (value <= 0 || value > std::numeric_limits<int>::max()) { error = std::string(key) + " is out of range."; return false; }
-    out = static_cast<int>(value); return true;
-}
-
-bool boolean(const Json& node,const char* key,bool& out,std::string& error,bool required)
-{
-    if (!node.contains(key)) return !required;
-    if (!node.at(key).is_boolean()) { error = std::string(key) + " must be boolean."; return false; }
-    out = node.at(key).get<bool>(); return true;
-}
-
-bool window_mode(
-    const Json& node,
-    elysia::bootstrap::WindowMode& out,
-    std::string& error)
-{
-    if (!node.is_string())
-    {
-        error = "window.mode must be a string.";
-        return false;
-    }
-    const std::string value = node.get<std::string>();
-    if (value == "windowed")
-    {
-        out = elysia::bootstrap::WindowMode::Windowed;
-        return true;
-    }
-    if (value == "borderless_fullscreen")
-    {
-        out = elysia::bootstrap::WindowMode::BorderlessFullscreen;
-        return true;
-    }
-    error = "window.mode must be windowed or borderless_fullscreen.";
-    return false;
-}
-
-bool volume(const Json& node,const char* key,int& out,std::string& error,bool required)
-{
-    if (!node.contains(key)) return !required;
-    if (!node.at(key).is_number_integer()) { error = std::string(key) + " must be an integer."; return false; }
-    const auto value = node.at(key).get<std::int64_t>();
-    if (value < 0 || value > 100) { error = std::string(key) + " must be within 0..100."; return false; }
-    out = static_cast<int>(value); return true;
 }
 
 ParseResult parse(const std::filesystem::path& path,const Data& defaults)
@@ -113,7 +62,7 @@ ParseResult parse(const std::filesystem::path& path,const Data& defaults)
     const Json* node = nullptr;
     if (!section("window",node)) return {ParseKind::Invalid,{},error};
     if (!allowed_fields(*node,{"mode","windowed_size"},true,"window",error)
-        || !window_mode(
+        || !detail::parse_window_mode(
             node->at("mode"),
             data.window.mode,
             error)
@@ -123,46 +72,45 @@ ParseResult parse(const std::filesystem::path& path,const Data& defaults)
             true,
             "window.windowed_size",
             error)
-        || !positive_int(
+        || !detail::parse_positive_int(
             node->at("windowed_size"),
             "width",
             data.window.windowed_size.width,
-            error,
-            true)
-        || !positive_int(
+            error)
+        || !detail::parse_positive_int(
             node->at("windowed_size"),
             "height",
             data.window.windowed_size.height,
-            error,
-            true))
+            error))
         return {ParseKind::Invalid,{},error};
     node = nullptr;
     if (!section("render",node)) return {ParseKind::Invalid,{},error};
     if (!allowed_fields(*node,{"fps","vsync"},true,"render",error))
         return {ParseKind::Invalid,{},error};
-    if (!node->at("fps").is_number())
-        return {ParseKind::Invalid,{},"fps must be numeric."};
-    data.target_fps = node->at("fps").get<double>();
-    if (!std::isfinite(data.target_fps) || data.target_fps <= 0.0)
-        return {ParseKind::Invalid,{},"fps must be finite and positive."};
-    if (!boolean(*node,"vsync",data.vsync,error,true))
+    if (!detail::parse_positive_number(
+            *node,
+            "fps",
+            data.target_fps,
+            error)
+        || !detail::parse_boolean(*node,"vsync",data.vsync,error))
         return {ParseKind::Invalid,{},error};
     node = nullptr;
     if (!section("audio",node)) return {ParseKind::Invalid,{},error};
     if (!allowed_fields(*node,{"master_volume","music_volume","sound_volume"},true,"audio",error)
-        || !volume(*node,"master_volume",data.audio.master_volume,error,true)
-        || !volume(*node,"music_volume",data.audio.music_volume,error,true)
-        || !volume(*node,"sound_volume",data.audio.sound_volume,error,true))
+        || !detail::parse_volume(*node,"master_volume",data.audio.master_volume,error)
+        || !detail::parse_volume(*node,"music_volume",data.audio.music_volume,error)
+        || !detail::parse_volume(*node,"sound_volume",data.audio.sound_volume,error))
         return {ParseKind::Invalid,{},error};
     node = nullptr;
     if (!section("localization",node)) return {ParseKind::Invalid,{},error};
     if (!allowed_fields(*node,{"language"},true,"localization",error))
         return {ParseKind::Invalid,{},error};
-    if (!node->at("language").is_string())
-        return {ParseKind::Invalid,{},"language must be a string."};
-    data.language = node->at("language").get<std::string>();
-    if (data.language.empty())
-        return {ParseKind::Invalid,{},"language must be non-empty."};
+    if (!detail::parse_non_empty_string(
+            *node,
+            "language",
+            data.language,
+            error))
+        return {ParseKind::Invalid,{},error};
     return {ParseKind::Valid,std::move(data),{}};
 }
 
@@ -171,10 +119,10 @@ Json serialize(const Data& data)
     const char* mode = "invalid";
     switch (data.window.mode)
     {
-    case elysia::bootstrap::WindowMode::Windowed:
+    case WindowMode::Windowed:
         mode = "windowed";
         break;
-    case elysia::bootstrap::WindowMode::BorderlessFullscreen:
+    case WindowMode::BorderlessFullscreen:
         mode = "borderless_fullscreen";
         break;
     }
@@ -256,7 +204,7 @@ std::expected<UserConfigLoadResult,UserConfigFailure> UserConfigStore::load(
             return result;
         }
     }
-    result.settings = defaults; result.rebuilt = true; result.rebuilt_user_config = true;
+    result.settings = defaults; result.rebuilt = true;
     if (auto saved = save(path,result.settings); !saved) return std::unexpected(saved.error());
     return result;
 }

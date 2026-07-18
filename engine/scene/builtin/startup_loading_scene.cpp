@@ -1,8 +1,8 @@
 #include "startup_loading_scene.h"
 #include "application_failure_scene_payload.h"
 
+#include "../../assist/engine_assist_keys.h"
 #include "../../bootstrap/bootstrapper.h"
-#include "../../bootstrap/startup_preload_contract.h"
 #include "../../assist/engine_assist_cache.h"
 #include "../../tools/logger.h"
 #include "../../typography/font_resolver.h"
@@ -84,6 +84,7 @@ void StartupLoadingScene::on_exit()
     _paused = false;
     _content_loader.reset();
     destroy_ui();
+    elysia::bootstrap::Bootstrapper::instance()->release_preload_textures();
     clear_state();
 }
 
@@ -148,7 +149,7 @@ bool StartupLoadingScene::create_presentation()
         runtime_context().engine_assist_cache();
     SDL_Texture* engine_texture = engine_assist_cache
         ? engine_assist_cache->find_texture(
-            elysia::bootstrap::startup_preload::EngineLogoTextureKey)
+            elysia::assist::asset_keys::ElysiaWhiteTexture)
         : nullptr;
     if (!engine_texture)
     {
@@ -200,7 +201,7 @@ bool StartupLoadingScene::create_presentation()
         else
         {
             SDL_Texture* project_texture =
-                elysia::bootstrap::Bootstrapper::instance()->get_preload_texture(
+                elysia::bootstrap::Bootstrapper::instance()->find_preload_texture(
                     slot.texture_key);
             if (!project_texture)
             {

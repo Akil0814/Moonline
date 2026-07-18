@@ -44,7 +44,7 @@ int main()
     require(
         elysia::application::detail::apply_window_settings(
             {
-                elysia::bootstrap::WindowMode::Windowed,
+                elysia::config::WindowMode::Windowed,
                 { 1600,900 }
             },
             windowed.operations()).has_value()
@@ -57,7 +57,7 @@ int main()
     require(
         elysia::application::detail::apply_window_settings(
             {
-                elysia::bootstrap::WindowMode::BorderlessFullscreen,
+                elysia::config::WindowMode::BorderlessFullscreen,
                 { 1280,720 }
             },
             borderless.operations()).has_value()
@@ -71,7 +71,7 @@ int main()
     const auto failed =
         elysia::application::detail::apply_window_settings(
             {
-                elysia::bootstrap::WindowMode::Windowed,
+                elysia::config::WindowMode::Windowed,
                 { 1280,720 }
             },
             failure.operations());

@@ -4,7 +4,7 @@
 #include "game_module.h"
 
 #include "../assist/engine_assist_cache.h"
-#include "../bootstrap/runtime_settings.h"
+#include "../bootstrap/bootstrap_types.h"
 #include "../config/user_config_service.h"
 #include "../input/input_system.h"
 #include "../io/loaders/asset_config_types.h"
@@ -42,13 +42,14 @@ public:
     std::expected<void,elysia::config::UserConfigFailure> apply_sound_volume(int value) override;
     std::expected<void,elysia::config::UserConfigFailure> apply_language(std::string_view language) override;
     std::expected<void,elysia::config::UserConfigFailure> apply_target_fps(double value) override;
-    std::expected<void,elysia::config::UserConfigFailure>apply_window_settings(const elysia::bootstrap::WindowSettings& settings) override;
+    std::expected<void,elysia::config::UserConfigFailure> apply_window_settings(
+        const elysia::config::WindowSettings& settings) override;
 
 private:
     Application() = default;
 
     bool init_runtime(
-        const elysia::bootstrap::StartupSettings& settings,
+        const elysia::bootstrap::RuntimeSettings& settings,
         const ApplicationDescriptor& descriptor);
     bool enter_initial_scene(
         const IGameModule& game_module,

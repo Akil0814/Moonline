@@ -31,9 +31,9 @@ int main()
     require(valid->window_title == "Moonline"
         && valid->user_defaults.language == "en"
         && valid->user_defaults.window.mode
-            == elysia::bootstrap::WindowMode::BorderlessFullscreen
+            == elysia::config::WindowMode::BorderlessFullscreen
         && valid->user_defaults.window.windowed_size
-            == elysia::bootstrap::WindowSize{ 1280,720 },
+            == elysia::config::WindowSize{ 1280,720 },
         "AppConfig values must be retained");
     require(!loader.load(write("old.json",R"({"schema_version":1,"window":{"title":"x","width":1,"height":1,"fullscreen":false},"render":{"fps":1,"vsync":false},"audio":{"master_volume":0,"music_volume":0,"sound_volume":0},"localization":{"language":"en"}})")),"AppConfig v1 must be rejected");
     require(!loader.load(write("duplicate.json",R"({"schema_version":2,"schema_version":2})")),"duplicate AppConfig properties must be rejected");

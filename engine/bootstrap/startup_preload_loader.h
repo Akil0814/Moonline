@@ -1,10 +1,12 @@
 #pragma once
 
+#include "bootstrap_types.h"
 #include "bootstrap_texture_cache.h"
 #include "../io/json/json_loader.h"
 
 #include <SDL.h>
 
+#include <expected>
 #include <filesystem>
 #include <string>
 #include <string_view>
@@ -19,8 +21,10 @@ public:
     void reset();
     void release_textures() noexcept;
 
-    bool load(SDL_Renderer* renderer);
-    SDL_Texture* get_texture(std::string_view key) const;
+    [[nodiscard]] std::expected<void,BootstrapFailure>
+        load(SDL_Renderer* renderer);
+    [[nodiscard]] SDL_Texture* find_texture(
+        std::string_view key) const noexcept;
 
 private:
     struct TextureEntry
@@ -29,14 +33,11 @@ private:
         std::filesystem::path file;
     };
 
-    bool load_manifest();
-    bool load_textures(SDL_Renderer* renderer, BootstrapTextureCache& destination);
-    bool load_optional_project_texture(
+    [[nodiscard]] std::expected<void,BootstrapFailure> load_manifest();
+    [[nodiscard]] std::expected<void,BootstrapFailure> load_textures(
         SDL_Renderer* renderer,
-        const TextureEntry& entry,
-        BootstrapTextureCache& destination
-    );
-    bool load_texture(
+        BootstrapTextureCache& destination);
+    [[nodiscard]] std::expected<void,BootstrapFailure> load_texture(
         SDL_Renderer* renderer,
         std::string_view key,
         const std::filesystem::path& file,

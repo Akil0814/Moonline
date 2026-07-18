@@ -14,7 +14,7 @@ namespace
 [[nodiscard]] bool is_volume(int value) noexcept { return value >= 0 && value <= 100; }
 }
 
-const elysia::bootstrap::WindowSettings&
+const WindowSettings&
 UserConfig::window_settings() const noexcept { return _current_settings.window; }
 double UserConfig::target_fps() const noexcept { return _current_settings.target_fps; }
 bool UserConfig::vsync() const noexcept { return _current_settings.vsync; }
@@ -30,11 +30,11 @@ std::expected<void,UserConfigFailure> UserConfig::require_handler(std::string_vi
 }
 
 std::expected<void,UserConfigFailure> UserConfig::validate_snapshot(
-    const elysia::bootstrap::UserConfigData& settings) const
+    const UserConfigData& settings) const
 {
-    if (settings.window.mode != elysia::bootstrap::WindowMode::Windowed
+    if (settings.window.mode != WindowMode::Windowed
         && settings.window.mode
-            != elysia::bootstrap::WindowMode::BorderlessFullscreen)
+            != WindowMode::BorderlessFullscreen)
         return invalid("window_settings","Unknown window mode.");
     if (settings.window.windowed_size.width <= 0
         || settings.window.windowed_size.height <= 0)
@@ -53,7 +53,7 @@ std::expected<void,UserConfigFailure> UserConfig::validate_snapshot(
 }
 
 std::expected<UserConfigApplyStatus,UserConfigFailure> UserConfig::apply_snapshot(
-    const elysia::bootstrap::UserConfigData& settings,
+    const UserConfigData& settings,
     bool continue_after_failure)
 {
     if (const auto valid = validate_snapshot(settings); !valid)
@@ -97,11 +97,11 @@ std::expected<UserConfigApplyStatus,UserConfigFailure> UserConfig::apply_snapsho
 
 std::expected<UserConfigApplyStatus,UserConfigFailure>
 UserConfig::set_window_settings(
-    const elysia::bootstrap::WindowSettings& settings)
+    const WindowSettings& settings)
 {
-    if (settings.mode != elysia::bootstrap::WindowMode::Windowed
+    if (settings.mode != WindowMode::Windowed
         && settings.mode
-            != elysia::bootstrap::WindowMode::BorderlessFullscreen)
+            != WindowMode::BorderlessFullscreen)
         return invalid("window_settings","Unknown window mode.");
     if (settings.windowed_size.width <= 0
         || settings.windowed_size.height <= 0)
@@ -182,7 +182,7 @@ std::expected<UserConfigApplyStatus,UserConfigFailure> UserConfig::set_language(
     return UserConfigApplyStatus::Applied;
 }
 
-elysia::bootstrap::UserConfigData UserConfig::snapshot() const { return _current_settings; }
+UserConfigData UserConfig::snapshot() const { return _current_settings; }
 UserConfigRuntimeState UserConfig::runtime_state() const
 {
     return UserConfigRuntimeState{
@@ -192,7 +192,7 @@ UserConfigRuntimeState UserConfig::runtime_state() const
 }
 bool UserConfig::is_dirty() const noexcept { return _current_settings != _persisted_snapshot; }
 bool UserConfig::restart_required() const noexcept { return _vsync_restart_pending; }
-void UserConfig::initialize(const elysia::bootstrap::UserConfigData& settings) noexcept { _current_settings = settings; _persisted_snapshot = settings; _vsync_restart_pending = false; }
+void UserConfig::initialize(const UserConfigData& settings) noexcept { _current_settings = settings; _persisted_snapshot = settings; _vsync_restart_pending = false; }
 void UserConfig::mark_persisted() noexcept { _persisted_snapshot = _current_settings; }
 void UserConfig::reset() noexcept { _current_settings = {}; _persisted_snapshot = {}; _change_handler = nullptr; _vsync_restart_pending = false; }
 void UserConfig::register_change_handler(IUserConfigChangeHandler& handler) noexcept { _change_handler = &handler; }

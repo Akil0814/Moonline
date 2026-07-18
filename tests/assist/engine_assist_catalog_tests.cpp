@@ -1,4 +1,5 @@
 #include "engine/assist/engine_assist_catalog.h"
+#include "engine/assist/engine_assist_keys.h"
 #include "tests/support/test_assertions.h"
 
 #include <chrono>
@@ -83,7 +84,7 @@ int main()
             "engine.brand.elysia.black_alpha_inverse",
             "engine.brand.elysia.default",
             "engine.brand.elysia.light_edge",
-            "engine.brand.elysia.white",
+            std::string(elysia::assist::asset_keys::ElysiaWhiteTexture),
             "engine.test.sprite",
         },
         "assist texture keys must be stable"

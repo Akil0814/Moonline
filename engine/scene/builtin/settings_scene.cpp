@@ -28,12 +28,12 @@ bool is_valid_route(const SceneRoute& route) noexcept
 }
 
 elysia::ui::SettingsPanelDraft make_draft(
-    const elysia::bootstrap::UserConfigData& settings)
+    const elysia::config::UserConfigData& settings)
 {
     return elysia::ui::SettingsPanelDraft{
         .window_mode =
             settings.window.mode
-                == elysia::bootstrap::WindowMode::Windowed
+                == elysia::config::WindowMode::Windowed
             ? elysia::ui::SettingsWindowMode::Windowed
             : elysia::ui::SettingsWindowMode::BorderlessFullscreen,
         .window_size = {
@@ -48,7 +48,7 @@ elysia::ui::SettingsPanelDraft make_draft(
 }
 
 elysia::ui::SettingsPanelOptions make_panel_options(
-    const elysia::bootstrap::UserConfigData& settings)
+    const elysia::config::UserConfigData& settings)
 {
     SDL_Rect usable_bounds{};
     std::optional<elysia::ui::SettingsWindowSize> usable_size;
@@ -193,11 +193,12 @@ void SettingsScene::save_draft(const elysia::ui::SettingsPanelDraft& draft)
         return;
 
     auto* config_service = elysia::config::UserConfigService::instance();
-    elysia::bootstrap::UserConfigData requested =config_service->user_config().snapshot();
+    elysia::config::UserConfigData requested =
+        config_service->user_config().snapshot();
     requested.window = {
         draft.window_mode == elysia::ui::SettingsWindowMode::Windowed
-            ? elysia::bootstrap::WindowMode::Windowed
-            : elysia::bootstrap::WindowMode::BorderlessFullscreen,
+            ? elysia::config::WindowMode::Windowed
+            : elysia::config::WindowMode::BorderlessFullscreen,
         {
             draft.window_size.width,
             draft.window_size.height

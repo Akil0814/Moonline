@@ -4,7 +4,6 @@
 
 #include <SDL.h>
 
-#include <cstddef>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -25,7 +24,6 @@ public:
     [[nodiscard]] bool store(std::string key, elysia::resources::TexturePtr texture);
     [[nodiscard]] SDL_Texture* find(std::string_view key) const noexcept;
     void clear() noexcept;
-    [[nodiscard]] std::size_t size() const noexcept;
 
 private:
     std::unordered_map<std::string,elysia::resources::TexturePtr> _textures;

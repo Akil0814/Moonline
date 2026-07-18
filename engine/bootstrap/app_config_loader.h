@@ -1,6 +1,6 @@
 #pragma once
 
-#include "runtime_settings.h"
+#include "bootstrap_types.h"
 
 #include <filesystem>
 #include <expected>
@@ -8,16 +8,16 @@
 
 namespace elysia::bootstrap
 {
+struct AppConfig
+{
+    std::string window_title = "Moonline";
+    elysia::config::UserConfigData user_defaults;
+};
+
 class AppConfigLoader
 {
 public:
-    struct Failure
-    {
-        std::string message;
-    };
-
-    [[nodiscard]] std::expected<AppConfig,Failure> load(
-        const std::filesystem::path& app_config_path) const;
+    [[nodiscard]] std::expected<AppConfig,BootstrapFailure> load(const std::filesystem::path& app_config_path) const;
 };
 
 }

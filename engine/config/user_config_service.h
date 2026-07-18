@@ -9,8 +9,6 @@
 #include <memory>
 #include <string_view>
 
-namespace elysia::bootstrap { class Bootstrapper; }
-
 namespace elysia::config
 {
 class IUserConfigChangeHandler
@@ -24,30 +22,29 @@ public:
     virtual std::expected<void,UserConfigFailure> apply_language(std::string_view language) = 0;
     virtual std::expected<void,UserConfigFailure> apply_target_fps(double value) = 0;
     virtual std::expected<void,UserConfigFailure> apply_window_settings(
-        const elysia::bootstrap::WindowSettings& settings) = 0;
+        const WindowSettings& settings) = 0;
 };
 
 class UserConfigStore;
 class UserConfigService final : public elysia::tools::Singleton<UserConfigService>
 {
     friend elysia::tools::Singleton<UserConfigService>;
-    friend class elysia::bootstrap::Bootstrapper;
 
 public:
     [[nodiscard]] UserConfig& user_config() noexcept { return _user_config; }
     [[nodiscard]] const UserConfig& user_config() const noexcept { return _user_config; }
     [[nodiscard]] std::expected<void,UserConfigFailure> save_user_config();
     [[nodiscard]] std::expected<UserConfigApplyStatus,UserConfigCommitFailure>
-        apply_and_save_user_config(const elysia::bootstrap::UserConfigData& settings);
+        apply_and_save_user_config(const UserConfigData& settings);
     [[nodiscard]] std::expected<UserConfigApplyStatus,UserConfigCommitFailure>
         apply_and_save_user_config(
-            const elysia::bootstrap::UserConfigData& settings,
+            const UserConfigData& settings,
             const UserConfigRuntimeState& rollback_state);
     void register_user_config_change_handler(IUserConfigChangeHandler& handler) noexcept;
     void unregister_user_config_change_handler(IUserConfigChangeHandler& handler) noexcept;
     [[nodiscard]] bool is_initialized() const noexcept { return _initialized; }
     [[nodiscard]] std::expected<UserConfigLoadResult,UserConfigInitializationFailure> initialize(
-        const elysia::bootstrap::UserConfigData& default_settings,
+        const UserConfigData& default_settings,
         const std::filesystem::path& user_config_path);
     void shutdown() noexcept;
 

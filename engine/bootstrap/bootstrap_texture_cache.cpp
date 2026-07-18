@@ -29,9 +29,4 @@ void BootstrapTextureCache::clear() noexcept
 {
     _textures.clear();
 }
-
-std::size_t BootstrapTextureCache::size() const noexcept
-{
-    return _textures.size();
-}
 }

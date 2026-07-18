@@ -10,11 +10,11 @@ Moonline 将配置划分为三个职责明确的模块：
 
 ## 代码目录
 
-`engine/config/` 根目录保留稳定的公开入口及其配对实现：`ConfigService`、`UserConfigService`、`UserConfig`，以及合并后的 `user_config_types.h`、错误、状态和回调契约。
+`engine/config/` 根目录保留稳定的公开入口及其配对实现：`ConfigService`、`UserConfigService`、`UserConfig`、`user_config_data.h`，以及 `user_config_types.h` 中的错误、状态和回调契约。
 
 - `engine/config/content/`：通用只读 gameplay 配置的 manifest、文档、快照与构建实现。
 - `engine/config/user/`：用户设置的运行时实现与持久化 Store。
-- `engine/bootstrap/`：AppConfig、StartupSettings 及启动解析，保持独立于运行时配置模块。
+- `engine/bootstrap/`：AppConfig、`RuntimeSettings`、`BootstrapOutput` 及两阶段启动解析；Bootstrap 消费 `config::UserConfigData`，配置模块不再反向依赖启动编排。
 
 ## 启动与内容加载
 
@@ -22,7 +22,7 @@ Moonline 将配置划分为三个职责明确的模块：
 Bootstrap
   content_registry.json（解析一次） -> Application 持有 ContentRegistry
   AppConfig -> UserConfigService -> renderer -> EngineAssistCache
-  EngineAssistCache -> LocalizationManager -> 项目 preload manifest
+  EngineAssistCache -> LocalizationManager -> 项目 preload manifest（全部条目必需）
   Application -> SceneRuntimeContext（向 Scene 提供只读 registry、逻辑画布与 Engine Assist Cache）
 
 GameContentLoader

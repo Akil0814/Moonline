@@ -1,4 +1,5 @@
 #include "engine_assist_catalog.h"
+#include "engine_assist_keys.h"
 
 #include <array>
 #include <system_error>
@@ -24,7 +25,10 @@ const std::array<EngineAssistAssetDescriptor, 6> kTextureDescriptors = {
         "textures/elysia_black_alpha_inverse.png"
     },
     EngineAssistAssetDescriptor{"engine.brand.elysia.light_edge", "textures/elysia_light_edge.png"},
-    EngineAssistAssetDescriptor{"engine.brand.elysia.white", "textures/elysia_white.png"},
+    EngineAssistAssetDescriptor{
+        asset_keys::ElysiaWhiteTexture,
+        "textures/elysia_white.png"
+    },
     EngineAssistAssetDescriptor{"engine.test.sprite", "textures/engine_test.png"},
 };
 

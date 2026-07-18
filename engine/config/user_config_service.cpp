@@ -9,7 +9,7 @@ namespace elysia::config
 UserConfigService::UserConfigService() = default;
 
 std::expected<UserConfigLoadResult,UserConfigInitializationFailure> UserConfigService::initialize(
-    const elysia::bootstrap::UserConfigData& default_settings,
+    const UserConfigData& default_settings,
     const std::filesystem::path& user_config_path)
 {
     shutdown();
@@ -35,14 +35,14 @@ std::expected<void,UserConfigFailure> UserConfigService::save_user_config()
 
 std::expected<UserConfigApplyStatus,UserConfigCommitFailure>
 UserConfigService::apply_and_save_user_config(
-    const elysia::bootstrap::UserConfigData& settings)
+    const UserConfigData& settings)
 {
     return apply_and_save_user_config(settings,_user_config.runtime_state());
 }
 
 std::expected<UserConfigApplyStatus,UserConfigCommitFailure>
 UserConfigService::apply_and_save_user_config(
-    const elysia::bootstrap::UserConfigData& settings,
+    const UserConfigData& settings,
     const UserConfigRuntimeState& rollback_state)
 {
     if (!_initialized)

@@ -12,7 +12,7 @@
 namespace
 {
 using moonline::tests::require;
-using Data = elysia::bootstrap::UserConfigData;
+using Data = elysia::config::UserConfigData;
 void write(const std::filesystem::path& path,std::string_view text) { std::ofstream(path,std::ios::trunc) << text; }
 
 class Handler final : public elysia::config::IUserConfigChangeHandler
@@ -35,7 +35,7 @@ public:
     std::expected<void,elysia::config::UserConfigFailure> apply_target_fps(double) override { return {}; }
     std::expected<void,elysia::config::UserConfigFailure>
     apply_window_settings(
-        const elysia::bootstrap::WindowSettings& settings) override
+        const elysia::config::WindowSettings& settings) override
     {
         window_settings_calls.push_back(settings);
         if (fail_window_settings && settings == *fail_window_settings)
@@ -44,9 +44,9 @@ public:
     }
 
     std::optional<int> fail_master_value;
-    std::optional<elysia::bootstrap::WindowSettings> fail_window_settings;
+    std::optional<elysia::config::WindowSettings> fail_window_settings;
     std::string fail_language;
-    std::vector<elysia::bootstrap::WindowSettings> window_settings_calls;
+    std::vector<elysia::config::WindowSettings> window_settings_calls;
 
 private:
     static std::unexpected<elysia::config::UserConfigFailure> failure(std::string setting)
@@ -74,9 +74,9 @@ int main()
     auto loaded = store.load(path,defaults);
     require(loaded && !loaded->rebuilt
         && loaded->settings.window.mode
-            == elysia::bootstrap::WindowMode::BorderlessFullscreen
+            == elysia::config::WindowMode::BorderlessFullscreen
         && loaded->settings.window.windowed_size
-            == elysia::bootstrap::WindowSize{ 1600,900 },
+            == elysia::config::WindowSize{ 1600,900 },
         "strict UserConfig v2 must load");
     require(store.save(path,loaded->settings).has_value(),
         "valid UserConfig v2 must save");
@@ -119,7 +119,7 @@ int main()
     auto recovered = store.load(path,defaults);
     require(recovered && recovered->recovered
         && recovered->settings.window.windowed_size
-            == elysia::bootstrap::WindowSize{ 1600,900 },
+            == elysia::config::WindowSize{ 1600,900 },
         "a valid v2 backup must recover a corrupt primary");
 
     const auto temporary_recovery_path = dir / "temporary_recovery.json";
@@ -128,7 +128,7 @@ int main()
         store.load(temporary_recovery_path,defaults);
     require(temporary_recovery && temporary_recovery->recovered
         && temporary_recovery->settings.window.windowed_size
-            == elysia::bootstrap::WindowSize{ 1600,900 },
+            == elysia::config::WindowSize{ 1600,900 },
         "a valid temporary v2 file must recover a missing primary");
 
     write(path,R"({"schema_version":99})");
@@ -148,7 +148,7 @@ int main()
 
     Data committed = service->user_config().snapshot();
     committed.window = {
-        elysia::bootstrap::WindowMode::BorderlessFullscreen,
+        elysia::config::WindowMode::BorderlessFullscreen,
         { 1600,900 }
     };
     committed.audio.master_volume = 45;

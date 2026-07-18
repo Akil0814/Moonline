@@ -2,7 +2,7 @@
 
 #include "settings_scene_payload.h"
 #include "../scene.h"
-#include "../../bootstrap/runtime_settings.h"
+#include "../../config/user_config_data.h"
 #include "../../config/user_config_types.h"
 
 namespace elysia::ui

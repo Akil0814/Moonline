@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../bootstrap/runtime_settings.h"
+#include "../config/user_config_data.h"
 
 #include <SDL.h>
 
@@ -19,6 +19,6 @@ struct ApplicationWindowOperations
 };
 
 [[nodiscard]] std::expected<void,std::string> apply_window_settings(
-    const elysia::bootstrap::WindowSettings& settings,
+    const elysia::config::WindowSettings& settings,
     const ApplicationWindowOperations& operations);
 }

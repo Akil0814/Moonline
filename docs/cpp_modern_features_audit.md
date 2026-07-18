@@ -124,7 +124,7 @@
 ### 默认比较运算符
 
 - `engine/audio/audio_settings.h:11`：`friend bool operator==(const AudioSettings&, const AudioSettings&) = default;`。
-- `engine/bootstrap/runtime_settings.h:21`：运行时设置同样使用默认相等比较。
+- `engine/config/user_config_data.h:18`：用户窗口尺寸与设置使用默认相等比较。
 - `engine/core/render/color.h:19`：颜色值使用默认 `operator==`。
 
 ## C++23

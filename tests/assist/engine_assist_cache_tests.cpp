@@ -2,6 +2,7 @@
 
 #include "engine/assist/engine_assist_cache.h"
 #include "engine/assist/engine_assist_catalog.h"
+#include "engine/assist/engine_assist_keys.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/loading/content_runtime_cleanup.h"
 #include "engine/ui/widgets/image/ui_animation.h"
@@ -73,7 +74,8 @@ int main()
     require(cache.texture_count() == 6, "cache must own all six Engine textures");
     require(cache.font_count() == 35, "cache must own five font faces at seven fixed sizes");
     require(cache.locale_count() == 5, "cache must own all five Engine translation tables");
-    require(cache.find_texture("engine.brand.elysia.white") != nullptr,
+    require(cache.find_texture(
+            elysia::assist::asset_keys::ElysiaWhiteTexture) != nullptr,
         "cache must expose the Engine startup logo by stable key");
     require(cache.find_texture("engine.test.sprite") != nullptr,
         "cache must expose the Engine test sprite by stable key");
@@ -119,7 +121,8 @@ int main()
         "UiAnimation must bind looping Engine Assist animations without AnimationManager");
 
     elysia::loading::clear_loaded_content();
-    require(cache.find_texture("engine.brand.elysia.white") != nullptr
+    require(cache.find_texture(
+            elysia::assist::asset_keys::ElysiaWhiteTexture) != nullptr
             && cache.find_font("en", 20) != nullptr,
         "clearing project content must not invalidate Engine assist resources");
     require(cache.create_animation("engine.test.idle") != nullptr,

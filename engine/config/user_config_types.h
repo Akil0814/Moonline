@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../bootstrap/runtime_settings.h"
+#include "user_config_data.h"
 
 #include <optional>
 #include <string>
@@ -31,7 +31,7 @@ struct UserConfigCommitFailure
 
 struct UserConfigRuntimeState
 {
-    elysia::bootstrap::UserConfigData settings;
+    UserConfigData settings;
     bool restart_required = false;
 };
 
@@ -48,10 +48,9 @@ struct UserConfigInitializationFailure
 
 struct UserConfigLoadResult
 {
-    elysia::bootstrap::UserConfigData settings;
+    UserConfigData settings;
     std::string warning;
     bool recovered = false;
     bool rebuilt = false;
-    bool rebuilt_user_config = false;
 };
 }

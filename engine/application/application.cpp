@@ -108,20 +108,25 @@ bool Application::init(
         argc > 0 && argv && argv[0]
             ? std::filesystem::path(argv[0])
             : std::filesystem::path{};
-    elysia::bootstrap::StartupParseResult parse_result =
+    auto parse_result =
         elysia::bootstrap::Bootstrapper::instance()->parse_runtime_settings(
             executable_path);
 
-    if (!parse_result.success)
-        return startup_fail("bootstrap",parse_result.error);
+    if (!parse_result)
+        return startup_fail("bootstrap",parse_result.error().message);
 
-    _content_registry = std::move(parse_result.content_registry);
+    elysia::bootstrap::BootstrapOutput bootstrap_output =
+        std::move(*parse_result);
+    _content_registry = std::move(bootstrap_output.content_registry);
     elysia::tools::Logger::instance()->initialize();
 
-    if (!parse_result.warning.empty())
-        ELYSIA_LOG_WARN("application","Startup warning: " << parse_result.warning);
+    if (!bootstrap_output.warning.empty())
+        ELYSIA_LOG_WARN(
+            "application",
+            "Startup warning: " << bootstrap_output.warning);
 
-    elysia::bootstrap::StartupSettings runtime_settings = parse_result.startup_settings;
+    elysia::bootstrap::RuntimeSettings runtime_settings =
+        std::move(bootstrap_output.runtime_settings);
     if (!init_runtime(runtime_settings,descriptor))
         return false;
 
@@ -140,8 +145,8 @@ bool Application::init(
 
     if (!elysia::localization::LocalizationManager::instance()->init(
         _renderer,
-        parse_result.i18n_manifest_path,
-        runtime_settings.language,
+        bootstrap_output.i18n_manifest_path,
+        runtime_settings.user.language,
         &_font_resolver,
         &_engine_assist_cache))
     {
@@ -190,8 +195,11 @@ bool Application::init(
     _input_system.init();
     _input_system.set_renderer(_renderer);
 
-    if (!elysia::bootstrap::Bootstrapper::instance()->preload_startup_resources(_renderer))
-        return startup_fail("loading","Startup resource preload failed.");
+    if (const auto preload_result =
+            elysia::bootstrap::Bootstrapper::instance()
+                ->preload_startup_resources(_renderer);
+        !preload_result)
+        return startup_fail("loading",preload_result.error().message);
 
     _scene_runtime_context.emplace(
         _renderer,
@@ -206,9 +214,10 @@ bool Application::init(
 }
 
 bool Application::init_runtime(
-    const elysia::bootstrap::StartupSettings& settings,
+    const elysia::bootstrap::RuntimeSettings& settings,
     const ApplicationDescriptor& descriptor)
 {
+    const elysia::config::UserConfigData& user_settings = settings.user;
     const bool sdl_initialized = SDL_Init(SDL_INIT_EVERYTHING) == 0;
     _sdl_initialized = sdl_initialized;
     if (!check_startup_step(sdl_initialized,"platform","SDL2 Error"))
@@ -254,7 +263,7 @@ bool Application::init_runtime(
     if (!check_startup_step(audio_device_open,"audio","Mix_OpenAudio Error"))
         return false;
     if (!check_startup_step(
-        elysia::audio::AudioService::instance()->init(settings.audio),
+        elysia::audio::AudioService::instance()->init(user_settings.audio),
         "audio",
         "AudioService init failed"))
     {
@@ -267,14 +276,14 @@ bool Application::init_runtime(
         settings.window_title.c_str(),
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        settings.window.windowed_size.width,
-        settings.window.windowed_size.height,
+        user_settings.window.windowed_size.width,
+        user_settings.window.windowed_size.height,
         SDL_WINDOW_SHOWN);
     if (!check_startup_step(_window != nullptr,"platform","SDL_CreateWindow Error"))
         return false;
 
-    if (settings.window.mode
-            == elysia::bootstrap::WindowMode::BorderlessFullscreen
+    if (user_settings.window.mode
+            == elysia::config::WindowMode::BorderlessFullscreen
         && SDL_SetWindowFullscreen(_window,SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)
     {
         ELYSIA_LOG_WARN(
@@ -283,13 +292,13 @@ bool Application::init_runtime(
         SDL_ClearError();
         SDL_SetWindowSize(
             _window,
-            settings.window.windowed_size.width,
-            settings.window.windowed_size.height);
+            user_settings.window.windowed_size.width,
+            user_settings.window.windowed_size.height);
         SDL_SetWindowPosition(_window,SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED);
     }
 
     Uint32 renderer_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE;
-    if (settings.vsync)
+    if (user_settings.vsync)
         renderer_flags |= SDL_RENDERER_PRESENTVSYNC;
 
     _renderer = SDL_CreateRenderer(_window,-1,renderer_flags);
@@ -306,7 +315,7 @@ bool Application::init_runtime(
         return startup_fail("platform",presentation_result.error());
     }
 
-    _target_fps = settings.target_fps;
+    _target_fps = user_settings.target_fps;
     return true;
 }
 
@@ -566,7 +575,9 @@ Application::apply_target_fps(double value)
     return {};
 }
 
-std::expected<void,elysia::config::UserConfigFailure>Application::apply_window_settings(const elysia::bootstrap::WindowSettings& settings)
+std::expected<void,elysia::config::UserConfigFailure>
+Application::apply_window_settings(
+    const elysia::config::WindowSettings& settings)
 {
     if (!_window)
         return runtime_apply_failure("window_settings","Application window is unavailable.");
