@@ -46,6 +46,7 @@ struct UiNumberStyle
 struct UiBarStyle
 {
     float corner_radius = 0.0f;
+    elysia::core::UiStrokeWidth border_width{};
     elysia::core::Color background{};
     elysia::core::Color fill{};
     elysia::core::Color border{};
@@ -56,6 +57,7 @@ struct UiBarStyle
 struct UiPanelStyle
 {
     float corner_radius = 0.0f;
+    elysia::core::UiStrokeWidth border_width{};
     bool draw_background = true;
     bool draw_border = true;
     elysia::core::Color background{};
@@ -66,6 +68,7 @@ struct UiPanelStyle
 struct UiChromeContainerStyle
 {
     float corner_radius = 0.0f;
+    elysia::core::UiStrokeWidth border_width{};
     bool draw_background = true;
     bool draw_border = true;
     bool draw_header_background = true;
@@ -78,6 +81,7 @@ struct UiChromeContainerStyle
 struct UiWindowStyle
 {
     float corner_radius = 0.0f;
+    elysia::core::UiStrokeWidth border_width{};
     bool draw_background = true;
     bool draw_border = true;
     elysia::core::Color background{};
@@ -99,10 +103,10 @@ struct UiLabelStyleOverrides { std::optional<float> corner_radius; std::optional
 struct UiTextBlockStyleOverrides { std::optional<float> corner_radius; std::optional<elysia::core::Color> text; std::optional<elysia::core::Color> background; std::optional<bool> draw_background; };
 struct UiDropdownStyleOverrides { std::optional<float> popup_gap; std::optional<float> option_height; std::optional<float> popup_max_height; };
 struct UiNumberStyleOverrides { std::optional<float> corner_radius; std::optional<elysia::core::Color> text; std::optional<elysia::core::Color> background; std::optional<bool> draw_background; };
-struct UiBarStyleOverrides { std::optional<float> corner_radius; std::optional<elysia::core::Color> background; std::optional<elysia::core::Color> fill; std::optional<elysia::core::Color> border; std::optional<bool> draw_border; };
-struct UiPanelStyleOverrides { std::optional<float> corner_radius; std::optional<bool> draw_background; std::optional<bool> draw_border; std::optional<elysia::core::Color> background; std::optional<elysia::core::Color> border; };
-struct UiChromeContainerStyleOverrides { std::optional<float> corner_radius; std::optional<bool> draw_background; std::optional<bool> draw_border; std::optional<bool> draw_header_background; std::optional<elysia::core::Color> background; std::optional<elysia::core::Color> border; std::optional<elysia::core::Color> header_background; };
-struct UiWindowStyleOverrides { std::optional<float> corner_radius; std::optional<bool> draw_background; std::optional<bool> draw_border; std::optional<elysia::core::Color> background; std::optional<elysia::core::Color> border; };
+struct UiBarStyleOverrides { std::optional<float> corner_radius; std::optional<elysia::core::UiStrokeWidth> border_width; std::optional<elysia::core::Color> background; std::optional<elysia::core::Color> fill; std::optional<elysia::core::Color> border; std::optional<bool> draw_border; };
+struct UiPanelStyleOverrides { std::optional<float> corner_radius; std::optional<elysia::core::UiStrokeWidth> border_width; std::optional<bool> draw_background; std::optional<bool> draw_border; std::optional<elysia::core::Color> background; std::optional<elysia::core::Color> border; };
+struct UiChromeContainerStyleOverrides { std::optional<float> corner_radius; std::optional<elysia::core::UiStrokeWidth> border_width; std::optional<bool> draw_background; std::optional<bool> draw_border; std::optional<bool> draw_header_background; std::optional<elysia::core::Color> background; std::optional<elysia::core::Color> border; std::optional<elysia::core::Color> header_background; };
+struct UiWindowStyleOverrides { std::optional<float> corner_radius; std::optional<elysia::core::UiStrokeWidth> border_width; std::optional<bool> draw_background; std::optional<bool> draw_border; std::optional<elysia::core::Color> background; std::optional<elysia::core::Color> border; };
 struct UiOverlayOptionsOverrides { std::optional<bool> open; std::optional<bool> modal; std::optional<bool> close_on_cancel; std::optional<bool> close_on_outside_click; std::optional<UiOverlayPlacement> placement; std::optional<UiOverlayTransition> transition; std::optional<elysia::core::Vector2> fallback_size; std::optional<int> order; };
 struct UiDialogStyleOverrides { std::optional<float> corner_radius; UiOverlayOptionsOverrides overlay_defaults{}; std::optional<float> close_button_height; std::optional<float> body_footer_spacing; std::optional<int> body_padding; std::optional<int> text_padding; };
 
@@ -119,14 +123,14 @@ ELYSIA_UI_DEFINE_SIMPLE_STYLE_TRAITS(UiDropdownStyle,UiDropdownStyleOverrides,!o
     apply_ui_style_override(s.popup_gap,o.popup_gap); apply_ui_style_override(s.option_height,o.option_height); apply_ui_style_override(s.popup_max_height,o.popup_max_height);)
 ELYSIA_UI_DEFINE_SIMPLE_STYLE_TRAITS(UiNumberStyle,UiNumberStyleOverrides,!o.corner_radius&&!o.text&&!o.background&&!o.draw_background,
     apply_ui_style_override(s.corner_radius,o.corner_radius); apply_ui_style_override(s.text,o.text); apply_ui_style_override(s.background,o.background); apply_ui_style_override(s.draw_background,o.draw_background);)
-ELYSIA_UI_DEFINE_SIMPLE_STYLE_TRAITS(UiBarStyle,UiBarStyleOverrides,!o.corner_radius&&!o.background&&!o.fill&&!o.border&&!o.draw_border,
-    apply_ui_style_override(s.corner_radius,o.corner_radius); apply_ui_style_override(s.background,o.background); apply_ui_style_override(s.fill,o.fill); apply_ui_style_override(s.border,o.border); apply_ui_style_override(s.draw_border,o.draw_border);)
-ELYSIA_UI_DEFINE_SIMPLE_STYLE_TRAITS(UiPanelStyle,UiPanelStyleOverrides,!o.corner_radius&&!o.draw_background&&!o.draw_border&&!o.background&&!o.border,
-    apply_ui_style_override(s.corner_radius,o.corner_radius); apply_ui_style_override(s.draw_background,o.draw_background); apply_ui_style_override(s.draw_border,o.draw_border); apply_ui_style_override(s.background,o.background); apply_ui_style_override(s.border,o.border);)
-ELYSIA_UI_DEFINE_SIMPLE_STYLE_TRAITS(UiChromeContainerStyle,UiChromeContainerStyleOverrides,!o.corner_radius&&!o.draw_background&&!o.draw_border&&!o.draw_header_background&&!o.background&&!o.border&&!o.header_background,
-    apply_ui_style_override(s.corner_radius,o.corner_radius); apply_ui_style_override(s.draw_background,o.draw_background); apply_ui_style_override(s.draw_border,o.draw_border); apply_ui_style_override(s.draw_header_background,o.draw_header_background); apply_ui_style_override(s.background,o.background); apply_ui_style_override(s.border,o.border); apply_ui_style_override(s.header_background,o.header_background);)
-ELYSIA_UI_DEFINE_SIMPLE_STYLE_TRAITS(UiWindowStyle,UiWindowStyleOverrides,!o.corner_radius&&!o.draw_background&&!o.draw_border&&!o.background&&!o.border,
-    apply_ui_style_override(s.corner_radius,o.corner_radius); apply_ui_style_override(s.draw_background,o.draw_background); apply_ui_style_override(s.draw_border,o.draw_border); apply_ui_style_override(s.background,o.background); apply_ui_style_override(s.border,o.border);)
+ELYSIA_UI_DEFINE_SIMPLE_STYLE_TRAITS(UiBarStyle,UiBarStyleOverrides,!o.corner_radius&&!o.border_width&&!o.background&&!o.fill&&!o.border&&!o.draw_border,
+    apply_ui_style_override(s.corner_radius,o.corner_radius); apply_ui_style_override(s.border_width,o.border_width); apply_ui_style_override(s.background,o.background); apply_ui_style_override(s.fill,o.fill); apply_ui_style_override(s.border,o.border); apply_ui_style_override(s.draw_border,o.draw_border);)
+ELYSIA_UI_DEFINE_SIMPLE_STYLE_TRAITS(UiPanelStyle,UiPanelStyleOverrides,!o.corner_radius&&!o.border_width&&!o.draw_background&&!o.draw_border&&!o.background&&!o.border,
+    apply_ui_style_override(s.corner_radius,o.corner_radius); apply_ui_style_override(s.border_width,o.border_width); apply_ui_style_override(s.draw_background,o.draw_background); apply_ui_style_override(s.draw_border,o.draw_border); apply_ui_style_override(s.background,o.background); apply_ui_style_override(s.border,o.border);)
+ELYSIA_UI_DEFINE_SIMPLE_STYLE_TRAITS(UiChromeContainerStyle,UiChromeContainerStyleOverrides,!o.corner_radius&&!o.border_width&&!o.draw_background&&!o.draw_border&&!o.draw_header_background&&!o.background&&!o.border&&!o.header_background,
+    apply_ui_style_override(s.corner_radius,o.corner_radius); apply_ui_style_override(s.border_width,o.border_width); apply_ui_style_override(s.draw_background,o.draw_background); apply_ui_style_override(s.draw_border,o.draw_border); apply_ui_style_override(s.draw_header_background,o.draw_header_background); apply_ui_style_override(s.background,o.background); apply_ui_style_override(s.border,o.border); apply_ui_style_override(s.header_background,o.header_background);)
+ELYSIA_UI_DEFINE_SIMPLE_STYLE_TRAITS(UiWindowStyle,UiWindowStyleOverrides,!o.corner_radius&&!o.border_width&&!o.draw_background&&!o.draw_border&&!o.background&&!o.border,
+    apply_ui_style_override(s.corner_radius,o.corner_radius); apply_ui_style_override(s.border_width,o.border_width); apply_ui_style_override(s.draw_background,o.draw_background); apply_ui_style_override(s.draw_border,o.draw_border); apply_ui_style_override(s.background,o.background); apply_ui_style_override(s.border,o.border);)
 
 template<> struct UiStyleOverrideTraits<UiDialogStyle> { using Overrides=UiDialogStyleOverrides;
 static bool empty(const Overrides& o) noexcept { const auto& v=o.overlay_defaults; return !o.corner_radius&&!v.open&&!v.modal&&!v.close_on_cancel&&!v.close_on_outside_click&&!v.placement&&!v.transition&&!v.fallback_size&&!v.order&&!o.close_button_height&&!o.body_footer_spacing&&!o.body_padding&&!o.text_padding; }

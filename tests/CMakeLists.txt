@@ -185,6 +185,7 @@ foreach(UI_TEST_TARGET IN ITEMS
     ui_focus_tree_tests
     ui_focus_routing_tests
     ui_presentation_tests
+    ui_stroke_rendering_tests
     ui_callback_safety_tests
     ui_text_input_rendering_tests
     ui_number_rendering_tests

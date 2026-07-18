@@ -32,6 +32,20 @@ enum class UiRenderCommandType
     DrawCircle
 };
 
+enum class UiStrokeWidthMode
+{
+    Hairline,
+    Logical
+};
+
+struct UiStrokeWidth
+{
+    UiStrokeWidthMode mode = UiStrokeWidthMode::Hairline;
+    float logical_width = 1.0f;
+
+    [[nodiscard]] constexpr bool operator==(const UiStrokeWidth&) const noexcept = default;
+};
+
 struct RenderCommand
 {
     SDL_Texture* texture = nullptr;
@@ -91,6 +105,10 @@ struct UiRenderCommand
     // Used by rectangle, rounded rectangle, and line commands.
     Color color{};
 
+    // Used by outline commands. Factories normalize this before it reaches a
+    // renderer backend.
+    UiStrokeWidth stroke_width{};
+
     // Used by FillRoundedRect and DrawRoundedRect. Command factories guarantee
     // that this is finite and in [0, min(width, height) / 2].
     float corner_radius = 0.0f;
@@ -138,6 +156,27 @@ inline void set_ui_command_clip_rect(UiRenderCommand& command, const Rect& clip_
     if (rect.is_empty() || !std::isfinite(requested_radius) || requested_radius <= 0.0f)
         return 0.0f;
     return std::min(requested_radius,0.5f * std::min(rect.width(),rect.height()));
+}
+
+[[nodiscard]] inline UiStrokeWidth normalize_ui_stroke_width(
+    UiStrokeWidth requested_width
+) noexcept
+{
+    switch (requested_width.mode)
+    {
+    case UiStrokeWidthMode::Hairline:
+        return UiStrokeWidth{};
+
+    case UiStrokeWidthMode::Logical:
+        if (!std::isfinite(requested_width.logical_width)
+            || requested_width.logical_width <= 0.0f)
+        {
+            requested_width.logical_width = 1.0f;
+        }
+        return requested_width;
+    }
+
+    return UiStrokeWidth{};
 }
 
 [[nodiscard]] inline UiRenderCommand make_ui_texture_command(
@@ -197,7 +236,8 @@ inline void set_ui_command_clip_rect(UiRenderCommand& command, const Rect& clip_
 [[nodiscard]] inline UiRenderCommand make_ui_draw_rect_command(
     const Rect& screen_rect,
     Color color,
-    float corner_radius = 0.0f
+    float corner_radius = 0.0f,
+    UiStrokeWidth stroke_width = {}
 ) noexcept
 {
     UiRenderCommand command;
@@ -207,6 +247,7 @@ inline void set_ui_command_clip_rect(UiRenderCommand& command, const Rect& clip_
         : UiRenderCommandType::DrawRect;
     command.screen_rect = screen_rect;
     command.color = color;
+    command.stroke_width = normalize_ui_stroke_width(stroke_width);
     return command;
 }
 
@@ -214,10 +255,12 @@ inline void set_ui_command_clip_rect(UiRenderCommand& command, const Rect& clip_
     const Rect& screen_rect,
     Color color,
     const Rect& clip_rect,
-    float corner_radius = 0.0f
+    float corner_radius = 0.0f,
+    UiStrokeWidth stroke_width = {}
 ) noexcept
 {
-    UiRenderCommand command = make_ui_draw_rect_command(screen_rect,color,corner_radius);
+    UiRenderCommand command = make_ui_draw_rect_command(
+        screen_rect,color,corner_radius,stroke_width);
     set_ui_command_clip_rect(command, clip_rect);
     return command;
 }
@@ -264,7 +307,8 @@ inline void append_ui_fill_top_rounded_rect_commands(
 [[nodiscard]] inline UiRenderCommand make_ui_draw_line_command(
     const Vector2& line_start,
     const Vector2& line_end,
-    Color color
+    Color color,
+    UiStrokeWidth stroke_width = {}
 ) noexcept
 {
     UiRenderCommand command;
@@ -272,6 +316,7 @@ inline void append_ui_fill_top_rounded_rect_commands(
     command.line_start = line_start;
     command.line_end = line_end;
     command.color = color;
+    command.stroke_width = normalize_ui_stroke_width(stroke_width);
     return command;
 }
 
@@ -279,10 +324,12 @@ inline void append_ui_fill_top_rounded_rect_commands(
     const Vector2& line_start,
     const Vector2& line_end,
     Color color,
-    const Rect& clip_rect
+    const Rect& clip_rect,
+    UiStrokeWidth stroke_width = {}
 ) noexcept
 {
-    UiRenderCommand command = make_ui_draw_line_command(line_start, line_end, color);
+    UiRenderCommand command = make_ui_draw_line_command(
+        line_start,line_end,color,stroke_width);
     set_ui_command_clip_rect(command, clip_rect);
     return command;
 }
@@ -316,7 +363,8 @@ inline void append_ui_fill_top_rounded_rect_commands(
 [[nodiscard]] inline UiRenderCommand make_ui_draw_circle_command(
     const Vector2& circle_center,
     float circle_radius,
-    Color color
+    Color color,
+    UiStrokeWidth stroke_width = {}
 ) noexcept
 {
     UiRenderCommand command;
@@ -324,6 +372,7 @@ inline void append_ui_fill_top_rounded_rect_commands(
     command.circle_center = circle_center;
     command.circle_radius = circle_radius;
     command.color = color;
+    command.stroke_width = normalize_ui_stroke_width(stroke_width);
     return command;
 }
 
@@ -331,10 +380,12 @@ inline void append_ui_fill_top_rounded_rect_commands(
     const Vector2& circle_center,
     float circle_radius,
     Color color,
-    const Rect& clip_rect
+    const Rect& clip_rect,
+    UiStrokeWidth stroke_width = {}
 ) noexcept
 {
-    UiRenderCommand command = make_ui_draw_circle_command(circle_center, circle_radius, color);
+    UiRenderCommand command = make_ui_draw_circle_command(
+        circle_center,circle_radius,color,stroke_width);
     set_ui_command_clip_rect(command, clip_rect);
     return command;
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../../core/render/render_command.h"
 #include "../core/ui_child_host.h"
 #include "../focus/ui_focus_scope.h"
 #include "../scroll/ui_scroll_state.h"
@@ -45,6 +46,7 @@ struct UiScrollBarStyleOverrides
 struct UiScrollContainerStyle
 {
     float corner_radius = 0.0f;
+    elysia::core::UiStrokeWidth border_width{};
     UiScrollBarStyle scrollbar{};
     bool draw_background = true;
     elysia::core::Color background_color{};
@@ -55,14 +57,15 @@ struct UiScrollContainerStyleOverrides
 {
     UiScrollBarStyleOverrides scrollbar{};
     std::optional<float> corner_radius;
+    std::optional<elysia::core::UiStrokeWidth> border_width;
     std::optional<bool> draw_background,draw_border;
     std::optional<elysia::core::Color> background_color,border_color;
 };
 template<> struct UiStyleOverrideTraits<UiScrollContainerStyle> { using Overrides=UiScrollContainerStyleOverrides;
 static bool scrollbar_empty(const UiScrollBarStyleOverrides& o) noexcept { return !o.corner_radius&&!o.thickness&&!o.margin&&!o.min_thumb_length&&!o.draw_track&&!o.track_idle_color&&!o.track_focused_color&&!o.track_dragging_color&&!o.track_disabled_color&&!o.thumb_idle_color&&!o.thumb_focused_color&&!o.thumb_dragging_color&&!o.thumb_disabled_color; }
-static bool empty(const Overrides& o) noexcept { return scrollbar_empty(o.scrollbar)&&!o.corner_radius&&!o.draw_background&&!o.draw_border&&!o.background_color&&!o.border_color; }
+static bool empty(const Overrides& o) noexcept { return scrollbar_empty(o.scrollbar)&&!o.corner_radius&&!o.border_width&&!o.draw_background&&!o.draw_border&&!o.background_color&&!o.border_color; }
 static void apply_scrollbar(UiScrollBarStyle& s,const UiScrollBarStyleOverrides& o) noexcept { apply_ui_style_override(s.corner_radius,o.corner_radius); apply_ui_style_override(s.thickness,o.thickness); apply_ui_style_override(s.margin,o.margin); apply_ui_style_override(s.min_thumb_length,o.min_thumb_length); apply_ui_style_override(s.draw_track,o.draw_track); apply_ui_style_override(s.track_idle_color,o.track_idle_color); apply_ui_style_override(s.track_focused_color,o.track_focused_color); apply_ui_style_override(s.track_dragging_color,o.track_dragging_color); apply_ui_style_override(s.track_disabled_color,o.track_disabled_color); apply_ui_style_override(s.thumb_idle_color,o.thumb_idle_color); apply_ui_style_override(s.thumb_focused_color,o.thumb_focused_color); apply_ui_style_override(s.thumb_dragging_color,o.thumb_dragging_color); apply_ui_style_override(s.thumb_disabled_color,o.thumb_disabled_color); }
-static void apply(UiScrollContainerStyle& s,const Overrides& o) noexcept { apply_scrollbar(s.scrollbar,o.scrollbar); apply_ui_style_override(s.corner_radius,o.corner_radius); apply_ui_style_override(s.draw_background,o.draw_background); apply_ui_style_override(s.draw_border,o.draw_border); apply_ui_style_override(s.background_color,o.background_color); apply_ui_style_override(s.border_color,o.border_color); }};
+static void apply(UiScrollContainerStyle& s,const Overrides& o) noexcept { apply_scrollbar(s.scrollbar,o.scrollbar); apply_ui_style_override(s.corner_radius,o.corner_radius); apply_ui_style_override(s.border_width,o.border_width); apply_ui_style_override(s.draw_background,o.draw_background); apply_ui_style_override(s.draw_border,o.draw_border); apply_ui_style_override(s.background_color,o.background_color); apply_ui_style_override(s.border_color,o.border_color); }};
 
 class UiScrollContainer : public UiChildHost, public UiFocusScope
 {

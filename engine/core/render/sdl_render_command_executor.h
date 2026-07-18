@@ -5,6 +5,7 @@
 
 #include "render_command.h"
 #include "sdl_convert.h"
+#include "sdl_ui_stroke_renderer.h"
 
 #include <cmath>
 #include <cassert>
@@ -115,7 +116,7 @@ inline void execute_render_command(SDL_Renderer* renderer, const UiRenderCommand
 
     if (render_command.use_clip_rect)
     {
-        const SDL_Rect clip_rect = to_sdl_rect(render_command.clip_rect);
+        const SDL_Rect clip_rect = to_sdl_covering_rect(render_command.clip_rect);
         SDL_RenderSetClipRect(renderer, &clip_rect);
     }
     else if (had_clip_rect)
@@ -140,7 +141,6 @@ inline void execute_render_command(SDL_Renderer* renderer, const UiRenderCommand
         break;
 
     case UiRenderCommandType::FillRect:
-    case UiRenderCommandType::DrawRect:
     {
         if (render_command.screen_rect.is_empty())
             break;
@@ -162,17 +162,17 @@ inline void execute_render_command(SDL_Renderer* renderer, const UiRenderCommand
             color.a
         );
 
-        if (render_command.type == UiRenderCommandType::FillRect)
-            SDL_RenderFillRect(renderer, &rect);
-        else
-            SDL_RenderDrawRect(renderer, &rect);
+        SDL_RenderFillRect(renderer, &rect);
 
         SDL_SetRenderDrawColor(renderer, old_r, old_g, old_b, old_a);
         break;
     }
 
+    case UiRenderCommandType::DrawRect:
+        detail::render_ui_rect_stroke(renderer,render_command);
+        break;
+
     case UiRenderCommandType::FillRoundedRect:
-    case UiRenderCommandType::DrawRoundedRect:
     {
         if (render_command.screen_rect.is_empty())
             break;
@@ -190,41 +190,19 @@ inline void execute_render_command(SDL_Renderer* renderer, const UiRenderCommand
         const Sint16 y2 = clamp_circle_component(static_cast<float>(rect.y + rect.h - 1));
         const Sint16 radius = clamp_circle_component(render_command.corner_radius);
 
-        if (render_command.type == UiRenderCommandType::FillRoundedRect)
-            roundedBoxRGBA(renderer,x1,y1,x2,y2,radius,color.r,color.g,color.b,color.a);
-        else
-            roundedRectangleRGBA(renderer,x1,y1,x2,y2,radius,color.r,color.g,color.b,color.a);
+        roundedBoxRGBA(renderer,x1,y1,x2,y2,radius,color.r,color.g,color.b,color.a);
         break;
     }
+
+    case UiRenderCommandType::DrawRoundedRect:
+        detail::render_ui_rounded_rect_stroke(renderer,render_command);
+        break;
 
     case UiRenderCommandType::DrawLine:
-    {
-        const SDL_Color color = to_sdl_color(render_command.color);
-
-        Uint8 old_r = 0;
-        Uint8 old_g = 0;
-        Uint8 old_b = 0;
-        Uint8 old_a = 0;
-        SDL_GetRenderDrawColor(renderer, &old_r, &old_g, &old_b, &old_a);
-
-        SDL_SetRenderDrawColor(
-            renderer,
-            color.r,
-            color.g,
-            color.b,
-            color.a
-        );
-
-        const SDL_Point start = to_sdl_point(render_command.line_start);
-        const SDL_Point end = to_sdl_point(render_command.line_end);
-        SDL_RenderDrawLine(renderer, start.x, start.y, end.x, end.y);
-
-        SDL_SetRenderDrawColor(renderer, old_r, old_g, old_b, old_a);
+        detail::render_ui_line_stroke(renderer,render_command);
         break;
-    }
 
     case UiRenderCommandType::FillCircle:
-    case UiRenderCommandType::DrawCircle:
     {
         const Sint16 radius = clamp_circle_component(render_command.circle_radius);
         if (radius <= 0)
@@ -234,12 +212,13 @@ inline void execute_render_command(SDL_Renderer* renderer, const UiRenderCommand
         const Sint16 x = clamp_circle_component(render_command.circle_center.x);
         const Sint16 y = clamp_circle_component(render_command.circle_center.y);
 
-        if (render_command.type == UiRenderCommandType::FillCircle)
-            filledCircleRGBA(renderer, x, y, radius, color.r, color.g, color.b, color.a);
-        else
-            aacircleRGBA(renderer, x, y, radius, color.r, color.g, color.b, color.a);
+        filledCircleRGBA(renderer, x, y, radius, color.r, color.g, color.b, color.a);
         break;
     }
+
+    case UiRenderCommandType::DrawCircle:
+        detail::render_ui_circle_stroke(renderer,render_command);
+        break;
     }
 
     if (had_clip_rect)

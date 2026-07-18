@@ -187,7 +187,8 @@ void UiScrollContainer::submit_ui_render_commands(std::vector<elysia::core::UiRe
     submit_scrollbar_render_commands(out_commands);
 
     if (style.draw_border && !rect.is_empty())
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(style.border_color),style.corner_radius));
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(
+            rect,apply_opacity(style.border_color),style.corner_radius,style.border_width));
 }
 
 UiElement* UiScrollContainer::add_child(std::unique_ptr<UiElement> child,UiLayoutChildOptions options)

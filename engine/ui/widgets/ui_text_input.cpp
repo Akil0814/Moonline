@@ -273,7 +273,11 @@ void UiTextInput::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
     if (style.chrome.draw_background)
         out_commands.push_back(elysia::core::make_ui_fill_rect_command(input_rect,apply_opacity(current_background_color()),style.chrome.corner_radius));
     if (style.chrome.draw_border)
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(input_rect,apply_opacity(current_border_color()),style.chrome.corner_radius));
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(
+            input_rect,
+            apply_opacity(current_border_color()),
+            style.chrome.corner_radius,
+            style.chrome.border_width));
 
     const TextLayout layout = compute_text_layout();
     if (layout.content_rect.is_empty())

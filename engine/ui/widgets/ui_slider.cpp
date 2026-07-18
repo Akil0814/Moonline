@@ -331,7 +331,11 @@ void UiSlider::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
     if (_value_display != UiSliderValueDisplay::None)
         _value_number.submit_ui_render_commands(out_commands);
     if (style.chrome.draw_border)
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(slider_rect,apply_opacity(current_border_color()),style.chrome.corner_radius));
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(
+            slider_rect,
+            apply_opacity(current_border_color()),
+            style.chrome.corner_radius,
+            style.chrome.border_width));
 }
 
 void UiSlider::set_slider_config(const UiSliderConfig& config)

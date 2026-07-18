@@ -91,6 +91,60 @@ void test_corner_radius_normalization()
     require(rounded.corner_radius == 20.0f,"rounded command should store the normalized radius");
 }
 
+void test_stroke_width_model_and_style_cascade()
+{
+    using namespace elysia::core;
+
+    const UiRenderCommand default_rect = make_ui_draw_rect_command(
+        Rect{ 0,0,100,40 },Color{});
+    require(default_rect.stroke_width == UiStrokeWidth{},
+        "outline factories should default to a hairline stroke");
+
+    const UiStrokeWidth logical_two{ UiStrokeWidthMode::Logical,2.0f };
+    const UiRenderCommand logical_circle = make_ui_draw_circle_command(
+        Vector2{ 20,20 },10.0f,Color{},logical_two);
+    require(logical_circle.stroke_width == logical_two,
+        "outline factories should preserve an explicit logical stroke width");
+
+    const UiRenderCommand invalid_line = make_ui_draw_line_command(
+        Vector2{},Vector2{ 10,0 },Color{},
+        UiStrokeWidth{ UiStrokeWidthMode::Logical,
+            std::numeric_limits<float>::infinity() });
+    require(invalid_line.stroke_width
+            == UiStrokeWidth{ UiStrokeWidthMode::Logical,1.0f },
+        "invalid logical stroke widths should normalize to one logical pixel");
+
+    elysia::ui::UiButton button(Rect{ 0,0,120,40 });
+    elysia::ui::UiButtonStyle base = button.style();
+    base.chrome.border_width = logical_two;
+    button.set_base_style(base);
+
+    elysia::ui::UiButtonStyleOverrides overrides{};
+    overrides.chrome.border_width = UiStrokeWidth{
+        UiStrokeWidthMode::Logical,3.0f };
+    button.set_style_overrides(overrides);
+
+    elysia::ui::UiButtonStyle next_base = base;
+    next_base.chrome.border_width = UiStrokeWidth{};
+    button.set_base_style(next_base);
+    require(button.style().chrome.border_width
+            == UiStrokeWidth{ UiStrokeWidthMode::Logical,3.0f },
+        "a complete stroke-width override should survive theme/base updates");
+
+    std::vector<UiRenderCommand> commands;
+    button.submit_ui_render_commands(commands);
+    const UiRenderCommand* border = find_command(
+        commands,UiRenderCommandType::DrawRect);
+    require(border != nullptr
+            && border->stroke_width
+                == UiStrokeWidth{ UiStrokeWidthMode::Logical,3.0f },
+        "widget borders should forward the effective stroke width to rendering");
+
+    button.set_style_overrides({});
+    require(button.style().chrome.border_width == UiStrokeWidth{},
+        "replacing overrides should restore the latest base stroke width");
+}
+
 void test_chrome_uses_single_rounded_outer_frame()
 {
     elysia::ui::UiChromeContainer chrome(elysia::core::Rect{ 0,0,240,160 });
@@ -420,10 +474,16 @@ void test_container_driven_theme_tree()
     elysia::ui::UiButtonStyleOverrides custom{};
     custom.chrome.draw_background = false;
     custom.chrome.corner_radius = 11.0f;
+    custom.chrome.border_width = elysia::core::UiStrokeWidth{
+        elysia::core::UiStrokeWidthMode::Logical,2.0f };
     dynamic_raw->set_style_overrides(custom);
     manager.set_theme(elysia::ui::UiBuiltinTheme::ElysiaLight);
     require(!dynamic_raw->style().chrome.draw_background,"manual overrides must survive theme changes");
     require(dynamic_raw->style().chrome.corner_radius == 11.0f,"corner radius override must survive theme changes");
+    require(dynamic_raw->style().chrome.border_width
+            == elysia::core::UiStrokeWidth{
+                elysia::core::UiStrokeWidthMode::Logical,2.0f },
+        "stroke-width override must survive theme changes as one value");
     require(dynamic_raw->style().chrome.background.idle
             == manager.current_theme().button(elysia::ui::UiButtonVisualRole::Default).chrome.background.idle,
         "unwritten color fields must follow theme changes");
@@ -537,6 +597,7 @@ int main()
 {
     test_typography_role_layout_defaults();
     test_corner_radius_normalization();
+    test_stroke_width_model_and_style_cascade();
     test_chrome_uses_single_rounded_outer_frame();
     test_field_level_style_cascade();
     test_slider_adjustment_mode();

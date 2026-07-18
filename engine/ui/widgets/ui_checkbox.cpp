@@ -187,7 +187,8 @@ void UiCheckbox::submit_ui_render_commands(std::vector<elysia::core::UiRenderCom
             out_commands.push_back(elysia::core::make_ui_draw_circle_command(
                 center,
                 radius,
-                apply_opacity(current_border_color())));
+                apply_opacity(current_border_color()),
+                style.chrome.border_width));
 
         const float inset = std::max(2.0f,std::min(rect.width(),rect.height()) * 0.14f);
         const float inner_radius = std::max(0.0f,radius - inset);
@@ -215,7 +216,11 @@ void UiCheckbox::submit_ui_render_commands(std::vector<elysia::core::UiRenderCom
     if (style.chrome.draw_background)
         out_commands.push_back(elysia::core::make_ui_fill_rect_command(rect,apply_opacity(current_background_color()),style.chrome.corner_radius));
     if (style.chrome.draw_border)
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(current_border_color()),style.chrome.corner_radius));
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(
+            rect,
+            apply_opacity(current_border_color()),
+            style.chrome.corner_radius,
+            style.chrome.border_width));
 
     if (_state == UiCheckboxState::Checked)
     {

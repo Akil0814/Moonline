@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../../core/render/render_command.h"
 #include "ui_palette.h"
 #include "ui_style.h"
 
@@ -41,6 +42,7 @@ struct UiInteractiveColorsOverrides
 struct UiChromeStyle
 {
     float corner_radius = 0.0f;
+    elysia::core::UiStrokeWidth border_width{};
     UiInteractiveColors background{};
     UiInteractiveColors border{
         UiPalette::border_default,
@@ -57,6 +59,7 @@ struct UiChromeStyleOverrides
     UiInteractiveColorsOverrides background{};
     UiInteractiveColorsOverrides border{};
     std::optional<float> corner_radius;
+    std::optional<elysia::core::UiStrokeWidth> border_width;
     std::optional<bool> draw_background;
     std::optional<bool> draw_border;
 };
@@ -74,7 +77,7 @@ struct UiChromeStyleOverrides
 [[nodiscard]] inline bool empty(const UiChromeStyleOverrides& o) noexcept
 {
     return empty(o.background) && empty(o.border) && !o.corner_radius
-        && !o.draw_background && !o.draw_border;
+        && !o.border_width && !o.draw_background && !o.draw_border;
 }
 
 inline void apply_ui_style_overrides(UiEnabledDisabledColors& s,const UiEnabledDisabledColorsOverrides& o) noexcept
@@ -96,6 +99,7 @@ inline void apply_ui_style_overrides(UiChromeStyle& s,const UiChromeStyleOverrid
     apply_ui_style_overrides(s.background,o.background);
     apply_ui_style_overrides(s.border,o.border);
     apply_ui_style_override(s.corner_radius,o.corner_radius);
+    apply_ui_style_override(s.border_width,o.border_width);
     apply_ui_style_override(s.draw_background,o.draw_background);
     apply_ui_style_override(s.draw_border,o.draw_border);
 }

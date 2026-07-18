@@ -281,7 +281,8 @@ void UiChromeContainer::submit_ui_render_commands(std::vector<elysia::core::UiRe
             out_commands,rect,header_rect(),apply_opacity(style.header_background),corner_radius);
     submit_child_render_commands(out_commands);
     if (style.draw_border && !rect.is_empty())
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(style.border),corner_radius));
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(
+            rect,apply_opacity(style.border),corner_radius,style.border_width));
 }
 
 elysia::core::Vector2 UiChromeContainer::content_extent() const noexcept

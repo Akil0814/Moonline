@@ -6,6 +6,9 @@
 #include "../geometry/rect.h"
 #include "../geometry/vector2.h"
 
+#include <algorithm>
+#include <cmath>
+
 namespace elysia::core
 {
 [[nodiscard]] inline SDL_Color to_sdl_color(Color color) noexcept
@@ -47,6 +50,21 @@ namespace elysia::core
     sdl_rect.w = rect.width();
     sdl_rect.h = rect.height();
     return sdl_rect;
+}
+
+[[nodiscard]] inline SDL_Rect to_sdl_covering_rect(const Rect& rect) noexcept
+{
+    const float left = std::floor(rect.left());
+    const float top = std::floor(rect.top());
+    const float right = std::ceil(rect.right());
+    const float bottom = std::ceil(rect.bottom());
+
+    return SDL_Rect{
+        static_cast<int>(left),
+        static_cast<int>(top),
+        std::max(0,static_cast<int>(right - left)),
+        std::max(0,static_cast<int>(bottom - top))
+    };
 }
 
 }

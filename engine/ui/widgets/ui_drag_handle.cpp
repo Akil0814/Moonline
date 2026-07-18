@@ -155,7 +155,11 @@ void UiDragHandle::submit_ui_render_commands(std::vector<elysia::core::UiRenderC
     }
 
     if (style().chrome.draw_border)
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(rect,apply_opacity(current_border_color()),style().chrome.corner_radius));
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(
+            rect,
+            apply_opacity(current_border_color()),
+            style().chrome.corner_radius,
+            style().chrome.border_width));
 }
 
 void UiDragHandle::set_drag_handle_config(const UiDragHandleConfig& config)

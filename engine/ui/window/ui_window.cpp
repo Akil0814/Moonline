@@ -717,7 +717,8 @@ void UiWindow::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
         submit_active_transient_popup_render_commands(out_commands);
     submit_tooltip_render_commands(out_commands);
     if (style.draw_border)
-        out_commands.push_back(elysia::core::make_ui_draw_rect_command(screen_rect(),apply_opacity(style.border),style.corner_radius));
+        out_commands.push_back(elysia::core::make_ui_draw_rect_command(
+            screen_rect(),apply_opacity(style.border),style.corner_radius,style.border_width));
 }
 
 void UiWindow::rebuild_layout()

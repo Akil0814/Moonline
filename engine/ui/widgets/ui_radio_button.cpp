@@ -74,7 +74,14 @@ void UiRadioButton::submit_ui_render_commands(std::vector<elysia::core::UiRender
     if (rect.is_empty()) return;
     const float radius = std::min(rect.width(),rect.height()) * 0.5f;
     if (style().chrome.draw_background) out.push_back(elysia::core::make_ui_fill_circle_command(rect.center(),radius,apply_opacity(background_color())));
-    if (style().chrome.draw_border) out.push_back(elysia::core::make_ui_draw_circle_command(rect.center(),radius,apply_opacity(border_color())));
+    if (style().chrome.draw_border)
+    {
+        out.push_back(elysia::core::make_ui_draw_circle_command(
+            rect.center(),
+            radius,
+            apply_opacity(border_color()),
+            style().chrome.border_width));
+    }
     if (_selected)
     {
         const float dot = std::max(0.0f,radius - std::max(4.0f,std::min(rect.width(),rect.height()) * 0.32f));
