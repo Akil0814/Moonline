@@ -17,6 +17,8 @@ namespace elysia::core
     projected_command.texture = render_command.texture;
     projected_command.screen_rect = camera.world_to_screen(render_command.command_rect);
     projected_command.alpha = render_command.alpha;
+    projected_command.texture_color_modulation =
+        render_command.texture_color_modulation;
     projected_command.use_src_rect = render_command.use_src_rect;
     projected_command.src_rect = render_command.src_rect;
     projected_command.rotation_degrees = render_command.rotation_degrees;

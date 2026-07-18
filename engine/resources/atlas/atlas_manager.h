@@ -3,6 +3,7 @@
 #include "atlas_build_preparer.h"
 #include "../resource_sub_manager.h"
 #include "../resource_types.h"
+#include "../texture/texture_manager.h"
 
 #include <SDL.h>
 
@@ -16,8 +17,6 @@
 
 namespace elysia::resources
 {
-class TextureManager;
-
 using AtlasPool = std::unordered_map<std::string, std::unique_ptr<Atlas>>;
 
 class AtlasManager : public ResourceSubManager
@@ -44,6 +43,7 @@ private:
 	{
 		std::filesystem::path frame_path;
 		SDL_Texture* texture = nullptr;
+		SDL_Texture* coverage_mask = nullptr;
 		bool committed = false;
 		std::optional<elysia::core::Rect> source_rect;
 	};
@@ -54,6 +54,7 @@ private:
 		std::vector<AtlasAssemblyFrame> committed_frames;
 		size_t committed_frame_count = 0;
 		bool finalized = false;
+		std::vector<AnimationTextureResource> pending_textures;
 	};
 
 	bool finalize_build(const std::string& atlas_key);

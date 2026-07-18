@@ -43,12 +43,17 @@ size_t Atlas::size() const
 bool Atlas::add_frame(
 	const std::filesystem::path& frame_path,
 	SDL_Texture* texture,
+	SDL_Texture* coverage_mask,
 	std::optional<elysia::core::Rect> source_rect
 )
 {
 	int width = 0;
 	int height = 0;
-	if (!query_texture_size(texture, width, height))
+	int mask_width = 0;
+	int mask_height = 0;
+	if (!query_texture_size(texture,width,height)
+		|| !query_texture_size(coverage_mask,mask_width,mask_height)
+		|| width != mask_width || height != mask_height)
 		return false;
 	if (source_rect.has_value())
 	{
@@ -68,6 +73,7 @@ bool Atlas::add_frame(
 	FrameInfo frame_info;
 	frame_info._path = frame_path;
 	frame_info._texture = texture;
+	frame_info._coverage_mask = coverage_mask;
 	frame_info._width = source_rect.has_value()
 		? static_cast<int>(source_rect->width())
 		: width;
@@ -80,19 +86,19 @@ bool Atlas::add_frame(
 	return true;
 }
 
-bool Atlas::add_texture(SDL_Texture* texture)
+bool Atlas::add_texture(SDL_Texture* texture,SDL_Texture* coverage_mask)
 {
-	return add_frame({}, texture);
+	return add_frame({},texture,coverage_mask);
 }
 
-bool Atlas::add_textures(std::initializer_list<SDL_Texture*> textures)
+bool Atlas::add_textures(std::initializer_list<AtlasFrameTextures> textures)
 {
 	if (textures.size() == 0)
 		return false;
 
-	for (SDL_Texture* texture : textures)
+	for (const AtlasFrameTextures& texture : textures)
 	{
-		if (!add_texture(texture))
+		if (!add_texture(texture.texture,texture.coverage_mask))
 			return false;
 	}
 

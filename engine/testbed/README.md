@@ -11,3 +11,9 @@ must not depend on Testbed code.
   not runtime Testbed code.
 - Do not place production startup, settings, or failure scenes here; they remain
   under `engine/scene/builtin/`.
+
+## Engine Feature Test
+
+The animation comparison keeps the left sprite unmodified and applies a coverage
+mask color overlay to the right sprite. Press `Space` to cycle through no
+overlay, white, blue, purple, and gray. Press `Escape` to return to the caller.

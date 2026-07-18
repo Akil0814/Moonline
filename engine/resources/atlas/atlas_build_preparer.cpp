@@ -129,6 +129,16 @@ AtlasFramePreparedResult AtlasBuildPreparer::prepare_frame(
 
 	SurfaceLoader surface_loader;
 	result.surface_result = surface_loader.load_surface(surface_request);
+	if (result.surface_result._success && result.surface_result._surface)
+	{
+		result.coverage_mask_surface =
+			create_coverage_mask_surface(*result.surface_result._surface);
+		if (!result.coverage_mask_surface)
+		{
+			result.surface_result._success = false;
+			result.surface_result._surface.reset();
+		}
+	}
 	return result;
 }
 

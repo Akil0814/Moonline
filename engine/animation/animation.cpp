@@ -43,12 +43,56 @@ bool Animation::build_render_command(
 
 	out_command.texture = frame_info->_texture;
 	out_command.command_rect = target_rect;
+	out_command.alpha = 255;
+	out_command.texture_color_modulation.reset();
 	out_command.use_src_rect = frame_info->_source_rect.has_value();
 	if (frame_info->_source_rect.has_value())
 		out_command.src_rect = *frame_info->_source_rect;
 	out_command.rotation_degrees = angle_degrees;
 	out_command.rotation_origin = elysia::core::Vector2(0.5f, 0.5f);
 	out_command.flip = flip;
+	return true;
+}
+
+bool Animation::append_render_commands(
+	const elysia::core::Rect& target_rect,
+	double angle_degrees,
+	elysia::core::SpriteFlip flip,
+	const std::optional<elysia::core::Color>& color_overlay,
+	std::vector<elysia::core::RenderCommand>& out_commands
+) const
+{
+	elysia::core::RenderCommand base_command;
+	if (!build_render_command(
+			target_rect,
+			angle_degrees,
+			flip,
+			base_command))
+	{
+		return false;
+	}
+
+	const elysia::resources::FrameInfo* frame_info = current_frame();
+	if (color_overlay && color_overlay->a > 0
+		&& (!frame_info || !frame_info->_coverage_mask))
+	{
+		return false;
+	}
+
+	out_commands.push_back(base_command);
+	if (!color_overlay || color_overlay->a == 0)
+		return true;
+
+	elysia::core::RenderCommand overlay_command = base_command;
+	overlay_command.texture = frame_info->_coverage_mask;
+	overlay_command.alpha = color_overlay->a;
+	overlay_command.texture_color_modulation =
+		elysia::core::TextureColorModulation{
+			.r = color_overlay->r,
+			.g = color_overlay->g,
+			.b = color_overlay->b
+		};
+	out_commands.push_back(overlay_command);
 	return true;
 }
 

@@ -41,7 +41,12 @@ void register_animation_effect(SDL_Texture* texture, bool loop, const char* suff
     using namespace elysia;
     static resources::Atlas atlas("animation_effect_test.atlas");
     atlas.clear();
-    require(atlas.add_textures(texture, texture, texture), "test atlas must accept textures");
+    require(atlas.add_textures({
+            { texture,texture },
+            { texture,texture },
+            { texture,texture }
+        }),
+        "test atlas must accept base and coverage-mask texture pairs");
 
     resources::AnimationBuildRequest animation_request;
     animation_request.animation_key = std::string("animation_effect_test.animation.") + suffix;

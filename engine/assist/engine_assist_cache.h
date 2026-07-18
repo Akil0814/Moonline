@@ -76,7 +76,7 @@ public:
         std::string_view project_locale) noexcept;
 
 private:
-    using TextureMap = std::unordered_map<std::string, elysia::resources::TexturePtr>;
+    using TextureMap = std::unordered_map<std::string, elysia::resources::TextureResource>;
     using FontMap = std::unordered_map<std::string, EngineAssistFontPtr>;
     using TranslationTables = std::unordered_map<std::string, EngineAssistTranslationTable>;
     using AtlasMap = std::unordered_map<std::string, std::unique_ptr<elysia::resources::Atlas>>;

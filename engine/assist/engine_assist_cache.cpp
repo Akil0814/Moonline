@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <exception>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -128,7 +129,7 @@ bool EngineAssistCache::initialized() const noexcept
 SDL_Texture* EngineAssistCache::find_texture(std::string_view key) const noexcept
 {
     const auto found = _textures.find(std::string(key));
-    return found == _textures.end() ? nullptr : found->second.get();
+    return found == _textures.end() ? nullptr : found->second.texture.get();
 }
 
 TTF_Font* EngineAssistCache::find_font(
@@ -250,6 +251,9 @@ std::expected<EngineAssistCache::PreparedState, std::string> EngineAssistCache::
     PreparedState prepared;
     elysia::resources::SurfaceLoader surface_loader;
     elysia::resources::TextureLoader texture_loader;
+    std::unordered_set<std::string> animation_texture_keys;
+    for (const EngineAssistAnimationDescriptor& descriptor : catalog.animations())
+        animation_texture_keys.emplace(descriptor.texture_key);
 
     for (const EngineAssistAssetDescriptor& descriptor : catalog.textures())
     {
@@ -265,7 +269,35 @@ std::expected<EngineAssistCache::PreparedState, std::string> EngineAssistCache::
         elysia::resources::TextureLoadResult texture = texture_loader.load_texture(renderer, surface);
         if (!texture._success || !texture._texture)
             return std::unexpected(make_prepare_error("Engine assist texture creation failed", path));
-        prepared.textures.emplace(std::string(descriptor.key), std::move(texture._texture));
+
+        elysia::resources::TextureResource texture_resource{
+            .texture = std::move(texture._texture)
+        };
+        if (animation_texture_keys.contains(std::string(descriptor.key)))
+        {
+            elysia::resources::SurfacePtr coverage_mask_surface =
+                elysia::resources::create_coverage_mask_surface(*surface._surface);
+            if (!coverage_mask_surface)
+                return std::unexpected(make_prepare_error(
+                    "Engine assist animation coverage mask surface creation failed",
+                    path));
+
+            texture_resource.coverage_mask = texture_loader.create_texture(
+                renderer,
+                *coverage_mask_surface);
+            if (!texture_resource.coverage_mask
+                || SDL_SetTextureBlendMode(
+                    texture_resource.coverage_mask.get(),
+                    SDL_BLENDMODE_BLEND) != 0)
+            {
+                return std::unexpected(make_prepare_error(
+                    "Engine assist animation coverage mask texture creation failed",
+                    path));
+            }
+        }
+        prepared.textures.emplace(
+            std::string(descriptor.key),
+            std::move(texture_resource));
     }
 
     for (const EngineAssistAssetDescriptor& descriptor : catalog.fonts())
@@ -285,7 +317,9 @@ std::expected<EngineAssistCache::PreparedState, std::string> EngineAssistCache::
     for (const EngineAssistAnimationDescriptor& descriptor : catalog.animations())
     {
         const auto texture_found = prepared.textures.find(std::string(descriptor.texture_key));
-        if (texture_found == prepared.textures.end() || !texture_found->second)
+        if (texture_found == prepared.textures.end()
+            || !texture_found->second.texture
+            || !texture_found->second.coverage_mask)
         {
             return std::unexpected(
                 "Engine assist animation texture is not registered: " + std::string(descriptor.texture_key));
@@ -293,7 +327,7 @@ std::expected<EngineAssistCache::PreparedState, std::string> EngineAssistCache::
 
         int texture_width = 0;
         int texture_height = 0;
-        if (SDL_QueryTexture(texture_found->second.get(), nullptr, nullptr,
+        if (SDL_QueryTexture(texture_found->second.texture.get(), nullptr, nullptr,
                 &texture_width, &texture_height) != 0
             || !descriptor.has_expected_texture_dimensions(texture_width, texture_height))
         {
@@ -309,7 +343,11 @@ std::expected<EngineAssistCache::PreparedState, std::string> EngineAssistCache::
                 0.0f,
                 static_cast<float>(descriptor.frame_width),
                 static_cast<float>(descriptor.frame_height));
-            if (!atlas->add_frame({}, texture_found->second.get(), source_rect))
+            if (!atlas->add_frame(
+                {},
+                texture_found->second.texture.get(),
+                texture_found->second.coverage_mask.get(),
+                source_rect))
             {
                 return std::unexpected(
                     "Engine assist animation atlas build failed: " + std::string(descriptor.key));

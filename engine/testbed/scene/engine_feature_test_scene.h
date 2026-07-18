@@ -3,6 +3,8 @@
 #include "../../scene/scene.h"
 #include "testbed_scene_payload.h"
 
+#include <cstddef>
+
 namespace elysia::ui
 {
 class UiAnimation;
@@ -20,13 +22,16 @@ public:
     void on_enter(const elysia::scene::ScenePayload& payload) override;
     void on_exit() override;
     void reset() override;
+    [[nodiscard]] std::size_t color_overlay_index() const noexcept;
 
 private:
     void return_to_caller();
+    void apply_secondary_color_overlay();
 
 private:
     elysia::scene::SceneRoute _return_route;
     elysia::ui::UiAnimation* _primary_animation = nullptr;
     elysia::ui::UiAnimation* _secondary_animation = nullptr;
+    std::size_t _color_overlay_index = 2;
 };
 }

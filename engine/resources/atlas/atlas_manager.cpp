@@ -8,6 +8,28 @@
 
 namespace elysia::resources
 {
+namespace
+{
+TexturePtr create_coverage_mask_texture(
+	const TextureLoader& texture_loader,
+	SDL_Renderer* renderer,
+	const AtlasFramePreparedResult& prepared_result)
+{
+	if (!prepared_result.coverage_mask_surface)
+		return {};
+
+	TexturePtr texture = texture_loader.create_texture(
+		renderer,
+		*prepared_result.coverage_mask_surface);
+	if (!texture
+		|| SDL_SetTextureBlendMode(texture.get(),SDL_BLENDMODE_BLEND) != 0)
+	{
+		return {};
+	}
+	return texture;
+}
+}
+
 AtlasManager::AtlasManager(TextureManager& texture_manager)
 	: _texture_manager(texture_manager)
 {
@@ -169,24 +191,31 @@ bool AtlasManager::commit_prepared_frame(
 		TextureLoadResult texture_result = texture_loader.load_texture(renderer, surface_result);
 		if (!texture_result._success || !texture_result._texture)
 			return false;
-
-		const std::string texture_key = make_strip_texture_key(prepared_result.task.atlas_key);
-		if (!_texture_manager.store_texture(texture_key, std::move(texture_result._texture)))
-			return false;
-
-		SDL_Texture* shared_texture = _texture_manager.find_texture(texture_key);
-		if (!shared_texture)
+		TexturePtr coverage_mask =
+			create_coverage_mask_texture(texture_loader,renderer,prepared_result);
+		if (!coverage_mask)
 		{
-			ELYSIA_LOG_WARN("resource","Commit horizontal strip failed: stored texture lookup failed: "
-				<< texture_key);
+			ELYSIA_LOG_WARN("resource","Commit horizontal strip failed: coverage mask creation failed: "
+				<< prepared_result.task.atlas_key);
 			return false;
 		}
+
+		const std::string texture_key =
+			make_strip_texture_key(prepared_result.task.atlas_key);
+		SDL_Texture* shared_texture = texture_result._texture.get();
+		SDL_Texture* shared_coverage_mask = coverage_mask.get();
+		state.pending_textures.push_back(AnimationTextureResource{
+			.key = texture_key,
+			.texture = std::move(texture_result._texture),
+			.coverage_mask = std::move(coverage_mask)
+		});
 
 		for (size_t index = 0; index < state.committed_frames.size(); ++index)
 		{
 			AtlasAssemblyFrame& strip_frame = state.committed_frames[index];
 			strip_frame.frame_path = surface_result._frame_path;
 			strip_frame.texture = shared_texture;
+			strip_frame.coverage_mask = shared_coverage_mask;
 			strip_frame.source_rect = elysia::core::Rect(
 				static_cast<float>(index * static_cast<size_t>(frame_width)),
 				0.0f,
@@ -214,20 +243,32 @@ bool AtlasManager::commit_prepared_frame(
 		texture_loader.load_texture(renderer, surface_result);
 	if (!texture_result._success || !texture_result._texture)
 		return false;
+	TexturePtr coverage_mask =
+		create_coverage_mask_texture(texture_loader,renderer,prepared_result);
+	if (!coverage_mask)
+	{
+		ELYSIA_LOG_WARN("resource","Commit atlas frame failed: coverage mask creation failed: "
+			<< prepared_result.task.atlas_key << ", frame "
+			<< prepared_result.task.frame_index);
+		return false;
+	}
 
 	const std::string texture_key = make_texture_key(
 		prepared_result.task.atlas_key,
 		prepared_result.task.frame_index
 	);
-	if (!_texture_manager.store_texture(texture_key, std::move(texture_result._texture)))
-		return false;
-
 	frame_state.frame_path = surface_result._frame_path;
-	frame_state.texture = _texture_manager.find_texture(texture_key);
+	frame_state.texture = texture_result._texture.get();
+	frame_state.coverage_mask = coverage_mask.get();
 	frame_state.committed = true;
+	state.pending_textures.push_back(AnimationTextureResource{
+		.key = texture_key,
+		.texture = std::move(texture_result._texture),
+		.coverage_mask = std::move(coverage_mask)
+	});
 	++state.committed_frame_count;
 
-	if (!frame_state.texture)
+	if (!frame_state.texture || !frame_state.coverage_mask)
 	{
 		ELYSIA_LOG_WARN("resource","Commit atlas frame failed: stored texture lookup failed: "
 			<< texture_key);
@@ -318,10 +359,17 @@ bool AtlasManager::finalize_build(const std::string& atlas_key)
 				<< atlas_key << ", frame " << index);
 			return false;
 		}
+		if (!frame_state.coverage_mask)
+		{
+			ELYSIA_LOG_WARN("resource","Finalize atlas build failed: coverage mask is missing: "
+				<< atlas_key << ", frame " << index);
+			return false;
+		}
 
 		AtlasCommittedFrame committed_frame;
 		committed_frame.frame_path = frame_state.frame_path;
 		committed_frame.texture = frame_state.texture;
+		committed_frame.coverage_mask = frame_state.coverage_mask;
 		committed_frame.frame_index = index;
 		committed_frame.source_rect = frame_state.source_rect;
 		committed_frames.push_back(std::move(committed_frame));
@@ -331,6 +379,11 @@ bool AtlasManager::finalize_build(const std::string& atlas_key)
 	AtlasBuilder atlas_builder;
 	if (!atlas_builder.build_atlas(state.request, committed_frames, *atlas))
 		return false;
+	if (!_texture_manager.store_animation_textures(
+		std::move(state.pending_textures)))
+	{
+		return false;
+	}
 
 	state.finalized = true;
 	_atlas_pool.emplace(atlas_key, std::move(atlas));

@@ -41,6 +41,12 @@ bool AtlasBuilder::build_atlas(
 				<< request.atlas_key << ", frame " << index);
 			return false;
 		}
+		if (!committed_frame.coverage_mask)
+		{
+			ELYSIA_LOG_WARN("resource","Build atlas failed: coverage mask is invalid: "
+				<< request.atlas_key << ", frame " << index);
+			return false;
+		}
 
 		if (committed_frame.frame_index != index)
 		{
@@ -53,6 +59,7 @@ bool AtlasBuilder::build_atlas(
 		if (!atlas.add_frame(
 			committed_frame.frame_path,
 			committed_frame.texture,
+			committed_frame.coverage_mask,
 			committed_frame.source_rect))
 		{
 			ELYSIA_LOG_WARN("resource","Build atlas failed: add frame failed: "

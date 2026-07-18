@@ -5,6 +5,7 @@
 #include "engine/assist/engine_assist_keys.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/loading/content_runtime_cleanup.h"
+#include "engine/core/render/colors.h"
 #include "engine/ui/widgets/image/ui_animation.h"
 #include "tests/support/test_assertions.h"
 
@@ -105,6 +106,8 @@ int main()
     const auto* first_frame = animation_definition->atlas->frame_at(0);
     const auto* last_frame = animation_definition->atlas->frame_at(7);
     require(first_frame != nullptr && last_frame != nullptr
+            && first_frame->_coverage_mask != nullptr
+            && first_frame->_coverage_mask == last_frame->_coverage_mask
             && first_frame->_source_rect.has_value() && last_frame->_source_rect.has_value()
             && first_frame->_source_rect->width() == 32.0f && first_frame->_source_rect->height() == 32.0f
             && last_frame->_source_rect->x() == 224.0f,
@@ -119,6 +122,26 @@ int main()
     require(ui_animation.set_engine_animation(cache,"engine.test.idle")
             && ui_animation.is_looping(),
         "UiAnimation must bind looping Engine Assist animations without AnimationManager");
+    ui_animation.set_opacity(128);
+    ui_animation.set_color_overlay(
+        elysia::core::Color{
+            elysia::core::colors::purple_500.r,
+            elysia::core::colors::purple_500.g,
+            elysia::core::colors::purple_500.b,
+            128 });
+    std::vector<elysia::core::UiRenderCommand> ui_commands;
+    ui_animation.submit_ui_render_commands(ui_commands);
+    require(ui_commands.size() == 2
+            && ui_commands[0].texture == first_frame->_texture
+            && ui_commands[1].texture == first_frame->_coverage_mask
+            && ui_commands[1].src_rect.nearly_equals(ui_commands[0].src_rect)
+            && ui_commands[1].alpha == 64
+            && ui_commands[1].texture_color_modulation
+                == elysia::core::TextureColorModulation{
+                    .r = elysia::core::colors::purple_500.r,
+                    .g = elysia::core::colors::purple_500.g,
+                    .b = elysia::core::colors::purple_500.b },
+        "Engine Assist UiAnimation must render base then a matching color mask");
 
     elysia::loading::clear_loaded_content();
     require(cache.find_texture(

@@ -13,6 +13,7 @@ struct AtlasCommittedFrame
 {
 	std::filesystem::path frame_path;
 	SDL_Texture* texture = nullptr;
+	SDL_Texture* coverage_mask = nullptr;
 	size_t frame_index = 0;
 	std::optional<elysia::core::Rect> source_rect;
 };

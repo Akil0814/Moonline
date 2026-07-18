@@ -1,11 +1,14 @@
 #pragma once
 
 #include "../core/geometry/rect.h"
+#include "../core/render/color.h"
 #include "../core/render/render_command.h"
 #include "../resources/atlas/atlas.h"
 #include "../tools/timer.h"
 
 #include <functional>
+#include <optional>
+#include <vector>
 
 namespace elysia::animation
 {
@@ -24,6 +27,13 @@ public:
 		double angle_degrees,
 		elysia::core::SpriteFlip flip,
 		elysia::core::RenderCommand& out_command
+	) const;
+	[[nodiscard]] bool append_render_commands(
+		const elysia::core::Rect& target_rect,
+		double angle_degrees,
+		elysia::core::SpriteFlip flip,
+		const std::optional<elysia::core::Color>& color_overlay,
+		std::vector<elysia::core::RenderCommand>& out_commands
 	) const;
 
 	void set_atlas(const elysia::resources::Atlas* atlas);

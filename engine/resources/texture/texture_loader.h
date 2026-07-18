@@ -17,6 +17,12 @@ struct TextureDeleter
 
 using TexturePtr = std::unique_ptr<SDL_Texture, TextureDeleter>;
 
+struct TextureResource
+{
+	TexturePtr texture;
+	TexturePtr coverage_mask;
+};
+
 struct TextureLoadResult
 {
 	bool _success = false;
@@ -29,6 +35,9 @@ struct TextureLoadResult
 class TextureLoader
 {
 public:
+	[[nodiscard]] TexturePtr create_texture(
+		SDL_Renderer* renderer,
+		const SDL_Surface& surface) const;
 	TextureLoadResult load_texture(
 		SDL_Renderer* renderer,
 		const SurfaceLoadResult& surface_result

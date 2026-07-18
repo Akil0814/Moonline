@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../../animation/animation.h"
+#include "../../../core/render/color.h"
 #include "../../../core/interface/updatable.h"
 #include "../../core/ui_element.h"
 
@@ -40,6 +41,10 @@ public:
     // when the animation key changes.
     void set_loop(bool loop);
     [[nodiscard]] bool is_looping() const noexcept;
+    void set_color_overlay(
+        std::optional<elysia::core::Color> color_overlay) noexcept;
+    [[nodiscard]] const std::optional<elysia::core::Color>&
+        color_overlay() const noexcept;
 
     void play();
     void pause();
@@ -57,5 +62,6 @@ private:
     std::unique_ptr<elysia::animation::Animation> _animation;
     std::optional<bool> _loop_override;
     std::optional<bool> _default_loop;
+    std::optional<elysia::core::Color> _color_overlay;
 };
 }

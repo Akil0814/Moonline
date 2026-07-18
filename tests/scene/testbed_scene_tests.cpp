@@ -116,6 +116,32 @@ void send_escape(elysia::scene::SceneManager& scene_manager)
         } });
 }
 
+void test_engine_feature_overlay_cycle()
+{
+    elysia::testbed::EngineFeatureTestScene scene;
+    require(scene.color_overlay_index() == 2,
+        "Engine feature test must start with the blue overlay");
+
+    const std::vector events{
+        elysia::input::RawInputEvent{
+            .control = elysia::input::RawInputControl::KeySpace,
+            .type = elysia::input::RawInputEventType::ControlPressed,
+            .device = elysia::input::InputDevice::Keyboard
+        }
+    };
+    const std::array<std::size_t,5> expected_indices{ 3,4,0,1,2 };
+    for (const std::size_t expected_index : expected_indices)
+    {
+        scene.on_input(elysia::input::RawInputFrame{},events);
+        require(scene.color_overlay_index() == expected_index,
+            "Space must cycle all Engine feature color overlays and wrap");
+    }
+
+    scene.reset();
+    require(scene.color_overlay_index() == 2,
+        "reset must restore the Engine feature test default overlay");
+}
+
 void test_payload_contract_names_each_scene()
 {
     elysia::testbed::TestbedHomeScene home_scene;
@@ -270,6 +296,7 @@ void test_escape_returns_the_full_caller_route()
 
 int main()
 {
+    test_engine_feature_overlay_cycle();
     test_payload_contract_names_each_scene();
     test_escape_returns_the_full_caller_route();
     return EXIT_SUCCESS;

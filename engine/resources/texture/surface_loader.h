@@ -37,5 +37,7 @@ public:
 	SurfaceLoadResult load_surface(const SurfaceLoadRequest& request) const;
 };
 
+[[nodiscard]] SurfacePtr create_coverage_mask_surface(
+	const SDL_Surface& source_surface);
 
 }

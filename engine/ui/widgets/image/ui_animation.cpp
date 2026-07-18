@@ -109,6 +109,18 @@ bool UiAnimation::is_looping() const noexcept
     return _default_loop.value_or(false);
 }
 
+void UiAnimation::set_color_overlay(
+    std::optional<elysia::core::Color> color_overlay) noexcept
+{
+    _color_overlay = color_overlay;
+}
+
+const std::optional<elysia::core::Color>&
+UiAnimation::color_overlay() const noexcept
+{
+    return _color_overlay;
+}
+
 void UiAnimation::play()
 {
     if (_animation)
@@ -168,5 +180,27 @@ void UiAnimation::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
 	}
 	apply_opacity(command);
     out_commands.push_back(command);
+
+    if (!_color_overlay || _color_overlay->a == 0 || !frame->_coverage_mask)
+        return;
+
+    elysia::core::UiRenderCommand overlay_command =
+        elysia::core::make_ui_texture_command(
+            frame->_coverage_mask,
+            screen_rect(),
+            _color_overlay->a);
+    if (frame->_source_rect.has_value())
+    {
+        overlay_command.use_src_rect = true;
+        overlay_command.src_rect = *frame->_source_rect;
+    }
+    overlay_command.texture_color_modulation =
+        elysia::core::TextureColorModulation{
+            .r = _color_overlay->r,
+            .g = _color_overlay->g,
+            .b = _color_overlay->b
+        };
+    apply_opacity(overlay_command);
+    out_commands.push_back(overlay_command);
 }
 }

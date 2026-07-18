@@ -48,6 +48,7 @@ inline void execute_textured_render_command(
     SDL_Texture* texture,
     const Rect& destination_rect_value,
     Uint8 alpha,
+    const std::optional<TextureColorModulation>& texture_color_modulation,
     bool use_src_rect,
     const Rect& src_rect_value,
     double rotation_degrees,
@@ -75,6 +76,22 @@ inline void execute_textured_render_command(
     Uint8 previous_alpha = 255;
     SDL_GetTextureAlphaMod(texture, &previous_alpha);
     SDL_SetTextureAlphaMod(texture, alpha);
+    Uint8 previous_red = 255;
+    Uint8 previous_green = 255;
+    Uint8 previous_blue = 255;
+    if (texture_color_modulation)
+    {
+        SDL_GetTextureColorMod(
+            texture,
+            &previous_red,
+            &previous_green,
+            &previous_blue);
+        SDL_SetTextureColorMod(
+            texture,
+            texture_color_modulation->r,
+            texture_color_modulation->g,
+            texture_color_modulation->b);
+    }
 
     SDL_RenderCopyEx(
         renderer,
@@ -86,6 +103,14 @@ inline void execute_textured_render_command(
         to_sdl_renderer_flip(flip)
     );
 
+    if (texture_color_modulation)
+    {
+        SDL_SetTextureColorMod(
+            texture,
+            previous_red,
+            previous_green,
+            previous_blue);
+    }
     SDL_SetTextureAlphaMod(texture, previous_alpha);
 }
 
@@ -96,6 +121,7 @@ inline void execute_render_command(SDL_Renderer* renderer, const ScreenRenderCom
         render_command.texture,
         render_command.screen_rect,
         render_command.alpha,
+        render_command.texture_color_modulation,
         render_command.use_src_rect,
         render_command.src_rect,
         render_command.rotation_degrees,
@@ -132,6 +158,7 @@ inline void execute_render_command(SDL_Renderer* renderer, const UiRenderCommand
             render_command.texture,
             render_command.screen_rect,
             render_command.alpha,
+            render_command.texture_color_modulation,
             render_command.use_src_rect,
             render_command.src_rect,
             render_command.rotation_degrees,

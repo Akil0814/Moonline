@@ -1,11 +1,14 @@
 #include "engine_feature_test_scene.h"
 
 #include "../../assist/engine_assist_cache.h"
+#include "../../core/render/colors.h"
 #include "../../input/raw_input_types.h"
 #include "../../ui/widgets/image/ui_animation.h"
 #include "../../scene/runtime/scene_runtime_context.h"
 
 #include <stdexcept>
+#include <array>
+#include <optional>
 
 namespace elysia::testbed
 {
@@ -15,6 +18,14 @@ bool is_valid_return_route(const elysia::scene::SceneRoute& route) noexcept
 {
     return elysia::scene::SceneKeys::is_supported(route.target);
 }
+
+const std::array<std::optional<elysia::core::Color>,5> kColorOverlays = {
+    std::nullopt,
+    elysia::core::colors::white,
+    elysia::core::colors::blue_500,
+    elysia::core::colors::purple_500,
+    elysia::core::colors::gray_700
+};
 }
 
 void EngineFeatureTestScene::on_input(
@@ -29,6 +40,13 @@ void EngineFeatureTestScene::on_input(
         {
             return_to_caller();
             return;
+        }
+        if (event.control == elysia::input::RawInputControl::KeySpace
+            && event.type == elysia::input::RawInputEventType::ControlPressed)
+        {
+            _color_overlay_index =
+                (_color_overlay_index + 1) % kColorOverlays.size();
+            apply_secondary_color_overlay();
         }
     }
 }
@@ -61,6 +79,7 @@ void EngineFeatureTestScene::on_enter(const elysia::scene::ScenePayload& payload
     }
     _primary_animation->play();
     _secondary_animation->play();
+    apply_secondary_color_overlay();
 }
 
 void EngineFeatureTestScene::on_exit()
@@ -82,6 +101,21 @@ void EngineFeatureTestScene::reset()
         _secondary_animation->destroy();
     _primary_animation = nullptr;
     _secondary_animation = nullptr;
+    _color_overlay_index = 2;
+}
+
+std::size_t EngineFeatureTestScene::color_overlay_index() const noexcept
+{
+    return _color_overlay_index;
+}
+
+void EngineFeatureTestScene::apply_secondary_color_overlay()
+{
+    if (_secondary_animation)
+    {
+        _secondary_animation->set_color_overlay(
+            kColorOverlays[_color_overlay_index]);
+    }
 }
 
 void EngineFeatureTestScene::return_to_caller()

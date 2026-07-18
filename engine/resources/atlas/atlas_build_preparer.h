@@ -21,6 +21,7 @@ struct AtlasFramePreparedResult
 {
 	AtlasFramePrepareTask task;
 	SurfaceLoadResult surface_result;
+	SurfacePtr coverage_mask_surface;
 };
 
 class AtlasBuildPreparer

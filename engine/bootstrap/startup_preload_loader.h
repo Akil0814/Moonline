@@ -21,10 +21,8 @@ public:
     void reset();
     void release_textures() noexcept;
 
-    [[nodiscard]] std::expected<void,BootstrapFailure>
-        load(SDL_Renderer* renderer);
-    [[nodiscard]] SDL_Texture* find_texture(
-        std::string_view key) const noexcept;
+    [[nodiscard]] std::expected<void,BootstrapFailure>load(SDL_Renderer* renderer);
+    [[nodiscard]] SDL_Texture* find_texture(std::string_view key) const noexcept;
 
 private:
     struct TextureEntry
@@ -34,15 +32,9 @@ private:
     };
 
     [[nodiscard]] std::expected<void,BootstrapFailure> load_manifest();
-    [[nodiscard]] std::expected<void,BootstrapFailure> load_textures(
-        SDL_Renderer* renderer,
-        BootstrapTextureCache& destination);
-    [[nodiscard]] std::expected<void,BootstrapFailure> load_texture(
-        SDL_Renderer* renderer,
-        std::string_view key,
-        const std::filesystem::path& file,
-        BootstrapTextureCache& destination
-    );
+    [[nodiscard]] std::expected<void,BootstrapFailure> load_textures(SDL_Renderer* renderer,BootstrapTextureCache& destination);
+    [[nodiscard]] std::expected<void,BootstrapFailure> load_texture(SDL_Renderer* renderer,std::string_view key,
+        const std::filesystem::path& file,BootstrapTextureCache& destination);
 
 private:
     elysia::io::JsonLoader _manifest_loader;

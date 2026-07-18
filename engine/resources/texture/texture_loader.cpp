@@ -8,6 +8,18 @@ void TextureDeleter::operator()(SDL_Texture* texture) const
 		SDL_DestroyTexture(texture);
 }
 
+TexturePtr TextureLoader::create_texture(
+	SDL_Renderer* renderer,
+	const SDL_Surface& surface) const
+{
+	if (!renderer)
+		return {};
+
+	return TexturePtr(SDL_CreateTextureFromSurface(
+		renderer,
+		const_cast<SDL_Surface*>(&surface)));
+}
+
 TextureLoadResult TextureLoader::load_texture(
 	SDL_Renderer* renderer,
 	const SurfaceLoadResult& surface_result
@@ -32,11 +44,7 @@ TextureLoadResult TextureLoader::load_texture(
 		return result;
 	}
 
-	SDL_Texture* texture = SDL_CreateTextureFromSurface(
-		renderer,
-		surface_result._surface.get()
-	);
-
+	TexturePtr texture = create_texture(renderer,*surface_result._surface);
 	if (!texture)
 	{
 		ELYSIA_LOG_WARN("resource","Load texture failed: " << surface_result._frame_path
@@ -44,7 +52,7 @@ TextureLoadResult TextureLoader::load_texture(
 		return result;
 	}
 
-	result._texture.reset(texture);
+	result._texture = std::move(texture);
 	result._success = true;
 	return result;
 }

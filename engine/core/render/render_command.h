@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <optional>
 #include <vector>
 
 namespace elysia::core
@@ -30,6 +31,16 @@ enum class UiRenderCommandType
     DrawLine,
     FillCircle,
     DrawCircle
+};
+
+struct TextureColorModulation
+{
+    Uint8 r = 255;
+    Uint8 g = 255;
+    Uint8 b = 255;
+
+    [[nodiscard]] constexpr bool operator==(
+        const TextureColorModulation&) const noexcept = default;
 };
 
 enum class UiStrokeWidthMode
@@ -55,6 +66,7 @@ struct RenderCommand
     Rect command_rect{};
 
     Uint8 alpha = 255;
+    std::optional<TextureColorModulation> texture_color_modulation;
 
     // Source rectangle in texture space.
     // Defines which part of the texture or sprite sheet should be drawn.
@@ -79,6 +91,7 @@ struct ScreenRenderCommand
     Rect screen_rect{};
 
     Uint8 alpha = 255;
+    std::optional<TextureColorModulation> texture_color_modulation;
 
     bool use_src_rect = false;
     Rect src_rect{};
@@ -123,6 +136,7 @@ struct UiRenderCommand
 
     // Used by Texture.
     Uint8 alpha = 255;
+    std::optional<TextureColorModulation> texture_color_modulation;
 
     // Source rectangle in texture space.
     // Defines which part of the texture or sprite sheet should be drawn.
