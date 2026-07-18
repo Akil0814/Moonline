@@ -114,6 +114,14 @@ void test_stroke_width_model_and_style_cascade()
             == UiStrokeWidth{ UiStrokeWidthMode::Logical,1.0f },
         "invalid logical stroke widths should normalize to one logical pixel");
 
+    elysia::ui::UiChromeStyle themed_chrome{};
+    themed_chrome.border_width = logical_two;
+    const elysia::ui::UiChromeStyle recolored_chrome =
+        elysia::ui::apply_theme_colors(
+            themed_chrome,elysia::ui::UiChromeThemeColors{});
+    require(recolored_chrome.border_width == logical_two,
+        "theme color updates must preserve the structural stroke width");
+
     elysia::ui::UiButton button(Rect{ 0,0,120,40 });
     elysia::ui::UiButtonStyle base = button.style();
     base.chrome.border_width = logical_two;
@@ -474,16 +482,10 @@ void test_container_driven_theme_tree()
     elysia::ui::UiButtonStyleOverrides custom{};
     custom.chrome.draw_background = false;
     custom.chrome.corner_radius = 11.0f;
-    custom.chrome.border_width = elysia::core::UiStrokeWidth{
-        elysia::core::UiStrokeWidthMode::Logical,2.0f };
     dynamic_raw->set_style_overrides(custom);
     manager.set_theme(elysia::ui::UiBuiltinTheme::ElysiaLight);
     require(!dynamic_raw->style().chrome.draw_background,"manual overrides must survive theme changes");
     require(dynamic_raw->style().chrome.corner_radius == 11.0f,"corner radius override must survive theme changes");
-    require(dynamic_raw->style().chrome.border_width
-            == elysia::core::UiStrokeWidth{
-                elysia::core::UiStrokeWidthMode::Logical,2.0f },
-        "stroke-width override must survive theme changes as one value");
     require(dynamic_raw->style().chrome.background.idle
             == manager.current_theme().button(elysia::ui::UiButtonVisualRole::Default).chrome.background.idle,
         "unwritten color fields must follow theme changes");
