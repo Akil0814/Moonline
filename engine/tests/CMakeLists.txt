@@ -68,9 +68,12 @@ target_compile_definitions(font_resolver_tests
     PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
 )
 
-add_moonline_test(startup_failure_scene_tests
+add_moonline_test(application_failure_scene_tests
     LABEL scene
-    SOURCES scene/startup_failure_scene_tests.cpp
+    SOURCES scene/application_failure_scene_tests.cpp
     LIBRARIES ${SDL2_LIBRARIES}
     SDL
+)
+target_compile_definitions(application_failure_scene_tests
+    PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
 )

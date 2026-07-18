@@ -117,6 +117,10 @@ void collect_leaf_keys(const elysia::io::json& value,
 }
 
 const std::set<std::string> expected_keys = {
+    "engine.application.failure.exit",
+    "engine.application.failure.message",
+    "engine.application.failure.reopen",
+    "engine.application.failure.title",
     "engine.common.back",
     "engine.common.cancel",
     "engine.common.close",

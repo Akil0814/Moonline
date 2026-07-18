@@ -15,6 +15,14 @@
         "exit": "Exit"
       }
     },
+    "application": {
+      "failure": {
+        "title": "Application error",
+        "message": "The application encountered a fatal problem and must close. See the log for details.",
+        "exit": "Exit",
+        "reopen": "Show error"
+      }
+    },
     "settings": {
       "title": "Settings",
       "sections": {

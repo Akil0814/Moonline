@@ -1,8 +1,8 @@
 #define SDL_MAIN_HANDLED
 
 #include "engine/scene/builtin/startup_loading_scene.h"
+#include "engine/scene/builtin/application_failure_scene_payload.h"
 #include "engine/scene/routing/scene_request_observer.h"
-#include "engine/tools/termination_manager.h"
 #include "engine/typography/font_resolver.h"
 #include "tests/support/test_assertions.h"
 
@@ -159,14 +159,14 @@ void test_success_and_failure_routes_are_forwarded_unchanged()
     failure_scene.detach(&failure_probe);
 }
 
-void test_failure_without_route_requests_fatal_termination()
+void test_failure_without_route_uses_builtin_failure_scene()
 {
     using namespace elysia::scene;
     using namespace elysia::scene::builtin;
-    auto* termination = elysia::tools::TerminationManager::instance();
-    termination->reset_for_testing();
 
     StartupLoadingScene scene;
+    RequestProbe probe;
+    scene.attach(&probe);
     StartupLoadingSceneTestAccess::prime(
         scene,
         StartupLoadingScenePayload{
@@ -174,16 +174,24 @@ void test_failure_without_route_requests_fatal_termination()
         });
     StartupLoadingSceneTestAccess::fail(scene,"fatal startup failure");
 
-    const auto info = termination->termination_info();
-    require(info
-        && info->reason == elysia::tools::TerminationReason::FatalRuntimeFailure
-        && info->category == "startup"
-        && info->message == "fatal startup failure",
-        "startup failure without a route must request fatal termination");
-    termination->reset_for_testing();
+    const auto* payload =
+        try_scene_payload<ApplicationFailureScenePayload>(
+            probe.request.route.payload);
+    require(
+        probe.request_count == 1
+            && probe.request.type == SceneRequestType::Switch
+            && probe.request.route.target == ApplicationFailure
+            && probe.request.route.reload_mode == SceneReloadMode::Reuse
+            && payload
+            && payload->presentation
+                == ApplicationFailurePresentation::StartupLoading
+            && payload->category == "startup"
+            && payload->diagnostic_message == "fatal startup failure",
+        "startup failure without a custom route must use the built-in application failure scene");
+    scene.detach(&probe);
 }
 
-void test_font_activation_failure_uses_startup_failure_route()
+void test_font_activation_failure_uses_configured_failure_route()
 {
     using namespace elysia::scene;
     using namespace elysia::scene::builtin;
@@ -214,7 +222,7 @@ int main()
 {
     test_payload_contract_names_startup_scene();
     test_success_and_failure_routes_are_forwarded_unchanged();
-    test_failure_without_route_requests_fatal_termination();
-    test_font_activation_failure_uses_startup_failure_route();
+    test_failure_without_route_uses_builtin_failure_scene();
+    test_font_activation_failure_uses_configured_failure_route();
     return EXIT_SUCCESS;
 }

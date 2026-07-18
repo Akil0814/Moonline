@@ -15,6 +15,14 @@
         "exit": "退出"
       }
     },
+    "application": {
+      "failure": {
+        "title": "程序错误",
+        "message": "程序遇到致命问题，必须关闭。请查看日志了解详情。",
+        "exit": "退出",
+        "reopen": "显示错误"
+      }
+    },
     "settings": {
       "title": "设置",
       "sections": {

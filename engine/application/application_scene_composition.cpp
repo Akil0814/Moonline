@@ -1,7 +1,7 @@
 #include "application_scene_composition.h"
 
 #include "../scene/builtin/settings_scene.h"
-#include "../scene/builtin/startup_failure_scene.h"
+#include "../scene/builtin/application_failure_scene.h"
 #include "../scene/builtin/startup_loading_scene.h"
 #include "../scene/scene_manager.h"
 #include "../testbed/testbed_scene_composition.h"
@@ -25,8 +25,8 @@ void compose_application_scenes(
         elysia::scene::builtin::SettingsScene>(
             elysia::scene::builtin::Settings);
     scene_manager.register_engine_scene<
-        elysia::scene::builtin::StartupFailureScene>(
-            elysia::scene::builtin::StartupFailure);
+        elysia::scene::builtin::ApplicationFailureScene>(
+            elysia::scene::builtin::ApplicationFailure);
     elysia::testbed::register_testbed_scenes(scene_manager);
 
     game_module.register_scenes(scene_manager);

@@ -3,8 +3,12 @@
 #include "engine/application/application_presentation_settings.h"
 #include "engine/assist/engine_assist_cache.h"
 #include "engine/assist/engine_assist_catalog.h"
+#include "engine/io/loaders/asset_config_types.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/resources/resource_manager.h"
+#include "engine/scene/builtin/application_failure_scene.h"
+#include "engine/scene/runtime/scene_runtime_context.h"
+#include "engine/scene/scene_manager.h"
 #include "engine/typography/font_resolver.h"
 #include "tests/support/test_assertions.h"
 
@@ -77,6 +81,11 @@ public:
     [[nodiscard]] elysia::assist::EngineAssistCache& engine_cache() noexcept
     {
         return _engine_cache;
+    }
+
+    [[nodiscard]] SDL_Renderer* renderer() const noexcept
+    {
+        return _renderer;
     }
 
     [[nodiscard]] elysia::resources::ResourceManager& resources() noexcept
@@ -237,6 +246,38 @@ void test_atomic_project_activation(FontResolverFixture& fixture)
         && project_effect.has_value()
         && project_effect->source == ApplicationFontSource::Project,
         "active project fonts must serve UI and Latin floating numbers");
+
+    elysia::io::ContentRegistry registry;
+    elysia::scene::SceneRuntimeContext context(
+        fixture.renderer(),
+        registry,
+        1280,
+        720,
+        &fixture.engine_cache(),
+        &resolver);
+    elysia::scene::SceneManager scene_manager;
+    scene_manager.set_runtime_context(context);
+    scene_manager.register_engine_scene<
+        elysia::scene::builtin::ApplicationFailureScene>(
+            elysia::scene::builtin::ApplicationFailure);
+    scene_manager.start(
+        elysia::scene::builtin::make_application_failure_route(
+            elysia::scene::builtin::ApplicationFailurePresentation::
+                RuntimeFatal,
+            "typography",
+            "project font failure"));
+    require(!resolver.project_fonts_active(),
+        "entering ApplicationFailureScene must deactivate project fonts");
+    const auto failure_scene_font = resolver.resolve_ui(
+        UiTypographyRole::DialogBody,
+        "zh_cn");
+    require(failure_scene_font
+            && failure_scene_font->source
+                == ApplicationFontSource::EngineBuiltIn,
+        "ApplicationFailureScene must render through Engine fonts");
+    scene_manager.shutdown();
+    require(resolver.activate_project_fonts().has_value(),
+        "project fonts must remain valid after the failure-scene integration probe");
 
     fixture.resources().clear();
     const auto missing_after_activation = resolver.resolve_ui(

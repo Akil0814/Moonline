@@ -15,6 +15,14 @@
         "exit": "離開"
       }
     },
+    "application": {
+      "failure": {
+        "title": "程式錯誤",
+        "message": "程式遇到嚴重問題，必須關閉。請查看日誌以瞭解詳情。",
+        "exit": "離開",
+        "reopen": "顯示錯誤"
+      }
+    },
     "settings": {
       "title": "設定",
       "sections": {

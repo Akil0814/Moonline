@@ -2,7 +2,7 @@
 
 #include "../testbed_scene_keys.h"
 #include "../../input/raw_input_types.h"
-#include "../../scene/builtin/startup_failure_scene_payload.h"
+#include "../../scene/builtin/application_failure_scene_payload.h"
 #include "../../ui/containers/ui_list_container.h"
 #include "../../ui/widgets/label/ui_label.h"
 #include "../../ui/widgets/ui_button.h"
@@ -128,17 +128,19 @@ void TestbedHomeScene::build_ui()
     });
     list->add_back(std::move(elysia_scene));
 
-    auto startup_failure = make_button("Startup Failure (Terminates App)");
-    startup_failure->set_visual_role(elysia::ui::UiButtonVisualRole::Danger);
-    startup_failure->set_on_click([this]() {
+    auto application_failure =
+        make_button("Application Failure (Terminates App)");
+    application_failure->set_visual_role(
+        elysia::ui::UiButtonVisualRole::Danger);
+    application_failure->set_on_click([this]() {
         request_scene_switch(
-            elysia::scene::builtin::StartupFailure,
-            elysia::scene::builtin::StartupFailureScenePayload{
-                .diagnostic_message =
-                    "Injected startup failure from the Engine Testbed."
-            });
+            elysia::scene::builtin::make_application_failure_route(
+                elysia::scene::builtin::ApplicationFailurePresentation::
+                    RuntimeFatal,
+                "testbed",
+                "Injected runtime failure from the Engine Testbed."));
     });
-    list->add_back(std::move(startup_failure));
+    list->add_back(std::move(application_failure));
 
     elysia::ui::UiListContainer* list_ptr = list.get();
     _root_window->add_child(std::move(list));

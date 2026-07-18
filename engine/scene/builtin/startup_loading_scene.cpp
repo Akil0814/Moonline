@@ -1,10 +1,10 @@
 #include "startup_loading_scene.h"
+#include "application_failure_scene_payload.h"
 
 #include "../../bootstrap/bootstrapper.h"
 #include "../../bootstrap/startup_preload_contract.h"
 #include "../../assist/engine_assist_cache.h"
 #include "../../tools/logger.h"
-#include "../../tools/termination_manager.h"
 #include "../../typography/font_resolver.h"
 #include "../../ui/widgets/image/ui_fade_image.h"
 #include "../../ui/widgets/label/ui_blink_label.h"
@@ -413,11 +413,10 @@ void StartupLoadingScene::handle_failure(std::string_view message)
         return;
     }
 
-    elysia::tools::TerminationManager::instance()->request_termination(
-        elysia::tools::TerminationReason::FatalRuntimeFailure,
+    request_scene_switch(make_application_failure_route(
+        ApplicationFailurePresentation::StartupLoading,
         "startup",
-        message
-    );
+        std::string(message)));
 }
 
 void StartupLoadingScene::destroy_ui()
