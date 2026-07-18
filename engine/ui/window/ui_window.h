@@ -68,10 +68,6 @@ public:
     // Registers a passive tooltip rendered above ordinary and transient popup content.
     void register_tooltip(class UiTooltip& tooltip);
     void unregister_tooltip(class UiTooltip& tooltip) noexcept;
-    // Reports whether the active transient popup visually covers this pointer position.
-    [[nodiscard]] bool is_tooltip_pointer_blocked(int mouse_x,int mouse_y) const noexcept;
-    // Prevents background focus hints while an interactive transient popup owns navigation.
-    [[nodiscard]] bool blocks_background_tooltips() const noexcept;
     [[nodiscard]] elysia::core::Rect content_bounds() const noexcept;
 
     void update(double delta) override;
@@ -87,6 +83,13 @@ private:
     friend class UiTooltip;
     void attach_tooltip_content(UiElement& content);
     void detach_tooltip_content(UiElement& content) noexcept;
+    [[nodiscard]] elysia::core::Rect tooltip_trigger_visible_rect(const UiElement& trigger) const noexcept;
+    [[nodiscard]] bool tooltip_pointer_reaches_trigger(
+        const UiElement& trigger,
+        int mouse_x,
+        int mouse_y
+    ) const noexcept;
+    [[nodiscard]] bool tooltip_focus_reaches_trigger(const UiElement& trigger) const noexcept;
     // Stores one registered focus scope plus its directional window neighbors.
     struct ScopeEntry
     {
