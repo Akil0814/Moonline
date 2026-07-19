@@ -1,6 +1,6 @@
 #pragma once
 
-#include "collision_strategy.h"
+#include "../contracts/collision_strategy.h"
 
 #include <memory>
 #include <vector>

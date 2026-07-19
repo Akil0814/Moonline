@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../physics/collider.h"
+#include "../../physics/collision/collider.h"
 
 #include <cstdint>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "collider.h"
+#include "../collision/collider.h"
 
 #include <span>
 

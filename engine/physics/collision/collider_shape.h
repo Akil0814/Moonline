@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../core/geometry/rect.h"
-#include "../core/geometry/vector2.h"
+#include "../../core/geometry/rect.h"
+#include "../../core/geometry/vector2.h"
 
 #include <variant>
 

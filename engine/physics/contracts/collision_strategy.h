@@ -1,7 +1,7 @@
 #pragma once
 
-#include "collider.h"
-#include "collision_contact.h"
+#include "../collision/collider.h"
+#include "../collision/collision_contact.h"
 
 #include <optional>
 #include <span>

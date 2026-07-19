@@ -2,8 +2,6 @@
 
 #include "collider.h"
 
-#include <optional>
-
 namespace elysia::physics
 {
 struct RayCastQuery
@@ -30,17 +28,4 @@ struct CollisionQueryHit
     float fraction = 0.0f;
 };
 
-class ICollisionQueryService
-{
-public:
-    virtual ~ICollisionQueryService() = default;
-
-    [[nodiscard]] virtual std::optional<CollisionQueryHit> raycast(
-        const RayCastQuery& query
-    ) const = 0;
-
-    [[nodiscard]] virtual std::optional<CollisionQueryHit> segment_cast(
-        const SegmentCastQuery& query
-    ) const = 0;
-};
 }

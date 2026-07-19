@@ -1,6 +1,6 @@
 #pragma once
 
-#include "collision_system.h"
+#include "collision/collision_system.h"
 #include "../tools/singleton.h"
 
 #include <functional>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "physics_body.h"
+#include "../body/physics_body.h"
 
 namespace elysia::physics
 {

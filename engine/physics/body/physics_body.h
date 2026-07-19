@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../core/geometry/vector2.h"
+#include "../../core/geometry/vector2.h"
 
 namespace elysia::physics
 {

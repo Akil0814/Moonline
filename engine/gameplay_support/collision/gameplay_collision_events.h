@@ -2,7 +2,7 @@
 
 #include "gameplay_collision_types.h"
 
-#include "../../physics/collision_contact.h"
+#include "../../physics/collision/collision_contact.h"
 
 namespace elysia::gameplay::collision
 {

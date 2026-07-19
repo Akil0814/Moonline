@@ -2,7 +2,7 @@
 
 #include "collider.h"
 
-#include "../core/geometry/vector2.h"
+#include "../../core/geometry/vector2.h"
 
 #include <array>
 #include <cstdint>
