@@ -172,12 +172,14 @@ void SceneManager::switch_to_scene(
     {
         detach_from_scene(_current_scene);
         _current_scene->on_exit();
-        elysia::camera::CameraManager::instance()->reset(
-            elysia::camera::CameraSlot::Main
-        );
 
         if (route.reload_mode == SceneReloadMode::Reset)
+        {
+            elysia::camera::CameraManager::instance()->reset(
+                elysia::camera::CameraSlot::Main
+            );
             _current_scene->reset();
+        }
 
         attach_to_scene(_current_scene);
         _current_scene_key = route.target;

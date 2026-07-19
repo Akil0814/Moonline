@@ -9,6 +9,7 @@ struct CameraFollowContext
 {
     elysia::core::Vector2 current_center{};
     elysia::core::Vector2 viewport_size{};
+    float zoom = 1.0f;
 };
 
 class IFollowStrategy

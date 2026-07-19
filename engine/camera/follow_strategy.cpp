@@ -1,4 +1,5 @@
 #include "follow_strategy.h"
+#include "camera.h"
 
 #include <algorithm>
 
@@ -42,9 +43,10 @@ elysia::core::Vector2 DeadZoneFollowStrategy::update_center(
 {
     (void)delta_seconds;
 
+    const float zoom = Camera::clamp_zoom(context.zoom);
     if (_dead_zone_rect.is_empty()
-        || focus_rect.width() > _dead_zone_rect.width()
-        || focus_rect.height() > _dead_zone_rect.height())
+        || focus_rect.width() * zoom > _dead_zone_rect.width()
+        || focus_rect.height() * zoom > _dead_zone_rect.height())
     {
         return focus_rect.center();
     }
@@ -52,32 +54,36 @@ elysia::core::Vector2 DeadZoneFollowStrategy::update_center(
     elysia::core::Vector2 updated_center = context.current_center;
     const elysia::core::Rect view_rect = elysia::core::Rect::from_center(
         context.current_center,
-        context.viewport_size
+        context.viewport_size / zoom
     );
 
     const elysia::core::Rect focus_local_rect(
-        focus_rect.x() - view_rect.x(),
-        focus_rect.y() - view_rect.y(),
-        focus_rect.width(),
-        focus_rect.height()
+        (focus_rect.x() - view_rect.x()) * zoom,
+        (focus_rect.y() - view_rect.y()) * zoom,
+        focus_rect.width() * zoom,
+        focus_rect.height() * zoom
     );
 
     if (focus_local_rect.left() < _dead_zone_rect.left())
     {
-        updated_center.x += focus_local_rect.left() - _dead_zone_rect.left();
+        updated_center.x +=
+            (focus_local_rect.left() - _dead_zone_rect.left()) / zoom;
     }
     else if (focus_local_rect.right() > _dead_zone_rect.right())
     {
-        updated_center.x += focus_local_rect.right() - _dead_zone_rect.right();
+        updated_center.x +=
+            (focus_local_rect.right() - _dead_zone_rect.right()) / zoom;
     }
 
     if (focus_local_rect.top() < _dead_zone_rect.top())
     {
-        updated_center.y += focus_local_rect.top() - _dead_zone_rect.top();
+        updated_center.y +=
+            (focus_local_rect.top() - _dead_zone_rect.top()) / zoom;
     }
     else if (focus_local_rect.bottom() > _dead_zone_rect.bottom())
     {
-        updated_center.y += focus_local_rect.bottom() - _dead_zone_rect.bottom();
+        updated_center.y +=
+            (focus_local_rect.bottom() - _dead_zone_rect.bottom()) / zoom;
     }
 
     return updated_center;

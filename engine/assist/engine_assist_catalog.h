@@ -22,6 +22,12 @@ struct EngineAssistLocaleDescriptor
     std::filesystem::path relative_path;
 };
 
+struct EngineAssistAudioDescriptor
+{
+    std::string_view key;
+    std::filesystem::path relative_path;
+};
+
 struct EngineAssistAnimationDescriptor
 {
     std::string_view key;
@@ -67,6 +73,8 @@ public:
     [[nodiscard]] std::span<const EngineAssistAssetDescriptor> textures() const noexcept;
     [[nodiscard]] std::span<const EngineAssistLocaleDescriptor> locales() const noexcept;
     [[nodiscard]] std::span<const EngineAssistAnimationDescriptor> animations() const noexcept;
+    [[nodiscard]] std::span<const EngineAssistAudioDescriptor> sounds() const noexcept;
+    [[nodiscard]] std::span<const EngineAssistAudioDescriptor> music() const noexcept;
     [[nodiscard]] std::filesystem::path resolve(
         const std::filesystem::path& relative_path) const;
     [[nodiscard]] std::expected<void, EngineAssistValidationError>

@@ -142,6 +142,9 @@ bool Application::init(
             "engine_assist",
             "Engine assist initialization failed: " + engine_assist_result.error());
     }
+    _engine_assist_audio_player.bind(
+        _engine_assist_cache,
+        runtime_settings.user.audio);
 
     if (!elysia::localization::LocalizationManager::instance()->init(
         _renderer,
@@ -207,7 +210,8 @@ bool Application::init(
         descriptor.logical_width,
         descriptor.logical_height,
         &_engine_assist_cache,
-        &_font_resolver);
+        &_font_resolver,
+        &_engine_assist_audio_player);
     _scene_manager.set_runtime_context(*_scene_runtime_context);
 
     return enter_initial_scene(game_module,descriptor);
@@ -466,6 +470,8 @@ void Application::shutdown()
     elysia::bootstrap::Bootstrapper::instance()->release_preload_textures();
     _font_resolver.deactivate_project_fonts();
     elysia::effects::EffectManager::instance()->set_font_resolver(nullptr);
+    elysia::audio::AudioService::instance()->shutdown();
+    _engine_assist_audio_player.unbind();
     elysia::loading::clear_loaded_content();
     _font_resolver.shutdown();
     _engine_assist_cache.shutdown();
@@ -476,7 +482,6 @@ void Application::shutdown()
         _user_config_handler_registered = false;
     }
     elysia::config::UserConfigService::instance()->shutdown();
-    elysia::audio::AudioService::instance()->shutdown();
 
     SDL_DestroyRenderer(_renderer);
     _renderer = nullptr;
@@ -536,6 +541,7 @@ std::expected<void,elysia::config::UserConfigFailure>
 Application::apply_master_volume(int value)
 {
     elysia::audio::AudioService::instance()->set_master_volume(value);
+    _engine_assist_audio_player.set_master_volume(value);
     return {};
 }
 
@@ -543,6 +549,7 @@ std::expected<void,elysia::config::UserConfigFailure>
 Application::apply_music_volume(int value)
 {
     elysia::audio::AudioService::instance()->set_music_volume(value);
+    _engine_assist_audio_player.set_music_volume(value);
     return {};
 }
 
@@ -550,6 +557,7 @@ std::expected<void,elysia::config::UserConfigFailure>
 Application::apply_sound_volume(int value)
 {
     elysia::audio::AudioService::instance()->set_sound_volume(value);
+    _engine_assist_audio_player.set_sound_volume(value);
     return {};
 }
 

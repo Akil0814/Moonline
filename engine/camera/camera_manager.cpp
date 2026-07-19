@@ -33,6 +33,17 @@ void CameraManager::set_viewport_size(
     rig(slot).controller.set_viewport_size(viewport_size);
 }
 
+void CameraManager::set_zoom(CameraSlot slot, float zoom) noexcept
+{
+    std::erase_if(_requests, [slot](const CameraRequest& request)
+    {
+        return request.slot == slot
+            && std::holds_alternative<ZoomToRequest>(request.payload);
+    });
+
+    rig(slot).controller.set_zoom(zoom);
+}
+
 void CameraManager::set_focus_rect(
     CameraSlot slot,
     std::optional<elysia::core::Rect> focus_rect
@@ -63,6 +74,18 @@ void CameraManager::request_shake(
 )
 {
     _requests.push_back(CameraRequest{ slot, ShakeRequest{ params } });
+}
+
+void CameraManager::request_zoom_to(
+    CameraSlot slot,
+    float target_zoom,
+    double duration_seconds
+)
+{
+    _requests.push_back(CameraRequest{
+        slot,
+        ZoomToRequest{ target_zoom, duration_seconds }
+    });
 }
 
 void CameraManager::request_snap_to_focus(CameraSlot slot)
@@ -138,10 +161,15 @@ void CameraManager::process_requests()
 
                 if constexpr (std::is_same_v<Payload, ShakeRequest>)
                     target.start_shake(payload.params);
+                else if constexpr (std::is_same_v<Payload, ZoomToRequest>)
+                    target.start_zoom_transition(
+                        payload.target_zoom,
+                        payload.duration_seconds
+                    );
                 else if constexpr (std::is_same_v<Payload, SnapToFocusRequest>)
                     target.snap_to_focus();
                 else if constexpr (std::is_same_v<Payload, ClearEffectsRequest>)
-                    target.clear_shake();
+                    target.clear_effects();
             },
             request.payload
         );

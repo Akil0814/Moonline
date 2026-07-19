@@ -31,11 +31,13 @@ public:
 
     void set_center(CameraSlot slot, const elysia::core::Vector2& center) noexcept;
     void set_viewport_size(CameraSlot slot, const elysia::core::Vector2& viewport_size) noexcept;
+    void set_zoom(CameraSlot slot, float zoom) noexcept;
     void set_focus_rect(CameraSlot slot, std::optional<elysia::core::Rect> focus_rect) noexcept;
     void set_world_bounds(CameraSlot slot, std::optional<elysia::core::Rect> world_bounds) noexcept;
     void set_follow_strategy(CameraSlot slot, std::unique_ptr<IFollowStrategy> follow_strategy) noexcept;
 
     void request_shake(CameraSlot slot, const CameraShakeParams& params);
+    void request_zoom_to(CameraSlot slot, float target_zoom, double duration_seconds);
     void request_snap_to_focus(CameraSlot slot);
     void request_clear_effects(CameraSlot slot);
 
@@ -63,9 +65,15 @@ private:
 
     struct SnapToFocusRequest {};
     struct ClearEffectsRequest {};
+    struct ZoomToRequest
+    {
+        float target_zoom = Camera::k_default_zoom;
+        double duration_seconds = 0.0;
+    };
 
     using RequestPayload = std::variant<
         ShakeRequest,
+        ZoomToRequest,
         SnapToFocusRequest,
         ClearEffectsRequest
     >;

@@ -10,7 +10,8 @@ SceneRuntimeContext::SceneRuntimeContext(
     int logical_width,
     int logical_height,
     const elysia::assist::EngineAssistCache* engine_assist_cache,
-    elysia::typography::FontResolver* font_resolver
+    elysia::typography::FontResolver* font_resolver,
+    const elysia::assist::EngineAssistAudioPlayer* engine_assist_audio_player
 ) noexcept
     : _renderer(renderer)
     , _content_registry(&content_registry)
@@ -18,6 +19,7 @@ SceneRuntimeContext::SceneRuntimeContext(
     , _logical_height(logical_height)
     , _engine_assist_cache(engine_assist_cache)
     , _font_resolver(font_resolver)
+    , _engine_assist_audio_player(engine_assist_audio_player)
 {
 }
 
@@ -49,5 +51,11 @@ const elysia::assist::EngineAssistCache* SceneRuntimeContext::engine_assist_cach
 elysia::typography::FontResolver* SceneRuntimeContext::font_resolver() const noexcept
 {
     return _font_resolver;
+}
+
+const elysia::assist::EngineAssistAudioPlayer*
+SceneRuntimeContext::engine_assist_audio_player() const noexcept
+{
+    return _engine_assist_audio_player;
 }
 }

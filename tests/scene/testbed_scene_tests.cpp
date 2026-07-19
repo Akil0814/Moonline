@@ -1,6 +1,7 @@
 #define SDL_MAIN_HANDLED
 
 #include "engine/assist/engine_assist_cache.h"
+#include "engine/assist/engine_assist_audio_player.h"
 #include "engine/assist/engine_assist_catalog.h"
 #include "engine/io/loaders/asset_config_types.h"
 #include "engine/scene/scene_manager.h"
@@ -185,8 +186,12 @@ void test_escape_returns_the_full_caller_route()
         "Engine test scene tests must initialize Engine Assist resources");
 
     elysia::io::ContentRegistry registry;
+    elysia::assist::EngineAssistAudioPlayer audio_player;
+    audio_player.bind(cache,elysia::audio::AudioSettings{});
     elysia::scene::SceneRuntimeContext context(
-        fixture.renderer(),registry,1280,720,&cache);
+        fixture.renderer(),registry,1280,720,&cache,nullptr,&audio_player);
+    require(context.engine_assist_audio_player() == &audio_player,
+        "Testbed runtime context must expose its Engine Assist audio player");
     elysia::scene::SceneManager scene_manager;
     scene_manager.set_runtime_context(context);
     scene_manager.register_engine_scene<elysia::testbed::TestbedHomeScene>(
@@ -290,6 +295,7 @@ void test_escape_returns_the_full_caller_route()
         "TestbedHomeScene must preserve and return the original caller route");
 
     scene_manager.shutdown();
+    audio_player.unbind();
     cache.shutdown();
 }
 }

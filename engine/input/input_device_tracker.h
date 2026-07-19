@@ -9,7 +9,6 @@ namespace elysia::input
 struct InputDeviceUpdateResult
 {
     InputDevice event_device = InputDevice::Unknown;
-    bool should_translate = true;
     bool should_clear_state = false;
     bool should_reset_gamepad_state = false;
 };
@@ -21,6 +20,7 @@ public:
     InputDeviceUpdateResult process_event(const SDL_Event& event);
     InputDevice current_device() const;
     bool device_switched_this_frame() const;
+    void deactivate(InputDevice device);
     void reset();
 
 private:

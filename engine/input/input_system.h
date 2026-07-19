@@ -9,6 +9,7 @@
 #include "translator/input_translator.h"
 
 #include <SDL.h>
+#include <optional>
 #include <vector>
 
 namespace elysia::input
@@ -35,6 +36,11 @@ private:
     void convert_window_to_logical(int window_x, int window_y, int& logical_x, int& logical_y) const;
     void apply_event(const RawInputEvent& event);
     void append_event(const RawInputEvent& event);
+    bool should_accept_controller_event(const SDL_Event& event);
+    bool is_controller_activation_event(const SDL_Event& event) const;
+    void handle_controller_removed(const SDL_Event& event);
+    void release_gamepad_state();
+    void reset_input_lifecycle();
     bool should_clear_state_for_event(const SDL_Event& event) const;
     bool is_window_size_changed_event(const SDL_Event& event) const;
 
@@ -51,6 +57,7 @@ private:
     int _mouse_delta_x = 0;
     int _mouse_delta_y = 0;
     bool _has_mouse_position = false;
+    std::optional<SDL_JoystickID> _active_controller_id;
 };
 
 }

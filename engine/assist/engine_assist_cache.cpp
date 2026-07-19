@@ -72,6 +72,18 @@ void EngineAssistFontDeleter::operator()(TTF_Font* font) const noexcept
         TTF_CloseFont(font);
 }
 
+void EngineAssistSoundDeleter::operator()(Mix_Chunk* sound) const noexcept
+{
+    if (sound)
+        Mix_FreeChunk(sound);
+}
+
+void EngineAssistMusicDeleter::operator()(Mix_Music* music) const noexcept
+{
+    if (music)
+        Mix_FreeMusic(music);
+}
+
 EngineAssistCache::~EngineAssistCache()
 {
     shutdown();
@@ -101,6 +113,8 @@ std::expected<void, std::string> EngineAssistCache::initialize(
         _translations = std::move(prepared->translations);
         _atlases = std::move(prepared->atlases);
         _animations = std::move(prepared->animations);
+        _sounds = std::move(prepared->sounds);
+        _music = std::move(prepared->music);
         _renderer = renderer;
         return {};
     }
@@ -113,6 +127,8 @@ std::expected<void, std::string> EngineAssistCache::initialize(
 
 void EngineAssistCache::shutdown() noexcept
 {
+    _music.clear();
+    _sounds.clear();
     _animations.clear();
     _atlases.clear();
     _translations.clear();
@@ -165,6 +181,18 @@ const EngineAssistAnimationDefinition* EngineAssistCache::find_animation(
     return found == _animations.end() ? nullptr : &found->second;
 }
 
+Mix_Chunk* EngineAssistCache::find_sound(std::string_view key) const noexcept
+{
+    const auto found = _sounds.find(std::string(key));
+    return found == _sounds.end() ? nullptr : found->second.get();
+}
+
+Mix_Music* EngineAssistCache::find_music(std::string_view key) const noexcept
+{
+    const auto found = _music.find(std::string(key));
+    return found == _music.end() ? nullptr : found->second.get();
+}
+
 std::unique_ptr<elysia::animation::Animation> EngineAssistCache::create_animation(
     std::string_view key) const
 {
@@ -197,6 +225,16 @@ std::size_t EngineAssistCache::locale_count() const noexcept
 std::size_t EngineAssistCache::animation_count() const noexcept
 {
     return _animations.size();
+}
+
+std::size_t EngineAssistCache::sound_count() const noexcept
+{
+    return _sounds.size();
+}
+
+std::size_t EngineAssistCache::music_count() const noexcept
+{
+    return _music.size();
 }
 
 std::string EngineAssistCache::font_key(std::string_view locale, int point_size)
@@ -383,6 +421,32 @@ std::expected<EngineAssistCache::PreparedState, std::string> EngineAssistCache::
         if (!flatten_translation_json(*document, "", table))
             return std::unexpected(make_prepare_error("Engine assist i18n structure is invalid", path));
         prepared.translations.emplace(std::string(descriptor.locale), std::move(table));
+    }
+
+    for (const EngineAssistAudioDescriptor& descriptor : catalog.sounds())
+    {
+        const std::filesystem::path path = catalog.resolve(descriptor.relative_path);
+        EngineAssistSoundPtr sound(Mix_LoadWAV(path.string().c_str()));
+        if (!sound)
+            return std::unexpected(make_prepare_error("Engine assist sound load failed", path));
+        if (!prepared.sounds.emplace(std::string(descriptor.key), std::move(sound)).second)
+        {
+            return std::unexpected(
+                "Engine assist sound key is duplicated: " + std::string(descriptor.key));
+        }
+    }
+
+    for (const EngineAssistAudioDescriptor& descriptor : catalog.music())
+    {
+        const std::filesystem::path path = catalog.resolve(descriptor.relative_path);
+        EngineAssistMusicPtr music(Mix_LoadMUS(path.string().c_str()));
+        if (!music)
+            return std::unexpected(make_prepare_error("Engine assist music load failed", path));
+        if (!prepared.music.emplace(std::string(descriptor.key), std::move(music)).second)
+        {
+            return std::unexpected(
+                "Engine assist music key is duplicated: " + std::string(descriptor.key));
+        }
     }
 
     return prepared;

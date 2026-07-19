@@ -68,6 +68,8 @@ int main()
     require(catalog.textures().size() == 6, "assist catalog must describe all six Engine textures");
     require(catalog.locales().size() == 5, "assist catalog must describe five locales");
     require(catalog.animations().size() == 1, "assist catalog must describe the Engine test animation");
+    require(catalog.sounds().empty(), "assist catalog must not register sounds before assets are added");
+    require(catalog.music().empty(), "assist catalog must not register music before assets are added");
     require(
         keys_of(catalog.fonts()) == std::set<std::string>{
             "engine.font.ja",

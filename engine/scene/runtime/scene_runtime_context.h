@@ -10,6 +10,7 @@ struct ContentRegistry;
 namespace elysia::assist
 {
 class EngineAssistCache;
+class EngineAssistAudioPlayer;
 }
 
 namespace elysia::typography
@@ -28,7 +29,8 @@ public:
         int logical_width,
         int logical_height,
         const elysia::assist::EngineAssistCache* engine_assist_cache = nullptr,
-        elysia::typography::FontResolver* font_resolver = nullptr
+        elysia::typography::FontResolver* font_resolver = nullptr,
+        const elysia::assist::EngineAssistAudioPlayer* engine_assist_audio_player = nullptr
     ) noexcept;
 
     [[nodiscard]] SDL_Renderer* renderer() const noexcept;
@@ -37,6 +39,8 @@ public:
     [[nodiscard]] int logical_height() const noexcept;
     [[nodiscard]] const elysia::assist::EngineAssistCache* engine_assist_cache() const noexcept;
     [[nodiscard]] elysia::typography::FontResolver* font_resolver() const noexcept;
+    [[nodiscard]] const elysia::assist::EngineAssistAudioPlayer*
+        engine_assist_audio_player() const noexcept;
 
 private:
     SDL_Renderer* _renderer = nullptr;
@@ -45,5 +49,6 @@ private:
     int _logical_height = 0;
     const elysia::assist::EngineAssistCache* _engine_assist_cache = nullptr;
     elysia::typography::FontResolver* _font_resolver = nullptr;
+    const elysia::assist::EngineAssistAudioPlayer* _engine_assist_audio_player = nullptr;
 };
 }

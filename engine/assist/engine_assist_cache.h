@@ -6,6 +6,7 @@
 #include "../resources/texture/texture_loader.h"
 
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
 
 #include <expected>
 #include <memory>
@@ -23,7 +24,19 @@ struct EngineAssistFontDeleter
     void operator()(TTF_Font* font) const noexcept;
 };
 
+struct EngineAssistSoundDeleter
+{
+    void operator()(Mix_Chunk* sound) const noexcept;
+};
+
+struct EngineAssistMusicDeleter
+{
+    void operator()(Mix_Music* music) const noexcept;
+};
+
 using EngineAssistFontPtr = std::unique_ptr<TTF_Font, EngineAssistFontDeleter>;
+using EngineAssistSoundPtr = std::unique_ptr<Mix_Chunk, EngineAssistSoundDeleter>;
+using EngineAssistMusicPtr = std::unique_ptr<Mix_Music, EngineAssistMusicDeleter>;
 using EngineAssistTranslationTable = std::unordered_map<std::string, std::string>;
 
 struct EngineAssistAnimationDefinition
@@ -61,6 +74,8 @@ public:
         std::string_view key) const noexcept;
     [[nodiscard]] const EngineAssistAnimationDefinition* find_animation(
         std::string_view key) const noexcept;
+    [[nodiscard]] Mix_Chunk* find_sound(std::string_view key) const noexcept;
+    [[nodiscard]] Mix_Music* find_music(std::string_view key) const noexcept;
     [[nodiscard]] std::unique_ptr<elysia::animation::Animation> create_animation(
         std::string_view key) const;
 
@@ -68,6 +83,8 @@ public:
     [[nodiscard]] std::size_t font_count() const noexcept;
     [[nodiscard]] std::size_t locale_count() const noexcept;
     [[nodiscard]] std::size_t animation_count() const noexcept;
+    [[nodiscard]] std::size_t sound_count() const noexcept;
+    [[nodiscard]] std::size_t music_count() const noexcept;
 
     [[nodiscard]] static std::string font_key(
         std::string_view locale,
@@ -81,6 +98,8 @@ private:
     using TranslationTables = std::unordered_map<std::string, EngineAssistTranslationTable>;
     using AtlasMap = std::unordered_map<std::string, std::unique_ptr<elysia::resources::Atlas>>;
     using AnimationDefinitions = std::unordered_map<std::string, EngineAssistAnimationDefinition>;
+    using SoundMap = std::unordered_map<std::string, EngineAssistSoundPtr>;
+    using MusicMap = std::unordered_map<std::string, EngineAssistMusicPtr>;
 
     struct PreparedState
     {
@@ -89,6 +108,8 @@ private:
         TranslationTables translations;
         AtlasMap atlases;
         AnimationDefinitions animations;
+        SoundMap sounds;
+        MusicMap music;
     };
 
     [[nodiscard]] std::expected<PreparedState, std::string> prepare(
@@ -102,6 +123,8 @@ private:
     TranslationTables _translations;
     AtlasMap _atlases;
     AnimationDefinitions _animations;
+    SoundMap _sounds;
+    MusicMap _music;
     SDL_Renderer* _renderer = nullptr;
 };
 }

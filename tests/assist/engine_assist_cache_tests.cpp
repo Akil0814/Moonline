@@ -1,6 +1,7 @@
 #define SDL_MAIN_HANDLED
 
 #include "engine/assist/engine_assist_cache.h"
+#include "engine/assist/engine_assist_audio_player.h"
 #include "engine/assist/engine_assist_catalog.h"
 #include "engine/assist/engine_assist_keys.h"
 #include "engine/io/path/path_manager.h"
@@ -12,6 +13,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
 
 #include <chrono>
 #include <array>
@@ -26,12 +28,15 @@ class AssistCacheFixture
 public:
     AssistCacheFixture()
     {
-        require(SDL_Init(SDL_INIT_VIDEO) == 0,
-            "Engine assist cache tests must initialize SDL video");
+        SDL_setenv("SDL_AUDIODRIVER","dummy",1);
+        require(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) == 0,
+            "Engine assist cache tests must initialize SDL video and audio");
         require((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) == IMG_INIT_PNG,
             "Engine assist cache tests must initialize PNG support");
         require(TTF_Init() == 0,
             "Engine assist cache tests must initialize SDL_ttf");
+        require(Mix_OpenAudio(44100,MIX_DEFAULT_FORMAT,2,2048) == 0,
+            "Engine assist cache tests must open SDL_mixer audio");
 
         _surface = SDL_CreateRGBSurfaceWithFormat(0, 128, 128, 32, SDL_PIXELFORMAT_RGBA32);
         require(_surface != nullptr,
@@ -45,6 +50,7 @@ public:
     {
         SDL_DestroyRenderer(_renderer);
         SDL_FreeSurface(_surface);
+        Mix_CloseAudio();
         TTF_Quit();
         IMG_Quit();
         SDL_Quit();
@@ -98,6 +104,32 @@ int main()
     require(elysia::assist::EngineAssistCache::map_project_locale("zh_cn") == "zh-Hans",
         "project Simplified Chinese must map to the Engine BCP-47 locale");
     require(cache.animation_count() == 1, "cache must register the Engine test animation");
+    require(cache.sound_count() == 0 && cache.music_count() == 0,
+        "cache must expose empty Engine audio pools until assets are registered");
+    require(cache.find_sound("") == nullptr && cache.find_sound("engine.test.sound") == nullptr
+            && cache.find_music("") == nullptr && cache.find_music("engine.test.music") == nullptr,
+        "cache must return null for empty and unregistered Engine audio keys");
+
+    elysia::assist::EngineAssistAudioPlayer audio_player;
+    require(!audio_player.bound(),
+        "Engine Assist audio player must begin unbound");
+    require(audio_player.play_sound("engine.test.sound") == -1
+            && !audio_player.play_music("engine.test.music"),
+        "unbound Engine Assist audio requests must fail safely");
+    audio_player.bind(cache,elysia::audio::AudioSettings{
+        .master_volume = 125,
+        .music_volume = -10,
+        .sound_volume = 42
+    });
+    require(audio_player.bound()
+            && audio_player.settings().master_volume == 100
+            && audio_player.settings().music_volume == 0
+            && audio_player.settings().sound_volume == 42,
+        "binding the Engine Assist audio player must clamp its volume snapshot");
+    require(audio_player.play_sound("engine.test.sound") == -1
+            && !audio_player.play_music("engine.test.music"),
+        "bound Engine Assist audio requests must not fall back to project resources");
+    audio_player.stop_music();
     const auto* animation_definition = cache.find_animation("engine.test.idle");
     require(animation_definition != nullptr && animation_definition->atlas != nullptr
             && animation_definition->atlas->size() == 8 && animation_definition->fps == 8.0
@@ -163,12 +195,16 @@ int main()
     require(!failed_reinitialize.has_value(),
         "invalid Engine assist resources must reject initialization");
     require(cache.texture_count() == 6 && cache.font_count() == 35 && cache.locale_count() == 5
-            && cache.animation_count() == 1,
+            && cache.animation_count() == 1 && cache.sound_count() == 0
+            && cache.music_count() == 0,
         "a failed initialization must preserve the last complete cache transactionally");
 
+    audio_player.unbind();
+    require(!audio_player.bound(), "unbinding must detach the Engine Assist audio player");
     cache.shutdown();
     require(!cache.initialized() && cache.texture_count() == 0 && cache.font_count() == 0
-            && cache.locale_count() == 0 && cache.animation_count() == 0,
+            && cache.locale_count() == 0 && cache.animation_count() == 0
+            && cache.sound_count() == 0 && cache.music_count() == 0,
         "cache shutdown must release all Engine-owned runtime resources");
     return 0;
 }

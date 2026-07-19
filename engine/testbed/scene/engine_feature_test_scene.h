@@ -8,6 +8,12 @@
 namespace elysia::ui
 {
 class UiAnimation;
+class UiWindow;
+}
+
+namespace elysia::assist
+{
+class EngineAssistAudioPlayer;
 }
 
 namespace elysia::testbed
@@ -27,11 +33,15 @@ public:
 private:
     void return_to_caller();
     void apply_secondary_color_overlay();
+    void build_audio_controls();
+    void destroy_audio_controls() noexcept;
 
 private:
     elysia::scene::SceneRoute _return_route;
     elysia::ui::UiAnimation* _primary_animation = nullptr;
     elysia::ui::UiAnimation* _secondary_animation = nullptr;
+    elysia::ui::UiWindow* _audio_window = nullptr;
+    const elysia::assist::EngineAssistAudioPlayer* _audio_player = nullptr;
     std::size_t _color_overlay_index = 2;
 };
 }

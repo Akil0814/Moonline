@@ -62,6 +62,7 @@ target_compile_definitions(engine_assist_cache_tests
 
 foreach(INPUT_TEST_TARGET IN ITEMS
     input_action_mapping_tests
+    input_system_controller_lifecycle_tests
     input_system_pointer_coordinates_tests
     gameplay_support_tests
     gameplay_scene_input_tests
@@ -111,6 +112,16 @@ add_moonline_test(camera_manager_tests
     SOURCES camera/camera_manager_tests.cpp
     LIBRARIES ${SDL2_LIBRARIES}
     SDL
+)
+
+add_moonline_test(camera_projection_tests
+    LABEL camera
+    SOURCES camera/camera_projection_tests.cpp
+)
+
+add_moonline_test(camera_controller_tests
+    LABEL camera
+    SOURCES camera/camera_controller_tests.cpp
 )
 
 add_moonline_test(scene_core_tests

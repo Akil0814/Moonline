@@ -52,6 +52,9 @@ const std::array<EngineAssistAnimationDescriptor, 1> kAnimationDescriptors = {
     },
 };
 
+const std::array<EngineAssistAudioDescriptor, 0> kSoundDescriptors = {};
+const std::array<EngineAssistAudioDescriptor, 0> kMusicDescriptors = {};
+
 constexpr std::string_view kRequiredMarkerFileName = ".elysia_engine_required";
 }
 
@@ -93,6 +96,16 @@ std::span<const EngineAssistLocaleDescriptor> EngineAssistCatalog::locales() con
 std::span<const EngineAssistAnimationDescriptor> EngineAssistCatalog::animations() const noexcept
 {
     return kAnimationDescriptors;
+}
+
+std::span<const EngineAssistAudioDescriptor> EngineAssistCatalog::sounds() const noexcept
+{
+    return kSoundDescriptors;
+}
+
+std::span<const EngineAssistAudioDescriptor> EngineAssistCatalog::music() const noexcept
+{
+    return kMusicDescriptors;
 }
 
 std::filesystem::path EngineAssistCatalog::resolve(
@@ -149,6 +162,16 @@ EngineAssistCatalog::validate_required_files() const
             return result;
     }
     for (const EngineAssistLocaleDescriptor& descriptor : kLocaleDescriptors)
+    {
+        if (const auto result = validate_asset(descriptor); !result)
+            return result;
+    }
+    for (const EngineAssistAudioDescriptor& descriptor : kSoundDescriptors)
+    {
+        if (const auto result = validate_asset(descriptor); !result)
+            return result;
+    }
+    for (const EngineAssistAudioDescriptor& descriptor : kMusicDescriptors)
     {
         if (const auto result = validate_asset(descriptor); !result)
             return result;

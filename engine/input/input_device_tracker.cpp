@@ -13,6 +13,17 @@ void InputDeviceTracker::reset()
     _device_switched_this_frame = false;
 }
 
+void InputDeviceTracker::deactivate(InputDevice device)
+{
+    if (_current_device != device)
+    {
+        return;
+    }
+
+    _current_device = InputDevice::Unknown;
+    _device_switched_this_frame = true;
+}
+
 InputDeviceUpdateResult InputDeviceTracker::process_event(const SDL_Event& event)
 {
     InputDeviceUpdateResult result;
@@ -39,7 +50,6 @@ InputDeviceUpdateResult InputDeviceTracker::process_event(const SDL_Event& event
     {
         _current_device = event_device;
         _device_switched_this_frame = true;
-        result.should_translate = false;
         result.should_clear_state = true;
         result.should_reset_gamepad_state = true;
         return result;
@@ -49,6 +59,7 @@ InputDeviceUpdateResult InputDeviceTracker::process_event(const SDL_Event& event
     {
         if (_current_device == InputDevice::Gamepad)
         {
+            _device_switched_this_frame = true;
             result.should_clear_state = true;
             result.should_reset_gamepad_state = true;
         }

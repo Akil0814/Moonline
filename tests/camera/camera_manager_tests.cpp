@@ -51,6 +51,8 @@ void test_fixed_slots_are_independent()
     manager->set_center(CameraSlot::Cinematic, Vector2(30.0f, 40.0f));
     manager->set_center(CameraSlot::Auxiliary1, Vector2(50.0f, 60.0f));
     manager->set_center(CameraSlot::Auxiliary2, Vector2(70.0f, 80.0f));
+    manager->set_zoom(CameraSlot::Main, 2.0f);
+    manager->set_zoom(CameraSlot::Cinematic, 3.0f);
 
     require(manager->camera(CameraSlot::Main).center() == Vector2(10.0f, 20.0f),
         "Main camera must retain its own center");
@@ -60,6 +62,12 @@ void test_fixed_slots_are_independent()
         "Auxiliary1 camera must retain its own center");
     require(manager->camera(CameraSlot::Auxiliary2).center() == Vector2(70.0f, 80.0f),
         "Auxiliary2 camera must retain its own center");
+    require(manager->camera(CameraSlot::Main).zoom() == 2.0f,
+        "Main camera must retain its own zoom");
+    require(manager->camera(CameraSlot::Cinematic).zoom() == 3.0f,
+        "Cinematic camera must retain its own zoom");
+    require(manager->camera(CameraSlot::Auxiliary1).zoom() == 1.0f,
+        "zoom changes must not affect other slots");
 
     manager->set_focus_rect(CameraSlot::Cinematic, Rect(90.0f, 40.0f, 20.0f, 20.0f));
     manager->set_follow_strategy(
@@ -99,6 +107,25 @@ void test_requests_are_fifo_and_targeted()
         "a later shake request must remain active after an earlier clear request");
     require(manager->camera(CameraSlot::Auxiliary1).center() == Vector2::zero(),
         "Main requests must not affect Auxiliary1");
+
+    manager->set_zoom(CameraSlot::Main, 1.0f);
+    manager->request_zoom_to(CameraSlot::Main, 3.0f, 2.0);
+    manager->request_clear_effects(CameraSlot::Main);
+    manager->update(1.0);
+    require(manager->camera(CameraSlot::Main).zoom() == 1.0f,
+        "a later clear request must cancel an earlier zoom transition");
+
+    manager->request_clear_effects(CameraSlot::Main);
+    manager->request_zoom_to(CameraSlot::Main, 3.0f, 2.0);
+    manager->update(1.0);
+    require(manager->camera(CameraSlot::Main).zoom() == 2.0f,
+        "a later zoom request must remain active after an earlier clear request");
+
+    manager->request_zoom_to(CameraSlot::Main, 5.0f, 1.0);
+    manager->set_zoom(CameraSlot::Main, 1.5f);
+    manager->update(1.0);
+    require(manager->camera(CameraSlot::Main).zoom() == 1.5f,
+        "immediate zoom must cancel queued transitions for the same slot");
 }
 
 void test_reset_preserves_viewport_and_other_slots()
@@ -108,7 +135,9 @@ void test_reset_preserves_viewport_and_other_slots()
 
     manager->set_viewport_size(CameraSlot::Main, Vector2(320.0f, 180.0f));
     manager->set_center(CameraSlot::Main, Vector2(25.0f, 30.0f));
+    manager->set_zoom(CameraSlot::Main, 2.0f);
     manager->set_center(CameraSlot::Auxiliary1, Vector2(75.0f, 80.0f));
+    manager->set_zoom(CameraSlot::Auxiliary1, 3.0f);
     manager->request_shake(CameraSlot::Main, elysia::camera::CameraShakeParams{});
 
     manager->reset(CameraSlot::Main);
@@ -118,8 +147,12 @@ void test_reset_preserves_viewport_and_other_slots()
         "reset must clear the camera center and pending requests");
     require(manager->camera(CameraSlot::Main).viewport_size() == Vector2(320.0f, 180.0f),
         "reset must preserve the camera viewport");
+    require(manager->camera(CameraSlot::Main).zoom() == 1.0f,
+        "reset must restore the default zoom");
     require(manager->camera(CameraSlot::Auxiliary1).center() == Vector2(75.0f, 80.0f),
         "resetting Main must not reset Auxiliary1");
+    require(manager->camera(CameraSlot::Auxiliary1).zoom() == 3.0f,
+        "resetting Main must not reset Auxiliary1 zoom");
 }
 
 class CameraScene final : public elysia::scene::Scene
@@ -142,6 +175,11 @@ public:
     void request_self_reset()
     {
         request_scene_switch(1, {}, elysia::scene::SceneReloadMode::Reset);
+    }
+
+    void request_self_reuse()
+    {
+        request_scene_switch(1, {}, elysia::scene::SceneReloadMode::Reuse);
     }
 
     static inline CameraScene* last_instance = nullptr;
@@ -190,7 +228,21 @@ void test_scene_defaults_and_main_lifecycle()
     require(cameras->camera(CameraSlot::Cinematic).center() == Vector2(70.0f, 80.0f),
         "Reset reload must not clear Cinematic");
 
+    cameras->set_center(CameraSlot::Main, Vector2(35.0f, 45.0f));
+    cameras->set_zoom(CameraSlot::Main, 2.0f);
+    CameraScene::last_instance->request_self_reuse();
+    scene_manager.on_update(0.0);
+
+    require(cameras->camera(CameraSlot::Main).center() == Vector2(35.0f, 45.0f),
+        "Reuse reload must preserve Main center");
+    require(cameras->camera(CameraSlot::Main).zoom() == 2.0f,
+        "Reuse reload must preserve Main zoom");
+
     scene_manager.shutdown();
+    require(cameras->camera(CameraSlot::Main).center() == Vector2::zero(),
+        "shutdown must reset Main center");
+    require(cameras->camera(CameraSlot::Main).zoom() == 1.0f,
+        "shutdown must reset Main zoom");
 }
 }
 
