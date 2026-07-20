@@ -1,9 +1,10 @@
-# MoonLine UI API 参考
+# Elysia Engine UI API 参考
 
 本目录以 `engine/ui/**/*.h` 为唯一事实来源。公开 API 由独立组件页或同类组件专题页覆盖；跨组件的重复调用只在专题页解释一次。
 
 ## 入口
 
+- 课程论文：[English](elysia_ui_framework_design_and_implementation.en.md) / [简体中文](elysia_ui_framework_design_and_implementation.zh-CN.md)
 - [Engine/UI 学习型架构详解](engine_ui_learning_guide.md)（面向初学者：从一帧流程到容器、焦点、主题和真实场景）
 - [公开头文件覆盖清单](coverage.md)
 - [公开类与调用 API 覆盖矩阵](api_coverage.md)
