@@ -13,6 +13,8 @@
 
 namespace elysia::ui
 {
+using elysia::typography::UiTypographyRole;
+
 namespace
 {
 constexpr float kHeaderHeight = 48.0f;

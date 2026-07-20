@@ -110,7 +110,8 @@ namespace arcneco::scene
 
         character_select_text->set_vertical_align(elysia::ui::TextVerticalAlign::Center);
         character_select_text->set_horizontal_align(elysia::ui::TextHorizontalAlign::Center);
-        character_select_text->set_typography_role(elysia::ui::UiTypographyRole::Title);
+        character_select_text->set_typography_role(
+            elysia::typography::UiTypographyRole::Title);
         character_select_text->set_text_fit_mode(elysia::ui::UiLabelTextFitMode::ScaleToFit);
 
         auto* horizontal_scroll = _main_window->create_child<elysia::ui::UiScrollContainer>(
@@ -208,7 +209,8 @@ namespace arcneco::scene
         auto title = std::make_unique<elysia::ui::UiLabel>(
             elysia::core::Rect{ 0,0,372,36 },0,elysia::ui::ui_raw_text("CHARACTER INFO"));
         title->set_visual_role(elysia::ui::UiLabelVisualRole::Title);
-        title->set_typography_role(elysia::ui::UiTypographyRole::DialogTitle);
+        title->set_typography_role(
+            elysia::typography::UiTypographyRole::DialogTitle);
         _character_details.title_label = title.get();
         info_panel->add_child(std::move(title),{
             ._anchor = elysia::ui::UiLayoutAnchor::TopLeft,

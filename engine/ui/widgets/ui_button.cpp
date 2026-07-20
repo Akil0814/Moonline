@@ -16,6 +16,8 @@
 
 namespace elysia::ui
 {
+using elysia::typography::UiTypographyRole;
+
 UiButton::UiButton(const elysia::core::Rect& rect,int order) noexcept
     : UiControl(rect,order){}
 

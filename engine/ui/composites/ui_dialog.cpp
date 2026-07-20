@@ -14,6 +14,8 @@
 
 namespace elysia::ui
 {
+using elysia::typography::UiTypographyRole;
+
 UiDialog::UiDialog(const elysia::core::Rect& rect,int order) noexcept
     : UiControlFocusScopeHost(rect,order)
 {

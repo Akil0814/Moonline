@@ -58,8 +58,10 @@ public:
     void set_vertical_align(TextVerticalAlign align);
     [[nodiscard]] TextVerticalAlign vertical_align() const noexcept;
 
-    void set_typography_role(UiTypographyRole role) noexcept;
-    [[nodiscard]] UiTypographyRole typography_role() const noexcept;
+    void set_typography_role(
+        elysia::typography::UiTypographyRole role) noexcept;
+    [[nodiscard]] elysia::typography::UiTypographyRole
+        typography_role() const noexcept;
 
     void set_padding(int padding);
     [[nodiscard]] int padding() const noexcept;
@@ -102,7 +104,8 @@ private:
 private:
     double _value = 0.0;
     UiStyleState<UiNumberStyle> _style_state;
-    UiTypographyRole _typography_role = UiTypographyRole::Number;
+    elysia::typography::UiTypographyRole _typography_role =
+        elysia::typography::UiTypographyRole::Number;
     TextHorizontalAlign _horizontal_align = TextHorizontalAlign::Left;
     TextVerticalAlign _vertical_align = TextVerticalAlign::Top;
     int _padding = 0;

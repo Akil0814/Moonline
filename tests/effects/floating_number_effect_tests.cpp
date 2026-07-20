@@ -93,8 +93,7 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
     resource_manager->clear();
     require(path_manager->init(), "floating number tests must initialize the project path manager");
     const auto resolved_font_settings =
-        application::resolve_application_font_settings(
-            application::ApplicationFontSettings{});
+        typography::resolve_font_settings(typography::FontSettings{});
     require(resolved_font_settings.has_value(),
         "floating number default font settings must resolve");
     assist::EngineAssistCache engine_cache;

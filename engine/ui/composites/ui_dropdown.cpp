@@ -10,6 +10,8 @@
 
 namespace elysia::ui
 {
+using elysia::typography::UiTypographyRole;
+
 namespace
 {
 [[nodiscard]] bool is_primary_mouse_press(const UiInputEvent& event) noexcept

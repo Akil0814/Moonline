@@ -147,7 +147,7 @@ void ApplicationFailureScene::build_ui()
     _reopen_button->set_text_content(
         elysia::ui::ui_text_key("engine.application.failure.reopen"));
     _reopen_button->set_typography_role(
-        elysia::ui::UiTypographyRole::ButtonCompact);
+        elysia::typography::UiTypographyRole::ButtonCompact);
     _reopen_button->set_on_click([this]() { open_dialog(); });
 
     const float dialog_width =

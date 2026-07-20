@@ -12,6 +12,8 @@
 
 namespace elysia::ui
 {
+using elysia::typography::UiTypographyRole;
+
 namespace
 {
 [[nodiscard]] UiLabelVisualRole label_role_for_text_block(UiTextBlockVisualRole role) noexcept

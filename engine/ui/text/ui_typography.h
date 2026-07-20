@@ -1,32 +1,10 @@
 #pragma once
 
 #include "../core/ui_text_align.h"
+#include "../../typography/font_roles.h"
 
 namespace elysia::ui
 {
-// Semantic text roles map widget intent onto the finite set of preloaded font sizes.
-enum class UiTypographyRole
-{
-    Label,
-    LabelMuted,
-    Title,
-    Subtitle,
-    Button,
-    ButtonCompact,
-    Input,
-    InputPlaceholder,
-    Number,
-    DialogTitle,
-    DialogBody,
-    DialogAction,
-    SliderValue,
-    CheckboxLabel,
-    RadioLabel,
-    Caption,
-    Heading,
-    Count
-};
-
 // Rendering inputs resolved from a role; colors remain part of the widget's visual style.
 struct UiResolvedTextStyle
 {
@@ -34,8 +12,11 @@ struct UiResolvedTextStyle
     TextHorizontalAlign horizontal_align_default = TextHorizontalAlign::Left;
 };
 
-[[nodiscard]] static inline UiResolvedTextStyle resolve_ui_typography(UiTypographyRole role) noexcept
+[[nodiscard]] static inline UiResolvedTextStyle resolve_ui_typography(
+    elysia::typography::UiTypographyRole role) noexcept
 {
+    using elysia::typography::UiTypographyRole;
+
     switch (role)
     {
     case UiTypographyRole::LabelMuted:

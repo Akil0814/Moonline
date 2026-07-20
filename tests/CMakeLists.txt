@@ -93,6 +93,11 @@ add_moonline_test(application_presentation_settings_tests
     SOURCES application/application_presentation_settings_tests.cpp
 )
 
+add_moonline_test(font_settings_tests
+    LABEL typography
+    SOURCES typography/font_settings_tests.cpp
+)
+
 add_moonline_test(application_sdl_presentation_tests
     LABEL application
     SOURCES application/application_sdl_presentation_tests.cpp

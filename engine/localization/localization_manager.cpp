@@ -426,7 +426,7 @@ std::string_view LocalizationManager::lookup_translation(
 }
 
 TTF_Font* LocalizationManager::resolve_text_font(
-	elysia::ui::UiTypographyRole role) const
+	elysia::typography::UiTypographyRole role) const
 {
 	if (!_font_resolver)
 	{

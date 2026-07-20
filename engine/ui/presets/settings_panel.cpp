@@ -18,6 +18,8 @@
 
 namespace elysia::ui
 {
+using elysia::typography::UiTypographyRole;
+
 namespace
 {
 constexpr float kRowHeight = 48.0f;

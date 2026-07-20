@@ -100,7 +100,8 @@ bool Application::init(
         return startup_fail("game_module","Game module logical viewport must be positive.");
 
     const auto resolved_font_settings =
-        resolve_application_font_settings(descriptor.presentation.fonts);
+        elysia::typography::resolve_font_settings(
+            descriptor.presentation.fonts);
     if (!resolved_font_settings)
         return startup_fail("typography",resolved_font_settings.error());
 

@@ -6,6 +6,8 @@
 
 namespace elysia::ui
 {
+using elysia::typography::UiTypographyRole;
+
 void UiLabeledCheckbox::set_base_styles(
     const UiCheckboxStyle& checkbox,
     const UiLabelStyle& label,

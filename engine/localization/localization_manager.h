@@ -70,7 +70,8 @@ private:
 		const TranslationTable& table,
 		std::string_view key
 	) const;
-	TTF_Font* resolve_text_font(elysia::ui::UiTypographyRole role) const;
+	TTF_Font* resolve_text_font(
+		elysia::typography::UiTypographyRole role) const;
 	CachedTexturePtr create_text_texture(
 		std::string_view key,
 		const LocalizedTextStyle& style

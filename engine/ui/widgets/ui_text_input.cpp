@@ -17,6 +17,8 @@
 
 namespace elysia::ui
 {
+using elysia::typography::UiTypographyRole;
+
 namespace
 {
 [[nodiscard]] bool is_utf8_continuation_byte(unsigned char value) noexcept

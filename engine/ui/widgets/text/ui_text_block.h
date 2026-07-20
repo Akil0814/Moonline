@@ -41,8 +41,10 @@ public:
     void set_visual_role(UiTextBlockVisualRole role) noexcept;
     [[nodiscard]] UiTextBlockVisualRole visual_role() const noexcept;
 
-    void set_typography_role(UiTypographyRole role) noexcept;
-    [[nodiscard]] UiTypographyRole typography_role() const noexcept;
+    void set_typography_role(
+        elysia::typography::UiTypographyRole role) noexcept;
+    [[nodiscard]] elysia::typography::UiTypographyRole
+        typography_role() const noexcept;
     void set_padding(int padding) noexcept;
     [[nodiscard]] int padding() const noexcept;
     void set_horizontal_align(TextHorizontalAlign align) noexcept;
@@ -59,7 +61,8 @@ private:
     UiTextContent _text_content;
     UiStyleState<UiTextBlockStyle> _style_state;
     UiTextBlockVisualRole _visual_role = UiTextBlockVisualRole::Default;
-    UiTypographyRole _typography_role = UiTypographyRole::DialogBody;
+    elysia::typography::UiTypographyRole _typography_role =
+        elysia::typography::UiTypographyRole::DialogBody;
     TextHorizontalAlign _horizontal_align = TextHorizontalAlign::Left;
     int _padding = 0;
 };

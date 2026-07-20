@@ -133,8 +133,10 @@ public:
     void set_visual_role(UiButtonVisualRole role) noexcept;
     [[nodiscard]] UiButtonVisualRole visual_role() const noexcept;
 
-    void set_typography_role(UiTypographyRole role) noexcept;
-    [[nodiscard]] UiTypographyRole typography_role() const noexcept;
+    void set_typography_role(
+        elysia::typography::UiTypographyRole role) noexcept;
+    [[nodiscard]] elysia::typography::UiTypographyRole
+        typography_role() const noexcept;
 
     void set_padding(int padding);
     [[nodiscard]] int padding() const noexcept;
@@ -175,7 +177,8 @@ private:
     UiButtonVisualMode _visual_mode = UiButtonVisualMode::None;
     UiStyleState<UiButtonStyle> _style_state;
     UiButtonVisualRole _visual_role = UiButtonVisualRole::Default;
-    UiTypographyRole _typography_role = UiTypographyRole::Button;
+    elysia::typography::UiTypographyRole _typography_role =
+        elysia::typography::UiTypographyRole::Button;
 
     int _padding = 5;
     bool _is_pushed = false;

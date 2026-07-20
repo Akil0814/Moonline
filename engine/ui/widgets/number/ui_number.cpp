@@ -16,6 +16,8 @@
 
 namespace elysia::ui
 {
+using elysia::typography::UiTypographyRole;
+
 namespace
 {
 constexpr double kNegativeZeroTolerance = 1e-9;

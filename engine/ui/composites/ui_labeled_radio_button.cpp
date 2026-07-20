@@ -6,6 +6,8 @@
 
 namespace elysia::ui
 {
+using elysia::typography::UiTypographyRole;
+
 void UiLabeledRadioButton::set_base_styles(
     const UiRadioButtonStyle& radio,
     const UiLabelStyle& label,
