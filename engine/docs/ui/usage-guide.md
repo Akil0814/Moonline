@@ -5,7 +5,7 @@
 ## 最小窗口
 
 `UiWindow` 是场景 UI 树的根。场景对象负责其生命周期；窗口负责子节点、焦点域、
-overlay 与 popup 的协调。以下模式来自 `gameplay/scene/ui_container_test_scene.cpp`：
+overlay 与 popup 的协调。以下模式来自 `gameplay/scene/main_menu_scene.cpp`：
 
 ```cpp
 auto* window = Scene::create_and_add_object<elysia::ui::UiWindow>(
@@ -88,7 +88,7 @@ auto registration = themes.register_root(*window); // RAII；销毁或 reset 即
 themes.set_theme(elysia::ui::UiBuiltinTheme::ElysiaDark);
 
 auto overrides = start->style_overrides();
-overrides.corner_radius = 8.0f;
+overrides.chrome.corner_radius = 8.0f;
 start->set_style_overrides(overrides);
 start->set_visual_role(elysia::ui::UiButtonVisualRole::Primary);
 ```
@@ -116,10 +116,13 @@ scope 内部通过 `UiControlFocusScopeHost` 维护可用控件及方向邻居�
 
 - `UiScrollContainer::set_scroll_axis` 设置 `Auto`、单轴或双轴；`scroll_by`、`scroll_to_*`
   和 `ensure_visible` 可编程滚动。手柄和鼠标滚轮由容器处理，手柄滚动会协调焦点。
-- `UiDialog`/`UiConfirmationDialog` 作为窗口 child 后，用 `register_overlay` 和
-  `set_overlay_open` 管理。模态 overlay 先接收输入，关闭时窗口尝试恢复先前 scope。
-- `UiDropdown::register_as_transient_popup(window)` 将其展开列表注册为非模态 popup；对象
-  保留列表所有权，窗口仅负责绘制层级与输入优先级。销毁或换窗口前应解除注册。
+- `UiDialog`/`UiConfirmationDialog` 作为窗口 child 后，调用自身的
+  `register_with_window(window, options)`，再用 `open`/`close` 管理。模态 overlay
+  先接收输入，关闭时窗口尝试恢复先前 scope。只有自定义 overlay 元素才直接调用
+  `UiWindow::register_overlay` 与 `open_overlay`/`close_overlay`。
+- `UiDropdown::register_with_window(window)` 将其展开列表注册为 transient popup；对象
+  保留列表所有权，窗口仅负责绘制层级与输入优先级。销毁或换窗口前调用
+  `unregister_from_window`。
 - `UiTooltip::set_content` 后注册到窗口；它是被动渲染层，激活的临时 popup 可以阻止其显示。
 
 ## 生命周期清单
@@ -128,4 +131,6 @@ scope 内部通过 `UiControlFocusScopeHost` 维护可用控件及方向邻居�
 2. 子项只由一个 `UiChildHost` 所有；临时移动先 `extract_child`。
 3. RAII 保存主题注册；overlay/popup/tooltip 的注册对象和窗口不得有悬空关系。
 4. `reset()` 复用元素前会清除交互与子树状态；不要假设回调、选择或弹出状态仍存在。
-5. 对话框、下拉、tooltip 和主题注册的析构/解绑行为已在 `tests/ui_lifecycle_tests.cpp` 覆盖。
+5. 对话框、下拉和 tooltip 的析构/解绑行为由
+   `tests/ui/ui_popup_lifecycle_tests.cpp` 覆盖；主题注册行为由
+   `tests/ui/ui_style_tests.cpp` 覆盖。

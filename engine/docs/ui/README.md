@@ -1,6 +1,6 @@
 # MoonLine UI API 参考
 
-本目录以 `engine/ui/**/*.h` 为唯一事实来源。每个公开类都有独立参考页；跨组件的重复调用只在专题页解释一次。
+本目录以 `engine/ui/**/*.h` 为唯一事实来源。公开 API 由独立组件页或同类组件专题页覆盖；跨组件的重复调用只在专题页解释一次。
 
 ## 入口
 
@@ -22,5 +22,6 @@
 - Widgets：[Button](reference/ui_button.md)、[基础选择控件](reference/selection_controls.md)、[拖拽与数值调节](reference/drag_value_controls.md)、[TextInput](reference/ui_text_input.md)、[数值展示](reference/value_display.md)、[Label](reference/ui_label.md)、[TextBlock](reference/ui_text_block.md)、[媒体控件](reference/media_controls.md)、[透明度动画组件](reference/opacity_variants.md)
 - Containers：[List](reference/ui_list_container.md)、[Grid](reference/ui_grid_container.md)、[Panel](reference/ui_panel.md)、[ScrollContainer](reference/ui_scroll_container.md)、[ChromeContainer](reference/ui_chrome_container.md)、[选择组](reference/selection_groups.md)、[页签组件](reference/tabs.md)
 - Composites：[Dropdown](reference/ui_dropdown.md)、[对话框](reference/dialogs.md)、[Tooltip](reference/ui_tooltip.md)、[带标签选择控件](reference/labeled_controls.md)
+- Presets：[SettingsPanel](reference/settings_panel.md)
 
 组件页只描述特有接口；继承的几何、样式、所有权、输入和窗口注册规则请使用上述专题页。

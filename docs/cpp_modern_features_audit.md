@@ -25,30 +25,30 @@
 项目以 `std::unique_ptr` 表达 UI 树、场景对象和资源的唯一所有权，以 `std::shared_ptr` 管理可共享生命周期对象；通过 `std::move` 进行所有权转移。
 
 - `engine/ui/core/ui_child_host.h:41-60`：`ChildEntry` 持有 `std::unique_ptr<UiElement>`，显式删除复制操作并定义 `noexcept` 移动操作，避免 UI 子节点被意外复制。
-- `engine/ui/core/ui_child_host.h:98-115`：模板工厂使用 `std::make_unique`、`std::forward` 创建并交由容器接管。
+- `engine/ui/core/ui_child_host.h:94-116`：模板工厂使用 `std::make_unique`、`std::forward` 创建并交由容器接管。
 - `engine/scene/scene.h:68-76`：通用对象创建接口以完美转发创建对象。
-- `gameplay/scene/ui_container_test_scene.cpp:69-104`：大量用 `std::make_unique` 构建嵌套 UI 组件树。
+- `engine/testbed/scene/ui_test_scene.cpp:63-104`：大量用 `std::make_unique` 构建嵌套 UI 组件树。
 
 这里的所有权模型是项目现代 C++ 实践中最重要的一部分：原始指针仅作为非拥有访问句柄使用，容器承担对象释放责任。
 
 ### lambda 表达式、捕获与回调
 
-- `gameplay/scene/ui_container_test_scene.cpp:169-337`：`[this]` 回调用于 UI 的点击、选择和数值改变事件。
+- `engine/testbed/scene/ui_test_scene.cpp:176-267`：`[this]` 回调用于 UI 的点击、选择和数值改变事件。
 - `tests/termination_manager_tests.cpp:77`：lambda 作为线程入口。
-- `engine/ui/widgets/ui_button.cpp:320-324`：回调组合逻辑使用 lambda 封装原有和新增动作。
+- `engine/ui/widgets/ui_button.cpp:324-333`：回调组合逻辑使用 lambda 封装原有和新增动作。
 
 ### 语言基础：类型推导、范围 for、强类型枚举、空指针与虚函数控制
 
 - `auto` 与范围 for：例如 `engine/gameplay_support/scene/gameplay_scene.cpp`、`engine/core/render/sdl_render_command_executor.h:256`。
-- `enum class`：例如 `engine/ui/core/ui_child_host.h:18` 的 `UiChildStyleRelation`，防止枚举值隐式转换。
-- `nullptr`、`override`、`final`、`noexcept`：遍布引擎接口和测试桩；例如 `tests/ui_focus_routing_tests.cpp:57-63`。
-- `= delete` / `= default`：例如 `engine/ui/core/ui_child_host.h:47-60`，明确对象可复制/可移动语义。
-- `constexpr` 与 `static_assert`：例如 `engine/core/geometry/vector2.h` 的编译期几何值，以及 `engine/ui/core/ui_child_host.h:100` 对子类型的约束。
+- `enum class`：例如 `engine/ui/core/ui_child_host.h:21` 的 `UiChildStyleRelation`，防止枚举值隐式转换。
+- `nullptr`、`override`、`final`、`noexcept`：遍布引擎接口和测试桩；例如 `tests/ui/ui_focus_routing_tests.cpp:49-56`。
+- `= delete` / `= default`：例如 `engine/ui/core/ui_child_host.h:49-59`，明确对象可复制/可移动语义。
+- `constexpr` 与 `static_assert`：例如 `engine/core/geometry/vector2.h` 的编译期几何值，以及 `engine/ui/core/ui_child_host.h:102` 对子类型的约束。
 
 ### 变参模板与完美转发
 
 - `engine/scene/scene.h:68-76`：`template <typename T, typename... Args>` 与 `Args&&...`。
-- `engine/ui/core/ui_child_host.h:92-115`：变参模板结合 `std::forward` 实现类型安全的 UI 子节点创建。
+- `engine/ui/core/ui_child_host.h:94-116`：变参模板结合 `std::forward` 实现类型安全的 UI 子节点创建。
 
 ### 并发基础库
 
@@ -60,13 +60,13 @@
 
 ### `std::make_unique`
 
-`std::make_unique` 在 UI、场景和测试中广泛使用，例如 `engine/ui/core/ui_child_host.h:102` 与 `gameplay/scene/ui_container_test_scene.cpp:71`。它避免了直接 `new` 带来的异常安全和所有权表达问题。
+`std::make_unique` 在 UI、场景和测试中广泛使用，例如 `engine/ui/core/ui_child_host.h:104` 与 `engine/testbed/scene/ui_test_scene.cpp:69`。它避免了直接 `new` 带来的异常安全和所有权表达问题。
 
 ### lambda 初始化捕获
 
 - `gameplay/scene/character_select_scene.cpp:153`：`[this, selected_key = character_key]` 将选中的角色键复制到回调中。
-- `gameplay/scene/ui_container_test_scene.cpp:337`：`[this, theme = themes[index]]` 捕获循环当前主题值，避免悬空或错误引用循环变量。
-- `engine/ui/widgets/ui_button.cpp:320`：`[before = std::move(on_click), after = std::move(existing)]` 以移动方式组合回调。
+- `engine/testbed/scene/ui_test_scene.cpp:251`：`[this, theme = themes[index]]` 捕获循环当前主题值，避免悬空或错误引用循环变量。
+- `engine/ui/widgets/ui_button.cpp:329`：`[before = std::move(on_click), after = std::move(existing)]` 以移动方式组合回调。
 
 ### 泛型 lambda
 
@@ -88,7 +88,7 @@
 ### 编译期分支与折叠表达式
 
 - `engine/resources/atlas/atlas.h:41-51`：使用 `if constexpr` 检查空参数包，并使用一元折叠表达式验证全部指针非空、顺序添加全部纹理。
-- `engine/ui/core/ui_child_host.h:92-100`：`sizeof...(Args)`、`std::tuple_element_t`、`std::decay_t`、`std::enable_if_t` 组合，阻止容易误用的重载匹配。
+- `engine/ui/core/ui_child_host.h:94-101`：`sizeof...(Args)`、`std::tuple_element_t`、`std::decay_t`、`std::enable_if_t` 组合，阻止容易误用的重载匹配。
 
 ### if 初始化语句、内联变量、标准属性和算法
 
@@ -116,8 +116,8 @@
 
 ### 指定成员初始化（designated initializers）
 
-- `gameplay/scene/ui_container_test_scene.cpp:54-60`：按字段名构造 `UiLayoutChildOptions`。
-- `gameplay/scene/ui_container_test_scene.cpp:309`：按字段名构造 `UiOverlayOptions`。
+- `engine/testbed/scene/ui_test_scene.cpp:53-58`：按字段名构造 `UiLayoutChildOptions`。
+- `engine/testbed/scene/ui_test_scene.cpp:241`：按字段名构造 `UiOverlayOptions`。
 
 这提高了配置型结构体初始化的可读性，并降低成员顺序变更导致的误填风险。
 

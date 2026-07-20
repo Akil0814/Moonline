@@ -21,5 +21,6 @@
 | `UiLabeledCheckbox`, `UiLabeledRadioButton` | [带标签选择控件](reference/labeled_controls.md) |
 | `UiDropdown`, `UiTooltip` | [对应 composite 页](README.md#独立组件参考) + [window_surfaces](concepts/window_surfaces.md) |
 | `UiDialog`, `UiConfirmationDialog`, `UiOverlayWindowClient`, `UiTransientPopup` | [对话框](reference/dialogs.md) + [window_surfaces](concepts/window_surfaces.md) |
+| `SettingsPanel`, `SettingsWindowMode`, `SettingsWindowSize`, `SettingsPanelDraft`, `SettingsPanelOptions`, `make_settings_window_size_options` | [SettingsPanel preset](reference/settings_panel.md) |
 
 `UiFocusable`、`UiRadioItem`、输入 receiver contracts 和 `UiDelegatedFocusMixin` 是实现/协作契约；其公开调用语义在 [input_focus_scroll](concepts/input_focus_scroll.md) 与 [child_layout](concepts/child_layout.md) 中统一说明。

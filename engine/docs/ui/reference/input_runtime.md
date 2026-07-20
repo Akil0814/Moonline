@@ -4,8 +4,8 @@
 
 | 类型 | 调用方法 | 作用 |
 | --- | --- | --- |
-| `UiInputRouter` | `is_action_pressed`、`is_action_just_pressed`、`is_action_just_released` | 从 RawInputState 查询映射后的 `UiAction`。 |
-| `UiInputState` | `begin_frame`、`apply_event`、三个 `is_*` 查询 | 保存 UI action 的一帧 pressed/edge 状态。 |
+| `UiInputRouter` | `route_frame`、`route_event`、`synthesize_events`、`reset_transient_state` | 将 RawInput frame/event 转为 UI frame/event，并生成手柄滚动等合成事件。 |
+| `UiInputState` | `set`、`is_pressed`、`is_just_pressed`、`is_just_released` | 保存并查询 UI action 的一帧 pressed/edge 状态。 |
 | `UiGamepadScrollSynthesizer` | `synthesize(raw_frame)`、`reset` | 把连续手柄输入转换为可选 scroll event。 |
 | `UiScrollState` | `set_axis`、viewport/content size、offset、step、ratio、`scroll_by` | 计算并 clamp 独立滚动状态。 |
 

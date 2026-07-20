@@ -25,6 +25,7 @@
 | `widgets/label/ui_fade_label.h`, `ui_blink_label.h`, `ui_pulse_label.h`, `widgets/image/ui_fade_image.h`, `ui_blink_image.h`, `ui_pulse_image.h` | [透明度动画组件](reference/opacity_variants.md) |
 | `containers/*.h` | 对应 `reference/ui_*_container.md`、group、tab view 页面 |
 | `composites/*.h` | 对应 `reference/ui_*.md` composite 页面 |
+| `presets/settings_panel.h` | [SettingsPanel](reference/settings_panel.md) |
 | `window/*.h` | [window_surfaces](concepts/window_surfaces.md)、[UiWindow](reference/ui_window.md) |
 
-新增公开头文件时必须在本表增加映射；新增公开类必须新建与头文件 stem 一致的参考页。
+新增公开头文件时必须在本表增加映射；新增公开类必须增加独立参考页或明确归入现有专题页。

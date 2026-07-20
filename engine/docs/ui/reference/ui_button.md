@@ -2,7 +2,7 @@
 
 头文件：`engine/ui/widgets/ui_button.h`。可点击的文本、图标或状态纹理控件。
 
-调用：使用 `UiButtonConfig` 构造或 `set_button_config` 原子更新；`set_text_content`、`set_icon_content`、`set_texture_set_content` 选择内容；`set_on_click` 注册点击回调。`set_state_textures`、`set_sounds`、`set_padding` 配置表现。样式/role 遵循[样式专题](../concepts/style_theme.md)。
+调用：使用 `UiButtonConfig` 构造或 `set_button_config` 原子更新；文本可用 `set_text_content` 直接更新，图标或完整纹理集通过 `UiButtonConfig::content` 中的 `UiButtonIconContent`/`UiButtonTextureSetContent` 提供。`set_on_click` 替换点击回调，`prepend_on_click` 在现有回调前追加一个动作。`set_state_textures`、`set_sounds`、`set_padding` 配置表现。样式/role 遵循[样式专题](../concepts/style_theme.md)。
 
 `UiButtonContent` 与纹理指针均不转移外部纹理所有权。
 
