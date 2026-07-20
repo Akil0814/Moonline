@@ -35,13 +35,25 @@ constexpr float RectEpsilon = 0.0001f;
 }
 
 UiDragHandle::UiDragHandle(const elysia::core::Rect& rect,int order) noexcept
-    : UiControl(rect,order) {}
+    : UiControl(rect,order)
+{
+    reset();
+    set_size(rect.size());
+}
 
 UiDragHandle::UiDragHandle(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order) noexcept
-    : UiControl(position,size,order) {}
+    : UiControl(position,size,order)
+{
+    reset();
+    set_size(size);
+}
 
 UiDragHandle::UiDragHandle(const elysia::core::Vector2& center,const elysia::core::Vector2& size,UiFromCenterTag,int order) noexcept
-    : UiControl(center,size,from_center,order) {}
+    : UiControl(center,size,from_center,order)
+{
+    reset();
+    set_size(size);
+}
 
 UiDragHandle::UiDragHandle(const elysia::core::Rect& rect,const UiDragHandleConfig& config,int order) noexcept
     : UiDragHandle(rect,order)

@@ -10,6 +10,7 @@ using elysia::application::ApplicationDescriptor;
 using elysia::application::ApplicationEngineLogoVariant;
 using elysia::application::ApplicationTextureFilter;
 using elysia::typography::FontSource;
+using elysia::ui::UiBuiltinTheme;
 using moonline::tests::require;
 
 void require_default_presentation_settings()
@@ -27,9 +28,24 @@ void require_default_presentation_settings()
                 == FontSource::EngineBuiltIn,
         "application presentation must compose default typography settings");
     require(
+        descriptor.presentation.ui.default_theme
+            == UiBuiltinTheme::BlueGlassMoon,
+        "application presentation must default to BlueGlassMoon");
+    require(
         descriptor.presentation.startup.engine_logo
             == ApplicationEngineLogoVariant::White,
         "application startup presentation must default to the white engine logo");
+}
+
+void require_ui_settings_are_data_only()
+{
+    ApplicationDescriptor descriptor;
+    descriptor.presentation.ui.default_theme = UiBuiltinTheme::ElysiaDark;
+
+    require(
+        descriptor.presentation.ui.default_theme
+            == UiBuiltinTheme::ElysiaDark,
+        "application presentation must retain the selected default UI theme");
 }
 
 void require_render_settings_are_data_only()
@@ -69,6 +85,7 @@ int main()
 {
     require_default_presentation_settings();
     require_render_settings_are_data_only();
+    require_ui_settings_are_data_only();
     require_engine_logo_variants_are_data_only();
     return EXIT_SUCCESS;
 }

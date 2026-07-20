@@ -21,6 +21,8 @@ elysia::application::ApplicationDescriptor MoonlineGameModule::descriptor() cons
     descriptor.logical_height = 720;
     descriptor.presentation.render.texture_filter =
         elysia::application::ApplicationTextureFilter::Nearest;
+    descriptor.presentation.ui.default_theme =
+        elysia::ui::UiBuiltinTheme::ElysiaDark;
     descriptor.presentation.startup.engine_logo =
         elysia::application::ApplicationEngineLogoVariant::White;
     descriptor.presentation.fonts.ui.source =

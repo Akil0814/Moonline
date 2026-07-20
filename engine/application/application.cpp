@@ -17,6 +17,7 @@
 #include "../io/path/path_manager.h"
 #include "../resources/resource_manager.h"
 #include "../tools/logger.h"
+#include "../ui/style/ui_theme_defaults.h"
 
 #include <exception>
 #include <filesystem>
@@ -104,6 +105,14 @@ bool Application::init(
             descriptor.presentation.fonts);
     if (!resolved_font_settings)
         return startup_fail("typography",resolved_font_settings.error());
+
+    if (!elysia::ui::UiThemeDefaults::set_builtin_theme(
+            descriptor.presentation.ui.default_theme))
+    {
+        return startup_fail(
+            "ui",
+            "Application default UI theme is invalid.");
+    }
 
     const std::filesystem::path executable_path =
         argc > 0 && argv && argv[0]

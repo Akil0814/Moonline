@@ -240,6 +240,7 @@ endforeach()
 foreach(UI_TEST_TARGET IN ITEMS
     ui_layout_tests
     ui_style_tests
+    ui_theme_defaults_tests
     ui_popup_lifecycle_tests
     ui_tooltip_visibility_tests
     ui_selection_controls_tests

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ui_theme.h"
+#include "ui_theme_defaults.h"
 #include "ui_theme_style_resolver.h"
 
 #include <cstddef>
@@ -57,8 +58,8 @@ private:
     void release(UiThemeRegistration::RegistrationRecord&) noexcept;
     void detach_all() noexcept;
 
-    UiBuiltinTheme _builtin = UiBuiltinTheme::BlueGlassMoon;
-    UiTheme _theme = make_builtin_theme(UiBuiltinTheme::BlueGlassMoon);
+    UiBuiltinTheme _builtin;
+    UiTheme _theme;
     UiThemeStyleResolver _resolver;
     std::vector<std::shared_ptr<UiThemeRegistration::RegistrationRecord>> _records;
     friend class UiThemeRegistration;
