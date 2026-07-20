@@ -41,7 +41,8 @@ public:
     void set_label_placement(UiLabeledRadioLabelPlacement placement) noexcept;
     void set_text_placement(UiLabeledRadioTextPlacement placement) noexcept;
     void set_label_spacing(float spacing) noexcept;
-    void set_typography_role(UiTypographyRole role) noexcept;
+    void set_typography_role(
+        elysia::typography::UiTypographyRole role) noexcept;
     [[nodiscard]] UiElement& radio_item_element() noexcept override { return *this; }
     [[nodiscard]] const UiElement& radio_item_element() const noexcept override { return *this; }
 
@@ -53,7 +54,8 @@ private:
     mutable UiRadioButton _radio;
     mutable UiLabel _label;
     UiTextContent _text_content;
-    UiTypographyRole _typography_role = UiTypographyRole::RadioLabel;
+    elysia::typography::UiTypographyRole _typography_role =
+        elysia::typography::UiTypographyRole::RadioLabel;
     UiLabelStyle _theme_label_style{};
     UiEnabledDisabledColors _theme_text_colors{};
     UiLabeledRadioLabelPlacement _label_placement = UiLabeledRadioLabelPlacement::Right;

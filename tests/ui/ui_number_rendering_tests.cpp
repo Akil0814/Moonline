@@ -51,8 +51,7 @@ void test_ui_number_uses_shared_localized_glyphs()
     require(paths->init(),"UI number tests must initialize paths");
     resources->clear();
     const auto resolved_font_settings =
-        application::resolve_application_font_settings(
-            application::ApplicationFontSettings{});
+        typography::resolve_font_settings(typography::FontSettings{});
     require(resolved_font_settings.has_value(),
         "UI number default font settings must resolve");
     assist::EngineAssistCache engine_cache;

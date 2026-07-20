@@ -44,6 +44,8 @@
 
 namespace elysia::testbed
 {
+using elysia::typography::UiTypographyRole;
+
 namespace
 {
 using namespace elysia::ui;

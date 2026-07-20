@@ -12,6 +12,8 @@
 
 namespace elysia::ui
 {
+using elysia::typography::UiTypographyRole;
+
 UiLabel::UiLabel(const elysia::core::Rect& rect,int order,UiTextContent text_content) noexcept
     : UiElement(rect,order)
 {

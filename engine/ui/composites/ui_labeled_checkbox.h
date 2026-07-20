@@ -50,7 +50,8 @@ public:
     void set_label_placement(UiLabeledCheckboxLabelPlacement placement) noexcept;
     void set_text_placement(UiLabeledCheckboxTextPlacement placement) noexcept;
     void set_label_spacing(float spacing) noexcept;
-    void set_typography_role(UiTypographyRole role) noexcept;
+    void set_typography_role(
+        elysia::typography::UiTypographyRole role) noexcept;
     void set_label_padding(int padding) noexcept;
     void set_padding(int padding) noexcept;
 
@@ -63,7 +64,8 @@ private:
     mutable UiCheckbox _checkbox;
     mutable UiLabel _label;
     UiTextContent _text_content;
-    UiTypographyRole _typography_role = UiTypographyRole::CheckboxLabel;
+    elysia::typography::UiTypographyRole _typography_role =
+        elysia::typography::UiTypographyRole::CheckboxLabel;
     UiLabeledCheckboxLabelPlacement _label_placement = UiLabeledCheckboxLabelPlacement::Right;
     UiLabeledCheckboxTextPlacement _text_placement = UiLabeledCheckboxTextPlacement::NearBox;
     UiLabelStyle _theme_label_style{};

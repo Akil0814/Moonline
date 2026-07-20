@@ -58,8 +58,10 @@ public:
     void set_vertical_align(TextVerticalAlign align);
     [[nodiscard]] TextVerticalAlign vertical_align() const noexcept;
 
-    void set_typography_role(UiTypographyRole role) noexcept;
-    [[nodiscard]] UiTypographyRole typography_role() const noexcept;
+    void set_typography_role(
+        elysia::typography::UiTypographyRole role) noexcept;
+    [[nodiscard]] elysia::typography::UiTypographyRole
+        typography_role() const noexcept;
 
     void set_text_fit_mode(UiLabelTextFitMode mode) noexcept;
     [[nodiscard]] UiLabelTextFitMode text_fit_mode() const noexcept;
@@ -77,7 +79,8 @@ private:
     UiTextContent _text_content;
     UiStyleState<UiLabelStyle> _style_state;
     UiLabelVisualRole _visual_role = UiLabelVisualRole::Default;
-    UiTypographyRole _typography_role = UiTypographyRole::Label;
+    elysia::typography::UiTypographyRole _typography_role =
+        elysia::typography::UiTypographyRole::Label;
     UiLabelTextFitMode _text_fit_mode = UiLabelTextFitMode::ShrinkToFit;
     TextHorizontalAlign _horizontal_align = TextHorizontalAlign::Left;
     TextVerticalAlign _vertical_align = TextVerticalAlign::Top;

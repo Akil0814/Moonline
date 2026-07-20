@@ -12,6 +12,8 @@
 
 namespace elysia::ui
 {
+using elysia::typography::UiTypographyRole;
+
 namespace
 {
 constexpr float kValueChangeEpsilon = 0.0001f;

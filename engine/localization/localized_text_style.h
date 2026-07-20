@@ -7,8 +7,8 @@ namespace elysia::localization
 {
 struct LocalizedTextStyle
 {
-	elysia::ui::UiTypographyRole typography_role =
-		elysia::ui::UiTypographyRole::Label;
+	elysia::typography::UiTypographyRole typography_role =
+		elysia::typography::UiTypographyRole::Label;
 	elysia::core::Color color{};
 	int wrap_width = 0;
 };

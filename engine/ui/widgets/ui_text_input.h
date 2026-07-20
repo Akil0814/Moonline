@@ -69,10 +69,14 @@ public:
     [[nodiscard]] bool has_style_overrides() const noexcept;
     void clear_style_overrides() noexcept;
 
-    void set_typography_role(UiTypographyRole role) noexcept;
-    [[nodiscard]] UiTypographyRole typography_role() const noexcept;
-    void set_placeholder_typography_role(UiTypographyRole role) noexcept;
-    [[nodiscard]] UiTypographyRole placeholder_typography_role() const noexcept;
+    void set_typography_role(
+        elysia::typography::UiTypographyRole role) noexcept;
+    [[nodiscard]] elysia::typography::UiTypographyRole
+        typography_role() const noexcept;
+    void set_placeholder_typography_role(
+        elysia::typography::UiTypographyRole role) noexcept;
+    [[nodiscard]] elysia::typography::UiTypographyRole
+        placeholder_typography_role() const noexcept;
     void set_padding(int padding) noexcept;
     [[nodiscard]] int padding() const noexcept;
 
@@ -135,8 +139,10 @@ private:
     int _composition_length = 0;
     std::optional<std::size_t> _max_length = std::nullopt;
     UiStyleState<UiTextInputStyle> _style_state;
-    UiTypographyRole _typography_role = UiTypographyRole::Input;
-    UiTypographyRole _placeholder_typography_role = UiTypographyRole::InputPlaceholder;
+    elysia::typography::UiTypographyRole _typography_role =
+        elysia::typography::UiTypographyRole::Input;
+    elysia::typography::UiTypographyRole _placeholder_typography_role =
+        elysia::typography::UiTypographyRole::InputPlaceholder;
     int _padding = 10;
     bool _is_pushed = false;
 };

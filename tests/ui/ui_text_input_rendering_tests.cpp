@@ -57,8 +57,7 @@ void test_text_input_uses_private_editing_texture()
 
     resource_manager->clear();
     const auto resolved_font_settings =
-        application::resolve_application_font_settings(
-            application::ApplicationFontSettings{});
+        typography::resolve_font_settings(typography::FontSettings{});
     require(resolved_font_settings.has_value(),
         "text input default font settings must resolve");
     assist::EngineAssistCache engine_cache;
@@ -89,7 +88,8 @@ void test_text_input_uses_private_editing_texture()
         input.set_text("draft");
 
         localization::LocalizedTextStyle input_style;
-        input_style.typography_role = ui::UiTypographyRole::Input;
+        input_style.typography_role =
+            typography::UiTypographyRole::Input;
         input_style.color = input.style().text.enabled;
         SDL_Texture* shared_texture = localization_manager->get_raw_text_texture("draft",input_style);
         require(shared_texture != nullptr,"text input texture test must create the comparison cache texture");
@@ -151,7 +151,8 @@ void test_text_input_uses_private_editing_texture()
             "reenabled input text must render with a private texture");
         SDL_Texture* reenabled_texture = reenabled_command->texture;
 
-        input.set_typography_role(ui::UiTypographyRole::InputPlaceholder);
+        input.set_typography_role(
+            typography::UiTypographyRole::InputPlaceholder);
         commands.clear();
         input.submit_ui_render_commands(commands);
         const core::UiRenderCommand* typography_command = find_command(commands,core::UiRenderCommandType::Texture);
@@ -173,7 +174,7 @@ void test_text_input_uses_private_editing_texture()
         input.set_placeholder_content(ui::ui_raw_text("placeholder"));
         localization::LocalizedTextStyle placeholder_style;
         placeholder_style.typography_role =
-            ui::UiTypographyRole::InputPlaceholder;
+            typography::UiTypographyRole::InputPlaceholder;
         placeholder_style.color = input.style().placeholder.enabled;
         SDL_Texture* placeholder_texture = localization_manager->get_raw_text_texture("placeholder",placeholder_style);
         require(placeholder_texture != nullptr,"text input texture test must create the placeholder cache texture");

@@ -58,7 +58,7 @@ elysia::ui::UiInteractiveColorsOverrides test_border_color_overrides()
 
 void test_typography_role_layout_defaults()
 {
-    using elysia::ui::UiTypographyRole;
+    using elysia::typography::UiTypographyRole;
     using elysia::ui::resolve_ui_typography;
 
     require(!resolve_ui_typography(UiTypographyRole::Caption).wrap_allowed,

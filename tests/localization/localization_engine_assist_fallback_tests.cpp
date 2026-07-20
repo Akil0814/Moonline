@@ -1,6 +1,6 @@
 #define SDL_MAIN_HANDLED
 
-#include "engine/application/application_presentation_settings.h"
+#include "engine/typography/font_settings.h"
 #include "engine/assist/engine_assist_cache.h"
 #include "engine/assist/engine_assist_catalog.h"
 #include "engine/io/path/path_manager.h"
@@ -78,15 +78,15 @@ int main()
         &cache),
         "LocalizationManager must initialize with Engine assist defaults");
 
-    elysia::application::ApplicationTypographyProfile::PointSizes point_sizes{};
+    elysia::typography::UiTypographyProfile::PointSizes point_sizes{};
     point_sizes.fill(20);
-    elysia::application::ApplicationFontSettings font_settings;
+    elysia::typography::FontSettings font_settings;
     font_settings.ui.source =
-        elysia::application::ApplicationFontSource::Project;
+        elysia::typography::FontSource::Project;
     font_settings.ui.typography_override =
-        elysia::application::ApplicationTypographyProfile(point_sizes);
+        elysia::typography::UiTypographyProfile(point_sizes);
     const auto resolved_font_settings =
-        elysia::application::resolve_application_font_settings(font_settings);
+        elysia::typography::resolve_font_settings(font_settings);
     require(resolved_font_settings.has_value(),
         "localization fallback font settings must resolve");
     require(font_resolver.configure(
@@ -101,7 +101,8 @@ int main()
         "missing Engine namespace keys must fall back to Engine translations");
 
     const elysia::localization::LocalizedTextStyle style{
-        .typography_role = elysia::ui::UiTypographyRole::ButtonCompact
+        .typography_role =
+            elysia::typography::UiTypographyRole::ButtonCompact
     };
     SDL_Texture* engine_text_texture =
         localization->get_text_texture("engine.settings.title",style);

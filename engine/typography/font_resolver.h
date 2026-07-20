@@ -1,6 +1,7 @@
 #pragma once
 
-#include "../application/application_presentation_settings.h"
+#include "font_roles.h"
+#include "font_settings.h"
 
 #include <SDL_ttf.h>
 
@@ -24,12 +25,6 @@ class ResourceManager;
 
 namespace elysia::typography
 {
-enum class EffectTypographyRole
-{
-    FloatingNumber,
-    Count
-};
-
 enum class FontResolveErrorCode
 {
     NotConfigured,
@@ -50,8 +45,7 @@ struct ResolvedFont
 {
     TTF_Font* font = nullptr;
     int point_size = 0;
-    elysia::application::ApplicationFontSource source =
-        elysia::application::ApplicationFontSource::EngineBuiltIn;
+    FontSource source = FontSource::EngineBuiltIn;
     std::uint64_t generation = 0;
 };
 
@@ -67,14 +61,14 @@ public:
     FontResolver& operator=(FontResolver&&) = delete;
 
     [[nodiscard]] std::expected<void,FontResolveError> configure(
-        const elysia::application::ResolvedApplicationFontSettings& settings,
+        const ResolvedFontSettings& settings,
         const elysia::assist::EngineAssistCache& engine_assist_cache,
         const elysia::resources::ResourceManager& resource_manager,
         std::span<const std::string> supported_languages);
     void shutdown() noexcept;
 
     [[nodiscard]] std::expected<ResolvedFont,FontResolveError> resolve_ui(
-        elysia::ui::UiTypographyRole role,
+        UiTypographyRole role,
         std::string_view language) const;
     [[nodiscard]] std::expected<ResolvedFont,FontResolveError> resolve_effect(
         EffectTypographyRole role) const;
@@ -90,11 +84,11 @@ public:
 
 private:
     [[nodiscard]] std::expected<ResolvedFont,FontResolveError> resolve(
-        elysia::application::ApplicationFontSource configured_source,
+        FontSource configured_source,
         std::string_view language,
         int point_size) const;
     [[nodiscard]] std::expected<TTF_Font*,FontResolveError> find_font(
-        elysia::application::ApplicationFontSource source,
+        FontSource source,
         std::string_view language,
         int point_size) const;
     [[nodiscard]] std::expected<void,FontResolveError>
@@ -103,8 +97,7 @@ private:
         validate_project_fonts() const;
 
 private:
-    std::optional<elysia::application::ResolvedApplicationFontSettings>
-        _settings;
+    std::optional<ResolvedFontSettings> _settings;
     const elysia::assist::EngineAssistCache* _engine_assist_cache = nullptr;
     const elysia::resources::ResourceManager* _resource_manager = nullptr;
     std::vector<std::string> _supported_languages;

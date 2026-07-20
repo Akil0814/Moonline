@@ -25,8 +25,8 @@ struct TextTextureCacheKey
 	std::string language;
 	std::string translation_key;
 	bool is_raw_text = false;
-	elysia::ui::UiTypographyRole typography_role =
-		elysia::ui::UiTypographyRole::Label;
+	elysia::typography::UiTypographyRole typography_role =
+		elysia::typography::UiTypographyRole::Label;
 	std::uint64_t font_generation = 0;
 	elysia::core::Color color{};
 	int wrap_width = 0;

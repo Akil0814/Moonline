@@ -139,7 +139,8 @@ void MainMenuScene::build_menu_buttons()
     std::unique_ptr<elysia::ui::UiLabel> ui_label =
         std::make_unique<elysia::ui::UiLabel>(elysia::core::Rect{ 0,0,600,120 }, 0, elysia::ui::ui_text_key("menu_scene.project_name"));
     ui_label->set_visual_role(elysia::ui::UiLabelVisualRole::Title);
-    ui_label->set_typography_role(elysia::ui::UiTypographyRole::Title);
+    ui_label->set_typography_role(
+        elysia::typography::UiTypographyRole::Title);
     ui_label->set_text_fit_mode(elysia::ui::UiLabelTextFitMode::ScaleToFit);
     ui_label->set_horizontal_align(elysia::ui::TextHorizontalAlign::Center);
     ui_label->set_vertical_align(elysia::ui::TextVerticalAlign::Center);

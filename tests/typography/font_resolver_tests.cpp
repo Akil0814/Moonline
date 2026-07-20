@@ -1,6 +1,6 @@
 #define SDL_MAIN_HANDLED
 
-#include "engine/application/application_presentation_settings.h"
+#include "engine/typography/font_settings.h"
 #include "engine/assist/engine_assist_cache.h"
 #include "engine/assist/engine_assist_catalog.h"
 #include "engine/io/loaders/asset_config_types.h"
@@ -25,15 +25,15 @@
 
 namespace
 {
-using elysia::application::ApplicationFontSettings;
-using elysia::application::ApplicationFontSource;
-using elysia::application::ApplicationTypographyProfile;
-using elysia::application::ResolvedApplicationFontSettings;
-using elysia::application::resolve_application_font_settings;
 using elysia::typography::EffectTypographyRole;
+using elysia::typography::FontSettings;
+using elysia::typography::FontSource;
 using elysia::typography::FontResolveErrorCode;
 using elysia::typography::FontResolver;
-using elysia::ui::UiTypographyRole;
+using elysia::typography::ResolvedFontSettings;
+using elysia::typography::UiTypographyProfile;
+using elysia::typography::UiTypographyRole;
+using elysia::typography::resolve_font_settings;
 using moonline::tests::require;
 
 class FontResolverFixture
@@ -99,20 +99,20 @@ private:
     elysia::assist::EngineAssistCache _engine_cache;
 };
 
-ResolvedApplicationFontSettings settings_with_size(
-    ApplicationFontSource ui_source,
-    ApplicationFontSource effect_source,
+ResolvedFontSettings settings_with_size(
+    FontSource ui_source,
+    FontSource effect_source,
     int point_size)
 {
-    ApplicationTypographyProfile::PointSizes sizes{};
+    UiTypographyProfile::PointSizes sizes{};
     sizes.fill(point_size);
 
-    ApplicationFontSettings settings;
+    FontSettings settings;
     settings.ui.source = ui_source;
-    settings.ui.typography_override = ApplicationTypographyProfile(sizes);
+    settings.ui.typography_override = UiTypographyProfile(sizes);
     settings.floating_number.source = effect_source;
     settings.floating_number.point_size_override = point_size;
-    const auto resolved = resolve_application_font_settings(settings);
+    const auto resolved = resolve_font_settings(settings);
     require(resolved.has_value(),
         "FontResolver test settings must resolve");
     return *resolved;
@@ -151,8 +151,8 @@ void test_engine_resolution_and_validation(FontResolverFixture& fixture)
     const std::array<std::string,3> languages{ "en","zh_cn","ja" };
     const auto configured = resolver.configure(
         settings_with_size(
-            ApplicationFontSource::EngineBuiltIn,
-            ApplicationFontSource::EngineBuiltIn,
+            FontSource::EngineBuiltIn,
+            FontSource::EngineBuiltIn,
             24),
         fixture.engine_cache(),
         fixture.resources(),
@@ -163,7 +163,7 @@ void test_engine_resolution_and_validation(FontResolverFixture& fixture)
     for (const std::string_view language : language_views)
     {
         for (std::size_t index = 0;
-            index < ApplicationTypographyProfile::RoleCount;
+            index < UiTypographyProfile::RoleCount;
             ++index)
         {
             const auto resolved = resolver.resolve_ui(
@@ -172,7 +172,7 @@ void test_engine_resolution_and_validation(FontResolverFixture& fixture)
             require(resolved.has_value()
                 && resolved->font
                 && resolved->point_size == 24
-                && resolved->source == ApplicationFontSource::EngineBuiltIn,
+                && resolved->source == FontSource::EngineBuiltIn,
                 "FontResolver must resolve every Engine UI role and language");
         }
     }
@@ -180,7 +180,7 @@ void test_engine_resolution_and_validation(FontResolverFixture& fixture)
     const auto effect = resolver.resolve_effect(
         EffectTypographyRole::FloatingNumber);
     require(effect.has_value()
-        && effect->source == ApplicationFontSource::EngineBuiltIn,
+        && effect->source == FontSource::EngineBuiltIn,
         "FontResolver must resolve the Engine floating-number font");
 
     const auto invalid_role = resolver.resolve_ui(
@@ -198,8 +198,8 @@ void test_atomic_project_activation(FontResolverFixture& fixture)
     const std::array<std::string,3> languages{ "en","zh_cn","ja" };
     const auto configured = resolver.configure(
         settings_with_size(
-            ApplicationFontSource::Project,
-            ApplicationFontSource::Project,
+            FontSource::Project,
+            FontSource::Project,
             24),
         fixture.engine_cache(),
         fixture.resources(),
@@ -214,7 +214,7 @@ void test_atomic_project_activation(FontResolverFixture& fixture)
         UiTypographyRole::Label,
         "en");
     require(before_activation.has_value()
-        && before_activation->source == ApplicationFontSource::EngineBuiltIn,
+        && before_activation->source == FontSource::EngineBuiltIn,
         "project fonts must remain inactive during startup loading");
     const std::uint64_t bootstrap_generation = resolver.generation();
 
@@ -242,9 +242,9 @@ void test_atomic_project_activation(FontResolverFixture& fixture)
     const auto project_effect = resolver.resolve_effect(
         EffectTypographyRole::FloatingNumber);
     require(project_ui.has_value()
-        && project_ui->source == ApplicationFontSource::Project
+        && project_ui->source == FontSource::Project
         && project_effect.has_value()
-        && project_effect->source == ApplicationFontSource::Project,
+        && project_effect->source == FontSource::Project,
         "active project fonts must serve UI and Latin floating numbers");
 
     elysia::io::ContentRegistry registry;
@@ -273,7 +273,7 @@ void test_atomic_project_activation(FontResolverFixture& fixture)
         "zh_cn");
     require(failure_scene_font
             && failure_scene_font->source
-                == ApplicationFontSource::EngineBuiltIn,
+                == FontSource::EngineBuiltIn,
         "ApplicationFailureScene must render through Engine fonts");
     scene_manager.shutdown();
     require(resolver.activate_project_fonts().has_value(),
@@ -294,7 +294,7 @@ void test_atomic_project_activation(FontResolverFixture& fixture)
         "en");
     require(after_deactivation.has_value()
         && after_deactivation->source
-            == ApplicationFontSource::EngineBuiltIn,
+            == FontSource::EngineBuiltIn,
         "deactivation must restore Engine bootstrap fonts");
 }
 
@@ -310,8 +310,8 @@ void test_invalid_configuration(FontResolverFixture& fixture)
     const std::array<std::string,0> no_languages{};
     const auto invalid = resolver.configure(
         settings_with_size(
-            ApplicationFontSource::EngineBuiltIn,
-            ApplicationFontSource::EngineBuiltIn,
+            FontSource::EngineBuiltIn,
+            FontSource::EngineBuiltIn,
             20),
         fixture.engine_cache(),
         fixture.resources(),

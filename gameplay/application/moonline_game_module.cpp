@@ -24,9 +24,9 @@ elysia::application::ApplicationDescriptor MoonlineGameModule::descriptor() cons
     descriptor.presentation.startup.engine_logo =
         elysia::application::ApplicationEngineLogoVariant::White;
     descriptor.presentation.fonts.ui.source =
-        elysia::application::ApplicationFontSource::Project;
+        elysia::typography::FontSource::Project;
     descriptor.presentation.fonts.floating_number.source =
-        elysia::application::ApplicationFontSource::Project;
+        elysia::typography::FontSource::Project;
     descriptor.initial_route = SceneRoute{
         .target = elysia::scene::builtin::StartupLoading,
         .payload = StartupLoadingScenePayload{

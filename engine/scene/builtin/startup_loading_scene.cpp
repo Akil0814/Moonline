@@ -282,7 +282,8 @@ void StartupLoadingScene::create_loading_ui()
     if (_start_prompt)
     {
         _start_prompt->configure_playback(elysia::ui::effects::UiOpacityBlinkMode::HiddenFirst, 0.0, 0.6, 0.6);
-        _start_prompt->set_typography_role(elysia::ui::UiTypographyRole::Button);
+        _start_prompt->set_typography_role(
+            elysia::typography::UiTypographyRole::Button);
         _start_prompt->set_horizontal_align(
             elysia::ui::TextHorizontalAlign::Center);
         _start_prompt->set_vertical_align(
