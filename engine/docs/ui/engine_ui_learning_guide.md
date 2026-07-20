@@ -75,14 +75,14 @@ sequenceDiagram
 
 [`UiElement`](../../ui/core/ui_element.h) 是所有 UI 节点的共同父类，持有以下核心状态：
 
-| 概念 | 当前实现中的含义 | 初学者常见误解 |
-| --- | --- | --- |
-| `screen_rect` | 当前已经分配的屏幕空间矩形；布局、绘制基础坐标和常规命中测试的事实来源 | 把它当成“想要的尺寸” |
-| `content_extent()` | 向父布局报告的内容/内在尺寸；默认返回 `size()`，文本等元素可以覆盖 | 用子元素当前尺寸替代内在测量 |
-| `order` | 数值更高的元素在同级中更靠上绘制，也优先接收输入 | 把插入顺序当成唯一 z-order |
-| `visible` / `active` | 前者影响绘制，后者影响更新和输入参与 | 只隐藏页面却仍让它响应输入 |
-| `opacity` | 元素自身的透明度；host 会再把父级透明度合成到子命令 | 认为父透明度会自动改变子对象状态 |
-| presentation translation | 仅用于视觉展示的平移，可由命名平移动画驱动 | 用动画直接改 `screen_rect`，从而破坏布局 |
+| 概念 | 当前实现中的含义 |
+| --- | --- |
+| `screen_rect` | 当前已经分配的屏幕空间矩形；布局、绘制基础坐标和常规命中测试的事实来源 |
+| `content_extent()` | 向父布局报告的内容/内在尺寸；默认返回 `size()`，文本等元素可以覆盖 |
+| `order` | 数值更高的元素在同级中更靠上绘制，也优先接收输入 | 
+| `visible` / `active` | 前者影响绘制，后者影响更新和输入参与 | 
+| `opacity` | 元素自身的透明度；host 会再把父级透明度合成到子命令 | 
+| presentation translation | 仅用于视觉展示的平移，可由命名平移动画驱动 | 
 
 `presentation_screen_rect()` 和 `presentation_to_layout_point()` 是展示平移与指针空间之间的桥梁。需要按展示后位置命中时，应使用它们；不能把 presentation translation 当成新的布局结果。
 

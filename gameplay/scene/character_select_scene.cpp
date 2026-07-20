@@ -115,8 +115,7 @@ namespace arcneco::scene
         character_select_text->set_text_fit_mode(elysia::ui::UiLabelTextFitMode::ScaleToFit);
 
         auto* horizontal_scroll = _main_window->create_child<elysia::ui::UiScrollContainer>(
-            scroll_layout,
-            elysia::core::Rect{ 0,0,800,198 });
+            scroll_layout,elysia::core::Rect{ 0,0,800,198 });
         if (!horizontal_scroll)
             return;
 
