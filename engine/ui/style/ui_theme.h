@@ -1,5 +1,6 @@
-  #pragma once
+#pragma once
 
+#include "ui_theme_id.h"
 #include "ui_visual_roles.h"
 #include "ui_visual_styles.h"
 #include "../containers/ui_scroll_container.h"
@@ -15,17 +16,6 @@
 
 namespace elysia::ui
 {
-enum class UiBuiltinTheme
-{
-    BlueGlassMoon,
-    ElysiaLight,
-    ElysiaDark,
-    EvangelionUnit00,
-    EvangelionUnit01,
-    EvangelionUnit02,
-    QuietSlate
-};
-
 // Color-only theme payload for chrome with independent interaction colors for background and border.
 struct UiChromeThemeColors
 {

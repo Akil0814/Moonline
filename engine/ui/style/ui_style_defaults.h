@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ui_theme.h"
+#include "ui_theme_defaults.h"
 #include "ui_visual_styles.h"
 
 namespace elysia::ui
@@ -8,10 +9,10 @@ namespace elysia::ui
 // Supplies deterministic construction-time styles before an element is attached to a UiThemeManager.
 struct UiStyleDefaults
 {
-    // BlueGlassMoon is the fallback only; registered elements receive the manager's active theme later.
+    // Unmanaged elements retain this construction-time snapshot until reset.
     [[nodiscard]] static const UiTheme& theme() noexcept
     {
-        return builtin_theme(UiBuiltinTheme::BlueGlassMoon);
+        return UiThemeDefaults::theme();
     }
 
     [[nodiscard]] static UiEnabledDisabledColors text() noexcept

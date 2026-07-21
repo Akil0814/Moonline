@@ -16,7 +16,12 @@ void UiThemeRegistration::reset() noexcept
 bool UiThemeRegistration::registered() const noexcept
 { auto r = _record.lock(); return r && r->manager && r->root && r->count > 0; }
 
-UiThemeManager::UiThemeManager() { register_builtin_ui_theme_adapters(_resolver); }
+UiThemeManager::UiThemeManager()
+    : _builtin(UiThemeDefaults::current_builtin_theme())
+    , _theme(make_builtin_theme(_builtin))
+{
+    register_builtin_ui_theme_adapters(_resolver);
+}
 UiThemeManager::~UiThemeManager() { detach_all(); }
 
 UiThemeRegistration UiThemeManager::register_root(UiChildHost& root)

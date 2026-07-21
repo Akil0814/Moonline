@@ -444,12 +444,12 @@ template<class Enum>
 
     theme.bar_styles[to_index(UiBarVisualRole::Default)] = UiBarThemeColors{
         elysia::core::colors::elysia_twilight_mist,
-        elysia::core::colors::elysia_aurora_haze,
+        elysia::core::colors::elysia_glow_pink,
         elysia::core::colors::elysia_starlight_lilac
     };
     theme.bar_styles[to_index(UiBarVisualRole::Progress)] = UiBarThemeColors{
         elysia::core::colors::elysia_twilight_mist,
-        elysia::core::colors::elysia_crystal_orchid,
+        elysia::core::colors::elysia_glow_pink,
         elysia::core::colors::elysia_dream_rose
     };
 
