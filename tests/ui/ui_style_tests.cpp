@@ -458,6 +458,20 @@ void test_builtin_theme_border_states()
     }
 }
 
+void test_elysia_dark_bar_fill_contrast()
+{
+    const auto theme = elysia::ui::make_builtin_theme(
+        elysia::ui::UiBuiltinTheme::ElysiaDark);
+    require(
+        theme.bar(elysia::ui::UiBarVisualRole::Default).fill
+            == elysia::core::colors::elysia_glow_pink,
+        "ElysiaDark default bars should use the high-contrast pink fill");
+    require(
+        theme.bar(elysia::ui::UiBarVisualRole::Progress).fill
+            == elysia::core::colors::elysia_glow_pink,
+        "ElysiaDark progress bars should use the high-contrast pink fill");
+}
+
 void test_container_driven_theme_tree()
 {
     elysia::ui::UiThemeManager manager;
@@ -607,6 +621,7 @@ int main()
     test_textured_button_border();
     test_other_chrome_active_borders();
     test_builtin_theme_border_states();
+    test_elysia_dark_bar_fill_contrast();
     test_container_driven_theme_tree();
     test_labeled_control_text_follows_theme();
     test_labeled_controls_preserve_label_base_style();
