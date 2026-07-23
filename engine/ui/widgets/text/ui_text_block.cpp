@@ -54,6 +54,7 @@ void UiTextBlock::reset() noexcept
     _style_state.reset(UiStyleDefaults::text_block());
     _visual_role = UiTextBlockVisualRole::Default;
     _typography_role = UiTypographyRole::DialogBody;
+    _font_source_override.reset();
     _horizontal_align = resolve_ui_typography(_typography_role).horizontal_align_default;
     _padding = 0;
 }
@@ -72,6 +73,7 @@ elysia::core::Vector2 UiTextBlock::content_extent() const noexcept
     const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
     elysia::localization::LocalizedTextStyle text_style;
     text_style.typography_role = _typography_role;
+    text_style.font_source_override = _font_source_override;
     text_style.color = _style_state.effective_style().text;
     text_style.wrap_width = typography.wrap_allowed ? std::max(0,static_cast<int>(width)) : 0;
 
@@ -110,6 +112,7 @@ void UiTextBlock::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
     const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
     elysia::localization::LocalizedTextStyle text_style;
     text_style.typography_role = _typography_role;
+    text_style.font_source_override = _font_source_override;
     text_style.color = style.text;
     text_style.wrap_width = typography.wrap_allowed ? std::max(0,static_cast<int>(content_rect().width())) : 0;
 
@@ -204,6 +207,29 @@ void UiTextBlock::set_typography_role(UiTypographyRole role) noexcept
 UiTypographyRole UiTextBlock::typography_role() const noexcept
 {
     return _typography_role;
+}
+
+void UiTextBlock::set_font_source_override(
+    elysia::typography::FontSource source) noexcept
+{
+    if (_font_source_override == source)
+        return;
+    _font_source_override = source;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+void UiTextBlock::clear_font_source_override() noexcept
+{
+    if (!_font_source_override)
+        return;
+    _font_source_override.reset();
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+std::optional<elysia::typography::FontSource>
+UiTextBlock::font_source_override() const noexcept
+{
+    return _font_source_override;
 }
 
 void UiTextBlock::set_padding(int padding) noexcept

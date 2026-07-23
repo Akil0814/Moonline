@@ -42,6 +42,7 @@ void UiLabel::reset() noexcept
     _style_state.reset(UiStyleDefaults::label());
     _visual_role = UiLabelVisualRole::Default;
     _typography_role = UiTypographyRole::Label;
+    _font_source_override.reset();
     _text_fit_mode = UiLabelTextFitMode::ShrinkToFit;
     _horizontal_align = resolve_ui_typography(_typography_role).horizontal_align_default;
     _vertical_align = TextVerticalAlign::Top;
@@ -71,6 +72,7 @@ void UiLabel::submit_ui_render_commands(std::vector<elysia::core::UiRenderComman
     const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
     elysia::localization::LocalizedTextStyle text_style;
     text_style.typography_role = _typography_role;
+    text_style.font_source_override = _font_source_override;
     text_style.color = style.text;
     text_style.wrap_width = typography.wrap_allowed ? std::max(0,static_cast<int>(content_rect().width())) : 0;
 
@@ -112,6 +114,29 @@ void UiLabel::set_typography_role(UiTypographyRole role) noexcept
 UiTypographyRole UiLabel::typography_role() const noexcept
 {
     return _typography_role;
+}
+
+void UiLabel::set_font_source_override(
+    elysia::typography::FontSource source) noexcept
+{
+    if (_font_source_override == source)
+        return;
+    _font_source_override = source;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+void UiLabel::clear_font_source_override() noexcept
+{
+    if (!_font_source_override)
+        return;
+    _font_source_override.reset();
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+std::optional<elysia::typography::FontSource>
+UiLabel::font_source_override() const noexcept
+{
+    return _font_source_override;
 }
 
 void UiLabel::set_text_fit_mode(UiLabelTextFitMode mode) noexcept

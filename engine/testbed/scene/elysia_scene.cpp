@@ -247,6 +247,8 @@ void ElysiaScene::add_label(std::string_view code_line)
     auto label = std::make_unique<elysia::ui::UiLabel>(
         elysia::core::Rect{ 0,0,kCodeListWidth,kCodeLineHeight },0,
         elysia::ui::ui_raw_text(std::string(code_line)));
+    label->set_font_source_override(
+        elysia::typography::FontSource::EngineBuiltIn);
     _code_list->add_back(std::move(label));
     _code_list->set_size(_code_list->content_extent());
 }

@@ -14,6 +14,9 @@
 #include "engine/ui/widgets/ui_radio_button.h"
 #include "engine/ui/widgets/ui_slider.h"
 #include "engine/ui/widgets/ui_text_input.h"
+#include "engine/ui/widgets/label/ui_label.h"
+#include "engine/ui/widgets/number/ui_number.h"
+#include "engine/ui/widgets/text/ui_text_block.h"
 #include "engine/ui/window/ui_window.h"
 #include "tests/support/test_assertions.h"
 
@@ -21,6 +24,7 @@
 #include <iostream>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <type_traits>
 #include <vector>
 
@@ -607,6 +611,60 @@ void test_labeled_controls_preserve_label_base_style()
     radio.submit_ui_render_commands(commands);
     require(has_label_background(commands),"labeled radio must retain themed label background and corner radius");
 }
+
+void test_text_widget_font_source_overrides()
+{
+    using elysia::typography::FontSource;
+
+    elysia::ui::UiLabel label;
+    elysia::ui::UiTextBlock text_block;
+    elysia::ui::UiButton button;
+    elysia::ui::UiTextInput text_input;
+    elysia::ui::UiNumber number;
+
+    const auto all_match = [&](std::optional<FontSource> expected)
+    {
+        return label.font_source_override() == expected
+            && text_block.font_source_override() == expected
+            && button.font_source_override() == expected
+            && text_input.font_source_override() == expected
+            && number.font_source_override() == expected;
+    };
+    const auto set_all = [&](FontSource source)
+    {
+        label.set_font_source_override(source);
+        text_block.set_font_source_override(source);
+        button.set_font_source_override(source);
+        text_input.set_font_source_override(source);
+        number.set_font_source_override(source);
+    };
+    const auto clear_all = [&]()
+    {
+        label.clear_font_source_override();
+        text_block.clear_font_source_override();
+        button.clear_font_source_override();
+        text_input.clear_font_source_override();
+        number.clear_font_source_override();
+    };
+
+    require(all_match(std::nullopt),
+        "text widgets must inherit the global font source by default");
+    set_all(FontSource::EngineBuiltIn);
+    require(all_match(std::optional<FontSource>{ FontSource::EngineBuiltIn }),
+        "all direct text widgets must expose the same font source override API");
+    clear_all();
+    require(all_match(std::nullopt),
+        "clearing a text widget font override must restore inheritance");
+
+    set_all(FontSource::Project);
+    label.reset();
+    text_block.reset();
+    button.reset();
+    text_input.reset();
+    number.reset();
+    require(all_match(std::nullopt),
+        "reset must clear font source overrides on every direct text widget");
+}
 }
 
 int main()
@@ -625,6 +683,7 @@ int main()
     test_container_driven_theme_tree();
     test_labeled_control_text_follows_theme();
     test_labeled_controls_preserve_label_base_style();
+    test_text_widget_font_source_overrides();
     std::cout << "ui style tests passed\n";
     return EXIT_SUCCESS;
 }

@@ -11,6 +11,7 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
 #include <SDL_ttf.h>
 
 #include <cstdlib>
@@ -36,10 +37,14 @@ std::vector<elysia::core::UiRenderCommand> texture_commands(
 void test_ui_number_uses_shared_localized_glyphs()
 {
     using namespace elysia;
-    require(SDL_Init(SDL_INIT_VIDEO) == 0,"UI number tests must initialize SDL video");
+    SDL_setenv("SDL_AUDIODRIVER","dummy",1);
+    require(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) == 0,
+        "UI number tests must initialize SDL video and audio");
     require((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) == IMG_INIT_PNG,
         "UI number tests must initialize PNG support");
     require(TTF_Init() == 0,"UI number tests must initialize SDL_ttf");
+    require(Mix_OpenAudio(44100,MIX_DEFAULT_FORMAT,2,2048) == 0,
+        "UI number tests must open SDL_mixer audio");
     SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0,256,128,32,SDL_PIXELFORMAT_RGBA32);
     require(surface != nullptr,"UI number tests must create a software surface");
     SDL_Renderer* renderer = SDL_CreateSoftwareRenderer(surface);
@@ -133,6 +138,7 @@ void test_ui_number_uses_shared_localized_glyphs()
     engine_cache.shutdown();
     SDL_DestroyRenderer(renderer);
     SDL_FreeSurface(surface);
+    Mix_CloseAudio();
     TTF_Quit();
     IMG_Quit();
     SDL_Quit();

@@ -158,6 +158,28 @@ int main()
     require(localized_width == project_width && localized_height == project_height,
         "LocalizationManager must render through the active project font");
 
+    elysia::localization::LocalizedTextStyle engine_override_style = style;
+    engine_override_style.font_source_override =
+        elysia::typography::FontSource::EngineBuiltIn;
+    SDL_Texture* inherited_raw_texture =
+        localization->get_raw_text_texture("Moon",style);
+    SDL_Texture* engine_raw_texture =
+        localization->get_raw_text_texture("Moon",engine_override_style);
+    require(inherited_raw_texture && engine_raw_texture
+            && inherited_raw_texture != engine_raw_texture,
+        "text texture cache keys must distinguish inherited and explicit Engine fonts");
+
+    int overridden_width = 0;
+    int overridden_height = 0;
+    require(localization->measure_raw_text(
+            "Moon",
+            engine_override_style,
+            overridden_width,
+            overridden_height)
+            && overridden_width == engine_width
+            && overridden_height == engine_height,
+        "LocalizationManager measurement must honor an explicit Engine font source");
+
     localization->shutdown();
     font_resolver.shutdown();
     cache.shutdown();

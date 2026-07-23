@@ -7,6 +7,7 @@
 #include "../core/ui_control.h"
 #include "../text/ui_text_content.h"
 #include "../text/ui_typography.h"
+#include "../../typography/font_settings.h"
 
 #include <functional>
 #include <optional>
@@ -137,6 +138,11 @@ public:
         elysia::typography::UiTypographyRole role) noexcept;
     [[nodiscard]] elysia::typography::UiTypographyRole
         typography_role() const noexcept;
+    void set_font_source_override(
+        elysia::typography::FontSource source) noexcept;
+    void clear_font_source_override() noexcept;
+    [[nodiscard]] std::optional<elysia::typography::FontSource>
+        font_source_override() const noexcept;
 
     void set_padding(int padding);
     [[nodiscard]] int padding() const noexcept;
@@ -179,6 +185,7 @@ private:
     UiButtonVisualRole _visual_role = UiButtonVisualRole::Default;
     elysia::typography::UiTypographyRole _typography_role =
         elysia::typography::UiTypographyRole::Button;
+    std::optional<elysia::typography::FontSource> _font_source_override;
 
     int _padding = 5;
     bool _is_pushed = false;

@@ -56,6 +56,7 @@ void UiNumber::reset() noexcept
     _value = 0.0;
     _style_state.reset(UiStyleDefaults::number());
     _typography_role = UiTypographyRole::Number;
+    _font_source_override.reset();
     _horizontal_align = TextHorizontalAlign::Left;
     _vertical_align = TextVerticalAlign::Top;
     _padding = 0;
@@ -97,6 +98,7 @@ void UiNumber::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
     const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
     elysia::localization::LocalizedTextStyle text_style;
     text_style.typography_role = _typography_role;
+    text_style.font_source_override = _font_source_override;
     text_style.color = style.text;
 
     std::vector<SDL_Texture*> textures;
@@ -260,6 +262,29 @@ void UiNumber::set_typography_role(UiTypographyRole role) noexcept
 UiTypographyRole UiNumber::typography_role() const noexcept
 {
     return _typography_role;
+}
+
+void UiNumber::set_font_source_override(
+    elysia::typography::FontSource source) noexcept
+{
+    if (_font_source_override == source)
+        return;
+    _font_source_override = source;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+void UiNumber::clear_font_source_override() noexcept
+{
+    if (!_font_source_override)
+        return;
+    _font_source_override.reset();
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+std::optional<elysia::typography::FontSource>
+UiNumber::font_source_override() const noexcept
+{
+    return _font_source_override;
 }
 
 void UiNumber::set_padding(int padding)

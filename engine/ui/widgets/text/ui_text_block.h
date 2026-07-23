@@ -7,7 +7,9 @@
 #include "../../style/ui_visual_styles.h"
 #include "../../text/ui_text_content.h"
 #include "../../text/ui_typography.h"
+#include "../../../typography/font_settings.h"
 
+#include <optional>
 #include <string>
 
 struct SDL_Texture;
@@ -45,6 +47,11 @@ public:
         elysia::typography::UiTypographyRole role) noexcept;
     [[nodiscard]] elysia::typography::UiTypographyRole
         typography_role() const noexcept;
+    void set_font_source_override(
+        elysia::typography::FontSource source) noexcept;
+    void clear_font_source_override() noexcept;
+    [[nodiscard]] std::optional<elysia::typography::FontSource>
+        font_source_override() const noexcept;
     void set_padding(int padding) noexcept;
     [[nodiscard]] int padding() const noexcept;
     void set_horizontal_align(TextHorizontalAlign align) noexcept;
@@ -63,6 +70,7 @@ private:
     UiTextBlockVisualRole _visual_role = UiTextBlockVisualRole::Default;
     elysia::typography::UiTypographyRole _typography_role =
         elysia::typography::UiTypographyRole::DialogBody;
+    std::optional<elysia::typography::FontSource> _font_source_override;
     TextHorizontalAlign _horizontal_align = TextHorizontalAlign::Left;
     int _padding = 0;
 };
