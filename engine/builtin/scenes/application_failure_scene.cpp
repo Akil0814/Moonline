@@ -221,7 +221,7 @@ elysia::ui::UiConfirmationDialogConfig ApplicationFailureScene::make_dialog_conf
         .message = elysia::ui::ui_text_key(startup? "engine.startup.failure.message": "engine.application.failure.message"),
         .confirm = elysia::ui::ui_text_key(startup ? "engine.startup.failure.exit" : "engine.application.failure.exit"),
         .cancel = elysia::ui::ui_text_key("engine.common.cancel"),
-        .close = elysia::ui::ui_text_key("engine.common.close"),
+        .close = elysia::ui::ui_text_key("engine.common.close_x"),
         .confirm_visual_role = elysia::ui::UiButtonVisualRole::Danger
     };
 }
