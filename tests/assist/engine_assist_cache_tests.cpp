@@ -104,11 +104,12 @@ int main()
     require(elysia::assist::EngineAssistCache::map_project_locale("zh_cn") == "zh-Hans",
         "project Simplified Chinese must map to the Engine BCP-47 locale");
     require(cache.animation_count() == 1, "cache must register the Engine test animation");
-    require(cache.sound_count() == 0 && cache.music_count() == 0,
-        "cache must expose empty Engine audio pools until assets are registered");
+    require(cache.sound_count() == 0 && cache.music_count() == 1,
+        "cache must expose the registered Elysia scene music");
     require(cache.find_sound("") == nullptr && cache.find_sound("engine.test.sound") == nullptr
-            && cache.find_music("") == nullptr && cache.find_music("engine.test.music") == nullptr,
-        "cache must return null for empty and unregistered Engine audio keys");
+            && cache.find_music("") == nullptr && cache.find_music("engine.test.music") == nullptr
+            && cache.find_music(elysia::assist::asset_keys::ElysianRealm) != nullptr,
+        "cache must distinguish registered and unregistered Engine audio keys");
 
     elysia::assist::EngineAssistAudioPlayer audio_player;
     require(!audio_player.bound(),
@@ -129,6 +130,8 @@ int main()
     require(audio_player.play_sound("engine.test.sound") == -1
             && !audio_player.play_music("engine.test.music"),
         "bound Engine Assist audio requests must not fall back to project resources");
+    require(audio_player.play_music(elysia::assist::asset_keys::ElysianRealm),
+        "bound Engine Assist audio player must play registered scene music");
     audio_player.stop_music();
     const auto* animation_definition = cache.find_animation("engine.test.idle");
     require(animation_definition != nullptr && animation_definition->atlas != nullptr
@@ -196,7 +199,7 @@ int main()
         "invalid Engine assist resources must reject initialization");
     require(cache.texture_count() == 6 && cache.font_count() == 35 && cache.locale_count() == 5
             && cache.animation_count() == 1 && cache.sound_count() == 0
-            && cache.music_count() == 0,
+            && cache.music_count() == 1,
         "a failed initialization must preserve the last complete cache transactionally");
 
     audio_player.unbind();

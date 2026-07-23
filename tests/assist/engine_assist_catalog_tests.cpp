@@ -13,8 +13,8 @@ using moonline::tests::require;
 using elysia::assist::EngineAssistCatalog;
 using elysia::assist::EngineAssistValidationErrorCode;
 
-std::set<std::string> keys_of(
-    const std::span<const elysia::assist::EngineAssistAssetDescriptor> descriptors)
+template<typename Descriptor>
+std::set<std::string> keys_of(const std::span<const Descriptor> descriptors)
 {
     std::set<std::string> keys;
     for (const auto& descriptor : descriptors)
@@ -67,7 +67,8 @@ int main()
     require(catalog.locales().size() == 5, "assist catalog must describe five locales");
     require(catalog.animations().size() == 1, "assist catalog must describe the Engine test animation");
     require(catalog.sounds().empty(), "assist catalog must not register sounds before assets are added");
-    require(catalog.music().empty(), "assist catalog must not register music before assets are added");
+    require(catalog.music().size() == 1,
+        "assist catalog must describe the Elysia scene music");
     require(
         keys_of(catalog.fonts()) == std::set<std::string>{
             "engine.font.ja",
@@ -88,6 +89,12 @@ int main()
             "engine.test.sprite",
         },
         "assist texture keys must be stable"
+    );
+    require(
+        keys_of(catalog.music()) == std::set<std::string>{
+            std::string(elysia::assist::asset_keys::ElysianRealm)
+        },
+        "assist music keys must be stable"
     );
     const auto animation = catalog.animations().front();
     require(animation.key == "engine.test.idle" && animation.texture_key == "engine.test.sprite"

@@ -11,6 +11,7 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
 #include <SDL_ttf.h>
 
 #include <filesystem>
@@ -25,10 +26,14 @@ class LocalizationFixture
 public:
     LocalizationFixture()
     {
-        require(SDL_Init(SDL_INIT_VIDEO) == 0, "localization fallback tests must initialize SDL video");
+        SDL_setenv("SDL_AUDIODRIVER","dummy",1);
+        require(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) == 0,
+            "localization fallback tests must initialize SDL video and audio");
         require((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) == IMG_INIT_PNG,
             "localization fallback tests must initialize PNG support");
         require(TTF_Init() == 0, "localization fallback tests must initialize SDL_ttf");
+        require(Mix_OpenAudio(44100,MIX_DEFAULT_FORMAT,2,2048) == 0,
+            "localization fallback tests must open SDL_mixer audio");
         _surface = SDL_CreateRGBSurfaceWithFormat(0, 128, 128, 32, SDL_PIXELFORMAT_RGBA32);
         require(_surface != nullptr, "localization fallback tests must create a software surface");
         _renderer = SDL_CreateSoftwareRenderer(_surface);
@@ -41,6 +46,7 @@ public:
         elysia::resources::ResourceManager::instance()->clear();
         SDL_DestroyRenderer(_renderer);
         SDL_FreeSurface(_surface);
+        Mix_CloseAudio();
         TTF_Quit();
         IMG_Quit();
         SDL_Quit();

@@ -16,6 +16,7 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
 #include <SDL_ttf.h>
 
 #include <array>
@@ -34,12 +35,15 @@ class SdlFixture
 public:
     SdlFixture()
     {
-        require(SDL_Init(SDL_INIT_VIDEO) == 0,
-            "Engine test scene tests must initialize SDL video");
+        SDL_setenv("SDL_AUDIODRIVER","dummy",1);
+        require(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) == 0,
+            "Engine test scene tests must initialize SDL video and audio");
         require((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) == IMG_INIT_PNG,
             "Engine test scene tests must initialize PNG support");
         require(TTF_Init() == 0,
             "Engine test scene tests must initialize SDL_ttf");
+        require(Mix_OpenAudio(44100,MIX_DEFAULT_FORMAT,2,2048) == 0,
+            "Engine test scene tests must open SDL_mixer audio");
         _surface = SDL_CreateRGBSurfaceWithFormat(0,1280,720,32,SDL_PIXELFORMAT_RGBA32);
         require(_surface != nullptr,
             "Engine test scene tests must create a software surface");
@@ -52,6 +56,7 @@ public:
     {
         SDL_DestroyRenderer(_renderer);
         SDL_FreeSurface(_surface);
+        Mix_CloseAudio();
         TTF_Quit();
         IMG_Quit();
         SDL_Quit();
@@ -115,6 +120,23 @@ void send_escape(elysia::scene::SceneManager& scene_manager)
             .type = elysia::input::RawInputEventType::ControlPressed,
             .device = elysia::input::InputDevice::Keyboard
         } });
+}
+
+void advance_elysia_sequence(
+    elysia::scene::SceneManager& scene_manager,
+    SDL_Renderer* renderer)
+{
+    for (int phase = 0; phase < 3; ++phase)
+        scene_manager.on_update(1.5);
+
+    scene_manager.on_render(renderer);
+
+    for (int remaining_line = 0; remaining_line < 8; ++remaining_line)
+        scene_manager.on_update(1.0);
+
+    scene_manager.on_render(renderer);
+    scene_manager.on_update(5.0);
+    scene_manager.on_render(renderer);
 }
 
 void test_engine_feature_overlay_cycle()
@@ -251,9 +273,29 @@ void test_escape_returns_the_full_caller_route()
         }
     });
     scene_manager.on_update(0.0);
+    advance_elysia_sequence(scene_manager,fixture.renderer());
     send_escape(scene_manager);
     require(scene_manager.current_scene_key() == 2 && SecondReturnScene::marker == 33,
         "ElysiaScene Escape must return the caller key and payload");
+
+    scene_manager.on_scene_request(elysia::scene::SceneRequest{
+        .type = elysia::scene::SceneRequestType::Switch,
+        .route = elysia::scene::SceneRoute{
+            .target = elysia::testbed::SceneKeys::Elysia,
+            .payload = elysia::testbed::TestbedScenePayload{
+                .return_route = elysia::scene::SceneRoute{
+                    .target = 2,
+                    .payload = ReturnPayload{ .marker = 34 },
+                    .reload_mode = elysia::scene::SceneReloadMode::Reuse
+                }
+            }
+        }
+    });
+    scene_manager.on_update(0.0);
+    advance_elysia_sequence(scene_manager,fixture.renderer());
+    send_escape(scene_manager);
+    require(scene_manager.current_scene_key() == 2 && SecondReturnScene::marker == 34,
+        "ElysiaScene Reuse must replay cleanly and return the updated caller route");
 
     const elysia::scene::SceneRoute original_caller{
         .target = 1,

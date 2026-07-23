@@ -6,7 +6,8 @@
 
 #include "testbed_scene_payload.h"
 
-#include <string>
+#include <cstddef>
+#include <string_view>
 #include <vector>
 
 namespace elysia::ui
@@ -29,19 +30,24 @@ public:
     void reset() override;
 
 private:
-    std::string get_next_line();
-    void add_lable(std::string code_line);
+    enum class PlaybackPhase
+    {
+        Logo,
+        Code,
+        Complete
+    };
+
+    void begin_code_sequence();
+    void reveal_next_code_line();
+    void add_label(std::string_view code_line);
+    void stop_playback() noexcept;
     void build_ui();
     void destroy_ui() noexcept;
     void return_to_caller();
 
 private:
-    bool _finish_logo = false;
-    bool _finish_code = false;
-    bool _finish_entering = false;
-
-    size_t _current_line = 0;
-    std::vector<std::string> _text_list;
+    PlaybackPhase _playback_phase = PlaybackPhase::Logo;
+    std::size_t _current_line = 0;
 
     elysia::tools::Timer _code_timer;
 
@@ -49,5 +55,6 @@ private:
     elysia::ui::UiWindow* _root_window = nullptr;
     elysia::ui::UiListContainer* _code_list = nullptr;
     elysia::ui::UiThemeManager _elysia_theme;
+    elysia::ui::UiThemeRegistration _theme_registration;
 };
 }
