@@ -17,22 +17,19 @@ bool AnimationManager::register_animation(
 
 	if (request.atlas_key.empty())
 	{
-		ELYSIA_LOG_WARN("animation","Register animation failed: atlas key is empty: "
-			<< request.animation_key);
+		ELYSIA_LOG_WARN("animation","Register animation failed: atlas key is empty: "<< request.animation_key);
 		return false;
 	}
 
 	if (!atlas)
 	{
-		ELYSIA_LOG_WARN("animation","Register animation failed: atlas is null: "
-			<< request.animation_key);
+		ELYSIA_LOG_WARN("animation","Register animation failed: atlas is null: "<< request.animation_key);
 		return false;
 	}
 
 	if (request.fps <= 0.0)
 	{
-		ELYSIA_LOG_WARN("animation","Register animation failed: fps is invalid: "
-			<< request.animation_key);
+		ELYSIA_LOG_WARN("animation","Register animation failed: fps is invalid: "<< request.animation_key);
 		return false;
 	}
 
@@ -48,10 +45,8 @@ bool AnimationManager::register_animation(
 	return true;
 }
 
-bool AnimationManager::register_animations(
-	const std::vector<elysia::resources::AnimationBuildRequest>& requests,
-	const elysia::resources::ResourceManager& resource_manager
-)
+bool AnimationManager::register_animations(const std::vector<elysia::resources::AnimationBuildRequest>& requests,
+	const elysia::resources::ResourceManager& resource_manager)
 {
 	for (const elysia::resources::AnimationBuildRequest& request : requests)
 	{
@@ -68,7 +63,10 @@ const AnimationDefinition* AnimationManager::find_definition(const std::string_v
 	std::unordered_map<std::string, AnimationDefinition>::const_iterator iterator =
 		_definitions.find(std::string(key));
 	if (iterator == _definitions.end())
+	{
+		ELYSIA_LOG_WARN("animation", "Find animation failed: definition does not exist: " << key);
 		return nullptr;
+	}
 
 	return &iterator->second;
 }
@@ -78,8 +76,7 @@ std::unique_ptr<Animation> AnimationManager::create_animation(const std::string_
 	const AnimationDefinition* definition = find_definition(key);
 	if (!definition)
 	{
-		ELYSIA_LOG_WARN("animation","Create animation failed: definition does not exist: "
-			<< key);
+		ELYSIA_LOG_WARN("animation","Create animation failed: definition does not exist: "<< key);
 		return nullptr;
 	}
 

@@ -162,8 +162,7 @@ bool AudioService::play_music(const std::string_view& key, int loops)
 
     if (Mix_PlayMusic(music, loops) != 0)
     {
-        ELYSIA_LOG_WARN("audio","Play music failed: " << key
-            << " error: " << Mix_GetError());
+        ELYSIA_LOG_WARN("audio", "Play music failed: " << key << " error: " << Mix_GetError());
         return false;
     }
 
@@ -219,14 +218,10 @@ int AudioService::start_sound(const std::string_view& key, int loops, SoundGroup
 
     const int channel = Mix_PlayChannel(-1,sound,loops);
     if (channel < 0)
-    {
-        ELYSIA_LOG_WARN("audio","Play sound failed: " << key
-            << " error: " << Mix_GetError());
-    }
+        ELYSIA_LOG_WARN("audio","Play sound failed: " << key<< " error: " << Mix_GetError());
     else
-    {
         apply_sound_channel_volume(channel,group);
-    }
+
     return channel;
 }
 
@@ -259,8 +254,7 @@ void AudioService::apply_sound_group_volume(SoundGroup group)
 
 void AudioService::apply_sound_channel_volume(int channel,SoundGroup group) const
 {
-    const int effective_sound = (_settings.master_volume
-        * _settings.sound_volume
+    const int effective_sound = (_settings.master_volume* _settings.sound_volume
         * _sound_group_volumes[sound_group_index(group)]) / 10000;
     Mix_Volume(channel,to_mix_volume(effective_sound));
 }

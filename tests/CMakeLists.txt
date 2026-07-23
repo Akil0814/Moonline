@@ -273,6 +273,16 @@ add_moonline_test(random_generator_tests
     SOURCES tools/random_generator_tests.cpp
 )
 
+add_moonline_test(debug_draw_tests
+    LABEL tools
+    SOURCES tools/debug_draw_tests.cpp
+)
+
+add_moonline_test(debug_draw_projection_tests
+    LABEL tools
+    SOURCES tools/debug_draw_projection_tests.cpp
+)
+
 add_moonline_test(engine_i18n_assets_tests
     LABEL localization
     SOURCES localization/engine_i18n_assets_tests.cpp

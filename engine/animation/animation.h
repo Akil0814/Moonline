@@ -22,19 +22,12 @@ public:
 
 	void update(double delta_seconds);
 
-	[[nodiscard]] bool build_render_command(
-		const elysia::core::Rect& target_rect,
-		double angle_degrees,
-		elysia::core::SpriteFlip flip,
-		elysia::core::RenderCommand& out_command
-	) const;
-	[[nodiscard]] bool append_render_commands(
-		const elysia::core::Rect& target_rect,
-		double angle_degrees,
-		elysia::core::SpriteFlip flip,
-		const std::optional<elysia::core::Color>& color_overlay,
-		std::vector<elysia::core::RenderCommand>& out_commands
-	) const;
+	[[nodiscard]] bool build_render_command(const elysia::core::Rect& target_rect,double angle_degrees,
+		elysia::core::SpriteFlip flip,elysia::core::RenderCommand& out_command) const;
+
+	[[nodiscard]] bool append_render_commands(const elysia::core::Rect& target_rect,double angle_degrees,
+		elysia::core::SpriteFlip flip,const std::optional<elysia::core::Color>& color_overlay,
+		std::vector<elysia::core::RenderCommand>& out_commands) const;
 
 	void set_atlas(const elysia::resources::Atlas* atlas);
 	void set_loop(bool is_loop);

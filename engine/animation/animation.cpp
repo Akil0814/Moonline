@@ -30,12 +30,8 @@ Animation::Animation()
 		});
 }
 
-bool Animation::build_render_command(
-	const elysia::core::Rect& target_rect,
-	double angle_degrees,
-	elysia::core::SpriteFlip flip,
-	elysia::core::RenderCommand& out_command
-) const
+bool Animation::build_render_command(const elysia::core::Rect& target_rect,double angle_degrees,
+	elysia::core::SpriteFlip flip,elysia::core::RenderCommand& out_command) const
 {
 	const elysia::resources::FrameInfo* frame_info = current_frame();
 	if (!frame_info || !frame_info->_texture)
@@ -54,39 +50,27 @@ bool Animation::build_render_command(
 	return true;
 }
 
-bool Animation::append_render_commands(
-	const elysia::core::Rect& target_rect,
-	double angle_degrees,
-	elysia::core::SpriteFlip flip,
-	const std::optional<elysia::core::Color>& color_overlay,
-	std::vector<elysia::core::RenderCommand>& out_commands
-) const
+bool Animation::append_render_commands(const elysia::core::Rect& target_rect,double angle_degrees,
+	elysia::core::SpriteFlip flip,const std::optional<elysia::core::Color>& color_overlay,
+	std::vector<elysia::core::RenderCommand>& out_commands) const
 {
 	elysia::core::RenderCommand base_command;
-	if (!build_render_command(
-			target_rect,
-			angle_degrees,
-			flip,
-			base_command))
-	{
+	if (!build_render_command(target_rect,angle_degrees,flip,base_command))
 		return false;
-	}
 
 	const elysia::resources::FrameInfo* frame_info = current_frame();
-	if (color_overlay && color_overlay->a > 0
-		&& (!frame_info || !frame_info->_coverage_mask))
-	{
+	if (color_overlay && color_overlay->a > 0 && (!frame_info || !frame_info->_coverage_mask))
 		return false;
-	}
 
 	out_commands.push_back(base_command);
+
 	if (!color_overlay || color_overlay->a == 0)
 		return true;
 
 	elysia::core::RenderCommand overlay_command = base_command;
 	overlay_command.texture = frame_info->_coverage_mask;
 	overlay_command.alpha = color_overlay->a;
-	overlay_command.texture_color_modulation =
+	overlay_command.texture_color_modulation = 
 		elysia::core::TextureColorModulation{
 			.r = color_overlay->r,
 			.g = color_overlay->g,

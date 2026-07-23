@@ -22,19 +22,11 @@ public:
     [[nodiscard]] bool set_group_config(SoundGroup group,const SoundGroupConfig& config);
     [[nodiscard]] const SoundGroupConfig& group_config(SoundGroup group) const;
 
-    [[nodiscard]] SoundRequestResult request_sound(
-        std::string_view key,
-        const SoundPlayOptions& options,
-        const StartSoundCallback& start_sound,
-        const ChannelPlayingCallback& is_channel_playing,
-        const StopSoundCallback& stop_sound = {}
-    );
-    void update(
-        double delta_seconds,
-        const StartSoundCallback& start_sound,
-        const ChannelPlayingCallback& is_channel_playing,
-        const StopSoundCallback& stop_sound = {}
-    );
+    [[nodiscard]] SoundRequestResult request_sound(std::string_view key,const SoundPlayOptions& options,
+        const StartSoundCallback& start_sound,const ChannelPlayingCallback& is_channel_playing,const StopSoundCallback& stop_sound = {});
+
+    void update(double delta_seconds,const StartSoundCallback& start_sound,
+        const ChannelPlayingCallback& is_channel_playing,const StopSoundCallback& stop_sound = {});
 
     [[nodiscard]] bool stop_sound(SoundHandle handle,const ChannelPlayingCallback& is_channel_playing,const StopSoundCallback& stop_sound);
     void cancel_all_scheduled_sounds();

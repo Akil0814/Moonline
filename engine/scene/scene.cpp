@@ -3,9 +3,11 @@
 #include "detail/scene_input_order.h"
 
 #include "../core/interface/updatable.h"
+#include "../core/render/debug_draw_projection.h"
 #include "../core/render/render_command_projection.h"
 #include "../core/render/sdl_render_command_executor.h"
 #include "../input/contracts/raw_input_event_receiver.h"
+#include "../tools/debug_draw.h"
 #include "../input/contracts/raw_input_frame_receiver.h"
 #include "../ui/core/ui_render_command_range_utils.h"
 
@@ -141,6 +143,21 @@ void Scene::on_render(SDL_Renderer* renderer)
             projected_render_commands
         );
         elysia::core::execute_render_commands(renderer, projected_render_commands);
+    }
+
+    elysia::tools::DebugDraw* debug_draw =
+        elysia::tools::DebugDraw::instance();
+    if (debug_draw->enabled())
+    {
+        std::vector<elysia::core::UiRenderCommand> debug_draw_commands;
+        debug_draw_commands.reserve(debug_draw->commands().size());
+        elysia::core::append_projected_debug_draw_commands(
+            debug_draw->commands(),
+            debug_draw->enabled_categories(),
+            camera(),
+            debug_draw_commands
+        );
+        elysia::core::execute_render_commands(renderer, debug_draw_commands);
     }
 
     ui_render_commands.clear();

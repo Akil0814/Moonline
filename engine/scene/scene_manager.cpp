@@ -2,6 +2,7 @@
 
 #include "../camera/camera_manager.h"
 #include "../effects/effect_manager.h"
+#include "../tools/debug_draw.h"
 #include "../tools/logger.h"
 
 #include <stdexcept>
@@ -173,6 +174,8 @@ void SceneManager::switch_to_scene(
         detach_from_scene(_current_scene);
         _current_scene->on_exit();
 
+        elysia::tools::DebugDraw::instance()->clear();
+
         if (route.reload_mode == SceneReloadMode::Reset)
         {
             elysia::camera::CameraManager::instance()->reset(
@@ -192,6 +195,8 @@ void SceneManager::switch_to_scene(
         detach_from_scene(_current_scene);
         _current_scene->on_exit();
     }
+
+    elysia::tools::DebugDraw::instance()->clear();
 
     elysia::camera::CameraManager::instance()->reset(
         elysia::camera::CameraSlot::Main
@@ -243,6 +248,8 @@ void SceneManager::shutdown()
         _current_scene = nullptr;
         _current_scene_key = SceneKeys::Invalid;
     }
+
+    elysia::tools::DebugDraw::instance()->clear();
 
     elysia::camera::CameraManager::instance()->reset(
         elysia::camera::CameraSlot::Main

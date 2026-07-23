@@ -7,6 +7,7 @@
 #include "engine/scene/routing/scene_payload.h"
 #include "engine/scene/routing/scene_route.h"
 #include "engine/scene/runtime/scene_runtime_context.h"
+#include "engine/tools/debug_draw.h"
 #include "tests/support/test_assertions.h"
 
 #include <cstdlib>
@@ -224,11 +225,23 @@ void test_route_copy_reload_modes_and_runtime_context_binding()
     manager.register_game_scene<FirstProbeScene>(1);
     manager.register_game_scene<SecondProbeScene>(2);
 
+    auto* debug_draw = elysia::tools::DebugDraw::instance();
+    debug_draw->clear();
+    debug_draw->draw_point(
+        elysia::tools::DebugDrawCategory::Gameplay,
+        elysia::core::Vector2{},
+        4.0f,
+        elysia::core::Color{}
+    );
+
     manager.start(SceneRoute{
         .target = 1,
         .payload = RoutePayload{ 11 },
         .reload_mode = SceneReloadMode::Reset
     });
+
+    require(debug_draw->commands().empty(),
+        "starting a scene must clear retained debug draw commands");
 
     require(FirstProbeScene::state.enters == 1 && FirstProbeScene::state.resets == 1,
         "the initial route reload mode must reach SceneManager");
@@ -245,10 +258,19 @@ void test_route_copy_reload_modes_and_runtime_context_binding()
         .reload_mode = SceneReloadMode::Reuse
     };
     FirstProbeScene::last_instance->emit_route(copied_route);
+    debug_draw->draw_point(
+        elysia::tools::DebugDrawCategory::Gameplay,
+        elysia::core::Vector2{},
+        4.0f,
+        elysia::core::Color{}
+    );
     copied_route.target = 999;
     copied_route.reload_mode = SceneReloadMode::Reset;
     std::any_cast<RoutePayload&>(copied_route.payload).value = 99;
     manager.on_update(0.0);
+
+    require(debug_draw->commands().empty(),
+        "switching scenes must clear the previous scene debug snapshot");
 
     require(SecondProbeScene::state.enters == 1 && SecondProbeScene::state.resets == 0,
         "pending requests must preserve the copied target and reload mode");
@@ -310,7 +332,15 @@ void test_route_copy_reload_modes_and_runtime_context_binding()
         }
     };
     manager.on_scene_request(reset_request);
+    debug_draw->draw_point(
+        elysia::tools::DebugDrawCategory::Gameplay,
+        elysia::core::Vector2{},
+        4.0f,
+        elysia::core::Color{}
+    );
     manager.on_update(0.0);
+    require(debug_draw->commands().empty(),
+        "resetting the active scene must clear its previous debug snapshot");
     require(SecondProbeScene::state.enters == 4
         && SecondProbeScene::state.resets == 1
         && SecondProbeScene::state.payload_value == 33,
@@ -334,7 +364,15 @@ void test_route_copy_reload_modes_and_runtime_context_binding()
     require(SecondProbeScene::state.context_cleared_before_destruction,
         "recreated scenes must be unbound immediately before destruction");
 
+    debug_draw->draw_point(
+        elysia::tools::DebugDrawCategory::Gameplay,
+        elysia::core::Vector2{},
+        4.0f,
+        elysia::core::Color{}
+    );
     manager.shutdown();
+    require(debug_draw->commands().empty(),
+        "SceneManager shutdown must clear retained debug commands");
     require(FirstProbeScene::state.context_cleared_before_destruction
         && SecondProbeScene::state.context_cleared_before_destruction,
         "shutdown must clear runtime contexts before cached scenes are destroyed");

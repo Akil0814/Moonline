@@ -28,14 +28,9 @@ class AnimationManager : public elysia::tools::Singleton<AnimationManager>
 	friend elysia::tools::Singleton<AnimationManager>;
 
 public:
-	bool register_animation(
-		const elysia::resources::AnimationBuildRequest& request,
-		const elysia::resources::Atlas* atlas
-	);
-	bool register_animations(
-		const std::vector<elysia::resources::AnimationBuildRequest>& requests,
-		const elysia::resources::ResourceManager& resource_manager
-	);
+	bool register_animation(const elysia::resources::AnimationBuildRequest& request,const elysia::resources::Atlas* atlas);
+	bool register_animations(const std::vector<elysia::resources::AnimationBuildRequest>& requests,
+		const elysia::resources::ResourceManager& resource_manager);
 
 	const AnimationDefinition* find_definition(const std::string_view& key) const;
 	std::unique_ptr<Animation> create_animation(const std::string_view& key) const;
