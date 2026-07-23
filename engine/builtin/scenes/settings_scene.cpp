@@ -32,19 +32,13 @@ bool is_valid_route(const SceneRoute& route) noexcept
     return elysia::scene::SceneKeys::is_supported(route.target);
 }
 
-elysia::ui::SettingsPanelDraft make_draft(
-    const elysia::config::UserConfigData& settings)
+elysia::ui::SettingsPanelDraft make_draft(const elysia::config::UserConfigData& settings)
 {
-    return elysia::ui::SettingsPanelDraft{
-        .window_mode =
-            settings.window.mode
-                == elysia::config::WindowMode::Windowed
+    return elysia::ui::SettingsPanelDraft{ .window_mode =
+            settings.window.mode == elysia::config::WindowMode::Windowed
             ? elysia::ui::SettingsWindowMode::Windowed
             : elysia::ui::SettingsWindowMode::BorderlessFullscreen,
-        .window_size = {
-            settings.window.windowed_size.width,
-            settings.window.windowed_size.height
-        },
+        .window_size = { settings.window.windowed_size.width,settings.window.windowed_size.height},
         .master_volume = settings.audio.master_volume,
         .music_volume = settings.audio.music_volume,
         .sound_volume = settings.audio.sound_volume,
@@ -52,8 +46,7 @@ elysia::ui::SettingsPanelDraft make_draft(
     };
 }
 
-elysia::ui::SettingsPanelOptions make_panel_options(
-    const elysia::config::UserConfigData& settings)
+elysia::ui::SettingsPanelOptions make_panel_options(const elysia::config::UserConfigData& settings)
 {
     SDL_Rect usable_bounds{};
     std::optional<elysia::ui::SettingsWindowSize> usable_size;
@@ -84,16 +77,17 @@ std::string describe_failure(const elysia::config::UserConfigFailure& failure)
 {
     if (!failure.message.empty())
         return failure.message;
+
     if (!failure.setting_name.empty())
         return "Failed to apply setting: " + failure.setting_name;
+
     return "Failed to apply settings.";
 }
 }
 
 void SettingsScene::on_enter(const ScenePayload& payload)
 {
-    const SettingsScenePayload* settings_payload =
-        try_scene_payload<SettingsScenePayload>(payload);
+    const SettingsScenePayload* settings_payload =try_scene_payload<SettingsScenePayload>(payload);
     if (!settings_payload)
         throw std::logic_error("SettingsScene requires SettingsScenePayload.");
     if (!is_valid_route(settings_payload->return_route))
@@ -144,23 +138,13 @@ void SettingsScene::build_ui()
     const int logical_height = runtime_context().logical_height();
 
     _window = create_and_add_object<elysia::ui::UiWindow>(
-        elysia::core::Rect{
-            0.0f,
-            0.0f,
-            static_cast<float>(logical_width),
-            static_cast<float>(logical_height)
-        },
-        10);
+        elysia::core::Rect{0.0f,0.0f,static_cast<float>(logical_width),static_cast<float>(logical_height)},10);
 
     if (!_window)
         throw std::runtime_error("SettingsScene could not create its UiWindow.");
 
-    const float panel_width = std::min(
-        700.0f,
-        static_cast<float>(logical_width) - 32.0f);
-    const float panel_height = std::min(
-        680.0f,
-        static_cast<float>(logical_height) - 32.0f);
+    const float panel_width = std::min(700.0f,static_cast<float>(logical_width) - 32.0f);
+    const float panel_height = std::min(680.0f,static_cast<float>(logical_height) - 32.0f);
 
     auto panel = std::make_unique<elysia::ui::SettingsPanel>(elysia::core::Rect{ 0,0,panel_width,panel_height });
 
@@ -198,12 +182,10 @@ void SettingsScene::save_draft(const elysia::ui::SettingsPanelDraft& draft)
         return;
 
     auto* config_service = elysia::config::UserConfigService::instance();
-    elysia::config::UserConfigData requested =
-        config_service->user_config().snapshot();
-    requested.window = {
-        draft.window_mode == elysia::ui::SettingsWindowMode::Windowed
-            ? elysia::config::WindowMode::Windowed
-            : elysia::config::WindowMode::BorderlessFullscreen,
+    elysia::config::UserConfigData requested =config_service->user_config().snapshot();
+
+    requested.window = {draft.window_mode == elysia::ui::SettingsWindowMode::Windowed
+            ? elysia::config::WindowMode::Windowed: elysia::config::WindowMode::BorderlessFullscreen,
         {
             draft.window_size.width,
             draft.window_size.height
@@ -214,9 +196,8 @@ void SettingsScene::save_draft(const elysia::ui::SettingsPanelDraft& draft)
     requested.audio.sound_volume = draft.sound_volume;
     requested.language = draft.language;
 
-    const auto result = config_service->apply_and_save_user_config(
-        requested,
-        _baseline_state);
+    const auto result = config_service->apply_and_save_user_config(requested,_baseline_state);
+
     if (result)
     {
         _baseline_state = config_service->user_config().runtime_state();
@@ -231,9 +212,7 @@ void SettingsScene::save_draft(const elysia::ui::SettingsPanelDraft& draft)
     {
         const std::string rollback_message =
             describe_failure(*result.error().rollback_failure);
-        ELYSIA_LOG_ERROR(
-            "settings",
-            "Settings rollback failed: " << rollback_message);
+        ELYSIA_LOG_ERROR("settings","Settings rollback failed: " << rollback_message);
         message += " Rollback failed: " + rollback_message;
     }
 
@@ -250,8 +229,10 @@ void SettingsScene::return_to_caller()
         return;
 
     _transitioning = true;
+
     if (_settings_panel)
         _settings_panel->set_draft(make_draft(_baseline_state.settings));
+
     request_scene_switch(_return_route);
 }
 

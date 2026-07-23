@@ -9,6 +9,8 @@
 #include "../widgets/ui_slider.h"
 #include "../window/ui_window.h"
 
+#include "../../tools/logger.h"
+
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -35,22 +37,18 @@ constexpr float kFieldSpacing = 20.0f;
 constexpr float kButtonWidth = 160.0f;
 constexpr std::size_t kNotFound = std::numeric_limits<std::size_t>::max();
 
-std::unique_ptr<UiLabel> make_label(UiTextContent content,float width,float height = kRowHeight,
-    UiTypographyRole role = UiTypographyRole::Label)
+std::unique_ptr<UiLabel> make_label(UiTextContent content,float width,float height = kRowHeight,UiTypographyRole role = UiTypographyRole::Label)
 {
-    auto label = std::make_unique<UiLabel>(
-        elysia::core::Rect{ 0,0,width,height },0,std::move(content));
+    auto label = std::make_unique<UiLabel>(elysia::core::Rect{ 0,0,width,height },0,std::move(content));
     label->set_typography_role(role);
     label->set_horizontal_align(TextHorizontalAlign::Left);
     label->set_vertical_align(TextVerticalAlign::Center);
     return label;
 }
 
-std::unique_ptr<UiListContainer> make_field_row(UiTextContent label_content,
-    float field_width,float label_width,std::unique_ptr<UiElement> control)
+std::unique_ptr<UiListContainer> make_field_row(UiTextContent label_content,float field_width,float label_width,std::unique_ptr<UiElement> control)
 {
-    auto row = std::make_unique<UiListContainer>(
-        elysia::core::Rect{ 0,0,field_width,kRowHeight });
+    auto row = std::make_unique<UiListContainer>(elysia::core::Rect{ 0,0,field_width,kRowHeight });
     row->set_direction(UiListDirection::Horizontal);
     row->set_item_spacing(kFieldSpacing);
     row->add_back(make_label(std::move(label_content),label_width));
@@ -103,16 +101,19 @@ std::vector<std::string> normalized_languages(std::vector<std::string> languages
 
 UiTextContent language_content(const std::string& language)
 {
-    static constexpr std::array<std::string_view,5> builtin_languages{
-        "en","ja","ko","zh-Hans","zh-Hant"
-    };
+    static constexpr std::array<std::string_view,5> builtin_languages{"en","ja","ko","zh_Hans","zh_Hant"};
     if (std::find(
-            builtin_languages.begin(),builtin_languages.end(),language)
+        builtin_languages.begin(),
+        builtin_languages.end(),language)
         != builtin_languages.end())
     {
         return ui_text_key("engine.settings.languages." + language);
     }
-    return ui_raw_text(language);
+    else
+    {
+        ELYSIA_LOG_ERROR("UiSettingPanel","cant find language i18n:"+language);
+        return ui_raw_text(language);
+    }
 }
 }
 

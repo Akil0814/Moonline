@@ -61,9 +61,7 @@ using SettingsPanelBackCallback = std::function<void()>;
 class SettingsPanel final : public UiListContainer
 {
 public:
-    explicit SettingsPanel(
-        const elysia::core::Rect& rect = elysia::core::Rect{ 0,0,700,680 },
-        int order = 0);
+    explicit SettingsPanel(const elysia::core::Rect& rect = elysia::core::Rect{ 0,0,700,680 },int order = 0);
     ~SettingsPanel() override;
 
     void reset() noexcept override;
@@ -91,8 +89,7 @@ private:
     void rebuild_window_options();
     void rebuild_language_options();
     void sync_controls_from_draft();
-    [[nodiscard]] std::size_t find_window_size_index(
-        const SettingsWindowSize& window_size) const noexcept;
+    [[nodiscard]] std::size_t find_window_size_index(const SettingsWindowSize& window_size) const noexcept;
     [[nodiscard]] std::size_t find_language_index(const std::string& language) const noexcept;
 
 private:

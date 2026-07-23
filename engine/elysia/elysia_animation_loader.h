@@ -1,4 +1,6 @@
 #pragma once
+#include "../resources/texture/surface_loader.h"
+#include "../resources/texture/texture_loader.h"
 
 #include <string>
 
@@ -31,11 +33,8 @@ public:
     [[nodiscard]] bool is_loading() const noexcept;
     [[nodiscard]] bool is_ready() const noexcept;
     [[nodiscard]] bool has_failed() const noexcept;
-    [[nodiscard]] const std::string& error_message() const noexcept;
 
 private:
-    ElysiaAnimationLoaderState _state =
-        ElysiaAnimationLoaderState::Unloaded;
-    std::string _error_message;
+    ElysiaAnimationLoaderState _state =ElysiaAnimationLoaderState::Unloaded;
 };
 }
