@@ -13,9 +13,9 @@
 #include <string_view>
 #include <vector>
 
-namespace elysia::assist
+namespace elysia::builtin
 {
-class EngineAssistCache;
+class BuiltinAssetCache;
 }
 
 namespace elysia::resources
@@ -62,7 +62,7 @@ public:
 
     [[nodiscard]] std::expected<void,FontResolveError> configure(
         const ResolvedFontSettings& settings,
-        const elysia::assist::EngineAssistCache& engine_assist_cache,
+        const elysia::builtin::BuiltinAssetCache& builtin_asset_cache,
         const elysia::resources::ResourceManager& resource_manager,
         std::span<const std::string> supported_languages);
     void shutdown() noexcept;
@@ -103,7 +103,7 @@ private:
 
 private:
     std::optional<ResolvedFontSettings> _settings;
-    const elysia::assist::EngineAssistCache* _engine_assist_cache = nullptr;
+    const elysia::builtin::BuiltinAssetCache* _builtin_asset_cache = nullptr;
     const elysia::resources::ResourceManager* _resource_manager = nullptr;
     std::vector<std::string> _supported_languages;
     std::uint64_t _generation = 0;

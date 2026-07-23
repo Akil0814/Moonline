@@ -45,11 +45,4 @@ inline constexpr SceneKey EngineBegin = EngineMarker + 1u;
 }
 }
 
-namespace builtin
-{
-inline constexpr SceneKey StartupLoading = 0xFFFF0001u;
-inline constexpr SceneKey Settings = 0xFFFF0002u;
-inline constexpr SceneKey ApplicationFailure = 0xFFFF0005u;
-}
-
 }

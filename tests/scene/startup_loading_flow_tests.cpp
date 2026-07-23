@@ -1,14 +1,14 @@
-#include "engine/scene/builtin/startup_loading_flow.h"
+#include "engine/builtin/scenes/startup_loading_flow.h"
 #include "tests/support/test_assertions.h"
 
 #include <cstdlib>
 
 namespace
 {
-using elysia::scene::builtin::StartupLoadingAction;
-using elysia::scene::builtin::StartupLoadingCompletion;
-using elysia::scene::builtin::StartupLogoAction;
-using elysia::scene::builtin::StartupLogoSequence;
+using elysia::builtin::StartupLoadingAction;
+using elysia::builtin::StartupLoadingCompletion;
+using elysia::builtin::StartupLogoAction;
+using elysia::builtin::StartupLogoSequence;
 using moonline::tests::require;
 
 void test_engine_logo_always_precedes_optional_project_logo()

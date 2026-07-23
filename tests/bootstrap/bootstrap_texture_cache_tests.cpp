@@ -1,6 +1,6 @@
 #define SDL_MAIN_HANDLED
 
-#include "engine/assist/engine_assist_keys.h"
+#include "engine/builtin/resources/builtin_asset_keys.h"
 #include "engine/bootstrap/bootstrap_texture_cache.h"
 #include "engine/bootstrap/bootstrapper.h"
 #include "engine/bootstrap/startup_preload_loader.h"
@@ -8,7 +8,7 @@
 #include "engine/io/path/path_manager.h"
 #include "engine/loading/content_runtime_cleanup.h"
 #include "engine/resources/resource_manager.h"
-#include "engine/scene/builtin/startup_loading_scene.h"
+#include "engine/builtin/scenes/startup_loading_scene.h"
 #include "tests/support/test_assertions.h"
 
 #include <SDL.h>
@@ -82,8 +82,8 @@ void test_bootstrap_texture_cache_and_preload_lifetime()
                 && loader.find_texture("moonline.brand.logo") == logo,
             "startup preload must be idempotent for the same renderer");
         require(
-            loader.find_texture(assist::asset_keys::ElysiaWhiteTexture) == nullptr,
-            "startup loader must not own Engine Assist textures");
+            loader.find_texture(builtin::asset_keys::ElysiaWhiteTexture) == nullptr,
+            "startup loader must not own built-in textures");
         require(resource_manager->resource_count() == resource_count_before,
             "bootstrap preload must not publish textures to ResourceManager");
 
@@ -143,8 +143,8 @@ void test_bootstrap_texture_cache_and_preload_lifetime()
         require(missing_loader.find_texture("project.missing") == nullptr,
             "a failed required preload must not publish a texture");
         require(missing_loader.find_texture(
-            assist::asset_keys::ElysiaWhiteTexture) == nullptr,
-            "project startup preload must not expose Engine Assist textures");
+            builtin::asset_keys::ElysiaWhiteTexture) == nullptr,
+            "project startup preload must not expose built-in textures");
         std::filesystem::remove(missing_manifest,remove_error);
 
         const std::filesystem::path invalid_texture =
@@ -179,14 +179,14 @@ void test_bootstrap_texture_cache_and_preload_lifetime()
             std::ofstream output(reserved_manifest,std::ios::trunc);
             output
                 << R"({"textures":[{"key":")"
-                << assist::asset_keys::ElysiaWhiteTexture
+                << builtin::asset_keys::ElysiaWhiteTexture
                 << R"(","file":"Akil_icon_1024.png"}]})";
         }
         bootstrap::StartupPreloadLoader reserved_loader;
         reserved_loader.set_manifest_path(reserved_manifest);
         require(
             !reserved_loader.load(renderer),
-            "project preload must reject the Engine Assist logo key");
+            "project preload must reject the built-in logo key");
         std::filesystem::remove(reserved_manifest,remove_error);
 
         loader.release_textures();
@@ -231,7 +231,7 @@ void test_bootstrap_texture_cache_and_preload_lifetime()
                     "moonline.brand.logo") != nullptr,
             "bootstrap lifecycle test must preload the project logo");
 
-        scene::builtin::StartupLoadingScene startup_scene;
+        builtin::StartupLoadingScene startup_scene;
         startup_scene.on_exit();
         require(
             bootstrapper->find_preload_texture("moonline.brand.logo")

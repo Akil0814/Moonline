@@ -10,9 +10,9 @@
 #include <string>
 #include <string_view>
 
-namespace elysia::assist
+namespace elysia::builtin
 {
-class EngineAssistCache;
+class BuiltinAssetCache;
 }
 
 namespace elysia::ui
@@ -31,9 +31,9 @@ public:
     // Binds a registered animation and immediately starts it from its first frame.
     // Returns false when the key is not registered.
     bool set_animation_key(std::string_view animation_key);
-    // Binds a persistent Engine Assist animation without using the project AnimationManager.
+    // Binds a persistent built-in animation without using the project AnimationManager.
     bool set_engine_animation(
-        const elysia::assist::EngineAssistCache& engine_assist_cache,
+        const elysia::builtin::BuiltinAssetCache& builtin_asset_cache,
         std::string_view animation_key);
     [[nodiscard]] const std::string& animation_key() const noexcept;
 

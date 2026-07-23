@@ -1,11 +1,12 @@
 #pragma once
 
-#include "../routing/scene_route.h"
+#include "../builtin_scene_keys.h"
+#include "../../scene/routing/scene_route.h"
 
 #include <string>
 #include <utility>
 
-namespace elysia::scene::builtin
+namespace elysia::builtin
 {
 enum class ApplicationFailurePresentation
 {
@@ -21,19 +22,19 @@ struct ApplicationFailureScenePayload
     std::string diagnostic_message;
 };
 
-[[nodiscard]] inline SceneRoute make_application_failure_route(
+[[nodiscard]] inline elysia::scene::SceneRoute make_application_failure_route(
     ApplicationFailurePresentation presentation,
     std::string category,
     std::string diagnostic_message)
 {
-    return SceneRoute{
-        .target = ApplicationFailure,
+    return elysia::scene::SceneRoute{
+        .target = SceneKeys::ApplicationFailure,
         .payload = ApplicationFailureScenePayload{
             .presentation = presentation,
             .category = std::move(category),
             .diagnostic_message = std::move(diagnostic_message)
         },
-        .reload_mode = SceneReloadMode::Reuse
+        .reload_mode = elysia::scene::SceneReloadMode::Reuse
     };
 }
 }

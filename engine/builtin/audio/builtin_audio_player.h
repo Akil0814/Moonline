@@ -1,17 +1,17 @@
 #pragma once
 
-#include "../audio/audio_settings.h"
+#include "../../audio/audio_settings.h"
 
 #include <string_view>
 
-namespace elysia::assist
+namespace elysia::builtin
 {
-class EngineAssistCache;
+class BuiltinAssetCache;
 
-class EngineAssistAudioPlayer
+class BuiltinAudioPlayer
 {
 public:
-    void bind(const EngineAssistCache& cache,const elysia::audio::AudioSettings& settings) noexcept;
+    void bind(const BuiltinAssetCache& cache,const elysia::audio::AudioSettings& settings) noexcept;
     void unbind() noexcept;
 
     [[nodiscard]] bool bound() const noexcept;
@@ -29,7 +29,7 @@ private:
     [[nodiscard]] static int to_mix_volume(int volume) noexcept;
 
 private:
-    const EngineAssistCache* _cache = nullptr;
+    const BuiltinAssetCache* _cache = nullptr;
     elysia::audio::AudioSettings _settings{};
 };
 }

@@ -11,9 +11,9 @@ class UiAnimation;
 class UiWindow;
 }
 
-namespace elysia::assist
+namespace elysia::builtin
 {
-class EngineAssistAudioPlayer;
+class BuiltinAudioPlayer;
 }
 
 namespace elysia::testbed
@@ -41,7 +41,7 @@ private:
     elysia::ui::UiAnimation* _primary_animation = nullptr;
     elysia::ui::UiAnimation* _secondary_animation = nullptr;
     elysia::ui::UiWindow* _audio_window = nullptr;
-    const elysia::assist::EngineAssistAudioPlayer* _audio_player = nullptr;
+    const elysia::builtin::BuiltinAudioPlayer* _audio_player = nullptr;
     std::size_t _color_overlay_index = 2;
 };
 }

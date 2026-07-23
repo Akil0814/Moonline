@@ -1,6 +1,6 @@
 #include "startup_preload_loader.h"
 
-#include "../assist/engine_assist_keys.h"
+#include "../builtin/resources/builtin_asset_keys.h"
 #include "../io/json/json_duplicate_key_checker.h"
 #include "../resources/texture/surface_loader.h"
 #include "../resources/texture/texture_loader.h"
@@ -115,7 +115,7 @@ std::expected<void,BootstrapFailure> StartupPreloadLoader::load_manifest()
             return std::unexpected(BootstrapFailure{
                 "Load preload manifest failed: invalid texture key: " + key_error
             });
-        if (entry.key == elysia::assist::asset_keys::ElysiaWhiteTexture)
+        if (entry.key == elysia::builtin::asset_keys::ElysiaWhiteTexture)
             return std::unexpected(BootstrapFailure{
                 "Load preload manifest failed: project texture uses the "
                 "engine-reserved key: " + entry.key

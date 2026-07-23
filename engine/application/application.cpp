@@ -7,7 +7,7 @@
 #include "application_sdl_presentation.h"
 #include "application_termination_logging.h"
 
-#include "../assist/engine_assist_catalog.h"
+#include "../builtin/resources/builtin_asset_catalog.h"
 #include "../audio/audio_service.h"
 #include "../bootstrap/bootstrapper.h"
 #include "../core/time.h"
@@ -140,20 +140,20 @@ bool Application::init(
     if (!init_runtime(runtime_settings,descriptor))
         return false;
 
-    const elysia::assist::EngineAssistCatalog engine_assist_catalog(
+    const elysia::builtin::BuiltinAssetCatalog builtin_asset_catalog(
         *elysia::io::PathManager::instance());
-    if (const auto engine_assist_result = _engine_assist_cache.initialize(
+    if (const auto builtin_asset_result = _builtin_asset_cache.initialize(
             _renderer,
-            engine_assist_catalog,
+            builtin_asset_catalog,
             resolved_font_settings->engine_point_sizes());
-        !engine_assist_result)
+        !builtin_asset_result)
     {
         return startup_fail(
-            "engine_assist",
-            "Engine assist initialization failed: " + engine_assist_result.error());
+            "builtin",
+            "Built-in asset initialization failed: " + builtin_asset_result.error());
     }
-    _engine_assist_audio_player.bind(
-        _engine_assist_cache,
+    _builtin_audio_player.bind(
+        _builtin_asset_cache,
         runtime_settings.user.audio);
 
     if (!elysia::localization::LocalizationManager::instance()->init(
@@ -161,14 +161,14 @@ bool Application::init(
         bootstrap_output.i18n_manifest_path,
         runtime_settings.user.language,
         &_font_resolver,
-        &_engine_assist_cache))
+        &_builtin_asset_cache))
     {
         return startup_fail("localization","Localization initialization failed.");
     }
 
     if (const auto font_result = _font_resolver.configure(
             *resolved_font_settings,
-            _engine_assist_cache,
+            _builtin_asset_cache,
             *elysia::resources::ResourceManager::instance(),
             elysia::localization::LocalizationManager::instance()
                 ->supported_languages());
@@ -219,9 +219,9 @@ bool Application::init(
         _content_registry,
         descriptor.logical_width,
         descriptor.logical_height,
-        &_engine_assist_cache,
+        &_builtin_asset_cache,
         &_font_resolver,
-        &_engine_assist_audio_player);
+        &_builtin_audio_player);
     _scene_manager.set_runtime_context(*_scene_runtime_context);
 
     return enter_initial_scene(game_module,descriptor);
@@ -481,10 +481,10 @@ void Application::shutdown()
     _font_resolver.deactivate_project_fonts();
     elysia::effects::EffectManager::instance()->set_font_resolver(nullptr);
     elysia::audio::AudioService::instance()->shutdown();
-    _engine_assist_audio_player.unbind();
+    _builtin_audio_player.unbind();
     elysia::loading::clear_loaded_content();
     _font_resolver.shutdown();
-    _engine_assist_cache.shutdown();
+    _builtin_asset_cache.shutdown();
     if (_user_config_handler_registered)
     {
         elysia::config::UserConfigService::instance()
@@ -551,7 +551,7 @@ std::expected<void,elysia::config::UserConfigFailure>
 Application::apply_master_volume(int value)
 {
     elysia::audio::AudioService::instance()->set_master_volume(value);
-    _engine_assist_audio_player.set_master_volume(value);
+    _builtin_audio_player.set_master_volume(value);
     return {};
 }
 
@@ -559,7 +559,7 @@ std::expected<void,elysia::config::UserConfigFailure>
 Application::apply_music_volume(int value)
 {
     elysia::audio::AudioService::instance()->set_music_volume(value);
-    _engine_assist_audio_player.set_music_volume(value);
+    _builtin_audio_player.set_music_volume(value);
     return {};
 }
 
@@ -567,7 +567,7 @@ std::expected<void,elysia::config::UserConfigFailure>
 Application::apply_sound_volume(int value)
 {
     elysia::audio::AudioService::instance()->set_sound_volume(value);
-    _engine_assist_audio_player.set_sound_volume(value);
+    _builtin_audio_player.set_sound_volume(value);
     return {};
 }
 

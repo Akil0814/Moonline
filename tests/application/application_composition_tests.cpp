@@ -154,7 +154,8 @@ int main()
             "EngineFeatureTestScene"),
         "Application composition must register the Testbed Engine feature scene");
     require(throws_logic_error_containing(
-            [&scene_manager] { request_scene(scene_manager,elysia::testbed::SceneKeys::Elysia); },
+            [&scene_manager] { request_scene(
+                scene_manager,elysia::scene::SceneKeys::ElysiaEasterEgg); },
             "ElysiaScene"),
         "Application composition must register the Elysia Easter egg scene");
 

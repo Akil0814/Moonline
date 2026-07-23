@@ -5,13 +5,17 @@
 #include "../../ui/composites/ui_confirmation_dialog.h"
 #include "../../ui/widgets/ui_button.h"
 #include "../../ui/window/ui_window.h"
-#include "../runtime/scene_runtime_context.h"
+#include "../../scene/runtime/scene_runtime_context.h"
 
 #include <algorithm>
 #include <stdexcept>
 
-namespace elysia::scene::builtin
+namespace elysia::builtin
 {
+using elysia::scene::Scene;
+using elysia::scene::ScenePayload;
+using elysia::scene::try_scene_payload;
+
 namespace
 {
 constexpr const char* fallback_category = "application";

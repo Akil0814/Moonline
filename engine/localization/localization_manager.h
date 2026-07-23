@@ -15,9 +15,9 @@
 #include <unordered_map>
 #include <vector>
 
-namespace elysia::assist
+namespace elysia::builtin
 {
-class EngineAssistCache;
+class BuiltinAssetCache;
 }
 
 namespace elysia::typography
@@ -37,7 +37,7 @@ public:
 		const std::filesystem::path& manifest_path,
 		std::string initial_language,
 		const elysia::typography::FontResolver* font_resolver,
-		const elysia::assist::EngineAssistCache* engine_assist_cache = nullptr
+		const elysia::builtin::BuiltinAssetCache* builtin_asset_cache = nullptr
 	);
 	void shutdown();
 
@@ -89,7 +89,7 @@ private:
 	std::unordered_map<std::string, TranslationTable> _translation_tables;
 	std::string _current_language;
 	const elysia::typography::FontResolver* _font_resolver = nullptr;
-	const elysia::assist::EngineAssistCache* _engine_assist_cache = nullptr;
+	const elysia::builtin::BuiltinAssetCache* _builtin_asset_cache = nullptr;
 	bool _initialized = false;
 };
 

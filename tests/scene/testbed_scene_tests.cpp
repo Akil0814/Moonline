@@ -1,12 +1,11 @@
 #define SDL_MAIN_HANDLED
 
-#include "engine/assist/engine_assist_cache.h"
-#include "engine/assist/engine_assist_audio_player.h"
-#include "engine/assist/engine_assist_catalog.h"
+#include "engine/builtin/resources/builtin_asset_cache.h"
+#include "engine/builtin/audio/builtin_audio_player.h"
+#include "engine/builtin/resources/builtin_asset_catalog.h"
 #include "engine/io/loaders/asset_config_types.h"
 #include "engine/scene/scene_manager.h"
 #include "engine/scene/runtime/scene_runtime_context.h"
-#include "engine/testbed/scene/elysia_scene.h"
 #include "engine/testbed/scene/engine_feature_test_scene.h"
 #include "engine/testbed/scene/testbed_home_scene.h"
 #include "engine/testbed/scene/testbed_scene_payload.h"
@@ -122,23 +121,6 @@ void send_escape(elysia::scene::SceneManager& scene_manager)
         } });
 }
 
-void advance_elysia_sequence(
-    elysia::scene::SceneManager& scene_manager,
-    SDL_Renderer* renderer)
-{
-    for (int phase = 0; phase < 3; ++phase)
-        scene_manager.on_update(1.5);
-
-    scene_manager.on_render(renderer);
-
-    for (int remaining_line = 0; remaining_line < 8; ++remaining_line)
-        scene_manager.on_update(1.0);
-
-    scene_manager.on_render(renderer);
-    scene_manager.on_update(5.0);
-    scene_manager.on_render(renderer);
-}
-
 void test_engine_feature_overlay_cycle()
 {
     elysia::testbed::EngineFeatureTestScene scene;
@@ -179,12 +161,6 @@ void test_payload_contract_names_each_scene()
             "UiTestScene"),
         "UiTestScene must name itself when the Testbed payload is missing");
 
-    elysia::testbed::ElysiaScene elysia_scene;
-    require(throws_logic_error_containing(
-            [&elysia_scene] { elysia_scene.on_enter({}); },
-            "ElysiaScene"),
-        "ElysiaScene must name itself when the Testbed payload is missing");
-
     elysia::testbed::EngineFeatureTestScene feature_test_scene;
     const elysia::scene::ScenePayload invalid_payload =
         elysia::testbed::TestbedScenePayload{
@@ -199,21 +175,21 @@ void test_payload_contract_names_each_scene()
 void test_escape_returns_the_full_caller_route()
 {
     SdlFixture fixture;
-    elysia::assist::EngineAssistCache cache;
+    elysia::builtin::BuiltinAssetCache cache;
     require(cache.initialize(
                 fixture.renderer(),
-                elysia::assist::EngineAssistCatalog(std::filesystem::path{ MOONLINE_SOURCE_DIR }),
+                elysia::builtin::BuiltinAssetCatalog(std::filesystem::path{ MOONLINE_SOURCE_DIR }),
                 std::array{10,20,30,40,50,60,70})
                 .has_value(),
-        "Engine test scene tests must initialize Engine Assist resources");
+        "Engine test scene tests must initialize built-in resources");
 
     elysia::io::ContentRegistry registry;
-    elysia::assist::EngineAssistAudioPlayer audio_player;
+    elysia::builtin::BuiltinAudioPlayer audio_player;
     audio_player.bind(cache,elysia::audio::AudioSettings{});
     elysia::scene::SceneRuntimeContext context(
         fixture.renderer(),registry,1280,720,&cache,nullptr,&audio_player);
-    require(context.engine_assist_audio_player() == &audio_player,
-        "Testbed runtime context must expose its Engine Assist audio player");
+    require(context.builtin_audio_player() == &audio_player,
+        "Testbed runtime context must expose its built-in audio player");
     elysia::scene::SceneManager scene_manager;
     scene_manager.set_runtime_context(context);
     scene_manager.register_engine_scene<elysia::testbed::TestbedHomeScene>(
@@ -222,8 +198,6 @@ void test_escape_returns_the_full_caller_route()
         elysia::testbed::SceneKeys::UiTest);
     scene_manager.register_engine_scene<elysia::testbed::EngineFeatureTestScene>(
         elysia::testbed::SceneKeys::EngineFeatureTest);
-    scene_manager.register_engine_scene<elysia::testbed::ElysiaScene>(
-        elysia::testbed::SceneKeys::Elysia);
     scene_manager.register_game_scene<FirstReturnScene>(1);
     scene_manager.register_game_scene<SecondReturnScene>(2);
 
@@ -258,44 +232,6 @@ void test_escape_returns_the_full_caller_route()
     send_escape(scene_manager);
     require(scene_manager.current_scene_key() == 2 && SecondReturnScene::marker == 29,
         "EngineFeatureTestScene Escape must return the caller key and payload");
-
-    scene_manager.on_scene_request(elysia::scene::SceneRequest{
-        .type = elysia::scene::SceneRequestType::Switch,
-        .route = elysia::scene::SceneRoute{
-            .target = elysia::testbed::SceneKeys::Elysia,
-            .payload = elysia::testbed::TestbedScenePayload{
-                .return_route = elysia::scene::SceneRoute{
-                    .target = 2,
-                    .payload = ReturnPayload{ .marker = 33 },
-                    .reload_mode = elysia::scene::SceneReloadMode::Reuse
-                }
-            }
-        }
-    });
-    scene_manager.on_update(0.0);
-    advance_elysia_sequence(scene_manager,fixture.renderer());
-    send_escape(scene_manager);
-    require(scene_manager.current_scene_key() == 2 && SecondReturnScene::marker == 33,
-        "ElysiaScene Escape must return the caller key and payload");
-
-    scene_manager.on_scene_request(elysia::scene::SceneRequest{
-        .type = elysia::scene::SceneRequestType::Switch,
-        .route = elysia::scene::SceneRoute{
-            .target = elysia::testbed::SceneKeys::Elysia,
-            .payload = elysia::testbed::TestbedScenePayload{
-                .return_route = elysia::scene::SceneRoute{
-                    .target = 2,
-                    .payload = ReturnPayload{ .marker = 34 },
-                    .reload_mode = elysia::scene::SceneReloadMode::Reuse
-                }
-            }
-        }
-    });
-    scene_manager.on_update(0.0);
-    advance_elysia_sequence(scene_manager,fixture.renderer());
-    send_escape(scene_manager);
-    require(scene_manager.current_scene_key() == 2 && SecondReturnScene::marker == 34,
-        "ElysiaScene Reuse must replay cleanly and return the updated caller route");
 
     const elysia::scene::SceneRoute original_caller{
         .target = 1,

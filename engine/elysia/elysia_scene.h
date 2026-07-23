@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../../scene/scene.h"
-#include "../../tools/timer.h"
-#include "../../ui/style/ui_theme_manager.h"
+#include "../scene/scene.h"
+#include "../tools/timer.h"
+#include "../ui/style/ui_theme_manager.h"
 
-#include "testbed_scene_payload.h"
+#include "elysia_scene_payload.h"
 
 #include <cstddef>
 #include <string_view>
@@ -16,7 +16,7 @@ class UiWindow;
 class UiListContainer;
 }
 
-namespace elysia::testbed
+namespace elysia::realm
 {
 class ElysiaScene final : public elysia::scene::Scene
 {

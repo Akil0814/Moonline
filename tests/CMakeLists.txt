@@ -42,21 +42,21 @@ add_moonline_test(bootstrap_texture_cache_tests
     SDL
 )
 
-add_moonline_test(engine_assist_catalog_tests
-    LABEL bootstrap
-    SOURCES assist/engine_assist_catalog_tests.cpp
+add_moonline_test(builtin_asset_catalog_tests
+    LABEL builtin
+    SOURCES builtin/builtin_asset_catalog_tests.cpp
 )
-target_compile_definitions(engine_assist_catalog_tests
+target_compile_definitions(builtin_asset_catalog_tests
     PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
 )
 
-add_moonline_test(engine_assist_cache_tests
-    LABEL bootstrap
-    SOURCES assist/engine_assist_cache_tests.cpp
+add_moonline_test(builtin_asset_cache_tests
+    LABEL builtin
+    SOURCES builtin/builtin_asset_cache_tests.cpp
     LIBRARIES ${SDL2_LIBRARIES}
     SDL
 )
-target_compile_definitions(engine_assist_cache_tests
+target_compile_definitions(builtin_asset_cache_tests
     PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
 )
 
@@ -162,6 +162,16 @@ add_moonline_test(testbed_scene_tests
     SDL
 )
 target_compile_definitions(testbed_scene_tests
+    PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+)
+
+add_moonline_test(elysia_scene_tests
+    LABEL elysia
+    SOURCES elysia/elysia_scene_tests.cpp
+    LIBRARIES ${SDL2_LIBRARIES}
+    SDL
+)
+target_compile_definitions(elysia_scene_tests
     PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
 )
 
@@ -291,13 +301,13 @@ target_compile_definitions(engine_i18n_assets_tests
     PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
 )
 
-add_moonline_test(localization_engine_assist_fallback_tests
+add_moonline_test(localization_builtin_fallback_tests
     LABEL localization
-    SOURCES localization/localization_engine_assist_fallback_tests.cpp
+    SOURCES localization/localization_builtin_fallback_tests.cpp
     LIBRARIES ${SDL2_LIBRARIES}
     SDL
 )
-target_compile_definitions(localization_engine_assist_fallback_tests
+target_compile_definitions(localization_builtin_fallback_tests
     PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
 )
 

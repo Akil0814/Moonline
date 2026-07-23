@@ -1,7 +1,7 @@
 #define SDL_MAIN_HANDLED
 
-#include "engine/assist/engine_assist_cache.h"
-#include "engine/assist/engine_assist_catalog.h"
+#include "engine/builtin/resources/builtin_asset_cache.h"
+#include "engine/builtin/resources/builtin_asset_catalog.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/localization/localization_manager.h"
 #include "engine/resources/resource_manager.h"
@@ -59,12 +59,12 @@ void test_ui_number_uses_shared_localized_glyphs()
         typography::resolve_font_settings(typography::FontSettings{});
     require(resolved_font_settings.has_value(),
         "UI number default font settings must resolve");
-    assist::EngineAssistCache engine_cache;
+    builtin::BuiltinAssetCache engine_cache;
     require(engine_cache.initialize(
         renderer,
-        assist::EngineAssistCatalog(*paths),
+        builtin::BuiltinAssetCatalog(*paths),
         resolved_font_settings->engine_point_sizes()).has_value(),
-        "UI number tests must initialize Engine assist fonts");
+        "UI number tests must initialize built-in fonts");
     typography::FontResolver font_resolver;
     localization->shutdown();
     require(localization->init(

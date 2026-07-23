@@ -1,8 +1,10 @@
 #include "application_scene_composition.h"
 
-#include "../scene/builtin/settings_scene.h"
-#include "../scene/builtin/application_failure_scene.h"
-#include "../scene/builtin/startup_loading_scene.h"
+#include "../builtin/builtin_scene_keys.h"
+#include "../builtin/scenes/settings_scene.h"
+#include "../builtin/scenes/application_failure_scene.h"
+#include "../builtin/scenes/startup_loading_scene.h"
+#include "../elysia/realm_scene_composition.h"
 #include "../scene/scene_manager.h"
 #include "../testbed/testbed_scene_composition.h"
 
@@ -19,14 +21,15 @@ void compose_application_scenes(
     const ApplicationDescriptor& descriptor)
 {
     scene_manager.register_engine_scene<
-        elysia::scene::builtin::StartupLoadingScene>(
-            elysia::scene::builtin::StartupLoading);
+        elysia::builtin::StartupLoadingScene>(
+            elysia::builtin::SceneKeys::StartupLoading);
     scene_manager.register_engine_scene<
-        elysia::scene::builtin::SettingsScene>(
-            elysia::scene::builtin::Settings);
+        elysia::builtin::SettingsScene>(
+            elysia::builtin::SceneKeys::Settings);
     scene_manager.register_engine_scene<
-        elysia::scene::builtin::ApplicationFailureScene>(
-            elysia::scene::builtin::ApplicationFailure);
+        elysia::builtin::ApplicationFailureScene>(
+            elysia::builtin::SceneKeys::ApplicationFailure);
+    elysia::realm::register_realm_scene(scene_manager);
     elysia::testbed::register_testbed_scenes(scene_manager);
 
     game_module.register_scenes(scene_manager);

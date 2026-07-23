@@ -1,7 +1,7 @@
 #pragma once
 
 #include "settings_scene_payload.h"
-#include "../scene.h"
+#include "../../scene/scene.h"
 #include "../../config/user_config_data.h"
 #include "../../config/user_config_types.h"
 
@@ -12,15 +12,15 @@ struct SettingsPanelDraft;
 class UiWindow;
 }
 
-namespace elysia::scene::builtin
+namespace elysia::builtin
 {
-class SettingsScene final : public Scene
+class SettingsScene final : public elysia::scene::Scene
 {
 public:
     SettingsScene() = default;
     ~SettingsScene() override = default;
 
-    void on_enter(const ScenePayload& payload) override;
+    void on_enter(const elysia::scene::ScenePayload& payload) override;
     void on_exit() override;
     void reset() override;
 
@@ -32,7 +32,7 @@ private:
     void destroy_ui() noexcept;
 
 private:
-    SceneRoute _return_route;
+    elysia::scene::SceneRoute _return_route;
     elysia::config::UserConfigRuntimeState _baseline_state;
     elysia::ui::UiWindow* _window = nullptr;
     elysia::ui::SettingsPanel* _settings_panel = nullptr;

@@ -6,7 +6,7 @@
 #include "../../ui/layout/ui_layout_types.h"
 #include "../../ui/presets/settings_panel.h"
 #include "../../ui/window/ui_window.h"
-#include "../runtime/scene_runtime_context.h"
+#include "../../scene/runtime/scene_runtime_context.h"
 
 #include <SDL.h>
 
@@ -18,13 +18,18 @@
 #include <utility>
 #include <vector>
 
-namespace elysia::scene::builtin
+namespace elysia::builtin
 {
+using elysia::scene::Scene;
+using elysia::scene::ScenePayload;
+using elysia::scene::SceneRoute;
+using elysia::scene::try_scene_payload;
+
 namespace
 {
 bool is_valid_route(const SceneRoute& route) noexcept
 {
-    return SceneKeys::is_supported(route.target);
+    return elysia::scene::SceneKeys::is_supported(route.target);
 }
 
 elysia::ui::SettingsPanelDraft make_draft(
