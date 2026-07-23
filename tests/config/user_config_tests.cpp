@@ -154,7 +154,7 @@ int main()
     committed.audio.master_volume = 45;
     committed.audio.music_volume = 35;
     committed.audio.sound_volume = 25;
-    committed.language = "zh_cn";
+    committed.language = "zh-Hans";
     const auto commit_result = service->apply_and_save_user_config(committed);
     require(commit_result.has_value() && service->user_config().snapshot() == committed
         && !service->user_config().is_dirty()

@@ -72,7 +72,7 @@ Sound 与 Music 是不同 registry，因此二者使用相同字符串 key 合�
 ```json
 {
   "default_language": "en",
-  "languages": ["en", "zh_cn", "ja"],
+  "languages": ["en", "ja", "ko", "zh-Hans", "zh-Hant"],
   "file": ["base.json"]
 }
 ```
@@ -83,7 +83,7 @@ Sound 与 Music 是不同 registry，因此二者使用相同字符串 key 合�
 | `languages` | array<string> | 必填且非空 |
 | `file` | array<string> | 必填且非空，每项非空 |
 
-语言文件按 `assets/i18n/<language>/<file>` 查找；若语言目录不存在，还会尝试把语言名中的下划线替换为连字符。默认语言不在 `languages` 时，运行时会把它追加为受支持语言。
+语言文件按 `assets/i18n/<language>/<file>` 精确查找。`language` 使用标准 BCP 47 locale（例如 `zh-Hans`），不接受下划线 alias。默认语言不在 `languages` 时，运行时会把它追加为受支持语言。
 
 每个语言目录依次加载 `file` 中的 JSON 并合并翻译表。文件不存在、JSON 无效或翻译数据结构不受支持都会使该语言加载失败。i18n 不进入 Atlas/Animation/Effect/Texture/Font/Sound/Music 的资源 key registry。
 

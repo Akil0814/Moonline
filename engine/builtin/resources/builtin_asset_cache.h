@@ -80,7 +80,6 @@ public:
     [[nodiscard]] std::size_t music_count() const noexcept;
 
     [[nodiscard]] static std::string font_key(std::string_view locale,int point_size);
-    [[nodiscard]] static std::string_view map_project_locale(std::string_view project_locale) noexcept;
 
 private:
     using TextureMap = std::unordered_map<std::string, elysia::resources::TextureResource>;

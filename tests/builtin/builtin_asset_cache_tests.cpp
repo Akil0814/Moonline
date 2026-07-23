@@ -88,6 +88,19 @@ int main()
         "cache must expose the Engine test sprite by stable key");
     require(cache.find_font("zh-Hans", 30) != nullptr,
         "cache must expose Engine fonts by locale and point size");
+    require(cache.find_font("zh_hans", 30) == nullptr,
+        "cache must reject non-BCP-47 locale aliases");
+    const std::array legacy_locales{
+        std::string("zh") + "_cn",
+        std::string("zh_") + "Hans",
+        std::string("zh_") + "Hant"
+    };
+    for (const std::string& legacy_locale : legacy_locales)
+    {
+        require(cache.find_font(legacy_locale,30) == nullptr
+                && cache.find_translation(legacy_locale,"engine.settings.title") == nullptr,
+            "cache must reject every legacy locale spelling");
+    }
 
     elysia::builtin::BuiltinAssetCache custom_size_cache;
     constexpr std::array custom_point_sizes{24};
@@ -101,8 +114,6 @@ int main()
     custom_size_cache.shutdown();
     require(cache.find_translation("ja", "engine.settings.title") != nullptr,
         "cache must expose parsed Engine translations");
-    require(elysia::builtin::BuiltinAssetCache::map_project_locale("zh_cn") == "zh-Hans",
-        "project Simplified Chinese must map to the Engine BCP-47 locale");
     require(cache.animation_count() == 1, "cache must register the Engine test animation");
     require(cache.sound_count() == 0 && cache.music_count() == 1,
         "cache must expose the registered Elysia scene music");

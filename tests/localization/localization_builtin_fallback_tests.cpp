@@ -105,6 +105,16 @@ int main()
         "project translations must remain the first lookup source");
     require(localization->tr("engine.settings.title") == "Settings",
         "missing Engine namespace keys must fall back to Engine translations");
+    const std::array legacy_locales{
+        std::string("zh") + "_cn",
+        std::string("zh_") + "Hans",
+        std::string("zh_") + "Hant"
+    };
+    for (const std::string& legacy_locale : legacy_locales)
+    {
+        require(!localization->set_language(legacy_locale),
+            "LocalizationManager must reject every legacy locale spelling");
+    }
 
     const elysia::localization::LocalizedTextStyle style{
         .typography_role =
@@ -127,10 +137,20 @@ int main()
         20),
         "test must load the Simplified Chinese project font");
     require(resources->load_font(
+        "ui.zh_hant.20",
+        path_manager->fonts() / "fusion-pixel-10px-proportional-zh_hant.ttf",
+        20),
+        "test must load the Traditional Chinese project font");
+    require(resources->load_font(
         "ui.ja.20",
         path_manager->fonts() / "fusion-pixel-10px-proportional-ja.ttf",
         20),
         "test must load the Japanese project font");
+    require(resources->load_font(
+        "ui.ko.20",
+        path_manager->fonts() / "fusion-pixel-10px-proportional-ko.ttf",
+        20),
+        "test must load the Korean project font");
     int localized_width = 0;
     int localized_height = 0;
     require(localization->measure_raw_text("Moon", style, localized_width, localized_height),

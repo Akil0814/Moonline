@@ -46,11 +46,6 @@ bool flatten_locale_json(
 	return true;
 }
 
-std::string replace_underscores_with_hyphens(std::string value)
-{
-	std::replace(value.begin(), value.end(), '_', '-');
-	return value;
-}
 }
 
 bool LocalizationManager::init(
@@ -168,10 +163,9 @@ std::string_view LocalizationManager::tr(std::string_view key) const
 
 	if (key.starts_with("engine.") && _builtin_asset_cache)
 	{
-		const std::string_view locale = engine_locale();
-		if (const std::string* translation = _builtin_asset_cache->find_translation(locale, key))
+		if (const std::string* translation = _builtin_asset_cache->find_translation(_current_language, key))
 			return *translation;
-		if (locale != "en")
+		if (_current_language != "en")
 		{
 			if (const std::string* fallback = _builtin_asset_cache->find_translation("en", key))
 				return *fallback;
@@ -397,20 +391,7 @@ std::filesystem::path LocalizationManager::resolve_locale_directory(
 	const std::filesystem::path direct_path = _i18n_root / language;
 	if (std::filesystem::exists(direct_path))
 		return direct_path;
-
-	const std::filesystem::path alias_path =
-		_i18n_root / replace_underscores_with_hyphens(language);
-	if (std::filesystem::exists(alias_path))
-		return alias_path;
-
 	return {};
-}
-
-std::string_view LocalizationManager::engine_locale() const noexcept
-{
-	return _builtin_asset_cache
-		? elysia::builtin::BuiltinAssetCache::map_project_locale(_current_language)
-		: std::string_view{};
 }
 
 std::string_view LocalizationManager::lookup_translation(

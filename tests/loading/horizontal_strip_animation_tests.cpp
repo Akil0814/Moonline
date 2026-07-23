@@ -246,7 +246,7 @@ void test_horizontal_strip_manifest_schema()
 
 	const std::filesystem::path duplicate_i18n_property_path = test_root / "duplicate_i18n_property.json";
 	std::ofstream(duplicate_i18n_property_path)
-		<< R"({"default_language":"en","default_language":"zh_cn","languages":["en"],"file":["base.json"]})";
+		<< R"({"default_language":"en","default_language":"zh-Hans","languages":["en"],"file":["base.json"]})";
 	elysia::io::I18nManifest i18n_manifest;
 	require(!elysia::io::I18nManifestLoader{}.load(duplicate_i18n_property_path, i18n_manifest),
 		"i18n manifests must reject duplicate JSON object properties before parsing");

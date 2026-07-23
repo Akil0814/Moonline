@@ -1,6 +1,7 @@
 #include "builtin_asset_cache.h"
 
 #include "../../io/json/strict_json.h"
+#include "../../localization/locale.h"
 #include "../../resources/texture/surface_loader.h"
 #include "../../resources/texture/texture_loader.h"
 
@@ -48,15 +49,16 @@ std::string make_prepare_error(std::string_view operation, const std::filesystem
 
 std::string_view font_descriptor_locale(std::string_view locale) noexcept
 {
-    if (locale == "en" || locale == "latin")
+    using namespace elysia::localization;
+    if (locale == kEnglishLocale)
         return "latin";
-    if (locale == "zh-Hans" || locale == "zh_hans")
+    if (locale == kSimplifiedChineseLocale)
         return "zh_hans";
-    if (locale == "zh-Hant" || locale == "zh_hant")
+    if (locale == kTraditionalChineseLocale)
         return "zh_hant";
-    if (locale == "ja")
+    if (locale == kJapaneseLocale)
         return "ja";
-    if (locale == "ko")
+    if (locale == kKoreanLocale)
         return "ko";
     return {};
 }
@@ -227,18 +229,6 @@ std::size_t BuiltinAssetCache::music_count() const noexcept
 std::string BuiltinAssetCache::font_key(std::string_view locale, int point_size)
 {
     return "engine.font." + std::string(locale) + "." + std::to_string(point_size);
-}
-
-std::string_view BuiltinAssetCache::map_project_locale(
-    std::string_view project_locale) noexcept
-{
-    if (project_locale == "zh_cn" || project_locale == "zh-Hans")
-        return "zh-Hans";
-    if (project_locale == "zh_hant" || project_locale == "zh-Hant")
-        return "zh-Hant";
-    if (project_locale == "en" || project_locale == "ja" || project_locale == "ko")
-        return project_locale;
-    return {};
 }
 
 std::expected<BuiltinAssetCache::PreparedState, std::string> BuiltinAssetCache::prepare(

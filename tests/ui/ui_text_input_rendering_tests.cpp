@@ -165,7 +165,7 @@ void test_text_input_uses_private_editing_texture()
             "input typography changes must rebuild the private texture");
         SDL_Texture* typography_texture = typography_command->texture;
 
-        require(localization_manager->set_language("zh_cn"),
+        require(localization_manager->set_language("zh-Hans"),
             "text input texture test must switch to a loaded language");
         commands.clear();
         input.submit_ui_render_commands(commands);

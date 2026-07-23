@@ -65,7 +65,6 @@ private:
 	bool ensure_language_loaded(const std::string& language);
 	bool load_language_table(const std::string& language, TranslationTable& out_table) const;
 	std::filesystem::path resolve_locale_directory(const std::string& language) const;
-	std::string_view engine_locale() const noexcept;
 	std::string_view lookup_translation(
 		const TranslationTable& table,
 		std::string_view key

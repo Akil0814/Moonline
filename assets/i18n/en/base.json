@@ -1,20 +1,37 @@
 {
   "common": {
-    "save": "Save", "back": "Back", "confirm": "Confirm", "cancel": "Cancel", "close": "Close", "coming_soon": "Coming soon"
+    "save": "Save",
+    "back": "Back",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "close": "Close",
+    "coming_soon": "Coming soon"
   },
   "menu_scene": {
-    "project_name": "MoonLine", "start": "Start", "settings": "Settings", "exit": "Exit", "about": "About",
-    "exit_confirm": { "title": "Confirm Exit", "message": "Exit MoonLine?", "cancel": "Cancel", "close": "X" }
-  },
-  "setting_scene": {
-    "title": "Settings",
-    "sections": { "display": "Display", "audio": "Audio", "general": "General" },
-    "fields": { "window_mode": "Display mode", "window_size": "Window size", "master_volume": "Master volume", "music_volume": "Music volume", "sound_volume": "Sound volume", "language": "Language" },
-    "languages": { "en": "English", "zh_cn": "Simplified Chinese", "ja": "Japanese" },
-    "actions": { "save": "Save", "back": "Back" }
+    "project_name": "MoonLine",
+    "start": "Start",
+    "settings": "Settings",
+    "exit": "Exit",
+    "about": "About",
+    "exit_confirm": {
+      "title": "Confirm Exit",
+      "message": "Exit MoonLine?",
+      "cancel": "Cancel",
+      "close": "X"
+    }
   },
   "character_select_scene": {
-    "title": "Select Character", "character_info": "Character Info", "details_placeholder": "Character details will appear here.", "attributes": "Attributes", "skills": "Skills", "coming_soon": "Coming soon", "select_prompt": "Choose a character to view their details.", "no_characters": "No characters are available.",
-    "actions": { "confirm": "Confirm", "back": "Back" }
+    "title": "Select Character",
+    "character_info": "Character Info",
+    "details_placeholder": "Character details will appear here.",
+    "attributes": "Attributes",
+    "skills": "Skills",
+    "coming_soon": "Coming soon",
+    "select_prompt": "Choose a character to view their details.",
+    "no_characters": "No characters are available.",
+    "actions": {
+      "confirm": "Confirm",
+      "back": "Back"
+    }
   }
 }

@@ -161,7 +161,7 @@ void test_settings_panel_keeps_draft_local_and_normalizes_options()
             { 1920,1080 },
             { 0,0 }
         },
-        .languages = { "en","zh_cn","en","" }
+        .languages = { "en","zh-Hans","en","" }
     });
 
     require(panel.draft() == draft,
@@ -171,7 +171,7 @@ void test_settings_panel_keeps_draft_local_and_normalizes_options()
         && panel.options().window_sizes[1] == ui::SettingsWindowSize{ 1366,768 }
         && panel.options().window_sizes[2] == ui::SettingsWindowSize{ 1920,1080 },
         "settings panel must normalize window sizes and retain the active value");
-    require(panel.options().languages == std::vector<std::string>{ "en","zh_cn" },
+    require(panel.options().languages == std::vector<std::string>{ "en","zh-Hans" },
         "settings panel must deduplicate language identifiers from LocalizationManager");
 
     int save_count = 0;
@@ -205,11 +205,9 @@ void test_settings_panel_keeps_draft_local_and_normalizes_options()
     require_text_key(
         language_dropdown->options()[0].content,
         "engine.settings.languages.en");
-    require(
-        language_dropdown->options()[1].content.kind
-                == ui::UiTextContentKind::RawText
-            && language_dropdown->options()[1].content.value == "zh_cn",
-        "unknown language identifiers must remain visible as raw text");
+    require_text_key(
+        language_dropdown->options()[1].content,
+        "engine.settings.languages.zh_hans");
     const std::size_t fullscreen_index =
         panel.options().window_sizes.size();
     require(window_dropdown->set_selected_index(fullscreen_index)

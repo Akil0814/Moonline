@@ -1,0 +1,37 @@
+{
+  "common": {
+    "save": "儲存",
+    "back": "返回",
+    "confirm": "確認",
+    "cancel": "取消",
+    "close": "關閉",
+    "coming_soon": "即將推出"
+  },
+  "menu_scene": {
+    "project_name": "MoonLine",
+    "start": "開始",
+    "settings": "設定",
+    "exit": "結束",
+    "about": "關於",
+    "exit_confirm": {
+      "title": "確認結束",
+      "message": "要結束 MoonLine 嗎？",
+      "cancel": "取消",
+      "close": "X"
+    }
+  },
+  "character_select_scene": {
+    "title": "選擇角色",
+    "character_info": "角色資訊",
+    "details_placeholder": "角色詳細資訊將顯示於此。",
+    "attributes": "屬性",
+    "skills": "技能",
+    "coming_soon": "即將推出",
+    "select_prompt": "請選擇角色以查看詳細資訊。",
+    "no_characters": "沒有可用的角色。",
+    "actions": {
+      "confirm": "確認",
+      "back": "返回"
+    }
+  }
+}

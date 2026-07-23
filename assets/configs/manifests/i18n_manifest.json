@@ -2,8 +2,10 @@
   "default_language": "en",
   "languages": [
     "en",
-    "zh_Hans",
-    "ja"
+    "ja",
+    "ko",
+    "zh-Hans",
+    "zh-Hant"
   ],
   "file":[
     "base.json"

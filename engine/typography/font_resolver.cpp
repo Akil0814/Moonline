@@ -1,6 +1,7 @@
 #include "font_resolver.h"
 
 #include "../builtin/resources/builtin_asset_cache.h"
+#include "../localization/locale.h"
 #include "../resources/resource_manager.h"
 
 #include <unordered_set>
@@ -21,15 +22,16 @@ namespace
     int point_size)
 {
     std::string prefix;
-    if (language == "en")
+    using namespace elysia::localization;
+    if (language == kEnglishLocale)
         prefix = "ui.latin";
-    else if (language == "zh_cn" || language == "zh-Hans")
+    else if (language == kSimplifiedChineseLocale)
         prefix = "ui.zh_hans";
-    else if (language == "zh_hant" || language == "zh-Hant")
+    else if (language == kTraditionalChineseLocale)
         prefix = "ui.zh_hant";
-    else if (language == "ja")
+    else if (language == kJapaneseLocale)
         prefix = "ui.ja";
-    else if (language == "ko")
+    else if (language == kKoreanLocale)
         prefix = "ui.ko";
     else
         return {};
@@ -250,9 +252,7 @@ std::expected<TTF_Font*,FontResolveError> FontResolver::find_font(
 {
     if (source == FontSource::EngineBuiltIn)
     {
-        const std::string_view engine_locale =
-            elysia::builtin::BuiltinAssetCache::map_project_locale(language);
-        if (engine_locale.empty())
+        if (elysia::localization::locale_key_segment(language).empty())
         {
             return std::unexpected(error(
                 FontResolveErrorCode::UnsupportedLanguage,
@@ -261,7 +261,7 @@ std::expected<TTF_Font*,FontResolveError> FontResolver::find_font(
         }
 
         TTF_Font* font = _builtin_asset_cache
-            ? _builtin_asset_cache->find_font(engine_locale,point_size)
+            ? _builtin_asset_cache->find_font(language,point_size)
             : nullptr;
         if (font)
             return font;

@@ -1,5 +1,6 @@
 #include "builtin_asset_catalog.h"
 #include "builtin_asset_keys.h"
+#include "../../localization/locale.h"
 
 #include <array>
 #include <system_error>
@@ -27,11 +28,11 @@ const std::array<BuiltinAssetDescriptor, 6> kTextureDescriptors = {
 };
 
 const std::array<BuiltinLocaleDescriptor, 5> kLocaleDescriptors = {
-    BuiltinLocaleDescriptor{"en", "i18n/en/engine.json"},
-    BuiltinLocaleDescriptor{"zh-Hans", "i18n/zh-Hans/engine.json"},
-    BuiltinLocaleDescriptor{"zh-Hant", "i18n/zh-Hant/engine.json"},
-    BuiltinLocaleDescriptor{"ja", "i18n/ja/engine.json"},
-    BuiltinLocaleDescriptor{"ko", "i18n/ko/engine.json"},
+    BuiltinLocaleDescriptor{elysia::localization::kEnglishLocale, "i18n/en/engine.json"},
+    BuiltinLocaleDescriptor{elysia::localization::kSimplifiedChineseLocale, "i18n/zh-Hans/engine.json"},
+    BuiltinLocaleDescriptor{elysia::localization::kTraditionalChineseLocale, "i18n/zh-Hant/engine.json"},
+    BuiltinLocaleDescriptor{elysia::localization::kJapaneseLocale, "i18n/ja/engine.json"},
+    BuiltinLocaleDescriptor{elysia::localization::kKoreanLocale, "i18n/ko/engine.json"},
 };
 
 const std::array<BuiltinAnimationDescriptor, 1> kAnimationDescriptors = {

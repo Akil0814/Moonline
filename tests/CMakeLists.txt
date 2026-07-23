@@ -306,6 +306,14 @@ target_compile_definitions(engine_i18n_assets_tests
     PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
 )
 
+add_moonline_test(project_i18n_assets_tests
+    LABEL localization
+    SOURCES localization/project_i18n_assets_tests.cpp
+)
+target_compile_definitions(project_i18n_assets_tests
+    PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+)
+
 add_moonline_test(localization_builtin_fallback_tests
     LABEL localization
     SOURCES localization/localization_builtin_fallback_tests.cpp

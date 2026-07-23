@@ -10,6 +10,7 @@
 #include "../window/ui_window.h"
 
 #include "../../tools/logger.h"
+#include "../../localization/locale.h"
 
 #include <algorithm>
 #include <array>
@@ -101,13 +102,11 @@ std::vector<std::string> normalized_languages(std::vector<std::string> languages
 
 UiTextContent language_content(const std::string& language)
 {
-    static constexpr std::array<std::string_view,5> builtin_languages{"en","ja","ko","zh_Hans","zh_Hant"};
-    if (std::find(
-        builtin_languages.begin(),
-        builtin_languages.end(),language)
-        != builtin_languages.end())
+    const std::string_view key_segment =
+        elysia::localization::locale_key_segment(language);
+    if (!key_segment.empty())
     {
-        return ui_text_key("engine.settings.languages." + language);
+        return ui_text_key("engine.settings.languages." + std::string(key_segment));
     }
     else
     {

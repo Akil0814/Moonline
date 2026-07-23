@@ -139,6 +139,14 @@ void load_project_fonts(
         "ui.zh_hans" + size_suffix,
         font_root / "fusion-pixel-10px-proportional-zh_hans.ttf",
         point_size), "FontResolver tests must load the Simplified Chinese project font");
+    require(resources.load_font(
+        "ui.zh_hant" + size_suffix,
+        font_root / "fusion-pixel-10px-proportional-zh_hant.ttf",
+        point_size), "FontResolver tests must load the Traditional Chinese project font");
+    require(resources.load_font(
+        "ui.ko" + size_suffix,
+        font_root / "fusion-pixel-10px-proportional-ko.ttf",
+        point_size), "FontResolver tests must load the Korean project font");
     if (include_japanese)
     {
         require(resources.load_font(
@@ -151,10 +159,10 @@ void load_project_fonts(
 void test_engine_resolution_and_validation(FontResolverFixture& fixture)
 {
     FontResolver resolver;
-    constexpr std::array<std::string_view,3> language_views{
-        "en","zh_cn","ja"
+    constexpr std::array<std::string_view,5> language_views{
+        "en","ja","ko","zh-Hans","zh-Hant"
     };
-    const std::array<std::string,3> languages{ "en","zh_cn","ja" };
+    const std::array<std::string,5> languages{ "en","ja","ko","zh-Hans","zh-Hant" };
     const auto configured = resolver.configure(
         settings_with_size(
             FontSource::EngineBuiltIn,
@@ -202,13 +210,27 @@ void test_engine_resolution_and_validation(FontResolverFixture& fixture)
     require(!invalid_source
             && invalid_source.error().code == FontResolveErrorCode::InvalidSource,
         "FontResolver must reject invalid explicit UI font sources");
+    const std::array legacy_locales{
+        std::string("zh") + "_cn",
+        std::string("zh_") + "Hans",
+        std::string("zh_") + "Hant"
+    };
+    for (const std::string& legacy_locale : legacy_locales)
+    {
+        const auto legacy_language = resolver.resolve_ui(
+            UiTypographyRole::Label,
+            legacy_locale);
+        require(!legacy_language
+                && legacy_language.error().code == FontResolveErrorCode::UnsupportedLanguage,
+            "FontResolver must reject every legacy locale spelling");
+    }
 }
 
 void test_atomic_project_activation(FontResolverFixture& fixture)
 {
     fixture.resources().clear();
     FontResolver resolver;
-    const std::array<std::string,3> languages{ "en","zh_cn","ja" };
+    const std::array<std::string,5> languages{ "en","ja","ko","zh-Hans","zh-Hant" };
     const auto configured = resolver.configure(
         settings_with_size(
             FontSource::Project,
@@ -267,7 +289,7 @@ void test_atomic_project_activation(FontResolverFixture& fixture)
 
     const auto project_ui = resolver.resolve_ui(
         UiTypographyRole::DialogBody,
-        "zh_cn");
+        "zh-Hans");
     const auto project_effect = resolver.resolve_effect(
         EffectTypographyRole::FloatingNumber);
     require(project_ui.has_value()
@@ -277,11 +299,11 @@ void test_atomic_project_activation(FontResolverFixture& fixture)
         "active project fonts must serve UI and Latin floating numbers");
     const auto explicit_engine = resolver.resolve_ui(
         UiTypographyRole::DialogBody,
-        "zh_cn",
+        "zh-Hans",
         FontSource::EngineBuiltIn);
     const auto explicit_project = resolver.resolve_ui(
         UiTypographyRole::DialogBody,
-        "zh_cn",
+        "zh-Hans",
         FontSource::Project);
     require(explicit_engine
             && explicit_engine->source == FontSource::EngineBuiltIn
@@ -312,7 +334,7 @@ void test_atomic_project_activation(FontResolverFixture& fixture)
         "entering ApplicationFailureScene must deactivate project fonts");
     const auto failure_scene_font = resolver.resolve_ui(
         UiTypographyRole::DialogBody,
-        "zh_cn");
+        "zh-Hans");
     require(failure_scene_font
             && failure_scene_font->source
                 == FontSource::EngineBuiltIn,

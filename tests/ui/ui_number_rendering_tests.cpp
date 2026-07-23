@@ -117,7 +117,7 @@ void test_ui_number_uses_shared_localized_glyphs()
         number.submit_ui_render_commands(commands);
         require(texture_commands(commands).size() == 6,"UI numbers must rebuild after shared cache clearing");
 
-        require(localization->set_language("zh_cn"),"UI number tests must switch language");
+        require(localization->set_language("zh-Hans"),"UI number tests must switch language");
         commands.clear();
         number.submit_ui_render_commands(commands);
         require(texture_commands(commands).size() == 6,"UI number glyphs must follow the active language font mapping");

@@ -48,8 +48,8 @@
       },
       "languages": {
         "en": "English",
-        "zh_Hans": "Simplified Chinese",
-        "zh_Hant": "Traditional Chinese",
+        "zh_hans": "Simplified Chinese",
+        "zh_hant": "Traditional Chinese",
         "ja": "Japanese",
         "ko": "Korean"
       },
