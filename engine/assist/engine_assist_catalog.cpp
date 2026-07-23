@@ -43,7 +43,7 @@ const std::array<EngineAssistAnimationDescriptor, 1> kAnimationDescriptors = {
         .frame_count = 8,
         .fps = 8.0,
         .loop = true
-    },
+    }
 };
 
 const std::array<EngineAssistAudioDescriptor, 0> kSoundDescriptors = {};
