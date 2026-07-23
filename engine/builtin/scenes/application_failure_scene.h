@@ -1,7 +1,7 @@
 #pragma once
 
 #include "application_failure_scene_payload.h"
-#include "../scene.h"
+#include "../../scene/scene.h"
 
 #include <string>
 
@@ -13,9 +13,9 @@ class UiWindow;
 struct UiConfirmationDialogConfig;
 }
 
-namespace elysia::scene::builtin
+namespace elysia::builtin
 {
-class ApplicationFailureScene final : public Scene
+class ApplicationFailureScene final : public elysia::scene::Scene
 {
     friend class ApplicationFailureSceneTestAccess;
 
@@ -23,7 +23,7 @@ public:
     ApplicationFailureScene() = default;
     ~ApplicationFailureScene() override = default;
 
-    void on_enter(const ScenePayload& payload) override;
+    void on_enter(const elysia::scene::ScenePayload& payload) override;
     void on_exit() override;
     void reset() override;
     void on_update(double delta) override;

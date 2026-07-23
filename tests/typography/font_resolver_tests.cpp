@@ -1,12 +1,13 @@
 #define SDL_MAIN_HANDLED
 
 #include "engine/typography/font_settings.h"
-#include "engine/assist/engine_assist_cache.h"
-#include "engine/assist/engine_assist_catalog.h"
+#include "engine/builtin/resources/builtin_asset_cache.h"
+#include "engine/builtin/resources/builtin_asset_catalog.h"
 #include "engine/io/loaders/asset_config_types.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/resources/resource_manager.h"
-#include "engine/scene/builtin/application_failure_scene.h"
+#include "engine/builtin/builtin_scene_keys.h"
+#include "engine/builtin/scenes/application_failure_scene.h"
 #include "engine/scene/runtime/scene_runtime_context.h"
 #include "engine/scene/scene_manager.h"
 #include "engine/typography/font_resolver.h"
@@ -65,9 +66,9 @@ public:
             "FontResolver tests must initialize project paths");
         require(_engine_cache.initialize(
             _renderer,
-            elysia::assist::EngineAssistCatalog(source_root),
+            elysia::builtin::BuiltinAssetCatalog(source_root),
             std::array{10,20,24,30,40,50,60,70}).has_value(),
-            "FontResolver tests must initialize Engine assist fonts");
+            "FontResolver tests must initialize built-in fonts");
         elysia::resources::ResourceManager::instance()->clear();
     }
 
@@ -83,7 +84,7 @@ public:
         SDL_Quit();
     }
 
-    [[nodiscard]] elysia::assist::EngineAssistCache& engine_cache() noexcept
+    [[nodiscard]] elysia::builtin::BuiltinAssetCache& engine_cache() noexcept
     {
         return _engine_cache;
     }
@@ -101,7 +102,7 @@ public:
 private:
     SDL_Surface* _surface = nullptr;
     SDL_Renderer* _renderer = nullptr;
-    elysia::assist::EngineAssistCache _engine_cache;
+    elysia::builtin::BuiltinAssetCache _engine_cache;
 };
 
 ResolvedFontSettings settings_with_size(
@@ -299,11 +300,11 @@ void test_atomic_project_activation(FontResolverFixture& fixture)
     elysia::scene::SceneManager scene_manager;
     scene_manager.set_runtime_context(context);
     scene_manager.register_engine_scene<
-        elysia::scene::builtin::ApplicationFailureScene>(
-            elysia::scene::builtin::ApplicationFailure);
+        elysia::builtin::ApplicationFailureScene>(
+            elysia::builtin::SceneKeys::ApplicationFailure);
     scene_manager.start(
-        elysia::scene::builtin::make_application_failure_route(
-            elysia::scene::builtin::ApplicationFailurePresentation::
+        elysia::builtin::make_application_failure_route(
+            elysia::builtin::ApplicationFailurePresentation::
                 RuntimeFatal,
             "typography",
             "project font failure"));

@@ -1,6 +1,6 @@
 #include "font_resolver.h"
 
-#include "../assist/engine_assist_cache.h"
+#include "../builtin/resources/builtin_asset_cache.h"
 #include "../resources/resource_manager.h"
 
 #include <unordered_set>
@@ -40,7 +40,7 @@ namespace
 
 std::expected<void,FontResolveError> FontResolver::configure(
     const ResolvedFontSettings& settings,
-    const elysia::assist::EngineAssistCache& engine_assist_cache,
+    const elysia::builtin::BuiltinAssetCache& builtin_asset_cache,
     const elysia::resources::ResourceManager& resource_manager,
     std::span<const std::string> supported_languages)
 {
@@ -54,7 +54,7 @@ std::expected<void,FontResolveError> FontResolver::configure(
     }
 
     _settings = settings;
-    _engine_assist_cache = &engine_assist_cache;
+    _builtin_asset_cache = &builtin_asset_cache;
     _resource_manager = &resource_manager;
     _supported_languages.assign(
         supported_languages.begin(),
@@ -74,7 +74,7 @@ std::expected<void,FontResolveError> FontResolver::configure(
 void FontResolver::shutdown() noexcept
 {
     _settings.reset();
-    _engine_assist_cache = nullptr;
+    _builtin_asset_cache = nullptr;
     _resource_manager = nullptr;
     _supported_languages.clear();
     _project_fonts_active = false;
@@ -251,7 +251,7 @@ std::expected<TTF_Font*,FontResolveError> FontResolver::find_font(
     if (source == FontSource::EngineBuiltIn)
     {
         const std::string_view engine_locale =
-            elysia::assist::EngineAssistCache::map_project_locale(language);
+            elysia::builtin::BuiltinAssetCache::map_project_locale(language);
         if (engine_locale.empty())
         {
             return std::unexpected(error(
@@ -260,8 +260,8 @@ std::expected<TTF_Font*,FontResolveError> FontResolver::find_font(
                     + std::string(language)));
         }
 
-        TTF_Font* font = _engine_assist_cache
-            ? _engine_assist_cache->find_font(engine_locale,point_size)
+        TTF_Font* font = _builtin_asset_cache
+            ? _builtin_asset_cache->find_font(engine_locale,point_size)
             : nullptr;
         if (font)
             return font;

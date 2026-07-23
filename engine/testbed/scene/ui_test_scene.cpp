@@ -1,6 +1,6 @@
 #include "ui_test_scene.h"
 
-#include "../../assist/engine_assist_cache.h"
+#include "../../builtin/resources/builtin_asset_cache.h"
 #include "../../ui/composites/ui_confirmation_dialog.h"
 #include "../../ui/composites/ui_dialog.h"
 #include "../../ui/composites/ui_dropdown.h"
@@ -128,9 +128,9 @@ void UiTestScene::on_enter(const elysia::scene::ScenePayload& payload)
         elysia::scene::try_scene_payload<TestbedScenePayload>(payload);
     if (!test_payload || !is_valid_return_route(test_payload->return_route))
         throw std::logic_error("UiTestScene requires TestbedScenePayload with a valid return route.");
-    const auto* cache = runtime_context().engine_assist_cache();
+    const auto* cache = runtime_context().builtin_asset_cache();
     if (!cache || !cache->initialized())
-        throw std::logic_error("UiTestScene requires an initialized EngineAssistCache.");
+        throw std::logic_error("UiTestScene requires an initialized BuiltinAssetCache.");
     _return_route = test_payload->return_route;
     _paused = false;
     rebuild_ui();
@@ -176,8 +176,8 @@ void UiTestScene::sync_theme_switch_button_roles() noexcept
 void UiTestScene::rebuild_ui()
 {
     clear_ui();
-    const auto* cache = runtime_context().engine_assist_cache();
-    if (!cache) throw std::logic_error("UiTestScene requires EngineAssistCache while building UI.");
+    const auto* cache = runtime_context().builtin_asset_cache();
+    if (!cache) throw std::logic_error("UiTestScene requires BuiltinAssetCache while building UI.");
     SDL_Texture* image_texture = cache->find_texture("engine.brand.elysia.default");
     if (!image_texture) throw std::logic_error("UiTestScene requires engine.brand.elysia.default.");
 

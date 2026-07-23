@@ -4,7 +4,8 @@
 
 #include "../../engine/audio/audio_service.h"
 #include "../../engine/resources/resource_manager.h"
-#include "../../engine/scene/builtin/settings_scene.h"
+#include "../../engine/builtin/builtin_scene_keys.h"
+#include "../../engine/builtin/scenes/settings_scene.h"
 #include "../../engine/testbed/scene/testbed_scene_payload.h"
 #include "../../engine/testbed/testbed_scene_keys.h"
 
@@ -109,8 +110,8 @@ void MainMenuScene::build_menu_buttons()
     ui_button->set_text_content(elysia::ui::ui_text_key("menu_scene.settings"));
     ui_button->set_on_click([this] {
         Scene::request_scene_switch(
-            elysia::scene::builtin::Settings,
-            elysia::scene::builtin::SettingsScenePayload{
+            elysia::builtin::SceneKeys::Settings,
+            elysia::builtin::SettingsScenePayload{
                 .return_route = elysia::scene::SceneRoute{
                     .target = MoonlineSceneKeys::MainMenu,
                     .payload = MainMenuEnterPayload{ .replay_theme_music = false },

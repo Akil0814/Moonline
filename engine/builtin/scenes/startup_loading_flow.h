@@ -1,6 +1,6 @@
 #pragma once
 
-namespace elysia::scene::builtin
+namespace elysia::builtin
 {
 enum class StartupLogoAction
 {

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "engine_assist_catalog.h"
-#include "../animation/animation.h"
-#include "../resources/atlas/atlas.h"
-#include "../resources/texture/texture_loader.h"
+#include "builtin_asset_catalog.h"
+#include "../../animation/animation.h"
+#include "../../resources/atlas/atlas.h"
+#include "../../resources/texture/texture_loader.h"
 
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
@@ -17,29 +17,29 @@
 
 struct SDL_Renderer;
 
-namespace elysia::assist
+namespace elysia::builtin
 {
-struct EngineAssistFontDeleter
+struct BuiltinFontDeleter
 {
     void operator()(TTF_Font* font) const noexcept;
 };
 
-struct EngineAssistSoundDeleter
+struct BuiltinSoundDeleter
 {
     void operator()(Mix_Chunk* sound) const noexcept;
 };
 
-struct EngineAssistMusicDeleter
+struct BuiltinMusicDeleter
 {
     void operator()(Mix_Music* music) const noexcept;
 };
 
-using EngineAssistFontPtr = std::unique_ptr<TTF_Font, EngineAssistFontDeleter>;
-using EngineAssistSoundPtr = std::unique_ptr<Mix_Chunk, EngineAssistSoundDeleter>;
-using EngineAssistMusicPtr = std::unique_ptr<Mix_Music, EngineAssistMusicDeleter>;
-using EngineAssistTranslationTable = std::unordered_map<std::string, std::string>;
+using BuiltinFontPtr = std::unique_ptr<TTF_Font, BuiltinFontDeleter>;
+using BuiltinSoundPtr = std::unique_ptr<Mix_Chunk, BuiltinSoundDeleter>;
+using BuiltinMusicPtr = std::unique_ptr<Mix_Music, BuiltinMusicDeleter>;
+using BuiltinTranslationTable = std::unordered_map<std::string, std::string>;
 
-struct EngineAssistAnimationDefinition
+struct BuiltinAnimationDefinition
 {
     std::string key;
     const elysia::resources::Atlas* atlas = nullptr;
@@ -47,19 +47,19 @@ struct EngineAssistAnimationDefinition
     bool loop = false;
 };
 
-class EngineAssistCache
+class BuiltinAssetCache
 {
 public:
-    EngineAssistCache() = default;
-    ~EngineAssistCache();
+    BuiltinAssetCache() = default;
+    ~BuiltinAssetCache();
 
-    EngineAssistCache(const EngineAssistCache&) = delete;
-    EngineAssistCache& operator=(const EngineAssistCache&) = delete;
-    EngineAssistCache(EngineAssistCache&&) = delete;
-    EngineAssistCache& operator=(EngineAssistCache&&) = delete;
+    BuiltinAssetCache(const BuiltinAssetCache&) = delete;
+    BuiltinAssetCache& operator=(const BuiltinAssetCache&) = delete;
+    BuiltinAssetCache(BuiltinAssetCache&&) = delete;
+    BuiltinAssetCache& operator=(BuiltinAssetCache&&) = delete;
 
     [[nodiscard]] std::expected<void, std::string> initialize(SDL_Renderer* renderer,
-        const EngineAssistCatalog& catalog,std::span<const int> point_sizes);
+        const BuiltinAssetCatalog& catalog,std::span<const int> point_sizes);
     void shutdown() noexcept;
 
     [[nodiscard]] bool initialized() const noexcept;
@@ -67,7 +67,7 @@ public:
     [[nodiscard]] SDL_Texture* find_texture(std::string_view key) const noexcept;
     [[nodiscard]] TTF_Font* find_font(std::string_view locale,int point_size) const noexcept;
     [[nodiscard]] const std::string* find_translation(std::string_view locale,std::string_view key) const noexcept;
-    [[nodiscard]] const EngineAssistAnimationDefinition* find_animation(std::string_view key) const noexcept;
+    [[nodiscard]] const BuiltinAnimationDefinition* find_animation(std::string_view key) const noexcept;
     [[nodiscard]] Mix_Chunk* find_sound(std::string_view key) const noexcept;
     [[nodiscard]] Mix_Music* find_music(std::string_view key) const noexcept;
     [[nodiscard]] std::unique_ptr<elysia::animation::Animation> create_animation(std::string_view key) const;
@@ -84,12 +84,12 @@ public:
 
 private:
     using TextureMap = std::unordered_map<std::string, elysia::resources::TextureResource>;
-    using FontMap = std::unordered_map<std::string, EngineAssistFontPtr>;
-    using TranslationTables = std::unordered_map<std::string, EngineAssistTranslationTable>;
+    using FontMap = std::unordered_map<std::string, BuiltinFontPtr>;
+    using TranslationTables = std::unordered_map<std::string, BuiltinTranslationTable>;
     using AtlasMap = std::unordered_map<std::string, std::unique_ptr<elysia::resources::Atlas>>;
-    using AnimationDefinitions = std::unordered_map<std::string, EngineAssistAnimationDefinition>;
-    using SoundMap = std::unordered_map<std::string, EngineAssistSoundPtr>;
-    using MusicMap = std::unordered_map<std::string, EngineAssistMusicPtr>;
+    using AnimationDefinitions = std::unordered_map<std::string, BuiltinAnimationDefinition>;
+    using SoundMap = std::unordered_map<std::string, BuiltinSoundPtr>;
+    using MusicMap = std::unordered_map<std::string, BuiltinMusicPtr>;
 
     struct PreparedState
     {
@@ -103,7 +103,7 @@ private:
     };
 
     [[nodiscard]] std::expected<PreparedState, std::string> prepare(SDL_Renderer* renderer,
-        const EngineAssistCatalog& catalog,std::span<const int> point_sizes) const;
+        const BuiltinAssetCatalog& catalog,std::span<const int> point_sizes) const;
 
 private:
     TextureMap _textures;

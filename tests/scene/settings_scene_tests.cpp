@@ -2,7 +2,8 @@
 
 #include "engine/config/user_config_service.h"
 #include "engine/io/loaders/asset_config_types.h"
-#include "engine/scene/builtin/settings_scene.h"
+#include "engine/builtin/builtin_scene_keys.h"
+#include "engine/builtin/scenes/settings_scene.h"
 #include "engine/scene/scene_manager.h"
 #include "engine/scene/runtime/scene_runtime_context.h"
 #include "tests/support/test_assertions.h"
@@ -44,8 +45,8 @@ public:
     void open_settings(const elysia::scene::SceneRoute& return_route)
     {
         request_scene_switch(
-            elysia::scene::builtin::Settings,
-            elysia::scene::builtin::SettingsScenePayload{
+            elysia::builtin::SceneKeys::Settings,
+            elysia::builtin::SettingsScenePayload{
                 .return_route = return_route
             });
     }
@@ -105,14 +106,14 @@ void send_cancel(elysia::scene::SceneManager& scene_manager)
 
 void test_settings_payload_contract_names_the_scene()
 {
-    elysia::scene::builtin::SettingsScene scene;
+    elysia::builtin::SettingsScene scene;
     require(throws_logic_error_containing(
         [&scene] { scene.on_enter({}); },
         "SettingsScene"),
         "missing Settings payload must fail with the built-in scene name");
 
     const elysia::scene::ScenePayload invalid_payload =
-        elysia::scene::builtin::SettingsScenePayload{
+        elysia::builtin::SettingsScenePayload{
             .return_route = elysia::scene::SceneRoute{ .target = 1000 }
         };
     require(throws_logic_error_containing(
@@ -145,14 +146,14 @@ void test_cancel_returns_to_each_callers_full_route()
     elysia::scene::SceneManager scene_manager;
     scene_manager.set_runtime_context(context);
     scene_manager.register_engine_scene<
-        elysia::scene::builtin::SettingsScene>(
-            elysia::scene::builtin::Settings);
+        elysia::builtin::SettingsScene>(
+            elysia::builtin::SceneKeys::Settings);
     scene_manager.register_game_scene<FirstReturnScene>(1);
     scene_manager.register_game_scene<SecondReturnScene>(2);
 
     scene_manager.start(elysia::scene::SceneRoute{
-        .target = elysia::scene::builtin::Settings,
-        .payload = elysia::scene::builtin::SettingsScenePayload{
+        .target = elysia::builtin::SceneKeys::Settings,
+        .payload = elysia::builtin::SettingsScenePayload{
             .return_route = elysia::scene::SceneRoute{
                 .target = 1,
                 .payload = ReturnPayload{ .marker = 11 },
@@ -175,7 +176,7 @@ void test_cancel_returns_to_each_callers_full_route()
         });
     scene_manager.on_update(0.0);
     require(scene_manager.current_scene_key()
-        == elysia::scene::builtin::Settings,
+        == elysia::builtin::SceneKeys::Settings,
         "the cached SettingsScene must be reusable from another caller");
 
     send_cancel(scene_manager);

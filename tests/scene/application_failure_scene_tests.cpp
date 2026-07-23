@@ -1,7 +1,8 @@
 #define SDL_MAIN_HANDLED
 
 #include "engine/io/loaders/asset_config_types.h"
-#include "engine/scene/builtin/application_failure_scene.h"
+#include "engine/builtin/builtin_scene_keys.h"
+#include "engine/builtin/scenes/application_failure_scene.h"
 #include "engine/scene/routing/scene_key.h"
 #include "engine/scene/runtime/scene_runtime_context.h"
 #include "engine/scene/scene_manager.h"
@@ -19,7 +20,7 @@
 #include <string_view>
 #include <vector>
 
-namespace elysia::scene::builtin
+namespace elysia::builtin
 {
 class ApplicationFailureSceneTestAccess
 {
@@ -59,10 +60,10 @@ public:
 namespace
 {
 using moonline::tests::require;
-using elysia::scene::builtin::ApplicationFailurePresentation;
-using elysia::scene::builtin::ApplicationFailureScene;
-using elysia::scene::builtin::ApplicationFailureScenePayload;
-using elysia::scene::builtin::ApplicationFailureSceneTestAccess;
+using elysia::builtin::ApplicationFailurePresentation;
+using elysia::builtin::ApplicationFailureScene;
+using elysia::builtin::ApplicationFailureScenePayload;
+using elysia::builtin::ApplicationFailureSceneTestAccess;
 
 bool throws_logic_error_containing(
     const std::function<void()>& operation,
@@ -142,20 +143,20 @@ void configure_scene_manager(
 {
     scene_manager.set_runtime_context(context);
     scene_manager.register_engine_scene<ApplicationFailureScene>(
-        elysia::scene::builtin::ApplicationFailure);
+        elysia::builtin::SceneKeys::ApplicationFailure);
 }
 
 void test_scene_identity_and_route_contract()
 {
     require(
-        elysia::scene::builtin::ApplicationFailure == 0xFFFF0005u,
+        elysia::builtin::SceneKeys::ApplicationFailure == 0xFFFF0005u,
         "application failure must preserve the built-in scene key value");
     require(
         elysia::scene::SceneKeys::is_engine(
-            elysia::scene::builtin::ApplicationFailure),
+            elysia::builtin::SceneKeys::ApplicationFailure),
         "application failure key must belong to the built-in scene range");
 
-    const auto route = elysia::scene::builtin::make_application_failure_route(
+    const auto route = elysia::builtin::make_application_failure_route(
         ApplicationFailurePresentation::RuntimeFatal,
         "resource",
         "missing atlas");
@@ -163,7 +164,7 @@ void test_scene_identity_and_route_contract()
         elysia::scene::try_scene_payload<ApplicationFailureScenePayload>(
             route.payload);
     require(
-        route.target == elysia::scene::builtin::ApplicationFailure
+        route.target == elysia::builtin::SceneKeys::ApplicationFailure
             && route.reload_mode == elysia::scene::SceneReloadMode::Reuse
             && payload
             && payload->presentation
@@ -263,7 +264,7 @@ void test_cancel_key_reopens_the_dialog()
     elysia::scene::SceneManager scene_manager;
     configure_scene_manager(scene_manager,context);
     scene_manager.start(
-        elysia::scene::builtin::make_application_failure_route(
+        elysia::builtin::make_application_failure_route(
             ApplicationFailurePresentation::RuntimeFatal,
             "runtime",
             "cancel reopen probe"));
@@ -298,7 +299,7 @@ void test_persistent_button_reopens_the_dialog()
     elysia::scene::SceneManager scene_manager;
     configure_scene_manager(scene_manager,context);
     scene_manager.start(
-        elysia::scene::builtin::make_application_failure_route(
+        elysia::builtin::make_application_failure_route(
             ApplicationFailurePresentation::RuntimeFatal,
             "runtime",
             "button reopen probe"));

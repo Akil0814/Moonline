@@ -1,25 +1,23 @@
 #include "elysia_scene.h"
 
-#include "../../assist/engine_assist_cache.h"
-#include "../../assist/engine_assist_audio_player.h"
-#include "../../assist/engine_assist_keys.h"
+#include "../builtin/resources/builtin_asset_cache.h"
+#include "../builtin/audio/builtin_audio_player.h"
+#include "../builtin/resources/builtin_asset_keys.h"
 
-#include "../../input/raw_input_types.h"
-#include "../../scene/runtime/scene_runtime_context.h"
+#include "../input/raw_input_types.h"
+#include "../scene/runtime/scene_runtime_context.h"
 
-#include "../../ui/widgets/image/ui_fade_image.h"
-#include "../../ui/widgets/label/ui_label.h"
+#include "../ui/widgets/image/ui_fade_image.h"
+#include "../ui/widgets/label/ui_label.h"
 
-#include "../../ui/window/ui_window.h"
-#include "../../ui/containers/ui_list_container.h"
+#include "../ui/window/ui_window.h"
+#include "../ui/containers/ui_list_container.h"
 
 #include <array>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <string_view>
-
-
 
 
 /*
@@ -45,8 +43,7 @@
 “ 一段故事结束，也是另一段故事的开始。只要那些名字不被遗忘，故事也会得到延续。”
 “ 要微笑着看到最后一页哦。接下来的故事，就交给你来续写啦。”
 */
-
-namespace elysia::testbed
+namespace elysia::realm
 {
 namespace
 {
@@ -96,22 +93,23 @@ void ElysiaScene::on_input(const elysia::input::RawInputFrame& input,const std::
 
 void ElysiaScene::on_enter(const elysia::scene::ScenePayload& payload)
 {
-    const TestbedScenePayload* testbed_payload =elysia::scene::try_scene_payload<TestbedScenePayload>(payload);
-    if (!testbed_payload || !is_valid_return_route(testbed_payload->return_route))
+    const ElysiaScenePayload* realm_payload =
+        elysia::scene::try_scene_payload<ElysiaScenePayload>(payload);
+    if (!realm_payload || !is_valid_return_route(realm_payload->return_route))
     {
         throw std::logic_error(
-            "ElysiaScene requires TestbedScenePayload with a valid return route.");
+            "ElysiaScene requires ElysiaScenePayload with a valid return route.");
     }
 
-    const auto* cache = runtime_context().engine_assist_cache();
+    const auto* cache = runtime_context().builtin_asset_cache();
     if (!cache || !cache->initialized())
-        throw std::logic_error("ElysiaScene requires an initialized EngineAssistCache.");
+        throw std::logic_error("ElysiaScene requires an initialized BuiltinAssetCache.");
 
-    const auto* audio_player = runtime_context().engine_assist_audio_player();
+    const auto* audio_player = runtime_context().builtin_audio_player();
     if (!audio_player || !audio_player->bound())
-        throw std::logic_error("ElysiaScene requires a bound EngineAssistAudioPlayer.");
+        throw std::logic_error("ElysiaScene requires a bound BuiltinAudioPlayer.");
 
-    _return_route = testbed_payload->return_route;
+    _return_route = realm_payload->return_route;
     _paused = false;
     stop_playback();
     _playback_phase = PlaybackPhase::Loading;
@@ -122,7 +120,7 @@ void ElysiaScene::on_enter(const elysia::scene::ScenePayload& payload)
     _root_window->set_visible(true);
     _root_window->set_active(true);
 
-    if (!audio_player->play_music(elysia::assist::asset_keys::ElysianRealm))
+    if (!audio_player->play_music(elysia::builtin::asset_keys::ElysianRealm))
     {
         destroy_ui();
         throw std::logic_error("ElysiaScene Play Music Error.");
@@ -137,7 +135,7 @@ void ElysiaScene::on_enter(const elysia::scene::ScenePayload& payload)
 void ElysiaScene::on_exit()
 {
     stop_playback();
-    const auto* audio_player = runtime_context().engine_assist_audio_player();
+    const auto* audio_player = runtime_context().builtin_audio_player();
     if (audio_player && audio_player->bound())
         audio_player->stop_music();
     _paused = false;
@@ -160,9 +158,9 @@ void ElysiaScene::reset()
 
 void ElysiaScene::build_ui()
 {
-    const auto* cache = runtime_context().engine_assist_cache();
+    const auto* cache = runtime_context().builtin_asset_cache();
     if (!cache)
-        throw std::logic_error("ElysiaScene requires EngineAssistCache while building UI.");
+        throw std::logic_error("ElysiaScene requires BuiltinAssetCache while building UI.");
 
     SDL_Texture* texture = cache->find_texture("engine.brand.elysia.default");
     if (!texture)

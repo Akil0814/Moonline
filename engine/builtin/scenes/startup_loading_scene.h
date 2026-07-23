@@ -2,7 +2,7 @@
 
 #include "startup_loading_flow.h"
 #include "startup_loading_scene_payload.h"
-#include "../scene.h"
+#include "../../scene/scene.h"
 #include "../../loading/game_content_loader.h"
 
 #include <string_view>
@@ -19,9 +19,9 @@ namespace elysia::typography
 class FontResolver;
 }
 
-namespace elysia::scene::builtin
+namespace elysia::builtin
 {
-class StartupLoadingScene final : public Scene
+class StartupLoadingScene final : public elysia::scene::Scene
 {
     friend class StartupLoadingSceneTestAccess;
 
@@ -29,7 +29,7 @@ public:
     StartupLoadingScene() = default;
     ~StartupLoadingScene() override = default;
 
-    void on_enter(const ScenePayload& payload) override;
+    void on_enter(const elysia::scene::ScenePayload& payload) override;
     void on_exit() override;
     void reset() override;
 

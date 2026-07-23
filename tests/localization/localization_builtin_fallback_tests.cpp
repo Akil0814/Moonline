@@ -1,8 +1,8 @@
 #define SDL_MAIN_HANDLED
 
 #include "engine/typography/font_settings.h"
-#include "engine/assist/engine_assist_cache.h"
-#include "engine/assist/engine_assist_catalog.h"
+#include "engine/builtin/resources/builtin_asset_cache.h"
+#include "engine/builtin/resources/builtin_asset_catalog.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/localization/localization_manager.h"
 #include "engine/resources/resource_manager.h"
@@ -67,12 +67,12 @@ int main()
     auto* path_manager = elysia::io::PathManager::instance();
     require(path_manager->init(source_root), "localization fallback tests must initialize project paths");
 
-    elysia::assist::EngineAssistCache cache;
+    elysia::builtin::BuiltinAssetCache cache;
     require(cache.initialize(
         fixture.renderer(),
-        elysia::assist::EngineAssistCatalog(source_root),
+        elysia::builtin::BuiltinAssetCatalog(source_root),
         std::array{20}).has_value(),
-        "localization fallback tests must initialize Engine assist cache");
+        "localization fallback tests must initialize built-in asset cache");
 
     auto* localization = elysia::localization::LocalizationManager::instance();
     elysia::typography::FontResolver font_resolver;
@@ -82,7 +82,7 @@ int main()
         "en",
         &font_resolver,
         &cache),
-        "LocalizationManager must initialize with Engine assist defaults");
+        "LocalizationManager must initialize with built-in defaults");
 
     elysia::typography::UiTypographyProfile::PointSizes point_sizes{};
     point_sizes.fill(20);

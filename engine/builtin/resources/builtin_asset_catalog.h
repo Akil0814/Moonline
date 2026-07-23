@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../io/path/path_manager.h"
+#include "../../io/path/path_manager.h"
 
 #include <expected>
 #include <filesystem>
@@ -8,27 +8,27 @@
 #include <span>
 #include <string_view>
 
-namespace elysia::assist
+namespace elysia::builtin
 {
-struct EngineAssistAssetDescriptor
+struct BuiltinAssetDescriptor
 {
     std::string_view key;
     std::filesystem::path relative_path;
 };
 
-struct EngineAssistLocaleDescriptor
+struct BuiltinLocaleDescriptor
 {
     std::string_view locale;
     std::filesystem::path relative_path;
 };
 
-struct EngineAssistAudioDescriptor
+struct BuiltinAudioDescriptor
 {
     std::string_view key;
     std::filesystem::path relative_path;
 };
 
-struct EngineAssistAnimationDescriptor
+struct BuiltinAnimationDescriptor
 {
     std::string_view key;
     std::string_view texture_key;
@@ -48,35 +48,35 @@ struct EngineAssistAnimationDescriptor
     }
 };
 
-enum class EngineAssistValidationErrorCode
+enum class BuiltinAssetValidationErrorCode
 {
     RootMissing,
     RequiredMarkerMissing,
     RequiredFileMissing
 };
 
-struct EngineAssistValidationError
+struct BuiltinAssetValidationError
 {
-    EngineAssistValidationErrorCode code;
+    BuiltinAssetValidationErrorCode code;
     std::filesystem::path path;
 };
 
-class EngineAssistCatalog
+class BuiltinAssetCatalog
 {
 public:
-    explicit EngineAssistCatalog(std::filesystem::path project_root);
-    explicit EngineAssistCatalog(const elysia::io::PathManager& path_manager);
+    explicit BuiltinAssetCatalog(std::filesystem::path project_root);
+    explicit BuiltinAssetCatalog(const elysia::io::PathManager& path_manager);
 
     [[nodiscard]] const std::filesystem::path& root() const noexcept;
     [[nodiscard]] std::filesystem::path required_marker_path() const;
-    [[nodiscard]] std::span<const EngineAssistAssetDescriptor> fonts() const noexcept;
-    [[nodiscard]] std::span<const EngineAssistAssetDescriptor> textures() const noexcept;
-    [[nodiscard]] std::span<const EngineAssistLocaleDescriptor> locales() const noexcept;
-    [[nodiscard]] std::span<const EngineAssistAnimationDescriptor> animations() const noexcept;
-    [[nodiscard]] std::span<const EngineAssistAudioDescriptor> sounds() const noexcept;
-    [[nodiscard]] std::span<const EngineAssistAudioDescriptor> music() const noexcept;
+    [[nodiscard]] std::span<const BuiltinAssetDescriptor> fonts() const noexcept;
+    [[nodiscard]] std::span<const BuiltinAssetDescriptor> textures() const noexcept;
+    [[nodiscard]] std::span<const BuiltinLocaleDescriptor> locales() const noexcept;
+    [[nodiscard]] std::span<const BuiltinAnimationDescriptor> animations() const noexcept;
+    [[nodiscard]] std::span<const BuiltinAudioDescriptor> sounds() const noexcept;
+    [[nodiscard]] std::span<const BuiltinAudioDescriptor> music() const noexcept;
     [[nodiscard]] std::filesystem::path resolve(const std::filesystem::path& relative_path) const;
-    [[nodiscard]] std::expected<void, EngineAssistValidationError>validate_required_files() const;
+    [[nodiscard]] std::expected<void, BuiltinAssetValidationError>validate_required_files() const;
 
 private:
     std::filesystem::path _root;

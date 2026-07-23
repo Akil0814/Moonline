@@ -1,5 +1,5 @@
 #include "../tools/logger.h"
-#include "../assist/engine_assist_cache.h"
+#include "../builtin/resources/builtin_asset_cache.h"
 #include "localization_manager.h"
 
 #include "../core/render/sdl_convert.h"
@@ -58,7 +58,7 @@ bool LocalizationManager::init(
 	const std::filesystem::path& manifest_path,
 	std::string initial_language,
 	const elysia::typography::FontResolver* font_resolver,
-	const elysia::assist::EngineAssistCache* engine_assist_cache
+	const elysia::builtin::BuiltinAssetCache* builtin_asset_cache
 )
 {
 	shutdown();
@@ -107,7 +107,7 @@ bool LocalizationManager::init(
 
 	_renderer = renderer;
 	_font_resolver = font_resolver;
-	_engine_assist_cache = engine_assist_cache;
+	_builtin_asset_cache = builtin_asset_cache;
 	_manifest_path = manifest_path;
 	_i18n_root = path_manager->assets() / "i18n";
 
@@ -138,7 +138,7 @@ void LocalizationManager::shutdown()
 	_i18n_root.clear();
 	_current_language.clear();
 	_font_resolver = nullptr;
-	_engine_assist_cache = nullptr;
+	_builtin_asset_cache = nullptr;
 	_renderer = nullptr;
 	_initialized = false;
 }
@@ -166,14 +166,14 @@ std::string_view LocalizationManager::tr(std::string_view key) const
 			return default_translation;
 	}
 
-	if (key.starts_with("engine.") && _engine_assist_cache)
+	if (key.starts_with("engine.") && _builtin_asset_cache)
 	{
 		const std::string_view locale = engine_locale();
-		if (const std::string* translation = _engine_assist_cache->find_translation(locale, key))
+		if (const std::string* translation = _builtin_asset_cache->find_translation(locale, key))
 			return *translation;
 		if (locale != "en")
 		{
-			if (const std::string* fallback = _engine_assist_cache->find_translation("en", key))
+			if (const std::string* fallback = _builtin_asset_cache->find_translation("en", key))
 				return *fallback;
 		}
 	}
@@ -408,8 +408,8 @@ std::filesystem::path LocalizationManager::resolve_locale_directory(
 
 std::string_view LocalizationManager::engine_locale() const noexcept
 {
-	return _engine_assist_cache
-		? elysia::assist::EngineAssistCache::map_project_locale(_current_language)
+	return _builtin_asset_cache
+		? elysia::builtin::BuiltinAssetCache::map_project_locale(_current_language)
 		: std::string_view{};
 }
 

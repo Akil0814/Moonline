@@ -4,7 +4,8 @@
 #include "../scene/main_menu_scene.h"
 #include "../scene/moonline_scene_keys.h"
 
-#include "../../engine/scene/builtin/startup_loading_scene.h"
+#include "../../engine/builtin/builtin_scene_keys.h"
+#include "../../engine/builtin/scenes/startup_loading_scene.h"
 #include "../../engine/scene/scene_manager.h"
 
 namespace moonline::application
@@ -13,8 +14,8 @@ elysia::application::ApplicationDescriptor MoonlineGameModule::descriptor() cons
 {
     using elysia::scene::SceneReloadMode;
     using elysia::scene::SceneRoute;
-    using elysia::scene::builtin::StartupLoadingScenePayload;
-    using elysia::scene::builtin::StartupLogoSlot;
+    using elysia::builtin::StartupLoadingScenePayload;
+    using elysia::builtin::StartupLogoSlot;
 
     elysia::application::ApplicationDescriptor descriptor;
     descriptor.logical_width = 1280;
@@ -30,7 +31,7 @@ elysia::application::ApplicationDescriptor MoonlineGameModule::descriptor() cons
     descriptor.presentation.fonts.floating_number.source =
         elysia::typography::FontSource::Project;
     descriptor.initial_route = SceneRoute{
-        .target = elysia::scene::builtin::StartupLoading,
+        .target = elysia::builtin::SceneKeys::StartupLoading,
         .payload = StartupLoadingScenePayload{
             .success_route = SceneRoute{
                 .target = MoonlineSceneKeys::MainMenu,

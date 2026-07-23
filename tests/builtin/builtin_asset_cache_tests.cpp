@@ -1,9 +1,9 @@
 #define SDL_MAIN_HANDLED
 
-#include "engine/assist/engine_assist_cache.h"
-#include "engine/assist/engine_assist_audio_player.h"
-#include "engine/assist/engine_assist_catalog.h"
-#include "engine/assist/engine_assist_keys.h"
+#include "engine/builtin/resources/builtin_asset_cache.h"
+#include "engine/builtin/audio/builtin_audio_player.h"
+#include "engine/builtin/resources/builtin_asset_catalog.h"
+#include "engine/builtin/resources/builtin_asset_keys.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/loading/content_runtime_cleanup.h"
 #include "engine/core/render/colors.h"
@@ -30,20 +30,20 @@ public:
     {
         SDL_setenv("SDL_AUDIODRIVER","dummy",1);
         require(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) == 0,
-            "Engine assist cache tests must initialize SDL video and audio");
+            "Built-in asset cache tests must initialize SDL video and audio");
         require((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) == IMG_INIT_PNG,
-            "Engine assist cache tests must initialize PNG support");
+            "Built-in asset cache tests must initialize PNG support");
         require(TTF_Init() == 0,
-            "Engine assist cache tests must initialize SDL_ttf");
+            "Built-in asset cache tests must initialize SDL_ttf");
         require(Mix_OpenAudio(44100,MIX_DEFAULT_FORMAT,2,2048) == 0,
-            "Engine assist cache tests must open SDL_mixer audio");
+            "Built-in asset cache tests must open SDL_mixer audio");
 
         _surface = SDL_CreateRGBSurfaceWithFormat(0, 128, 128, 32, SDL_PIXELFORMAT_RGBA32);
         require(_surface != nullptr,
-            "Engine assist cache tests must create a software surface");
+            "Built-in asset cache tests must create a software surface");
         _renderer = SDL_CreateSoftwareRenderer(_surface);
         require(_renderer != nullptr,
-            "Engine assist cache tests must create a software renderer");
+            "Built-in asset cache tests must create a software renderer");
     }
 
     ~AssistCacheFixture()
@@ -68,28 +68,28 @@ int main()
 {
     AssistCacheFixture fixture;
     const std::filesystem::path source_root = MOONLINE_SOURCE_DIR;
-    elysia::assist::EngineAssistCatalog catalog(source_root);
-    elysia::assist::EngineAssistCache cache;
+    elysia::builtin::BuiltinAssetCatalog catalog(source_root);
+    elysia::builtin::BuiltinAssetCache cache;
     constexpr std::array default_point_sizes{10,20,30,40,50,60,70};
 
     const auto initialized = cache.initialize(
         fixture.renderer(),
         catalog,
         default_point_sizes);
-    require(initialized.has_value(), "Engine assist cache must load all repository assist resources");
+    require(initialized.has_value(), "Built-in asset cache must load all repository built-in resources");
     require(cache.initialized(), "successful cache initialization must publish a live cache");
     require(cache.texture_count() == 6, "cache must own all six Engine textures");
     require(cache.font_count() == 35, "cache must own five font faces at seven fixed sizes");
     require(cache.locale_count() == 5, "cache must own all five Engine translation tables");
     require(cache.find_texture(
-            elysia::assist::asset_keys::ElysiaWhiteTexture) != nullptr,
+            elysia::builtin::asset_keys::ElysiaWhiteTexture) != nullptr,
         "cache must expose the Engine startup logo by stable key");
     require(cache.find_texture("engine.test.sprite") != nullptr,
         "cache must expose the Engine test sprite by stable key");
     require(cache.find_font("zh-Hans", 30) != nullptr,
         "cache must expose Engine fonts by locale and point size");
 
-    elysia::assist::EngineAssistCache custom_size_cache;
+    elysia::builtin::BuiltinAssetCache custom_size_cache;
     constexpr std::array custom_point_sizes{24};
     require(custom_size_cache.initialize(
             fixture.renderer(),
@@ -101,22 +101,22 @@ int main()
     custom_size_cache.shutdown();
     require(cache.find_translation("ja", "engine.settings.title") != nullptr,
         "cache must expose parsed Engine translations");
-    require(elysia::assist::EngineAssistCache::map_project_locale("zh_cn") == "zh-Hans",
+    require(elysia::builtin::BuiltinAssetCache::map_project_locale("zh_cn") == "zh-Hans",
         "project Simplified Chinese must map to the Engine BCP-47 locale");
     require(cache.animation_count() == 1, "cache must register the Engine test animation");
     require(cache.sound_count() == 0 && cache.music_count() == 1,
         "cache must expose the registered Elysia scene music");
     require(cache.find_sound("") == nullptr && cache.find_sound("engine.test.sound") == nullptr
             && cache.find_music("") == nullptr && cache.find_music("engine.test.music") == nullptr
-            && cache.find_music(elysia::assist::asset_keys::ElysianRealm) != nullptr,
+            && cache.find_music(elysia::builtin::asset_keys::ElysianRealm) != nullptr,
         "cache must distinguish registered and unregistered Engine audio keys");
 
-    elysia::assist::EngineAssistAudioPlayer audio_player;
+    elysia::builtin::BuiltinAudioPlayer audio_player;
     require(!audio_player.bound(),
-        "Engine Assist audio player must begin unbound");
+        "Built-in audio player must begin unbound");
     require(audio_player.play_sound("engine.test.sound") == -1
             && !audio_player.play_music("engine.test.music"),
-        "unbound Engine Assist audio requests must fail safely");
+        "unbound built-in audio requests must fail safely");
     audio_player.bind(cache,elysia::audio::AudioSettings{
         .master_volume = 125,
         .music_volume = -10,
@@ -126,12 +126,12 @@ int main()
             && audio_player.settings().master_volume == 100
             && audio_player.settings().music_volume == 0
             && audio_player.settings().sound_volume == 42,
-        "binding the Engine Assist audio player must clamp its volume snapshot");
+        "binding the built-in audio player must clamp its volume snapshot");
     require(audio_player.play_sound("engine.test.sound") == -1
             && !audio_player.play_music("engine.test.music"),
-        "bound Engine Assist audio requests must not fall back to project resources");
-    require(audio_player.play_music(elysia::assist::asset_keys::ElysianRealm),
-        "bound Engine Assist audio player must play registered scene music");
+        "bound built-in audio requests must not fall back to project resources");
+    require(audio_player.play_music(elysia::builtin::asset_keys::ElysianRealm),
+        "bound built-in audio player must play registered scene music");
     audio_player.stop_music();
     const auto* animation_definition = cache.find_animation("engine.test.idle");
     require(animation_definition != nullptr && animation_definition->atlas != nullptr
@@ -156,7 +156,7 @@ int main()
         elysia::core::Rect{ 0.0f,0.0f,32.0f,32.0f });
     require(ui_animation.set_engine_animation(cache,"engine.test.idle")
             && ui_animation.is_looping(),
-        "UiAnimation must bind looping Engine Assist animations without AnimationManager");
+        "UiAnimation must bind looping built-in animations without AnimationManager");
     ui_animation.set_opacity(128);
     ui_animation.set_color_overlay(
         elysia::core::Color{
@@ -176,34 +176,34 @@ int main()
                     .r = elysia::core::colors::purple_500.r,
                     .g = elysia::core::colors::purple_500.g,
                     .b = elysia::core::colors::purple_500.b },
-        "Engine Assist UiAnimation must render base then a matching color mask");
+        "Built-in UiAnimation must render base then a matching color mask");
 
     elysia::loading::clear_loaded_content();
     require(cache.find_texture(
-            elysia::assist::asset_keys::ElysiaWhiteTexture) != nullptr
+            elysia::builtin::asset_keys::ElysiaWhiteTexture) != nullptr
             && cache.find_font("en", 20) != nullptr,
-        "clearing project content must not invalidate Engine assist resources");
+        "clearing project content must not invalidate built-in resources");
     require(cache.create_animation("engine.test.idle") != nullptr,
-        "clearing project content must not invalidate Engine assist animations");
+        "clearing project content must not invalidate built-in animations");
     require(ui_animation.set_engine_animation(cache,"engine.test.idle"),
-        "UiAnimation Engine Assist binding must survive project content cleanup");
+        "UiAnimation built-in binding must survive project content cleanup");
 
     const std::filesystem::path missing_root = std::filesystem::temp_directory_path()
         / ("elysia_assist_cache_missing_"
             + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()));
     const auto failed_reinitialize = cache.initialize(
         fixture.renderer(),
-        elysia::assist::EngineAssistCatalog(missing_root),
+        elysia::builtin::BuiltinAssetCatalog(missing_root),
         default_point_sizes);
     require(!failed_reinitialize.has_value(),
-        "invalid Engine assist resources must reject initialization");
+        "invalid built-in resources must reject initialization");
     require(cache.texture_count() == 6 && cache.font_count() == 35 && cache.locale_count() == 5
             && cache.animation_count() == 1 && cache.sound_count() == 0
             && cache.music_count() == 1,
         "a failed initialization must preserve the last complete cache transactionally");
 
     audio_player.unbind();
-    require(!audio_player.bound(), "unbinding must detach the Engine Assist audio player");
+    require(!audio_player.bound(), "unbinding must detach the built-in audio player");
     cache.shutdown();
     require(!cache.initialized() && cache.texture_count() == 0 && cache.font_count() == 0
             && cache.locale_count() == 0 && cache.animation_count() == 0

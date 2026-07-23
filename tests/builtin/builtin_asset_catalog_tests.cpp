@@ -1,5 +1,5 @@
-#include "engine/assist/engine_assist_catalog.h"
-#include "engine/assist/engine_assist_keys.h"
+#include "engine/builtin/resources/builtin_asset_catalog.h"
+#include "engine/builtin/resources/builtin_asset_keys.h"
 #include "tests/support/test_assertions.h"
 
 #include <chrono>
@@ -10,8 +10,8 @@
 namespace
 {
 using moonline::tests::require;
-using elysia::assist::EngineAssistCatalog;
-using elysia::assist::EngineAssistValidationErrorCode;
+using elysia::builtin::BuiltinAssetCatalog;
+using elysia::builtin::BuiltinAssetValidationErrorCode;
 
 template<typename Descriptor>
 std::set<std::string> keys_of(const std::span<const Descriptor> descriptors)
@@ -23,7 +23,7 @@ std::set<std::string> keys_of(const std::span<const Descriptor> descriptors)
 }
 
 std::set<std::string> locales_of(
-    const std::span<const elysia::assist::EngineAssistLocaleDescriptor> descriptors)
+    const std::span<const elysia::builtin::BuiltinLocaleDescriptor> descriptors)
 {
     std::set<std::string> locales;
     for (const auto& descriptor : descriptors)
@@ -58,7 +58,7 @@ private:
 int main()
 {
     const std::filesystem::path source_root = MOONLINE_SOURCE_DIR;
-    EngineAssistCatalog catalog(source_root);
+    BuiltinAssetCatalog catalog(source_root);
 
     require(catalog.root() == source_root / "assets" / "engine",
         "assist root must be resolved below the project assets root");
@@ -85,14 +85,14 @@ int main()
             "engine.brand.elysia.black_alpha_inverse",
             "engine.brand.elysia.default",
             "engine.brand.elysia.light_edge",
-            std::string(elysia::assist::asset_keys::ElysiaWhiteTexture),
+            std::string(elysia::builtin::asset_keys::ElysiaWhiteTexture),
             "engine.test.sprite",
         },
         "assist texture keys must be stable"
     );
     require(
         keys_of(catalog.music()) == std::set<std::string>{
-            std::string(elysia::assist::asset_keys::ElysianRealm)
+            std::string(elysia::builtin::asset_keys::ElysianRealm)
         },
         "assist music keys must be stable"
     );
@@ -112,7 +112,7 @@ int main()
     );
     require(
         catalog.validate_required_files().has_value(),
-        "all repository Engine assist files must be present"
+        "all repository built-in files must be present"
     );
     require(
         catalog.required_marker_path() == source_root / "assets" / "engine" / ".elysia_engine_required",
@@ -126,11 +126,11 @@ int main()
         std::filesystem::temp_directory_path() / ("elysia_assist_catalog_" + unique_suffix);
     TemporaryDirectory temporary_directory(temporary_root / "assets" / "engine");
 
-    EngineAssistCatalog missing_file_catalog(temporary_root);
+    BuiltinAssetCatalog missing_file_catalog(temporary_root);
     const auto missing_file = missing_file_catalog.validate_required_files();
     require(!missing_file.has_value(), "catalog must reject a missing required resource");
     require(
-        missing_file.error().code == EngineAssistValidationErrorCode::RequiredMarkerMissing,
+        missing_file.error().code == BuiltinAssetValidationErrorCode::RequiredMarkerMissing,
         "existing assist root with no marker must report a marker failure"
     );
     require(
@@ -138,11 +138,11 @@ int main()
         "missing marker failure must identify the Engine-specific marker"
     );
 
-    EngineAssistCatalog missing_root_catalog(temporary_root / "missing");
+    BuiltinAssetCatalog missing_root_catalog(temporary_root / "missing");
     const auto missing_root = missing_root_catalog.validate_required_files();
     require(!missing_root.has_value(), "catalog must reject a missing assist root");
     require(
-        missing_root.error().code == EngineAssistValidationErrorCode::RootMissing,
+        missing_root.error().code == BuiltinAssetValidationErrorCode::RootMissing,
         "missing assist root must have a distinct diagnostic"
     );
 

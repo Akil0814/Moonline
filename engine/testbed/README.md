@@ -10,7 +10,7 @@ must not depend on Testbed code.
 - Keep automated unit and integration tests under `tests/`; that directory is
   not runtime Testbed code.
 - Do not place production startup, settings, or failure scenes here; they remain
-  under `engine/scene/builtin/`.
+  under `engine/builtin/scenes/`.
 
 ## Engine Feature Test
 

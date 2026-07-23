@@ -1,7 +1,7 @@
 #define SDL_MAIN_HANDLED
 
-#include "engine/assist/engine_assist_cache.h"
-#include "engine/assist/engine_assist_catalog.h"
+#include "engine/builtin/resources/builtin_asset_cache.h"
+#include "engine/builtin/resources/builtin_asset_catalog.h"
 #include "engine/core/time.h"
 #include "engine/effects/effect_manager.h"
 #include "engine/io/path/path_manager.h"
@@ -14,6 +14,7 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
 #include <SDL_ttf.h>
 
 #include <cmath>
@@ -50,10 +51,14 @@ struct FloatingNumberEffectFixture
 {
     FloatingNumberEffectFixture()
     {
-        require(SDL_Init(SDL_INIT_VIDEO) == 0, "floating number tests must initialize SDL video");
+        SDL_setenv("SDL_AUDIODRIVER","dummy",1);
+        require(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) == 0,
+            "floating number tests must initialize SDL video and audio");
         require((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) == IMG_INIT_PNG,
             "floating number tests must initialize PNG support");
         require(TTF_Init() == 0, "floating number tests must initialize SDL_ttf");
+        require(Mix_OpenAudio(44100,MIX_DEFAULT_FORMAT,2,2048) == 0,
+            "floating number tests must open SDL_mixer audio");
         surface = SDL_CreateRGBSurfaceWithFormat(0, 128, 128, 32, SDL_PIXELFORMAT_RGBA32);
         require(surface != nullptr, "floating number tests must create a surface");
         renderer = SDL_CreateSoftwareRenderer(surface);
@@ -67,6 +72,7 @@ struct FloatingNumberEffectFixture
         elysia::resources::ResourceManager::instance()->clear();
         SDL_DestroyRenderer(renderer);
         SDL_FreeSurface(surface);
+        Mix_CloseAudio();
         TTF_Quit();
         IMG_Quit();
         SDL_Quit();
@@ -96,12 +102,12 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
         typography::resolve_font_settings(typography::FontSettings{});
     require(resolved_font_settings.has_value(),
         "floating number default font settings must resolve");
-    assist::EngineAssistCache engine_cache;
+    builtin::BuiltinAssetCache engine_cache;
     require(engine_cache.initialize(
         renderer,
-        assist::EngineAssistCatalog(*path_manager),
+        builtin::BuiltinAssetCatalog(*path_manager),
         resolved_font_settings->engine_point_sizes()).has_value(),
-        "floating number tests must initialize Engine assist fonts");
+        "floating number tests must initialize built-in fonts");
     typography::FontResolver font_resolver;
     require(localization_manager->init(
         renderer,

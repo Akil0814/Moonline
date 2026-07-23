@@ -1,7 +1,7 @@
 #define SDL_MAIN_HANDLED
 
-#include "engine/scene/builtin/startup_loading_scene.h"
-#include "engine/scene/builtin/application_failure_scene_payload.h"
+#include "engine/builtin/scenes/startup_loading_scene.h"
+#include "engine/builtin/scenes/application_failure_scene_payload.h"
 #include "engine/scene/routing/scene_request_observer.h"
 #include "engine/typography/font_resolver.h"
 #include "tests/support/test_assertions.h"
@@ -11,7 +11,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace elysia::scene::builtin
+namespace elysia::builtin
 {
 class StartupLoadingSceneTestAccess
 {
@@ -85,7 +85,7 @@ bool throws_logic_error_containing(
 
 void test_payload_contract_names_startup_scene()
 {
-    elysia::scene::builtin::StartupLoadingScene scene;
+    elysia::builtin::StartupLoadingScene scene;
     require(throws_logic_error_containing(
         [&scene]
         {
@@ -95,7 +95,7 @@ void test_payload_contract_names_startup_scene()
         "wrong startup payload type must fail with the built-in scene name");
 
     const elysia::scene::ScenePayload invalid_route =
-        elysia::scene::builtin::StartupLoadingScenePayload{
+        elysia::builtin::StartupLoadingScenePayload{
             .success_route = elysia::scene::SceneRoute{ .target = 1000 }
         };
     require(throws_logic_error_containing(
@@ -107,7 +107,7 @@ void test_payload_contract_names_startup_scene()
 void test_success_and_failure_routes_are_forwarded_unchanged()
 {
     using namespace elysia::scene;
-    using namespace elysia::scene::builtin;
+    using namespace elysia::builtin;
 
     StartupLoadingScene success_scene;
     RequestProbe success_probe;
@@ -162,7 +162,7 @@ void test_success_and_failure_routes_are_forwarded_unchanged()
 void test_failure_without_route_uses_builtin_failure_scene()
 {
     using namespace elysia::scene;
-    using namespace elysia::scene::builtin;
+    using namespace elysia::builtin;
 
     StartupLoadingScene scene;
     RequestProbe probe;
@@ -180,7 +180,8 @@ void test_failure_without_route_uses_builtin_failure_scene()
     require(
         probe.request_count == 1
             && probe.request.type == SceneRequestType::Switch
-            && probe.request.route.target == ApplicationFailure
+            && probe.request.route.target
+                == elysia::builtin::SceneKeys::ApplicationFailure
             && probe.request.route.reload_mode == SceneReloadMode::Reuse
             && payload
             && payload->presentation
@@ -194,7 +195,7 @@ void test_failure_without_route_uses_builtin_failure_scene()
 void test_font_activation_failure_uses_configured_failure_route()
 {
     using namespace elysia::scene;
-    using namespace elysia::scene::builtin;
+    using namespace elysia::builtin;
 
     StartupLoadingScene scene;
     RequestProbe probe;

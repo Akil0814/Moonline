@@ -1,7 +1,7 @@
 #define SDL_MAIN_HANDLED
 
-#include "engine/assist/engine_assist_cache.h"
-#include "engine/assist/engine_assist_catalog.h"
+#include "engine/builtin/resources/builtin_asset_cache.h"
+#include "engine/builtin/resources/builtin_asset_catalog.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/loading/content_manifest_pipeline.h"
 #include "engine/localization/localization_manager.h"
@@ -65,12 +65,12 @@ void test_text_input_uses_private_editing_texture()
         typography::resolve_font_settings(typography::FontSettings{});
     require(resolved_font_settings.has_value(),
         "text input default font settings must resolve");
-    assist::EngineAssistCache engine_cache;
+    builtin::BuiltinAssetCache engine_cache;
     require(engine_cache.initialize(
         renderer,
-        assist::EngineAssistCatalog(*path_manager),
+        builtin::BuiltinAssetCatalog(*path_manager),
         resolved_font_settings->engine_point_sizes()).has_value(),
-        "text input texture test must initialize Engine assist fonts");
+        "text input texture test must initialize built-in fonts");
     typography::FontResolver font_resolver;
 
     localization_manager->shutdown();

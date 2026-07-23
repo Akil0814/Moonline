@@ -24,8 +24,8 @@ start->set_on_click([this] {
 
 settings->set_on_click([this] {
     request_scene_switch(
-        elysia::scene::builtin::Settings,
-        elysia::scene::builtin::SettingsScenePayload{
+        elysia::builtin::SceneKeys::Settings,
+        elysia::builtin::SettingsScenePayload{
             .return_route = elysia::scene::SceneRoute{
                 .target = MoonlineSceneKeys::MainMenu,
                 .payload = MainMenuEnterPayload{

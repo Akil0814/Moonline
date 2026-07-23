@@ -1,22 +1,27 @@
 #include "startup_loading_scene.h"
 #include "application_failure_scene_payload.h"
 
-#include "../../assist/engine_assist_keys.h"
+#include "../resources/builtin_asset_keys.h"
 #include "../../bootstrap/bootstrapper.h"
-#include "../../assist/engine_assist_cache.h"
+#include "../resources/builtin_asset_cache.h"
 #include "../../tools/logger.h"
 #include "../../typography/font_resolver.h"
 #include "../../ui/widgets/image/ui_fade_image.h"
 #include "../../ui/widgets/label/ui_blink_label.h"
 #include "../../ui/widgets/ui_bar.h"
-#include "../runtime/scene_runtime_context.h"
+#include "../../scene/runtime/scene_runtime_context.h"
 
 #include <algorithm>
 #include <stdexcept>
 #include <string>
 
-namespace elysia::scene::builtin
+namespace elysia::builtin
 {
+using elysia::scene::Scene;
+using elysia::scene::ScenePayload;
+using elysia::scene::SceneRoute;
+using elysia::scene::try_scene_payload;
+
 namespace
 {
 constexpr double kEngineLogoFadeInSeconds = 1.0;
@@ -25,7 +30,7 @@ constexpr double kEngineLogoFadeOutSeconds = 1.0;
 
 bool is_valid_route(const SceneRoute& route) noexcept
 {
-    return SceneKeys::is_supported(route.target);
+    return elysia::scene::SceneKeys::is_supported(route.target);
 }
 }
 
@@ -145,11 +150,11 @@ void StartupLoadingScene::on_input(
 
 bool StartupLoadingScene::create_presentation()
 {
-    const elysia::assist::EngineAssistCache* engine_assist_cache =
-        runtime_context().engine_assist_cache();
-    SDL_Texture* engine_texture = engine_assist_cache
-        ? engine_assist_cache->find_texture(
-            elysia::assist::asset_keys::ElysiaWhiteTexture)
+    const elysia::builtin::BuiltinAssetCache* builtin_asset_cache =
+        runtime_context().builtin_asset_cache();
+    SDL_Texture* engine_texture = builtin_asset_cache
+        ? builtin_asset_cache->find_texture(
+            elysia::builtin::asset_keys::ElysiaWhiteTexture)
         : nullptr;
     if (!engine_texture)
     {

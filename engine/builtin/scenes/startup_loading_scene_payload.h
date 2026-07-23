@@ -1,11 +1,11 @@
 #pragma once
 
-#include "../routing/scene_route.h"
+#include "../../scene/routing/scene_route.h"
 
 #include <optional>
 #include <string>
 
-namespace elysia::scene::builtin
+namespace elysia::builtin
 {
 struct StartupLogoSlot
 {
@@ -17,8 +17,8 @@ struct StartupLogoSlot
 
 struct StartupLoadingScenePayload
 {
-    SceneRoute success_route{};
-    std::optional<SceneRoute> failure_route{};
+    elysia::scene::SceneRoute success_route{};
+    std::optional<elysia::scene::SceneRoute> failure_route{};
     std::optional<StartupLogoSlot> project_logo{};
     bool wait_for_confirmation = true;
 };

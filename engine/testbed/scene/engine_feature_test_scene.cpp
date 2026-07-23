@@ -1,8 +1,8 @@
 #include "engine_feature_test_scene.h"
 
-#include "../../assist/engine_assist_cache.h"
-#include "../../assist/engine_assist_audio_player.h"
-#include "../../assist/engine_assist_keys.h"
+#include "../../builtin/resources/builtin_asset_cache.h"
+#include "../../builtin/audio/builtin_audio_player.h"
+#include "../../builtin/resources/builtin_asset_keys.h"
 #include "../../core/render/colors.h"
 #include "../../input/raw_input_types.h"
 #include "../../ui/containers/ui_list_container.h"
@@ -73,14 +73,14 @@ void EngineFeatureTestScene::on_enter(const elysia::scene::ScenePayload& payload
 
     _return_route = test_payload->return_route;
     _paused = false;
-    const auto* cache = runtime_context().engine_assist_cache();
+    const auto* cache = runtime_context().builtin_asset_cache();
     if (!cache || !cache->initialized())
-        throw std::logic_error("EngineFeatureTestScene requires an initialized EngineAssistCache.");
-    _audio_player = runtime_context().engine_assist_audio_player();
+        throw std::logic_error("EngineFeatureTestScene requires an initialized BuiltinAssetCache.");
+    _audio_player = runtime_context().builtin_audio_player();
     if (!_audio_player || !_audio_player->bound())
     {
         throw std::logic_error(
-            "EngineFeatureTestScene requires a bound EngineAssistAudioPlayer.");
+            "EngineFeatureTestScene requires a bound BuiltinAudioPlayer.");
     }
     if (!_primary_animation)
     {
@@ -171,7 +171,7 @@ void EngineFeatureTestScene::build_audio_controls()
         if (_audio_player)
         {
             (void)_audio_player->play_sound(
-                elysia::assist::asset_keys::TestSound);
+                elysia::builtin::asset_keys::TestSound);
         }
     });
     controls->add_back(std::move(play_sound));
@@ -181,7 +181,7 @@ void EngineFeatureTestScene::build_audio_controls()
     {
         if (_audio_player)
         {
-            (void)_audio_player->play_music(elysia::assist::asset_keys::TestMusic);
+            (void)_audio_player->play_music(elysia::builtin::asset_keys::TestMusic);
         }
     });
     controls->add_back(std::move(play_music));

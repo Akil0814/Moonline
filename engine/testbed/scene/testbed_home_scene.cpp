@@ -2,7 +2,8 @@
 
 #include "../testbed_scene_keys.h"
 #include "../../input/raw_input_types.h"
-#include "../../scene/builtin/application_failure_scene_payload.h"
+#include "../../builtin/scenes/application_failure_scene_payload.h"
+#include "../../elysia/elysia_scene_payload.h"
 #include "../../ui/containers/ui_list_container.h"
 #include "../../ui/widgets/label/ui_label.h"
 #include "../../ui/widgets/ui_button.h"
@@ -123,8 +124,10 @@ void TestbedHomeScene::build_ui()
     auto elysia_scene = make_button("Elysia Scene (1111)");
     elysia_scene->set_on_click([this]() {
         request_scene_switch(
-            SceneKeys::Elysia,
-            TestbedScenePayload{ .return_route = make_home_route() });
+            elysia::scene::SceneKeys::ElysiaEasterEgg,
+            elysia::realm::ElysiaScenePayload{
+                .return_route = make_home_route()
+            });
     });
     list->add_back(std::move(elysia_scene));
 
@@ -134,8 +137,8 @@ void TestbedHomeScene::build_ui()
         elysia::ui::UiButtonVisualRole::Danger);
     application_failure->set_on_click([this]() {
         request_scene_switch(
-            elysia::scene::builtin::make_application_failure_route(
-                elysia::scene::builtin::ApplicationFailurePresentation::
+            elysia::builtin::make_application_failure_route(
+                elysia::builtin::ApplicationFailurePresentation::
                     RuntimeFatal,
                 "testbed",
                 "Injected runtime failure from the Engine Testbed."));

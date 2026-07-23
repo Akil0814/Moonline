@@ -1,6 +1,7 @@
 #define SDL_MAIN_HANDLED
 
 #include "engine/io/loaders/asset_config_types.h"
+#include "engine/builtin/builtin_scene_keys.h"
 #include "engine/scene/scene.h"
 #include "engine/scene/routing/scene_key.h"
 #include "engine/scene/scene_manager.h"
@@ -149,8 +150,8 @@ void test_scene_key_domains_and_payload_helpers()
     static_assert(SceneKeys::is_reserved(SceneKeys::EngineMarker));
     static_assert(!SceneKeys::is_engine(SceneKeys::EngineMarker));
     static_assert(SceneKeys::is_engine(SceneKeys::EngineBegin));
-    static_assert(builtin::StartupLoading == 0xFFFF0001u);
-    static_assert(builtin::Settings == 0xFFFF0002u);
+    static_assert(elysia::builtin::SceneKeys::StartupLoading == 0xFFFF0001u);
+    static_assert(elysia::builtin::SceneKeys::Settings == 0xFFFF0002u);
 
     const ScenePayload payload = RoutePayload{ 37 };
     const RoutePayload* found = try_scene_payload<RoutePayload>(payload);
@@ -203,12 +204,15 @@ void test_registration_and_route_key_errors_are_distinct()
         [&manager] { manager.start(SceneRoute{ .target = 2 }); },
         "unregistered game"), "unregistered game keys must identify their domain");
     require(throws_logic_error_containing(
-        [&manager] { manager.start(SceneRoute{ .target = builtin::Settings }); },
+        [&manager] { manager.start(SceneRoute{
+            .target = elysia::builtin::SceneKeys::Settings }); },
         "unregistered engine-owned"), "unregistered engine-owned keys must identify their domain");
 
-    manager.register_engine_scene<SecondProbeScene>(builtin::Settings);
+    manager.register_engine_scene<SecondProbeScene>(
+        elysia::builtin::SceneKeys::Settings);
     require(throws_logic_error_containing(
-        [&manager] { manager.register_engine_scene<FirstProbeScene>(builtin::Settings); },
+        [&manager] { manager.register_engine_scene<FirstProbeScene>(
+            elysia::builtin::SceneKeys::Settings); },
         "duplicate"), "engine-owned registration must share duplicate-key protection");
 }
 
