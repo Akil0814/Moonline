@@ -23,6 +23,15 @@
 #include <string>
 #include <string_view>
 
+
+#define ELYSIA_APP (elysia::application::Application::instance())
+
+#define ELYSIA_INIT_APP(argc, argv, game_module) \
+    (elysia::application::Application::instance()->init((argc), (argv), (game_module)))
+
+#define ELYSIA_RUN_APP \
+    (elysia::application::Application::instance()->run())
+
 namespace elysia::application
 {
 class Application final

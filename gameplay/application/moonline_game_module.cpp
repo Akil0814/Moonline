@@ -22,7 +22,7 @@ elysia::application::ApplicationDescriptor MoonlineGameModule::descriptor() cons
     descriptor.presentation.render.texture_filter =
         elysia::application::ApplicationTextureFilter::Nearest;
     descriptor.presentation.ui.default_theme =
-        elysia::ui::UiBuiltinTheme::ElysiaDark;
+        elysia::ui::UiBuiltinTheme::BlueGlassMoon;
     descriptor.presentation.startup.engine_logo =
         elysia::application::ApplicationEngineLogoVariant::White;
     descriptor.presentation.fonts.ui.source =

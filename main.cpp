@@ -7,11 +7,10 @@
 int main(int argc, char** argv)
 {
 	moonline::application::MoonlineGameModule game_module;
-	auto* application = elysia::application::Application::instance();
-	if (!application->init(argc,argv,game_module))
+	
+	if (!ELYSIA_INIT_APP(argc, argv, game_module))
 		return EXIT_FAILURE;
-
-	return application->run() == elysia::application::ApplicationRunResult::NormalExit
-		? EXIT_SUCCESS
-		: EXIT_FAILURE;
+	
+	return ELYSIA_RUN_APP == elysia::application::ApplicationRunResult::NormalExit
+		? EXIT_SUCCESS: EXIT_FAILURE;
 }
