@@ -14,6 +14,7 @@
 #include <cmath>
 #include <limits>
 #include <memory>
+#include <string_view>
 #include <utility>
 
 namespace elysia::ui
@@ -34,24 +35,25 @@ constexpr float kFieldSpacing = 20.0f;
 constexpr float kButtonWidth = 160.0f;
 constexpr std::size_t kNotFound = std::numeric_limits<std::size_t>::max();
 
-std::unique_ptr<UiLabel> make_label(std::string text,float width,float height = kRowHeight,
+std::unique_ptr<UiLabel> make_label(UiTextContent content,float width,float height = kRowHeight,
     UiTypographyRole role = UiTypographyRole::Label)
 {
-    auto label = std::make_unique<UiLabel>(elysia::core::Rect{ 0,0,width,height }, 0,ui_raw_text(std::move(text)));
+    auto label = std::make_unique<UiLabel>(
+        elysia::core::Rect{ 0,0,width,height },0,std::move(content));
     label->set_typography_role(role);
     label->set_horizontal_align(TextHorizontalAlign::Left);
     label->set_vertical_align(TextVerticalAlign::Center);
     return label;
 }
 
-std::unique_ptr<UiListContainer> make_field_row(std::string label_text,
+std::unique_ptr<UiListContainer> make_field_row(UiTextContent label_content,
     float field_width,float label_width,std::unique_ptr<UiElement> control)
 {
     auto row = std::make_unique<UiListContainer>(
         elysia::core::Rect{ 0,0,field_width,kRowHeight });
     row->set_direction(UiListDirection::Horizontal);
     row->set_item_spacing(kFieldSpacing);
-    row->add_back(make_label(std::move(label_text),label_width));
+    row->add_back(make_label(std::move(label_content),label_width));
     row->add_back(std::move(control));
     return row;
 }
@@ -97,6 +99,20 @@ std::vector<std::string> normalized_languages(std::vector<std::string> languages
             result.push_back(std::move(language));
     }
     return result;
+}
+
+UiTextContent language_content(const std::string& language)
+{
+    static constexpr std::array<std::string_view,5> builtin_languages{
+        "en","ja","ko","zh-Hans","zh-Hant"
+    };
+    if (std::find(
+            builtin_languages.begin(),builtin_languages.end(),language)
+        != builtin_languages.end())
+    {
+        return ui_text_key("engine.settings.languages." + language);
+    }
+    return ui_raw_text(language);
 }
 }
 
@@ -228,14 +244,21 @@ void SettingsPanel::set_on_back(SettingsPanelBackCallback on_back)
     _on_back = std::move(on_back);
 }
 
-void SettingsPanel::set_status_message(std::string message,bool is_error)
+void SettingsPanel::set_status_content(
+    UiTextContent content,bool is_error)
 {
     if (!_status_label)
         return;
 
-    _status_label->set_text_content(ui_raw_text(std::move(message)));
-    _status_label->set_visual_role(is_error? UiLabelVisualRole::Default: UiLabelVisualRole::Muted);
+    _status_label->set_text_content(std::move(content));
+    _status_label->set_visual_role(
+        is_error ? UiLabelVisualRole::Default : UiLabelVisualRole::Muted);
     _status_label->set_visible(true);
+}
+
+void SettingsPanel::set_status_message(std::string message,bool is_error)
+{
+    set_status_content(ui_raw_text(std::move(message)),is_error);
 }
 
 void SettingsPanel::clear_status_message()
@@ -288,12 +311,16 @@ void SettingsPanel::build_controls()
     const float label_width = std::clamp(field_width * 0.32f,120.0f,190.0f);
     const float control_width = std::max(100.0f,field_width - label_width - kFieldSpacing);
 
-    auto title = make_label("Settings",field_width,kTitleHeight,UiTypographyRole::Title);
+    auto title = make_label(
+        ui_text_key("engine.settings.title"),
+        field_width,kTitleHeight,UiTypographyRole::Title);
     title->set_horizontal_align(TextHorizontalAlign::Center);
     title->set_visual_role(UiLabelVisualRole::Title);
     add_back(std::move(title));
 
-    auto display = make_label("Display",field_width,kSectionHeight,UiTypographyRole::Subtitle);
+    auto display = make_label(
+        ui_text_key("engine.settings.sections.display"),
+        field_width,kSectionHeight,UiTypographyRole::Subtitle);
     display->set_visual_role(UiLabelVisualRole::Subtitle);
     add_back(std::move(display));
 
@@ -316,12 +343,14 @@ void SettingsPanel::build_controls()
             _draft.window_mode = SettingsWindowMode::BorderlessFullscreen;
     });
     add_back(make_field_row(
-        "Window",
+        ui_text_key("engine.settings.fields.window_mode"),
         field_width,
         label_width,
         std::move(window_option)));
 
-    auto audio = make_label("Audio",field_width,kSectionHeight,UiTypographyRole::Subtitle);
+    auto audio = make_label(
+        ui_text_key("engine.settings.sections.audio"),
+        field_width,kSectionHeight,UiTypographyRole::Subtitle);
     audio->set_visual_role(UiLabelVisualRole::Subtitle);
     add_back(std::move(audio));
 
@@ -333,7 +362,7 @@ void SettingsPanel::build_controls()
             _draft.master_volume = static_cast<int>(std::lround(value));
     });
     add_back(make_field_row(
-        "Master volume",
+        ui_text_key("engine.settings.fields.master_volume"),
         field_width,
         label_width,
         std::move(master)));
@@ -346,7 +375,7 @@ void SettingsPanel::build_controls()
             _draft.music_volume = static_cast<int>(std::lround(value));
     });
     add_back(make_field_row(
-        "Music volume",
+        ui_text_key("engine.settings.fields.music_volume"),
         field_width,
         label_width,
         std::move(music)));
@@ -359,12 +388,14 @@ void SettingsPanel::build_controls()
             _draft.sound_volume = static_cast<int>(std::lround(value));
     });
     add_back(make_field_row(
-        "Sound volume",
+        ui_text_key("engine.settings.fields.sound_volume"),
         field_width,
         label_width,
         std::move(sound)));
 
-    auto general = make_label("General",field_width,kSectionHeight,UiTypographyRole::Subtitle);
+    auto general = make_label(
+        ui_text_key("engine.settings.sections.general"),
+        field_width,kSectionHeight,UiTypographyRole::Subtitle);
     general->set_visual_role(UiLabelVisualRole::Subtitle);
     add_back(std::move(general));
 
@@ -377,12 +408,12 @@ void SettingsPanel::build_controls()
             _draft.language = _options.languages[index];
     });
     add_back(make_field_row(
-        "Language",
+        ui_text_key("engine.settings.fields.language"),
         field_width,
         label_width,
         std::move(language)));
 
-    auto status = make_label("",field_width,kStatusHeight);
+    auto status = make_label({},field_width,kStatusHeight);
     status->set_visual_role(UiLabelVisualRole::Muted);
     _status_label = status.get();
     _status_label->set_visible(false);
@@ -396,7 +427,7 @@ void SettingsPanel::build_controls()
 
     auto save = std::make_unique<UiButton>(
         elysia::core::Rect{ 0,0,kButtonWidth,kActionHeight });
-    save->set_text_content(ui_raw_text("Save"));
+    save->set_text_content(ui_text_key("engine.settings.actions.save"));
     save->set_visual_role(UiButtonVisualRole::Primary);
     save->set_on_click([this]()
     {
@@ -409,7 +440,7 @@ void SettingsPanel::build_controls()
 
     auto back = std::make_unique<UiButton>(
         elysia::core::Rect{ 0,0,kButtonWidth,kActionHeight });
-    back->set_text_content(ui_raw_text("Back"));
+    back->set_text_content(ui_text_key("engine.settings.actions.back"));
     back->set_on_click([this]()
     {
         const SettingsPanelBackCallback callback = _on_back;
@@ -437,7 +468,7 @@ void SettingsPanel::rebuild_window_options()
         });
     }
     options.push_back(UiDropdownOption{
-        ui_raw_text("Borderless Fullscreen")
+        ui_text_key("engine.settings.window_modes.borderless_fullscreen")
     });
     _window_option_dropdown->set_options(std::move(options));
 }
@@ -449,7 +480,7 @@ void SettingsPanel::rebuild_language_options()
     std::vector<UiDropdownOption> options;
     options.reserve(_options.languages.size());
     for (const std::string& language : _options.languages)
-        options.push_back(UiDropdownOption{ ui_raw_text(language) });
+        options.push_back(UiDropdownOption{ language_content(language) });
     _language_dropdown->set_options(std::move(options));
 }
 

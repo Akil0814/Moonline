@@ -144,7 +144,8 @@ void ApplicationFailureScene::build_ui()
         throw std::runtime_error(
             "ApplicationFailureScene could not create its reopen button.");
     _reopen_button->set_text_content(
-        elysia::ui::ui_text_key("engine.application.failure.reopen"));
+        elysia::ui::ui_text_key(
+            "engine.application_failure.runtime.reopen"));
     _reopen_button->set_typography_role(
         elysia::typography::UiTypographyRole::ButtonCompact);
     _reopen_button->set_on_click([this]() { open_dialog(); });
@@ -217,9 +218,15 @@ elysia::ui::UiConfirmationDialogConfig ApplicationFailureScene::make_dialog_conf
     const bool startup = presentation == ApplicationFailurePresentation::StartupLoading;
 
     return elysia::ui::UiConfirmationDialogConfig{
-        .title = elysia::ui::ui_text_key(startup ? "engine.startup.failure.title": "engine.application.failure.title"),
-        .message = elysia::ui::ui_text_key(startup? "engine.startup.failure.message": "engine.application.failure.message"),
-        .confirm = elysia::ui::ui_text_key(startup ? "engine.startup.failure.exit" : "engine.application.failure.exit"),
+        .title = elysia::ui::ui_text_key(startup
+            ? "engine.application_failure.startup.title"
+            : "engine.application_failure.runtime.title"),
+        .message = elysia::ui::ui_text_key(startup
+            ? "engine.application_failure.startup.message"
+            : "engine.application_failure.runtime.message"),
+        .confirm = elysia::ui::ui_text_key(startup
+            ? "engine.application_failure.startup.exit"
+            : "engine.application_failure.runtime.exit"),
         .cancel = elysia::ui::ui_text_key("engine.common.cancel"),
         .close = elysia::ui::ui_text_key("engine.common.close_x"),
         .confirm_visual_role = elysia::ui::UiButtonVisualRole::Danger

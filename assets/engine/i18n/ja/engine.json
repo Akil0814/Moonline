@@ -8,16 +8,16 @@
       "close": "閉じる",
       "close_x": "X"
     },
-    "startup": {
-      "press_any_button": "いずれかのボタンを押して開始",
-      "failure": {
+    "startup_loading": {
+      "press_any_button": "いずれかのボタンを押して開始"
+    },
+    "application_failure": {
+      "startup": {
         "title": "起動に失敗しました",
         "message": "必要なゲームリソースを読み込めませんでした。詳細はログを確認してください。",
         "exit": "終了"
-      }
-    },
-    "application": {
-      "failure": {
+      },
+      "runtime": {
         "title": "アプリケーションエラー",
         "message": "致命的な問題が発生したため、アプリケーションを終了する必要があります。詳細はログを確認してください。",
         "exit": "終了",
@@ -42,6 +42,9 @@
       "actions": {
         "save": "保存",
         "back": "戻る"
+      },
+      "window_modes": {
+        "borderless_fullscreen": "ボーダーレスフルスクリーン"
       },
       "languages": {
         "en": "英語",

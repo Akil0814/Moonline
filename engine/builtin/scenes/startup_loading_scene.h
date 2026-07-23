@@ -12,6 +12,7 @@ namespace elysia::ui
 class UiBar;
 class UiFadeImage;
 class UiBlinkLabel;
+struct UiTextContent;
 }
 
 namespace elysia::typography
@@ -40,6 +41,8 @@ public:
     ) override;
 
 private:
+    [[nodiscard]] static elysia::ui::UiTextContent
+        make_start_prompt_content();
     bool create_presentation();
     void create_loading_ui();
     void begin_logo_sequence();

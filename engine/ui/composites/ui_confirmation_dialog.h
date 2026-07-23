@@ -15,6 +15,7 @@ class UiChromeContainer;
 class UiLabel;
 class UiListContainer;
 class UiPanel;
+class UiTextBlock;
 class UiWindow;
 
 // Declarative content and button roles for the fixed Cancel/Confirm structure.
@@ -35,6 +36,8 @@ using UiConfirmationDialogCallback = std::function<void()>;
 // UiChromeContainer is owned as a child rather than exposed through inheritance.
 class UiConfirmationDialog final : public UiControlFocusScopeHost, public UiOverlayWindowClient, private UiDelegatedFocusMixin
 {
+    friend class UiConfirmationDialogTestAccess;
+
 public:
     explicit UiConfirmationDialog(const elysia::core::Rect& rect = elysia::core::Rect{ 0,0,420,240 },int order = 0) noexcept;
     UiConfirmationDialog(const elysia::core::Vector2& position,const elysia::core::Vector2& size,int order = 0) noexcept;
@@ -79,7 +82,7 @@ private:
     UiLabel* _title_label = nullptr;
     UiButton* _close_button = nullptr;
     UiPanel* _body_panel = nullptr;
-    UiLabel* _message_label = nullptr;
+    UiTextBlock* _message_text = nullptr;
     UiListContainer* _action_row = nullptr;
     UiButton* _cancel_button = nullptr;
     UiButton* _confirm_button = nullptr;

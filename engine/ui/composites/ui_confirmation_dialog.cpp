@@ -4,6 +4,7 @@
 #include "../containers/ui_list_container.h"
 #include "../containers/ui_panel.h"
 #include "../widgets/label/ui_label.h"
+#include "../widgets/text/ui_text_block.h"
 #include "../widgets/ui_button.h"
 #include "../window/ui_window.h"
 
@@ -18,7 +19,7 @@ using elysia::typography::UiTypographyRole;
 namespace
 {
 constexpr float kHeaderHeight = 48.0f;
-constexpr float kMessageHeight = 56.0f;
+constexpr float kMessageHeight = 96.0f;
 constexpr float kButtonHeight = 56.0f;
 constexpr float kButtonSpacing = 20.0f;
 
@@ -64,7 +65,7 @@ void UiConfirmationDialog::reset() noexcept
     _title_label = nullptr;
     _close_button = nullptr;
     _body_panel = nullptr;
-    _message_label = nullptr;
+    _message_text = nullptr;
     _action_row = nullptr;
     _cancel_button = nullptr;
     _confirm_button = nullptr;
@@ -227,7 +228,7 @@ void UiConfirmationDialog::close()
 
 void UiConfirmationDialog::rebuild_layout()
 {
-    if (!_chrome || !_body_panel || !_message_label || !_action_row)
+    if (!_chrome || !_body_panel || !_message_text || !_action_row)
         return;
 
     _chrome->set_screen_rect(content_rect());
@@ -283,10 +284,11 @@ void UiConfirmationDialog::create_internal_children()
     body->set_base_style(body_style);
     _body_panel = body.get();
 
-    auto message = std::make_unique<UiLabel>(elysia::core::Rect{ 0,0,380,kMessageHeight });
+    auto message = std::make_unique<UiTextBlock>(
+        elysia::core::Rect{ 0,0,380,kMessageHeight });
+    message->set_typography_role(UiTypographyRole::DialogBody);
     message->set_horizontal_align(TextHorizontalAlign::Center);
-    message->set_vertical_align(TextVerticalAlign::Center);
-    _message_label = message.get();
+    _message_text = message.get();
     _body_panel->add_child(std::move(message),anchored_options(
         UiLayoutAnchor::TopCenter,elysia::core::Vector2(380.0f,kMessageHeight)));
 
@@ -316,12 +318,18 @@ void UiConfirmationDialog::sync_config_to_children()
 {
     if (_title_label)
         _title_label->set_text_content(_config.title);
-    if (_message_label)
-        _message_label->set_text_content(_config.message);
+    if (_message_text)
+        _message_text->set_text_content(_config.message);
     if (_confirm_button)
+    {
         _confirm_button->set_text_content(_config.confirm);
+        _confirm_button->set_visual_role(_config.confirm_visual_role);
+    }
     if (_cancel_button)
+    {
         _cancel_button->set_text_content(_config.cancel);
+        _cancel_button->set_visual_role(_config.cancel_visual_role);
+    }
     if (_close_button)
     {
         _close_button->set_text_content(_config.close);

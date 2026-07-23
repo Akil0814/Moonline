@@ -221,7 +221,8 @@ void SettingsScene::save_draft(const elysia::ui::SettingsPanelDraft& draft)
     {
         _baseline_state = config_service->user_config().runtime_state();
         _settings_panel->set_draft(make_draft(_baseline_state.settings));
-        _settings_panel->set_status_message("Settings saved.",false);
+        _settings_panel->set_status_content(
+            elysia::ui::ui_text_key("engine.settings.status.saved"),false);
         return;
     }
 

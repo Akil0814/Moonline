@@ -34,6 +34,13 @@ bool is_valid_route(const SceneRoute& route) noexcept
 }
 }
 
+elysia::ui::UiTextContent
+StartupLoadingScene::make_start_prompt_content()
+{
+    return elysia::ui::ui_text_key(
+        "engine.startup_loading.press_any_button");
+}
+
 void StartupLoadingScene::on_enter(const ScenePayload& payload)
 {
     clear_state();
@@ -282,7 +289,7 @@ void StartupLoadingScene::create_loading_ui()
         prompt_height
     };
     _start_prompt = create_and_add_object<elysia::ui::UiBlinkLabel>(
-        prompt_rect,0,elysia::ui::ui_raw_text("PRESS ANY BUTTON TO START")
+        prompt_rect,0,make_start_prompt_content()
     );
     if (_start_prompt)
     {

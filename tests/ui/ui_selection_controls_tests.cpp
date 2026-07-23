@@ -8,6 +8,7 @@
 #include "engine/ui/presets/settings_panel.h"
 #include "engine/ui/widgets/ui_button.h"
 #include "engine/ui/widgets/ui_radio_button.h"
+#include "engine/ui/widgets/label/ui_label.h"
 #include "tests/support/test_assertions.h"
 
 #include <cstdlib>
@@ -15,6 +16,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace
@@ -117,6 +119,32 @@ void test_settings_panel_keeps_draft_local_and_normalizes_options()
         "failed display bounds queries must retain every preset without duplicates");
 
     ui::SettingsPanel panel(core::Rect{ 0,0,700,680 });
+    const auto label_at = [&panel](std::size_t index)
+    {
+        return dynamic_cast<ui::UiLabel*>(panel.child_at(index));
+    };
+    const auto row_label_at = [&panel](std::size_t index)
+    {
+        auto* row = dynamic_cast<ui::UiListContainer*>(panel.child_at(index));
+        return row ? dynamic_cast<ui::UiLabel*>(row->child_at(0)) : nullptr;
+    };
+    const auto require_text_key = [](const ui::UiTextContent& content,
+                                     std::string_view key)
+    {
+        require(content.kind == ui::UiTextContentKind::TextKey
+                && content.value == key,
+            "settings panel fixed copy must use the expected localization key");
+    };
+    require_text_key(label_at(0)->text_content(),"engine.settings.title");
+    require_text_key(label_at(1)->text_content(),"engine.settings.sections.display");
+    require_text_key(row_label_at(2)->text_content(),"engine.settings.fields.window_mode");
+    require_text_key(label_at(3)->text_content(),"engine.settings.sections.audio");
+    require_text_key(row_label_at(4)->text_content(),"engine.settings.fields.master_volume");
+    require_text_key(row_label_at(5)->text_content(),"engine.settings.fields.music_volume");
+    require_text_key(row_label_at(6)->text_content(),"engine.settings.fields.sound_volume");
+    require_text_key(label_at(7)->text_content(),"engine.settings.sections.general");
+    require_text_key(row_label_at(8)->text_content(),"engine.settings.fields.language");
+
     const ui::SettingsPanelDraft draft{
         .window_mode = ui::SettingsWindowMode::Windowed,
         .window_size = { 1366,768 },
@@ -168,6 +196,20 @@ void test_settings_panel_keeps_draft_local_and_normalizes_options()
         && window_dropdown->options().size()
             == panel.options().window_sizes.size() + 1u,
         "settings panel must expose window sizes and fullscreen in one dropdown");
+    require_text_key(
+        window_dropdown->options().back().content,
+        "engine.settings.window_modes.borderless_fullscreen");
+    auto* language_dropdown = dropdown_at(8);
+    require(language_dropdown && language_dropdown->options().size() == 2,
+        "settings panel must expose every normalized language option");
+    require_text_key(
+        language_dropdown->options()[0].content,
+        "engine.settings.languages.en");
+    require(
+        language_dropdown->options()[1].content.kind
+                == ui::UiTextContentKind::RawText
+            && language_dropdown->options()[1].content.value == "zh_cn",
+        "unknown language identifiers must remain visible as raw text");
     const std::size_t fullscreen_index =
         panel.options().window_sizes.size();
     require(window_dropdown->set_selected_index(fullscreen_index)
@@ -189,6 +231,19 @@ void test_settings_panel_keeps_draft_local_and_normalizes_options()
         ? dynamic_cast<ui::UiButton*>(actions->child_at(1))
         : nullptr;
     require(save && back,"settings panel must expose Save and Back actions");
+    require_text_key(save->text_content(),"engine.settings.actions.save");
+    require_text_key(back->text_content(),"engine.settings.actions.back");
+
+    auto* status = label_at(9);
+    panel.set_status_content(
+        ui::ui_text_key("engine.settings.status.saved"),false);
+    require(status && status->is_visible(),
+        "localized settings status must become visible");
+    require_text_key(status->text_content(),"engine.settings.status.saved");
+    panel.set_status_message("diagnostic detail",true);
+    require(status->text_content().kind == ui::UiTextContentKind::RawText
+            && status->text_content().value == "diagnostic detail",
+        "settings failure diagnostics must remain raw text");
     const auto activate = [](ui::UiButton& button)
     {
         button.set_focused(true);

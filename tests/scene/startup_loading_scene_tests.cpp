@@ -4,6 +4,7 @@
 #include "engine/builtin/scenes/application_failure_scene_payload.h"
 #include "engine/scene/routing/scene_request_observer.h"
 #include "engine/typography/font_resolver.h"
+#include "engine/ui/text/ui_text_content.h"
 #include "tests/support/test_assertions.h"
 
 #include <cstdlib>
@@ -42,6 +43,11 @@ public:
         elysia::typography::FontResolver* font_resolver)
     {
         return scene.activate_project_fonts(font_resolver);
+    }
+
+    static elysia::ui::UiTextContent start_prompt_content()
+    {
+        return StartupLoadingScene::make_start_prompt_content();
     }
 };
 }
@@ -192,6 +198,17 @@ void test_failure_without_route_uses_builtin_failure_scene()
     scene.detach(&probe);
 }
 
+void test_start_prompt_uses_scene_localization_key()
+{
+    const auto content =
+        elysia::builtin::StartupLoadingSceneTestAccess::start_prompt_content();
+    require(
+        content.kind == elysia::ui::UiTextContentKind::TextKey
+            && content.value
+                == "engine.startup_loading.press_any_button",
+        "startup prompt must use the StartupLoading scene localization key");
+}
+
 void test_font_activation_failure_uses_configured_failure_route()
 {
     using namespace elysia::scene;
@@ -222,6 +239,7 @@ void test_font_activation_failure_uses_configured_failure_route()
 int main()
 {
     test_payload_contract_names_startup_scene();
+    test_start_prompt_uses_scene_localization_key();
     test_success_and_failure_routes_are_forwarded_unchanged();
     test_failure_without_route_uses_builtin_failure_scene();
     test_font_activation_failure_uses_configured_failure_route();

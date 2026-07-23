@@ -2,6 +2,7 @@
 
 #include "engine/ui/composites/ui_labeled_checkbox.h"
 #include "engine/ui/composites/ui_labeled_radio_button.h"
+#include "engine/ui/composites/ui_confirmation_dialog.h"
 #include "engine/ui/composites/ui_tooltip.h"
 #include "engine/ui/containers/ui_chrome_container.h"
 #include "engine/ui/containers/ui_panel.h"
@@ -27,6 +28,51 @@
 #include <optional>
 #include <type_traits>
 #include <vector>
+
+namespace elysia::ui
+{
+class UiConfirmationDialogTestAccess
+{
+public:
+    [[nodiscard]] static UiButtonVisualRole confirm_visual_role(
+        const UiConfirmationDialog& dialog) noexcept
+    {
+        return dialog._confirm_button
+            ? dialog._confirm_button->visual_role()
+            : UiButtonVisualRole::Default;
+    }
+
+    [[nodiscard]] static UiButtonVisualRole cancel_visual_role(
+        const UiConfirmationDialog& dialog) noexcept
+    {
+        return dialog._cancel_button
+            ? dialog._cancel_button->visual_role()
+            : UiButtonVisualRole::Default;
+    }
+
+    [[nodiscard]] static elysia::core::Color confirm_idle_background(
+        const UiConfirmationDialog& dialog) noexcept
+    {
+        return dialog._confirm_button
+            ? dialog._confirm_button->style().chrome.background.idle
+            : elysia::core::Color{};
+    }
+
+    [[nodiscard]] static bool message_wraps(
+        const UiConfirmationDialog& dialog) noexcept
+    {
+        return dialog._message_text
+            && resolve_ui_typography(
+                dialog._message_text->typography_role()).wrap_allowed;
+    }
+
+    [[nodiscard]] static float message_height(
+        const UiConfirmationDialog& dialog) noexcept
+    {
+        return dialog._message_text ? dialog._message_text->size().y : 0.0f;
+    }
+};
+}
 
 namespace
 {
@@ -462,6 +508,55 @@ void test_builtin_theme_border_states()
     }
 }
 
+void test_confirmation_dialog_applies_roles_and_wraps_messages()
+{
+    elysia::ui::UiThemeManager manager;
+    elysia::ui::UiWindow window(elysia::core::Rect{ 0,0,640,360 });
+    auto dialog = std::make_unique<elysia::ui::UiConfirmationDialog>(
+        elysia::core::Rect{ 0,0,520,280 });
+    auto* dialog_raw = dialog.get();
+    window.add_child(std::move(dialog));
+    auto registration = manager.register_root(window);
+    manager.set_theme(elysia::ui::UiBuiltinTheme::ElysiaDark);
+
+    dialog_raw->set_config(elysia::ui::UiConfirmationDialogConfig{
+        .message = elysia::ui::ui_raw_text(
+            "A long confirmation message must wrap within the dialog body."),
+        .confirm = elysia::ui::ui_raw_text("Exit"),
+        .cancel = elysia::ui::ui_raw_text("Cancel"),
+        .confirm_visual_role = elysia::ui::UiButtonVisualRole::Danger,
+        .cancel_visual_role = elysia::ui::UiButtonVisualRole::Primary
+    });
+
+    require(
+        elysia::ui::UiConfirmationDialogTestAccess::confirm_visual_role(*dialog_raw)
+            == elysia::ui::UiButtonVisualRole::Danger,
+        "confirmation dialog must forward the configured confirm visual role");
+    require(
+        elysia::ui::UiConfirmationDialogTestAccess::cancel_visual_role(*dialog_raw)
+            == elysia::ui::UiButtonVisualRole::Primary,
+        "confirmation dialog must forward the configured cancel visual role");
+    require(
+        elysia::ui::UiConfirmationDialogTestAccess::confirm_idle_background(*dialog_raw)
+            == manager.current_theme()
+                .button(elysia::ui::UiButtonVisualRole::Danger)
+                .chrome.background.idle,
+        "confirmation dialog must resolve the confirm button's rendered Danger color");
+    require(
+        elysia::ui::UiConfirmationDialogTestAccess::confirm_idle_background(*dialog_raw)
+            != manager.current_theme()
+                .button(elysia::ui::UiButtonVisualRole::Primary)
+                .chrome.background.idle,
+        "confirmation dialog Danger and Primary buttons must remain visually distinct");
+    require(
+        elysia::ui::UiConfirmationDialogTestAccess::message_wraps(*dialog_raw),
+        "confirmation dialog messages must use wrapping DialogBody typography");
+    require(
+        elysia::ui::UiConfirmationDialogTestAccess::message_height(*dialog_raw)
+            >= 96.0f,
+        "confirmation dialog must reserve enough height for a multi-line message");
+}
+
 void test_elysia_dark_bar_fill_contrast()
 {
     const auto theme = elysia::ui::make_builtin_theme(
@@ -670,6 +765,7 @@ void test_text_widget_font_source_overrides()
 int main()
 {
     test_typography_role_layout_defaults();
+    test_confirmation_dialog_applies_roles_and_wraps_messages();
     test_corner_radius_normalization();
     test_stroke_width_model_and_style_cascade();
     test_chrome_uses_single_rounded_outer_frame();

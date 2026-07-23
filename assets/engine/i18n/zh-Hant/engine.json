@@ -8,16 +8,16 @@
       "close": "關閉",
       "close_x": "X"
     },
-    "startup": {
-      "press_any_button": "按任意鍵開始",
-      "failure": {
+    "startup_loading": {
+      "press_any_button": "按任意鍵開始"
+    },
+    "application_failure": {
+      "startup": {
         "title": "啟動失敗",
         "message": "無法載入必要的遊戲資源。請查看日誌以瞭解詳情。",
         "exit": "離開"
-      }
-    },
-    "application": {
-      "failure": {
+      },
+      "runtime": {
         "title": "程式錯誤",
         "message": "程式遇到嚴重問題，必須關閉。請查看日誌以瞭解詳情。",
         "exit": "離開",
@@ -42,6 +42,9 @@
       "actions": {
         "save": "儲存",
         "back": "返回"
+      },
+      "window_modes": {
+        "borderless_fullscreen": "無邊框全螢幕"
       },
       "languages": {
         "en": "英語",

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../containers/ui_list_container.h"
+#include "../text/ui_text_content.h"
 
 #include <functional>
 #include <optional>
@@ -76,6 +77,7 @@ public:
     void set_on_save(SettingsPanelSaveCallback on_save);
     void set_on_back(SettingsPanelBackCallback on_back);
 
+    void set_status_content(UiTextContent content,bool is_error);
     void set_status_message(std::string message,bool is_error);
     void clear_status_message();
 

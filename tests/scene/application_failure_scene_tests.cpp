@@ -186,21 +186,27 @@ void test_dialog_uses_engine_presentation_contract()
     const auto startup = ApplicationFailureSceneTestAccess::dialog_config(
         ApplicationFailurePresentation::StartupLoading);
     require(
-        startup.title.value == "engine.startup.failure.title"
-            && startup.message.value == "engine.startup.failure.message"
-            && startup.confirm.value == "engine.startup.failure.exit",
+        startup.title.value
+            == "engine.application_failure.startup.title"
+            && startup.message.value
+                == "engine.application_failure.startup.message"
+            && startup.confirm.value
+                == "engine.application_failure.startup.exit",
         "startup failures must retain the startup Engine presentation");
 
     const auto runtime = ApplicationFailureSceneTestAccess::dialog_config(
         ApplicationFailurePresentation::RuntimeFatal);
     require(
-        runtime.title.value == "engine.application.failure.title"
-            && runtime.message.value == "engine.application.failure.message"
-            && runtime.confirm.value == "engine.application.failure.exit",
+        runtime.title.value
+            == "engine.application_failure.runtime.title"
+            && runtime.message.value
+                == "engine.application_failure.runtime.message"
+            && runtime.confirm.value
+                == "engine.application_failure.runtime.exit",
         "runtime failures must use the generic Engine presentation");
     require(
         runtime.cancel.value == "engine.common.cancel"
-            && runtime.close.value == "engine.common.close"
+            && runtime.close.value == "engine.common.close_x"
             && runtime.confirm_visual_role
                 == elysia::ui::UiButtonVisualRole::Danger,
         "application failure dismissal and exit controls must use Engine keys");

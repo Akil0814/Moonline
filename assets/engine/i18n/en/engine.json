@@ -8,16 +8,16 @@
       "close": "Close",
       "close_x": "X"
     },
-    "startup": {
-      "press_any_button": "PRESS ANY BUTTON TO START",
-      "failure": {
+    "startup_loading": {
+      "press_any_button": "PRESS ANY BUTTON TO START"
+    },
+    "application_failure": {
+      "startup": {
         "title": "Startup failed",
         "message": "Required game resources could not be loaded. See the log for details.",
         "exit": "Exit"
-      }
-    },
-    "application": {
-      "failure": {
+      },
+      "runtime": {
         "title": "Application error",
         "message": "The application encountered a fatal problem and must close. See the log for details.",
         "exit": "Exit",
@@ -42,6 +42,9 @@
       "actions": {
         "save": "Save",
         "back": "Back"
+      },
+      "window_modes": {
+        "borderless_fullscreen": "Borderless fullscreen"
       },
       "languages": {
         "en": "English",
