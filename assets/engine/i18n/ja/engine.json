@@ -5,7 +5,8 @@
       "back": "戻る",
       "confirm": "確認",
       "cancel": "キャンセル",
-      "close": "閉じる"
+      "close": "閉じる",
+      "close_x": "X"
     },
     "startup": {
       "press_any_button": "いずれかのボタンを押して開始",

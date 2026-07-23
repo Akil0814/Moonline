@@ -5,7 +5,8 @@
       "back": "뒤로",
       "confirm": "확인",
       "cancel": "취소",
-      "close": "닫기"
+      "close": "닫기",
+      "close_x": "X"
     },
     "startup": {
       "press_any_button": "아무 버튼이나 눌러 시작",

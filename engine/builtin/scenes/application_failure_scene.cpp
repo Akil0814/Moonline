@@ -19,10 +19,8 @@ using elysia::scene::try_scene_payload;
 namespace
 {
 constexpr const char* fallback_category = "application";
-constexpr const char* startup_fallback_diagnostic_message =
-    "Startup resource loading failed.";
-constexpr const char* runtime_fallback_diagnostic_message =
-    "A fatal application failure occurred.";
+constexpr const char* startup_fallback_diagnostic_message ="Startup resource loading failed.";
+constexpr const char* runtime_fallback_diagnostic_message ="A fatal application failure occurred.";
 
 bool valid_presentation(ApplicationFailurePresentation presentation) noexcept
 {
@@ -30,8 +28,7 @@ bool valid_presentation(ApplicationFailurePresentation presentation) noexcept
         || presentation == ApplicationFailurePresentation::RuntimeFatal;
 }
 
-const char* fallback_diagnostic_message(
-    ApplicationFailurePresentation presentation) noexcept
+const char* fallback_diagnostic_message(ApplicationFailurePresentation presentation) noexcept
 {
     return presentation == ApplicationFailurePresentation::StartupLoading
         ? startup_fallback_diagnostic_message
@@ -41,13 +38,12 @@ const char* fallback_diagnostic_message(
 
 void ApplicationFailureScene::on_enter(const ScenePayload& payload)
 {
-    const ApplicationFailureScenePayload* failure_payload =
-        try_scene_payload<ApplicationFailureScenePayload>(payload);
+    const ApplicationFailureScenePayload* failure_payload =try_scene_payload<ApplicationFailureScenePayload>(payload);
+
     if (!failure_payload)
-    {
         throw std::logic_error(
             "ApplicationFailureScene requires ApplicationFailureScenePayload.");
-    }
+
     if (!valid_presentation(failure_payload->presentation))
         throw std::logic_error(
             "ApplicationFailureScene received an invalid presentation.");
@@ -55,8 +51,7 @@ void ApplicationFailureScene::on_enter(const ScenePayload& payload)
     apply_payload(*failure_payload);
     _paused = false;
 
-    if (elysia::typography::FontResolver* font_resolver =
-            runtime_context().font_resolver())
+    if (elysia::typography::FontResolver* font_resolver =runtime_context().font_resolver())
     {
         font_resolver->deactivate_project_fonts();
     }
@@ -216,22 +211,15 @@ void ApplicationFailureScene::destroy_ui() noexcept
     _window = nullptr;
 }
 
-elysia::ui::UiConfirmationDialogConfig
-ApplicationFailureScene::make_dialog_config(
+elysia::ui::UiConfirmationDialogConfig ApplicationFailureScene::make_dialog_config(
     ApplicationFailurePresentation presentation)
 {
-    const bool startup =
-        presentation == ApplicationFailurePresentation::StartupLoading;
+    const bool startup = presentation == ApplicationFailurePresentation::StartupLoading;
+
     return elysia::ui::UiConfirmationDialogConfig{
-        .title = elysia::ui::ui_text_key(startup
-            ? "engine.startup.failure.title"
-            : "engine.application.failure.title"),
-        .message = elysia::ui::ui_text_key(startup
-            ? "engine.startup.failure.message"
-            : "engine.application.failure.message"),
-        .confirm = elysia::ui::ui_text_key(startup
-            ? "engine.startup.failure.exit"
-            : "engine.application.failure.exit"),
+        .title = elysia::ui::ui_text_key(startup ? "engine.startup.failure.title": "engine.application.failure.title"),
+        .message = elysia::ui::ui_text_key(startup? "engine.startup.failure.message": "engine.application.failure.message"),
+        .confirm = elysia::ui::ui_text_key(startup ? "engine.startup.failure.exit" : "engine.application.failure.exit"),
         .cancel = elysia::ui::ui_text_key("engine.common.cancel"),
         .close = elysia::ui::ui_text_key("engine.common.close"),
         .confirm_visual_role = elysia::ui::UiButtonVisualRole::Danger

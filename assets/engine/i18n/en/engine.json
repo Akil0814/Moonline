@@ -5,7 +5,8 @@
       "back": "Back",
       "confirm": "Confirm",
       "cancel": "Cancel",
-      "close": "Close"
+      "close": "Close",
+      "close_x": "X"
     },
     "startup": {
       "press_any_button": "PRESS ANY BUTTON TO START",
