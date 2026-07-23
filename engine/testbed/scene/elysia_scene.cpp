@@ -44,7 +44,7 @@ constexpr float kCodeListWidth = 560.0f;
 constexpr float kCodeLineHeight = 36.0f;
 constexpr float kCodeLineSpacing = 6.0f;
 constexpr float kCodeListMargin = 32.0f;
-constexpr double kCodeLineIntervalSeconds = 1.0;
+constexpr double kCodeLineIntervalSeconds = 0.7;
 }
 
 void ElysiaScene::on_update(double delta)
@@ -87,7 +87,7 @@ void ElysiaScene::on_enter(const elysia::scene::ScenePayload& payload)
     _return_route = testbed_payload->return_route;
     _paused = false;
     stop_playback();
-    _playback_phase = PlaybackPhase::Logo;
+    _playback_phase = PlaybackPhase::Loading;
     _current_line = 0;
 
     destroy_ui();
@@ -104,7 +104,7 @@ void ElysiaScene::on_enter(const elysia::scene::ScenePayload& payload)
     _code_timer.set_one_shot(false);
     _code_timer.set_wait_time(kCodeLineIntervalSeconds);
     _code_timer.set_on_timeout([this]() { reveal_next_code_line(); });
-    _code_timer.pause();
+    _code_timer.restart();
 }
 
 void ElysiaScene::on_exit()
@@ -124,7 +124,7 @@ void ElysiaScene::on_exit()
 void ElysiaScene::reset()
 {
     stop_playback();
-    _playback_phase = PlaybackPhase::Logo;
+    _playback_phase = PlaybackPhase::Loading;
     _current_line = 0;
     _paused = false;
     _return_route = {};
@@ -155,10 +155,9 @@ void ElysiaScene::build_ui()
         1.5,
         1.5,
         1.5);
-    logo->set_on_end([this]() { begin_code_sequence(); });
+    logo->set_on_end([this]() { ; });
     logo->play();
-    _root_window->add_child(
-        std::move(logo),
+    _root_window->add_child(std::move(logo),
         elysia::ui::UiLayoutChildOptions{
             ._anchor = elysia::ui::UiLayoutAnchor::Center
         });
@@ -166,12 +165,8 @@ void ElysiaScene::build_ui()
     _code_list = _root_window->create_child<elysia::ui::UiListContainer>(
         elysia::ui::UiLayoutChildOptions{
             ._anchor = elysia::ui::UiLayoutAnchor::BottomRight,
-            ._margin = elysia::ui::UiLayoutMargin{
-                0.0f,
-                0.0f,
-                kCodeListMargin,
-                kCodeListMargin
-            }
+            ._margin = elysia::ui::UiLayoutMargin
+            {0.0f,0.0f,kCodeListMargin,kCodeListMargin}
         },
         elysia::core::Rect{ 0,0,kCodeListWidth,0 });
     _code_list->set_direction(elysia::ui::UiListDirection::Vertical);
@@ -197,22 +192,9 @@ void ElysiaScene::return_to_caller()
         request_scene_switch(_return_route);
 }
 
-void ElysiaScene::begin_code_sequence()
-{
-    if (_playback_phase != PlaybackPhase::Logo)
-        return;
-
-    _playback_phase = PlaybackPhase::Code;
-    reveal_next_code_line();
-    if (_playback_phase == PlaybackPhase::Code)
-        _code_timer.restart();
-}
 
 void ElysiaScene::reveal_next_code_line()
 {
-    if (_playback_phase != PlaybackPhase::Code)
-        return;
-
     if (_current_line >= kCodeLines.size())
     {
         _playback_phase = PlaybackPhase::Complete;
@@ -236,8 +218,7 @@ void ElysiaScene::add_label(std::string_view code_line)
         throw std::runtime_error("ElysiaScene code list is null.");
 
     auto label = std::make_unique<elysia::ui::UiLabel>(
-        elysia::core::Rect{ 0,0,kCodeListWidth,kCodeLineHeight },
-        0,
+        elysia::core::Rect{ 0,0,kCodeListWidth,kCodeLineHeight },0,
         elysia::ui::ui_raw_text(std::string(code_line)));
     _code_list->add_back(std::move(label));
     _code_list->set_size(_code_list->content_extent());

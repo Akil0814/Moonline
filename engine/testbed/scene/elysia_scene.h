@@ -32,12 +32,10 @@ public:
 private:
     enum class PlaybackPhase
     {
-        Logo,
-        Code,
+        Loading,
         Complete
     };
 
-    void begin_code_sequence();
     void reveal_next_code_line();
     void add_label(std::string_view code_line);
     void stop_playback() noexcept;
@@ -46,7 +44,7 @@ private:
     void return_to_caller();
 
 private:
-    PlaybackPhase _playback_phase = PlaybackPhase::Logo;
+    PlaybackPhase _playback_phase = PlaybackPhase::Loading;
     std::size_t _current_line = 0;
 
     elysia::tools::Timer _code_timer;
