@@ -56,6 +56,7 @@ void UiButton::reset() noexcept
     _style_state.reset(UiStyleDefaults::button());
     _visual_role = UiButtonVisualRole::Default;
     _typography_role = UiTypographyRole::Button;
+    _font_source_override.reset();
     _padding = 10;
     _is_pushed = false;
 }
@@ -227,6 +228,7 @@ void UiButton::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
     const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
     elysia::localization::LocalizedTextStyle text_style;
     text_style.typography_role = _typography_role;
+    text_style.font_source_override = _font_source_override;
     text_style.color = current_text_color();
     text_style.wrap_width = typography.wrap_allowed ? std::max(0,static_cast<int>(content_rect().width())) : 0;
 
@@ -274,6 +276,29 @@ void UiButton::set_typography_role(UiTypographyRole role) noexcept
 UiTypographyRole UiButton::typography_role() const noexcept
 {
     return _typography_role;
+}
+
+void UiButton::set_font_source_override(
+    elysia::typography::FontSource source) noexcept
+{
+    if (_font_source_override == source)
+        return;
+    _font_source_override = source;
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+void UiButton::clear_font_source_override() noexcept
+{
+    if (!_font_source_override)
+        return;
+    _font_source_override.reset();
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+std::optional<elysia::typography::FontSource>
+UiButton::font_source_override() const noexcept
+{
+    return _font_source_override;
 }
 
 void UiButton::set_state_textures(const UiButtonTextures& textures)

@@ -13,6 +13,7 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
 #include <SDL_ttf.h>
 
 #include <cstdlib>
@@ -39,10 +40,14 @@ void test_text_input_uses_private_editing_texture()
 {
     using namespace elysia;
 
-    require(SDL_Init(SDL_INIT_VIDEO) == 0,"text input texture test must initialize SDL video");
+    SDL_setenv("SDL_AUDIODRIVER","dummy",1);
+    require(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) == 0,
+        "text input texture test must initialize SDL video and audio");
     require((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) == IMG_INIT_PNG,
         "text input texture test must initialize PNG support");
     require(TTF_Init() == 0,"text input texture test must initialize SDL_ttf");
+    require(Mix_OpenAudio(44100,MIX_DEFAULT_FORMAT,2,2048) == 0,
+        "text input texture test must open SDL_mixer audio");
 
     SDL_Surface* target_surface = SDL_CreateRGBSurfaceWithFormat(
         0,256,128,32,SDL_PIXELFORMAT_RGBA32);
@@ -170,6 +175,17 @@ void test_text_input_uses_private_editing_texture()
         require(localization_manager->set_language("en"),
             "text input texture test must restore the default language");
 
+        input.set_font_source_override(typography::FontSource::Project);
+        commands.clear();
+        input.submit_ui_render_commands(commands);
+        require(find_command(commands,core::UiRenderCommandType::Texture) == nullptr,
+            "an unavailable strict project override must discard the private input texture");
+        input.clear_font_source_override();
+        commands.clear();
+        input.submit_ui_render_commands(commands);
+        require(find_command(commands,core::UiRenderCommandType::Texture) != nullptr,
+            "clearing a text-input font override must rebuild inherited input text");
+
         input.clear_text();
         input.set_placeholder_content(ui::ui_raw_text("placeholder"));
         localization::LocalizedTextStyle placeholder_style;
@@ -185,6 +201,20 @@ void test_text_input_uses_private_editing_texture()
         require(placeholder_command && placeholder_command->texture == placeholder_texture,
             "text input placeholders must continue using the shared text cache");
 
+        input.set_font_source_override(typography::FontSource::Project);
+        commands.clear();
+        input.submit_ui_render_commands(commands);
+        require(find_command(commands,core::UiRenderCommandType::Texture) == nullptr,
+            "text-input placeholders must share the strict font source override");
+        input.clear_font_source_override();
+        commands.clear();
+        input.submit_ui_render_commands(commands);
+        const core::UiRenderCommand* restored_placeholder =
+            find_command(commands,core::UiRenderCommandType::Texture);
+        require(restored_placeholder
+                && restored_placeholder->texture == placeholder_texture,
+            "clearing the shared override must restore the cached placeholder texture");
+
         input.reset();
         commands.clear();
         input.submit_ui_render_commands(commands);
@@ -198,6 +228,7 @@ void test_text_input_uses_private_editing_texture()
     engine_cache.shutdown();
     SDL_DestroyRenderer(renderer);
     SDL_FreeSurface(target_surface);
+    Mix_CloseAudio();
     TTF_Quit();
     IMG_Quit();
     SDL_Quit();

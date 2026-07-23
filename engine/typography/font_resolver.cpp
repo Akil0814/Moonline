@@ -84,7 +84,8 @@ void FontResolver::shutdown() noexcept
 
 std::expected<ResolvedFont,FontResolveError> FontResolver::resolve_ui(
     UiTypographyRole role,
-    std::string_view language) const
+    std::string_view language,
+    std::optional<FontSource> source_override) const
 {
     if (!_configured || !_settings)
     {
@@ -101,10 +102,18 @@ std::expected<ResolvedFont,FontResolveError> FontResolver::resolve_ui(
             "FontResolver received an invalid UI typography role."));
     }
 
-    return resolve(
-        _settings->ui_source(),
-        language,
-        _settings->ui_typography().point_size(role));
+    const int point_size = _settings->ui_typography().point_size(role);
+    if (!source_override)
+        return resolve(_settings->ui_source(),language,point_size);
+
+    if (*source_override == FontSource::Project && !_project_fonts_active)
+    {
+        return std::unexpected(error(
+            FontResolveErrorCode::FontUnavailable,
+            "FontResolver cannot use an explicit project font source before project fonts are active."));
+    }
+
+    return resolve_exact(*source_override,language,point_size);
 }
 
 std::expected<ResolvedFont,FontResolveError> FontResolver::resolve_effect(
@@ -207,14 +216,29 @@ std::expected<ResolvedFont,FontResolveError> FontResolver::resolve(
             && _project_fonts_active
         ? FontSource::Project
         : FontSource::EngineBuiltIn;
-    const auto font = find_font(active_source,language,point_size);
+    return resolve_exact(active_source,language,point_size);
+}
+
+std::expected<ResolvedFont,FontResolveError> FontResolver::resolve_exact(
+    FontSource source,
+    std::string_view language,
+    int point_size) const
+{
+    if (source != FontSource::EngineBuiltIn && source != FontSource::Project)
+    {
+        return std::unexpected(error(
+            FontResolveErrorCode::InvalidSource,
+            "FontResolver received an invalid explicit font source."));
+    }
+
+    const auto font = find_font(source,language,point_size);
     if (!font)
         return std::unexpected(font.error());
 
     return ResolvedFont{
         .font = *font,
         .point_size = point_size,
-        .source = active_source,
+        .source = source,
         .generation = _generation
     };
 }

@@ -243,7 +243,7 @@ bool LocalizationManager::measure_raw_text(
 	if (!_initialized)
 		return false;
 
-	TTF_Font* font = resolve_text_font(style.typography_role);
+	TTF_Font* font = resolve_text_font(style);
 	if (!font)
 		return false;
 
@@ -426,7 +426,7 @@ std::string_view LocalizationManager::lookup_translation(
 }
 
 TTF_Font* LocalizationManager::resolve_text_font(
-	elysia::typography::UiTypographyRole role) const
+	const LocalizedTextStyle& style) const
 {
 	if (!_font_resolver)
 	{
@@ -435,7 +435,10 @@ TTF_Font* LocalizationManager::resolve_text_font(
 		return nullptr;
 	}
 
-	const auto resolved = _font_resolver->resolve_ui(role,_current_language);
+	const auto resolved = _font_resolver->resolve_ui(
+		style.typography_role,
+		_current_language,
+		style.font_source_override);
 	if (!resolved)
 	{
 		ELYSIA_LOG_WARN("localization",
@@ -454,7 +457,7 @@ CachedTexturePtr LocalizationManager::create_text_texture(
 	if (!_renderer)
 		return {};
 
-	TTF_Font* font = resolve_text_font(style.typography_role);
+	TTF_Font* font = resolve_text_font(style);
 	if (!font)
 		return {};
 
@@ -511,7 +514,7 @@ CachedTexturePtr LocalizationManager::create_raw_text_texture(
 	if (!_renderer)
 		return {};
 
-	TTF_Font* font = resolve_text_font(style.typography_role);
+	TTF_Font* font = resolve_text_font(style);
 	if (!font)
 		return {};
 

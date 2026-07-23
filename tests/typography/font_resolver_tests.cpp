@@ -14,6 +14,7 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
 #include <SDL_ttf.h>
 
 #include <array>
@@ -41,12 +42,15 @@ class FontResolverFixture
 public:
     FontResolverFixture()
     {
-        require(SDL_Init(SDL_INIT_VIDEO) == 0,
-            "FontResolver tests must initialize SDL video");
+        SDL_setenv("SDL_AUDIODRIVER","dummy",1);
+        require(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) == 0,
+            "FontResolver tests must initialize SDL video and audio");
         require((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) == IMG_INIT_PNG,
             "FontResolver tests must initialize PNG support");
         require(TTF_Init() == 0,
             "FontResolver tests must initialize SDL_ttf");
+        require(Mix_OpenAudio(44100,MIX_DEFAULT_FORMAT,2,2048) == 0,
+            "FontResolver tests must open SDL_mixer audio");
 
         _surface = SDL_CreateRGBSurfaceWithFormat(
             0,128,128,32,SDL_PIXELFORMAT_RGBA32);
@@ -73,6 +77,7 @@ public:
         _engine_cache.shutdown();
         SDL_DestroyRenderer(_renderer);
         SDL_FreeSurface(_surface);
+        Mix_CloseAudio();
         TTF_Quit();
         IMG_Quit();
         SDL_Quit();
@@ -189,6 +194,13 @@ void test_engine_resolution_and_validation(FontResolverFixture& fixture)
     require(!invalid_role
         && invalid_role.error().code == FontResolveErrorCode::InvalidRole,
         "FontResolver must reject invalid UI roles");
+    const auto invalid_source = resolver.resolve_ui(
+        UiTypographyRole::Label,
+        "en",
+        static_cast<FontSource>(999));
+    require(!invalid_source
+            && invalid_source.error().code == FontResolveErrorCode::InvalidSource,
+        "FontResolver must reject invalid explicit UI font sources");
 }
 
 void test_atomic_project_activation(FontResolverFixture& fixture)
@@ -216,6 +228,22 @@ void test_atomic_project_activation(FontResolverFixture& fixture)
     require(before_activation.has_value()
         && before_activation->source == FontSource::EngineBuiltIn,
         "project fonts must remain inactive during startup loading");
+    const auto explicit_project_before_activation = resolver.resolve_ui(
+        UiTypographyRole::Label,
+        "en",
+        FontSource::Project);
+    require(!explicit_project_before_activation
+            && explicit_project_before_activation.error().code
+                == FontResolveErrorCode::FontUnavailable,
+        "an explicit project source must fail before project fonts activate");
+    const auto explicit_engine_before_activation = resolver.resolve_ui(
+        UiTypographyRole::Label,
+        "en",
+        FontSource::EngineBuiltIn);
+    require(explicit_engine_before_activation
+            && explicit_engine_before_activation->source
+                == FontSource::EngineBuiltIn,
+        "an explicit Engine source must resolve during bootstrap");
     const std::uint64_t bootstrap_generation = resolver.generation();
 
     const std::filesystem::path font_root =
@@ -246,6 +274,19 @@ void test_atomic_project_activation(FontResolverFixture& fixture)
         && project_effect.has_value()
         && project_effect->source == FontSource::Project,
         "active project fonts must serve UI and Latin floating numbers");
+    const auto explicit_engine = resolver.resolve_ui(
+        UiTypographyRole::DialogBody,
+        "zh_cn",
+        FontSource::EngineBuiltIn);
+    const auto explicit_project = resolver.resolve_ui(
+        UiTypographyRole::DialogBody,
+        "zh_cn",
+        FontSource::Project);
+    require(explicit_engine
+            && explicit_engine->source == FontSource::EngineBuiltIn
+            && explicit_project
+            && explicit_project->source == FontSource::Project,
+        "explicit UI font sources must override the active global source exactly");
 
     elysia::io::ContentRegistry registry;
     elysia::scene::SceneRuntimeContext context(
@@ -287,6 +328,21 @@ void test_atomic_project_activation(FontResolverFixture& fixture)
         && missing_after_activation.error().code
             == FontResolveErrorCode::FontUnavailable,
         "active project font loss must fail without Engine fallback");
+    const auto explicit_engine_after_project_loss = resolver.resolve_ui(
+        UiTypographyRole::Label,
+        "en",
+        FontSource::EngineBuiltIn);
+    const auto explicit_project_after_project_loss = resolver.resolve_ui(
+        UiTypographyRole::Label,
+        "en",
+        FontSource::Project);
+    require(explicit_engine_after_project_loss
+            && explicit_engine_after_project_loss->source
+                == FontSource::EngineBuiltIn
+            && !explicit_project_after_project_loss
+            && explicit_project_after_project_loss.error().code
+                == FontResolveErrorCode::FontUnavailable,
+        "strict source overrides must not cross-fallback after project resource loss");
 
     resolver.deactivate_project_fonts();
     const auto after_deactivation = resolver.resolve_ui(

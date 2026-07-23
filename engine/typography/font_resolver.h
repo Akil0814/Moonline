@@ -69,7 +69,8 @@ public:
 
     [[nodiscard]] std::expected<ResolvedFont,FontResolveError> resolve_ui(
         UiTypographyRole role,
-        std::string_view language) const;
+        std::string_view language,
+        std::optional<FontSource> source_override = std::nullopt) const;
     [[nodiscard]] std::expected<ResolvedFont,FontResolveError> resolve_effect(
         EffectTypographyRole role) const;
 
@@ -85,6 +86,10 @@ public:
 private:
     [[nodiscard]] std::expected<ResolvedFont,FontResolveError> resolve(
         FontSource configured_source,
+        std::string_view language,
+        int point_size) const;
+    [[nodiscard]] std::expected<ResolvedFont,FontResolveError> resolve_exact(
+        FontSource source,
         std::string_view language,
         int point_size) const;
     [[nodiscard]] std::expected<TTF_Font*,FontResolveError> find_font(

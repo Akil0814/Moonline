@@ -5,6 +5,7 @@
 #include "../../core/ui_element.h"
 #include "../../core/ui_text_align.h"
 #include "../../text/ui_typography.h"
+#include "../../../typography/font_settings.h"
 
 #include <optional>
 #include <string>
@@ -62,6 +63,11 @@ public:
         elysia::typography::UiTypographyRole role) noexcept;
     [[nodiscard]] elysia::typography::UiTypographyRole
         typography_role() const noexcept;
+    void set_font_source_override(
+        elysia::typography::FontSource source) noexcept;
+    void clear_font_source_override() noexcept;
+    [[nodiscard]] std::optional<elysia::typography::FontSource>
+        font_source_override() const noexcept;
 
     void set_padding(int padding);
     [[nodiscard]] int padding() const noexcept;
@@ -106,6 +112,7 @@ private:
     UiStyleState<UiNumberStyle> _style_state;
     elysia::typography::UiTypographyRole _typography_role =
         elysia::typography::UiTypographyRole::Number;
+    std::optional<elysia::typography::FontSource> _font_source_override;
     TextHorizontalAlign _horizontal_align = TextHorizontalAlign::Left;
     TextVerticalAlign _vertical_align = TextVerticalAlign::Top;
     int _padding = 0;

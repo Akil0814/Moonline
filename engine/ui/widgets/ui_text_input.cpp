@@ -106,6 +106,7 @@ struct UiTextInput::EditingTextTexture
     std::string language;
     SDL_Renderer* renderer = nullptr;
     UiTypographyRole typography_role = UiTypographyRole::Input;
+    std::optional<elysia::typography::FontSource> font_source_override;
     std::uint64_t font_generation = 0;
     elysia::core::Color color{};
 };
@@ -146,6 +147,7 @@ void UiTextInput::reset() noexcept
     _style_state.reset(UiStyleDefaults::text_input());
     _typography_role = UiTypographyRole::Input;
     _placeholder_typography_role = UiTypographyRole::InputPlaceholder;
+    _font_source_override.reset();
     _padding = 10;
     _is_pushed = false;
 }
@@ -300,6 +302,7 @@ void UiTextInput::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
         elysia::localization::LocalizedTextStyle text_style;
         text_style.typography_role =
             show_placeholder ? _placeholder_typography_role : _typography_role;
+        text_style.font_source_override = _font_source_override;
         text_style.color = show_placeholder ? current_placeholder_color() : current_text_color();
         text_style.wrap_width = 0;
 
@@ -321,6 +324,8 @@ void UiTextInput::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
                 && _editing_text_texture->renderer == renderer
                 && _editing_text_texture->typography_role
                     == text_style.typography_role
+                && _editing_text_texture->font_source_override
+                    == text_style.font_source_override
                 && _editing_text_texture->font_generation
                     == localization_manager->font_generation()
                 && _editing_text_texture->color == text_style.color;
@@ -337,6 +342,8 @@ void UiTextInput::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
                     next_texture->language = language;
                     next_texture->renderer = renderer;
                     next_texture->typography_role = text_style.typography_role;
+                    next_texture->font_source_override =
+                        text_style.font_source_override;
                     next_texture->font_generation =
                         localization_manager->font_generation();
                     next_texture->color = text_style.color;
@@ -499,6 +506,31 @@ UiTypographyRole UiTextInput::placeholder_typography_role() const noexcept
     return _placeholder_typography_role;
 }
 
+void UiTextInput::set_font_source_override(
+    elysia::typography::FontSource source) noexcept
+{
+    if (_font_source_override == source)
+        return;
+    _font_source_override = source;
+    _editing_text_texture.reset();
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+void UiTextInput::clear_font_source_override() noexcept
+{
+    if (!_font_source_override)
+        return;
+    _font_source_override.reset();
+    _editing_text_texture.reset();
+    notify_layout_parent_of_intrinsic_layout_invalidation();
+}
+
+std::optional<elysia::typography::FontSource>
+UiTextInput::font_source_override() const noexcept
+{
+    return _font_source_override;
+}
+
 void UiTextInput::set_padding(int padding) noexcept
 {
     _padding = std::max(0,padding);
@@ -648,6 +680,7 @@ std::size_t UiTextInput::codepoint_index_at_x(int mouse_x) const
 
     elysia::localization::LocalizedTextStyle style;
     style.typography_role = _typography_role;
+    style.font_source_override = _font_source_override;
     style.color = current_text_color();
     style.wrap_width = 0;
 
@@ -746,6 +779,7 @@ UiTextInput::TextLayout UiTextInput::compute_text_layout() const
 
     elysia::localization::LocalizedTextStyle style;
     style.typography_role = _typography_role;
+    style.font_source_override = _font_source_override;
     style.color = current_text_color();
     style.wrap_width = 0;
 
