@@ -64,11 +64,11 @@ constexpr std::array<std::string_view,9> kCodeLines = {
     "}"
 };
 
-constexpr float kCodeListWidth = 560.0f;
-constexpr float kCodeLineHeight = 36.0f;
-constexpr float kCodeLineSpacing = 6.0f;
-constexpr float kCodeListMargin = 32.0f;
-constexpr double kCodeLineIntervalSeconds = 0.7;
+constexpr float kCodeListWidth = 280.0f;
+constexpr float kCodeLineHeight = 20.0f;
+constexpr float kCodeLineSpacing = 3.0f;
+constexpr float kCodeListMargin = 16.0f;
+constexpr double kCodeLineIntervalSeconds = 0.5;
 }
 
 void ElysiaScene::on_update(double delta)
@@ -245,8 +245,7 @@ void ElysiaScene::add_label(std::string_view code_line)
     auto label = std::make_unique<elysia::ui::UiLabel>(
         elysia::core::Rect{ 0,0,kCodeListWidth,kCodeLineHeight },0,
         elysia::ui::ui_raw_text(std::string(code_line)));
-    label->set_font_source_override(
-        elysia::typography::FontSource::EngineBuiltIn);
+    label->set_font_source_override(elysia::typography::FontSource::EngineBuiltIn);
     _code_list->add_back(std::move(label));
     _code_list->set_size(_code_list->content_extent());
 }
