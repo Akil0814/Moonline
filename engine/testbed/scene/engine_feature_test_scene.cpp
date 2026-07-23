@@ -181,8 +181,7 @@ void EngineFeatureTestScene::build_audio_controls()
     {
         if (_audio_player)
         {
-            (void)_audio_player->play_music(
-                elysia::assist::asset_keys::TestMusic);
+            (void)_audio_player->play_music(elysia::assist::asset_keys::TestMusic);
         }
     });
     controls->add_back(std::move(play_music));

@@ -60,10 +60,8 @@ int main()
     const std::filesystem::path source_root = MOONLINE_SOURCE_DIR;
     EngineAssistCatalog catalog(source_root);
 
-    require(
-        catalog.root() == source_root / "assets" / "engine",
-        "assist root must be resolved below the project assets root"
-    );
+    require(catalog.root() == source_root / "assets" / "engine",
+        "assist root must be resolved below the project assets root");
     require(catalog.fonts().size() == 5, "assist catalog must describe five font faces");
     require(catalog.textures().size() == 6, "assist catalog must describe all six Engine textures");
     require(catalog.locales().size() == 5, "assist catalog must describe five locales");

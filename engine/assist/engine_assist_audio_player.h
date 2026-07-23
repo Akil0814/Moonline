@@ -11,9 +11,7 @@ class EngineAssistCache;
 class EngineAssistAudioPlayer
 {
 public:
-    void bind(
-        const EngineAssistCache& cache,
-        const elysia::audio::AudioSettings& settings) noexcept;
+    void bind(const EngineAssistCache& cache,const elysia::audio::AudioSettings& settings) noexcept;
     void unbind() noexcept;
 
     [[nodiscard]] bool bound() const noexcept;

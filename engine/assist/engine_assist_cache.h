@@ -58,26 +58,19 @@ public:
     EngineAssistCache(EngineAssistCache&&) = delete;
     EngineAssistCache& operator=(EngineAssistCache&&) = delete;
 
-    [[nodiscard]] std::expected<void, std::string> initialize(
-        SDL_Renderer* renderer,
-        const EngineAssistCatalog& catalog,
-        std::span<const int> point_sizes);
+    [[nodiscard]] std::expected<void, std::string> initialize(SDL_Renderer* renderer,
+        const EngineAssistCatalog& catalog,std::span<const int> point_sizes);
     void shutdown() noexcept;
 
     [[nodiscard]] bool initialized() const noexcept;
+
     [[nodiscard]] SDL_Texture* find_texture(std::string_view key) const noexcept;
-    [[nodiscard]] TTF_Font* find_font(
-        std::string_view locale,
-        int point_size) const noexcept;
-    [[nodiscard]] const std::string* find_translation(
-        std::string_view locale,
-        std::string_view key) const noexcept;
-    [[nodiscard]] const EngineAssistAnimationDefinition* find_animation(
-        std::string_view key) const noexcept;
+    [[nodiscard]] TTF_Font* find_font(std::string_view locale,int point_size) const noexcept;
+    [[nodiscard]] const std::string* find_translation(std::string_view locale,std::string_view key) const noexcept;
+    [[nodiscard]] const EngineAssistAnimationDefinition* find_animation(std::string_view key) const noexcept;
     [[nodiscard]] Mix_Chunk* find_sound(std::string_view key) const noexcept;
     [[nodiscard]] Mix_Music* find_music(std::string_view key) const noexcept;
-    [[nodiscard]] std::unique_ptr<elysia::animation::Animation> create_animation(
-        std::string_view key) const;
+    [[nodiscard]] std::unique_ptr<elysia::animation::Animation> create_animation(std::string_view key) const;
 
     [[nodiscard]] std::size_t texture_count() const noexcept;
     [[nodiscard]] std::size_t font_count() const noexcept;
@@ -86,11 +79,8 @@ public:
     [[nodiscard]] std::size_t sound_count() const noexcept;
     [[nodiscard]] std::size_t music_count() const noexcept;
 
-    [[nodiscard]] static std::string font_key(
-        std::string_view locale,
-        int point_size);
-    [[nodiscard]] static std::string_view map_project_locale(
-        std::string_view project_locale) noexcept;
+    [[nodiscard]] static std::string font_key(std::string_view locale,int point_size);
+    [[nodiscard]] static std::string_view map_project_locale(std::string_view project_locale) noexcept;
 
 private:
     using TextureMap = std::unordered_map<std::string, elysia::resources::TextureResource>;
@@ -112,10 +102,8 @@ private:
         MusicMap music;
     };
 
-    [[nodiscard]] std::expected<PreparedState, std::string> prepare(
-        SDL_Renderer* renderer,
-        const EngineAssistCatalog& catalog,
-        std::span<const int> point_sizes) const;
+    [[nodiscard]] std::expected<PreparedState, std::string> prepare(SDL_Renderer* renderer,
+        const EngineAssistCatalog& catalog,std::span<const int> point_sizes) const;
 
 private:
     TextureMap _textures;

@@ -17,9 +17,7 @@ namespace elysia::assist
 {
 namespace
 {
-bool flatten_translation_json(
-    const elysia::io::json& node,
-    const std::string& prefix,
+bool flatten_translation_json(const elysia::io::json& node,const std::string& prefix,
     EngineAssistTranslationTable& destination)
 {
     if (node.is_string())
@@ -35,9 +33,7 @@ bool flatten_translation_json(
 
     for (auto iterator = node.begin(); iterator != node.end(); ++iterator)
     {
-        const std::string child_prefix = prefix.empty()
-            ? iterator.key()
-            : prefix + "." + iterator.key();
+        const std::string child_prefix = prefix.empty()? iterator.key(): prefix + "." + iterator.key();
         if (!flatten_translation_json(iterator.value(), child_prefix, destination))
             return false;
     }
@@ -90,17 +86,14 @@ EngineAssistCache::~EngineAssistCache()
 }
 
 std::expected<void, std::string> EngineAssistCache::initialize(
-    SDL_Renderer* renderer,
-    const EngineAssistCatalog& catalog,
-    std::span<const int> point_sizes)
+    SDL_Renderer* renderer,const EngineAssistCatalog& catalog,std::span<const int> point_sizes)
 {
     if (!renderer)
         return std::unexpected("Engine assist cache initialization failed: renderer is null.");
+
     if (_renderer && _renderer != renderer)
-    {
         return std::unexpected(
-            "Engine assist cache initialization failed: renderer changed; shutdown is required first.");
-    }
+        "Engine assist cache initialization failed: renderer changed; shutdown is required first.");
 
     try
     {
@@ -148,9 +141,7 @@ SDL_Texture* EngineAssistCache::find_texture(std::string_view key) const noexcep
     return found == _textures.end() ? nullptr : found->second.texture.get();
 }
 
-TTF_Font* EngineAssistCache::find_font(
-    std::string_view locale,
-    int point_size) const noexcept
+TTF_Font* EngineAssistCache::find_font(std::string_view locale,int point_size) const noexcept
 {
     const std::string_view descriptor_locale = font_descriptor_locale(locale);
     if (descriptor_locale.empty())
@@ -160,9 +151,7 @@ TTF_Font* EngineAssistCache::find_font(
     return found == _fonts.end() ? nullptr : found->second.get();
 }
 
-const std::string* EngineAssistCache::find_translation(
-    std::string_view locale,
-    std::string_view key) const noexcept
+const std::string* EngineAssistCache::find_translation(std::string_view locale,std::string_view key) const noexcept
 {
     const auto locale_found = _translations.find(std::string(locale));
     if (locale_found == _translations.end())
@@ -174,8 +163,7 @@ const std::string* EngineAssistCache::find_translation(
         : &translation_found->second;
 }
 
-const EngineAssistAnimationDefinition* EngineAssistCache::find_animation(
-    std::string_view key) const noexcept
+const EngineAssistAnimationDefinition* EngineAssistCache::find_animation(std::string_view key) const noexcept
 {
     const auto found = _animations.find(std::string(key));
     return found == _animations.end() ? nullptr : &found->second;
@@ -193,8 +181,7 @@ Mix_Music* EngineAssistCache::find_music(std::string_view key) const noexcept
     return found == _music.end() ? nullptr : found->second.get();
 }
 
-std::unique_ptr<elysia::animation::Animation> EngineAssistCache::create_animation(
-    std::string_view key) const
+std::unique_ptr<elysia::animation::Animation> EngineAssistCache::create_animation(std::string_view key) const
 {
     const EngineAssistAnimationDefinition* definition = find_animation(key);
     if (!definition || !definition->atlas || definition->fps <= 0.0)
@@ -255,9 +242,7 @@ std::string_view EngineAssistCache::map_project_locale(
 }
 
 std::expected<EngineAssistCache::PreparedState, std::string> EngineAssistCache::prepare(
-    SDL_Renderer* renderer,
-    const EngineAssistCatalog& catalog,
-    std::span<const int> point_sizes) const
+    SDL_Renderer* renderer,const EngineAssistCatalog& catalog,std::span<const int> point_sizes) const
 {
     if (const auto validation = catalog.validate_required_files(); !validation)
     {
@@ -279,17 +264,19 @@ std::expected<EngineAssistCache::PreparedState, std::string> EngineAssistCache::
         return std::unexpected(
             "Engine assist font point sizes must be positive.");
     }
+
     std::ranges::sort(normalized_point_sizes);
     normalized_point_sizes.erase(
         std::unique(
             normalized_point_sizes.begin(),
             normalized_point_sizes.end()),
-        normalized_point_sizes.end());
+            normalized_point_sizes.end());
 
     PreparedState prepared;
     elysia::resources::SurfaceLoader surface_loader;
     elysia::resources::TextureLoader texture_loader;
     std::unordered_set<std::string> animation_texture_keys;
+
     for (const EngineAssistAnimationDescriptor& descriptor : catalog.animations())
         animation_texture_keys.emplace(descriptor.texture_key);
 
@@ -301,6 +288,7 @@ std::expected<EngineAssistCache::PreparedState, std::string> EngineAssistCache::
             ._frame_path = path,
             ._frame_index = 0
         });
+
         if (!surface._success)
             return std::unexpected(make_prepare_error("Engine assist texture surface load failed", path));
 
@@ -311,6 +299,7 @@ std::expected<EngineAssistCache::PreparedState, std::string> EngineAssistCache::
         elysia::resources::TextureResource texture_resource{
             .texture = std::move(texture._texture)
         };
+
         if (animation_texture_keys.contains(std::string(descriptor.key)))
         {
             elysia::resources::SurfacePtr coverage_mask_surface =

@@ -75,10 +75,8 @@ public:
     [[nodiscard]] std::span<const EngineAssistAnimationDescriptor> animations() const noexcept;
     [[nodiscard]] std::span<const EngineAssistAudioDescriptor> sounds() const noexcept;
     [[nodiscard]] std::span<const EngineAssistAudioDescriptor> music() const noexcept;
-    [[nodiscard]] std::filesystem::path resolve(
-        const std::filesystem::path& relative_path) const;
-    [[nodiscard]] std::expected<void, EngineAssistValidationError>
-        validate_required_files() const;
+    [[nodiscard]] std::filesystem::path resolve(const std::filesystem::path& relative_path) const;
+    [[nodiscard]] std::expected<void, EngineAssistValidationError>validate_required_files() const;
 
 private:
     std::filesystem::path _root;

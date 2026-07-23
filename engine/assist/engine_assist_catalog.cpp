@@ -20,15 +20,9 @@ const std::array<EngineAssistAssetDescriptor, 5> kFontDescriptors = {
 const std::array<EngineAssistAssetDescriptor, 6> kTextureDescriptors = {
     EngineAssistAssetDescriptor{"engine.brand.elysia.default", "textures/elysia.png"},
     EngineAssistAssetDescriptor{"engine.brand.elysia.black", "textures/elysia_black.png"},
-    EngineAssistAssetDescriptor{
-        "engine.brand.elysia.black_alpha_inverse",
-        "textures/elysia_black_alpha_inverse.png"
-    },
+    EngineAssistAssetDescriptor{"engine.brand.elysia.black_alpha_inverse","textures/elysia_black_alpha_inverse.png"},
     EngineAssistAssetDescriptor{"engine.brand.elysia.light_edge", "textures/elysia_light_edge.png"},
-    EngineAssistAssetDescriptor{
-        asset_keys::ElysiaWhiteTexture,
-        "textures/elysia_white.png"
-    },
+    EngineAssistAssetDescriptor{asset_keys::ElysiaWhiteTexture,"textures/elysia_white.png"},
     EngineAssistAssetDescriptor{"engine.test.sprite", "textures/engine_test.png"},
 };
 
@@ -53,20 +47,19 @@ const std::array<EngineAssistAnimationDescriptor, 1> kAnimationDescriptors = {
 };
 
 const std::array<EngineAssistAudioDescriptor, 0> kSoundDescriptors = {};
-const std::array<EngineAssistAudioDescriptor, 0> kMusicDescriptors = {};
+
+const std::array<EngineAssistAudioDescriptor, 1> kMusicDescriptors = {
+    EngineAssistAudioDescriptor{"engine.elysia.music","audio\\Elysian_Realm.ogg"}
+};
 
 constexpr std::string_view kRequiredMarkerFileName = ".elysia_engine_required";
 }
 
 EngineAssistCatalog::EngineAssistCatalog(std::filesystem::path project_root)
-    : _root(std::move(project_root) / "assets" / "engine")
-{
-}
+    : _root(std::move(project_root) / "assets" / "engine"){}
 
 EngineAssistCatalog::EngineAssistCatalog(const elysia::io::PathManager& path_manager)
-    : _root(path_manager.assets() / "engine")
-{
-}
+    : _root(path_manager.assets() / "engine"){}
 
 const std::filesystem::path& EngineAssistCatalog::root() const noexcept
 {
@@ -108,8 +101,7 @@ std::span<const EngineAssistAudioDescriptor> EngineAssistCatalog::music() const 
     return kMusicDescriptors;
 }
 
-std::filesystem::path EngineAssistCatalog::resolve(
-    const std::filesystem::path& relative_path) const
+std::filesystem::path EngineAssistCatalog::resolve(const std::filesystem::path& relative_path) const
 {
     return _root / relative_path;
 }
@@ -135,8 +127,7 @@ EngineAssistCatalog::validate_required_files() const
         });
     }
 
-    const auto validate_asset = [this](const auto& descriptor)
-        -> std::expected<void, EngineAssistValidationError>
+    const auto validate_asset = [this](const auto& descriptor)-> std::expected<void, EngineAssistValidationError>
     {
         const std::filesystem::path path = resolve(descriptor.relative_path);
         std::error_code error;

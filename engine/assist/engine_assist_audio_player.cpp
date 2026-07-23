@@ -9,9 +9,7 @@
 
 namespace elysia::assist
 {
-void EngineAssistAudioPlayer::bind(
-    const EngineAssistCache& cache,
-    const elysia::audio::AudioSettings& settings) noexcept
+void EngineAssistAudioPlayer::bind(const EngineAssistCache& cache,const elysia::audio::AudioSettings& settings) noexcept
 {
     _cache = &cache;
     _settings.master_volume = clamp_volume(settings.master_volume);
@@ -40,22 +38,20 @@ int EngineAssistAudioPlayer::play_sound(std::string_view key, int loops) const
     Mix_Chunk* sound = _cache->find_sound(key);
     if (!sound)
     {
-        ELYSIA_LOG_WARN("engine_assist",
-            "Play sound failed: Engine Assist sound does not exist: " << key);
+        ELYSIA_LOG_WARN("engine_assist","Play sound failed: Engine Assist sound does not exist: " << key);
         return -1;
     }
 
     const int channel = Mix_PlayChannel(-1,sound,loops);
     if (channel < 0)
     {
-        ELYSIA_LOG_WARN("engine_assist",
-            "Play sound failed: " << key << " error: " << Mix_GetError());
+        ELYSIA_LOG_WARN("engine_assist","Play sound failed: " << key << " error: " << Mix_GetError());
         return -1;
     }
 
-    const int effective_volume =
-        (_settings.master_volume * _settings.sound_volume) / 100;
+    const int effective_volume =(_settings.master_volume * _settings.sound_volume) / 100;
     Mix_Volume(channel,to_mix_volume(effective_volume));
+
     return channel;
 }
 
@@ -70,8 +66,7 @@ bool EngineAssistAudioPlayer::play_music(std::string_view key, int loops) const
     Mix_Music* music = _cache->find_music(key);
     if (!music)
     {
-        ELYSIA_LOG_WARN("engine_assist",
-            "Play music failed: Engine Assist music does not exist: " << key);
+        ELYSIA_LOG_WARN("engine_assist","Play music failed: Engine Assist music does not exist: " << key);
         return false;
     }
 
@@ -80,8 +75,7 @@ bool EngineAssistAudioPlayer::play_music(std::string_view key, int loops) const
     Mix_VolumeMusic(to_mix_volume(effective_volume));
     if (Mix_PlayMusic(music,loops) != 0)
     {
-        ELYSIA_LOG_WARN("engine_assist",
-            "Play music failed: " << key << " error: " << Mix_GetError());
+        ELYSIA_LOG_WARN("engine_assist","Play music failed: " << key << " error: " << Mix_GetError());
         return false;
     }
 

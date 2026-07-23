@@ -13,8 +13,7 @@ namespace elysia::testbed
 class ElysiaScene final : public elysia::scene::Scene
 {
 public:
-    void on_input(
-        const elysia::input::RawInputFrame& input,
+    void on_input(const elysia::input::RawInputFrame& input,
         const std::vector<elysia::input::RawInputEvent>& events) override;
     void on_enter(const elysia::scene::ScenePayload& payload) override;
     void on_exit() override;

@@ -20,8 +20,7 @@ bool is_valid_return_route(const elysia::scene::SceneRoute& route) noexcept
 }
 }
 
-void ElysiaScene::on_input(
-    const elysia::input::RawInputFrame& input,
+void ElysiaScene::on_input(const elysia::input::RawInputFrame& input,
     const std::vector<elysia::input::RawInputEvent>& events)
 {
     for (const elysia::input::RawInputEvent& event : events)
