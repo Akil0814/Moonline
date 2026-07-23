@@ -38,8 +38,7 @@ void ElysiaScene::on_input(const elysia::input::RawInputFrame& input,
 
 void ElysiaScene::on_enter(const elysia::scene::ScenePayload& payload)
 {
-    const TestbedScenePayload* testbed_payload =
-        elysia::scene::try_scene_payload<TestbedScenePayload>(payload);
+    const TestbedScenePayload* testbed_payload =elysia::scene::try_scene_payload<TestbedScenePayload>(payload);
     if (!testbed_payload || !is_valid_return_route(testbed_payload->return_route))
     {
         throw std::logic_error(
@@ -58,6 +57,7 @@ void ElysiaScene::on_enter(const elysia::scene::ScenePayload& payload)
 
     _root_window->set_visible(true);
     _root_window->set_active(true);
+
 }
 
 void ElysiaScene::on_exit()
@@ -87,30 +87,19 @@ void ElysiaScene::build_ui()
     if (!texture)
         throw std::logic_error("ElysiaScene requires engine.brand.elysia.default.");
 
-    _root_window = create_and_add_object<elysia::ui::UiWindow>(
-        elysia::core::Rect{ 0,0,1280,720 },100);
+    _root_window = create_and_add_object<elysia::ui::UiWindow>(elysia::core::Rect{ 0,0,1280,720 },100);
     if (!_root_window)
         throw std::runtime_error("ElysiaScene could not create its UiWindow.");
 
     _root_window->set_on_cancel([this]() { return_to_caller(); });
 
-    auto logo = std::make_unique<elysia::ui::UiImage>(
-        texture,elysia::core::Rect{ 480,120,320,320 });
-    _root_window->add_child(std::move(logo));
+    auto logo = std::make_unique<elysia::ui::UiImage>(texture,elysia::core::Rect{ 0,0,120,120 });
+    _root_window->add_child(std::move(logo), elysia::ui::UiLayoutChildOptions{._anchor= elysia::ui::UiLayoutAnchor::TopCenter });
 
-    auto title = std::make_unique<elysia::ui::UiLabel>(
-        elysia::core::Rect{ 390,470,500,72 },0,
-        elysia::ui::ui_raw_text("Elysia Engine"));
+    auto title = std::make_unique<elysia::ui::UiLabel>(elysia::core::Rect{ 390,470,500,72 },0,elysia::ui::ui_raw_text("Elysia Engine"));
     title->set_visual_role(elysia::ui::UiLabelVisualRole::Title);
     title->set_horizontal_align(elysia::ui::TextHorizontalAlign::Center);
     _root_window->add_child(std::move(title));
-
-    auto message = std::make_unique<elysia::ui::UiLabel>(
-        elysia::core::Rect{ 390,550,500,48 },0,
-        elysia::ui::ui_raw_text("You found Scene 1111."));
-    message->set_visual_role(elysia::ui::UiLabelVisualRole::Subtitle);
-    message->set_horizontal_align(elysia::ui::TextHorizontalAlign::Center);
-    _root_window->add_child(std::move(message));
 }
 
 void ElysiaScene::destroy_ui() noexcept
