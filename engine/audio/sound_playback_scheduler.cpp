@@ -20,12 +20,9 @@ const SoundGroupConfig& SoundPlaybackScheduler::group_config(SoundGroup group) c
     return _group_configs[sound_group_index(group)];
 }
 
-SoundRequestResult SoundPlaybackScheduler::request_sound(
-    std::string_view key,
-    const SoundPlayOptions& options,
-    const StartSoundCallback& start_sound,
-    const ChannelPlayingCallback& is_channel_playing,
-    const StopSoundCallback& stop_sound)
+SoundRequestResult SoundPlaybackScheduler::request_sound(std::string_view key,
+    const SoundPlayOptions& options,const StartSoundCallback& start_sound,
+    const ChannelPlayingCallback& is_channel_playing,const StopSoundCallback& stop_sound)
 {
     if (key.empty())
         return {};
@@ -35,6 +32,7 @@ SoundRequestResult SoundPlaybackScheduler::request_sound(
     {
         if (!try_start_sound(handle,key,options,start_sound,is_channel_playing,stop_sound))
             return {};
+
         return { SoundRequestStatus::Started,handle };
     }
 
@@ -42,10 +40,8 @@ SoundRequestResult SoundPlaybackScheduler::request_sound(
     return { SoundRequestStatus::Scheduled,handle };
 }
 
-void SoundPlaybackScheduler::update(
-    double delta_seconds,
-    const StartSoundCallback& start_sound,
-    const ChannelPlayingCallback& is_channel_playing,
+void SoundPlaybackScheduler::update(double delta_seconds,
+    const StartSoundCallback& start_sound,const ChannelPlayingCallback& is_channel_playing,
     const StopSoundCallback& stop_sound)
 {
     _elapsed_seconds += std::max(0.0,delta_seconds);
@@ -65,10 +61,8 @@ void SoundPlaybackScheduler::update(
     }
 }
 
-bool SoundPlaybackScheduler::stop_sound(
-    SoundHandle handle,
-    const ChannelPlayingCallback& is_channel_playing,
-    const StopSoundCallback& stop_sound)
+bool SoundPlaybackScheduler::stop_sound(SoundHandle handle,
+    const ChannelPlayingCallback& is_channel_playing,const StopSoundCallback& stop_sound)
 {
     const auto pending = std::find_if(_pending_sounds.begin(),_pending_sounds.end(),
         [handle](const PendingSound& sound) { return sound.handle == handle; });
@@ -86,6 +80,7 @@ bool SoundPlaybackScheduler::stop_sound(
 
     stop_sound(active->channel);
     _active_sounds.erase(active);
+
     return true;
 }
 
@@ -99,10 +94,8 @@ void SoundPlaybackScheduler::clear_active_sounds()
     _active_sounds.clear();
 }
 
-void SoundPlaybackScheduler::for_each_active_channel(
-    SoundGroup group,
-    const ChannelPlayingCallback& is_channel_playing,
-    const ActiveChannelCallback& callback)
+void SoundPlaybackScheduler::for_each_active_channel(SoundGroup group,
+    const ChannelPlayingCallback& is_channel_playing,const ActiveChannelCallback& callback)
 {
     prune_finished_sounds(is_channel_playing);
     for (const ActiveSound& sound : _active_sounds)
@@ -119,13 +112,9 @@ void SoundPlaybackScheduler::reset()
     _next_sound_handle = 1;
 }
 
-bool SoundPlaybackScheduler::try_start_sound(
-    SoundHandle handle,
-    std::string_view key,
-    const SoundPlayOptions& options,
-    const StartSoundCallback& start_sound,
-    const ChannelPlayingCallback& is_channel_playing,
-    const StopSoundCallback& stop_sound)
+bool SoundPlaybackScheduler::try_start_sound(SoundHandle handle,std::string_view key,
+    const SoundPlayOptions& options,const StartSoundCallback& start_sound,
+    const ChannelPlayingCallback& is_channel_playing,const StopSoundCallback& stop_sound)
 {
     prune_finished_sounds(is_channel_playing);
 

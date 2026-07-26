@@ -36,6 +36,12 @@ namespace arcneco::scene
         if (!elysia::audio::AudioService::instance()->play_music("scene.character_select_scene_main"))
             ELYSIA_LOG_WARN("gameplay","play character_select music error");
 
+        ELYSIA_AUDIO->set_sound_group_config(elysia::audio::SoundGroup::Gameplay,
+            elysia::audio::SoundGroupConfig{
+                .max_simultaneous = 1,
+                .overflow_policy = elysia::audio::SoundOverflowPolicy::ReplaceOldest
+            });
+
         const bool should_build_ui = !_main_window || _main_window->is_destroyed();
 
         if (should_build_ui)
@@ -313,7 +319,7 @@ namespace arcneco::scene
 
         if (_character_visuals.idle_preview)
         {
-            const bool loaded = _character_visuals.idle_preview->set_animation_key(_current_character_key + ".idle");
+            const bool loaded = _character_visuals.idle_preview->set_animation_key(_current_character_key + ".select");
             _character_visuals.idle_preview->set_visible(loaded);
             if (loaded)
                 _character_visuals.idle_preview->play();

@@ -8,6 +8,9 @@
 #include <array>
 #include <string_view>
 
+
+#define ELYSIA_AUDIO ::elysia::audio::AudioService::instance()
+
 namespace elysia::audio
 {
 class AudioService : public elysia::tools::Singleton<AudioService>

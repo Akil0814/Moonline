@@ -9,7 +9,7 @@
     "select":  {
                    "frame_count":  8,
                    "fps":  10,
-                   "loop":  false
+                   "loop":  true
                },
     "start":  {
                   "frame_count":  13,

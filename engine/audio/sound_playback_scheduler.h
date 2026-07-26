@@ -50,14 +50,9 @@ private:
         double due_time_seconds = 0.0;
     };
 
-    [[nodiscard]] bool try_start_sound(
-        SoundHandle handle,
-        std::string_view key,
-        const SoundPlayOptions& options,
-        const StartSoundCallback& start_sound,
-        const ChannelPlayingCallback& is_channel_playing,
-        const StopSoundCallback& stop_sound
-    );
+    [[nodiscard]] bool try_start_sound(SoundHandle handle,std::string_view key,
+        const SoundPlayOptions& options,const StartSoundCallback& start_sound,
+        const ChannelPlayingCallback& is_channel_playing,const StopSoundCallback& stop_sound);
     void prune_finished_sounds(const ChannelPlayingCallback& is_channel_playing);
     [[nodiscard]] std::size_t active_count(SoundGroup group) const;
 
