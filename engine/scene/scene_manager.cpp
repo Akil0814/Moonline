@@ -1,7 +1,7 @@
 #include "scene_manager.h"
 
 #include "../camera/camera_manager.h"
-#include "../effects/effect_manager.h"
+#include "../effects/runtime/effect_manager.h"
 #include "../tools/debug_draw.h"
 #include "../tools/logger.h"
 
@@ -225,7 +225,7 @@ void SceneManager::attach_to_scene(Scene* scene)
     if (!scene)
         return;
 
-	elysia::effects::EffectManager::instance()->set_active_scene(scene);
+	elysia::effects::EffectManager::instance()->bind_active_scene(*scene);
 	scene->attach(this);
 }
 
@@ -234,7 +234,7 @@ void SceneManager::detach_from_scene(Scene* scene)
     if (!scene)
         return;
 
-	elysia::effects::EffectManager::instance()->clear_active_scene(scene);
+	elysia::effects::EffectManager::instance()->unbind_active_scene(*scene);
 	scene->detach(this);
 }
 

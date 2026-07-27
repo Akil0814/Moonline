@@ -2,7 +2,9 @@
 
 #include "engine/animation/animation_manager.h"
 #include "engine/core/time.h"
-#include "engine/effects/effect_manager.h"
+#include "engine/effects/animation/animation_effect_factory.h"
+#include "engine/effects/runtime/effect_manager.h"
+#include "engine/effects/effect_service.h"
 #include "engine/resources/atlas/atlas.h"
 #include "engine/scene/scene.h"
 #include "engine/scene/scene_manager.h"
@@ -105,8 +107,12 @@ void test_animation_effect_creation_playback_and_scene_lifecycle(AnimationEffect
     request.anchor = effects::EffectAnchor::Center;
     request.start_delay_seconds = 0.2;
 
+    effects::AnimationEffectFactory effect_factory;
+    const effects::AnimationEffectDefinition* definition =
+        effects::EffectManager::instance()->find_animation_effect_definition(request.effect_key);
+    require(definition != nullptr,"animation effect definition must be available to the factory");
     std::unique_ptr<effects::AnimationEffect> effect =
-        effects::EffectManager::instance()->create_animation_effect(request);
+        effect_factory.create(request,*definition);
     require(effect != nullptr, "animation effect must be created");
     require(effect->size() == core::Vector2(20.0f, 10.0f), "definition default size must apply");
     require(effect->position() == core::Vector2(90.0f, 45.0f), "center anchor must resolve from final size");
@@ -126,8 +132,10 @@ void test_animation_effect_creation_playback_and_scene_lifecycle(AnimationEffect
         "natural-size effect definition must register");
     effects::AnimationEffectSpawnRequest natural_request;
     natural_request.effect_key = natural_effect_request.effect_key;
+    definition = effects::EffectManager::instance()->find_animation_effect_definition(natural_request.effect_key);
+    require(definition != nullptr,"natural-size effect definition must be available to the factory");
     std::unique_ptr<effects::AnimationEffect> natural_effect =
-        effects::EffectManager::instance()->create_animation_effect(natural_request);
+        effect_factory.create(natural_request,*definition);
     require(natural_effect && natural_effect->size() == core::Vector2(20.0f, 10.0f),
         "first-frame dimensions must be the default-size fallback");
 
@@ -154,8 +162,10 @@ void test_animation_effect_creation_playback_and_scene_lifecycle(AnimationEffect
     register_animation_effect(texture, true, "loop");
     effects::AnimationEffectSpawnRequest loop_request;
     loop_request.effect_key = "animation_effect_test.effect.loop";
+    definition = effects::EffectManager::instance()->find_animation_effect_definition(loop_request.effect_key);
+    require(definition != nullptr,"loop effect definition must be available to the factory");
     std::unique_ptr<effects::AnimationEffect> loop_effect =
-        effects::EffectManager::instance()->create_animation_effect(loop_request);
+        effect_factory.create(loop_request,*definition);
     require(loop_effect != nullptr, "looping animation effect must be created");
     int loop_finished = 0;
     loop_effect->set_on_finished([&loop_finished](effects::AnimationEffect&) { ++loop_finished; });
@@ -189,8 +199,8 @@ void test_animation_effect_creation_playback_and_scene_lifecycle(AnimationEffect
         .callback = [&spawned_callbacks](effects::AnimationEffect&) { ++spawned_callbacks; }
     });
 
-    effects::EffectManager* effect_manager = effects::EffectManager::instance();
-    require(!effect_manager->spawn_animation_effect(scene_request),
+    effects::EffectService* effect_service = ELYSIA_EFFECTS;
+    require(!effect_service->request_animation_effect(scene_request),
         "animation effect spawning must fail without an active scene");
 
     scene::SceneManager scene_manager;
@@ -204,10 +214,10 @@ void test_animation_effect_creation_playback_and_scene_lifecycle(AnimationEffect
     });
     effects::AnimationEffectSpawnRequest unknown_request;
     unknown_request.effect_key = "animation_effect_test.effect.unknown";
-    require(!effect_manager->spawn_animation_effect(unknown_request),
+    require(!effect_service->request_animation_effect(unknown_request),
         "animation effect spawning must fail for an unknown effect key");
-    require(effect_manager->spawn_animation_effect(scene_request),
-        "effect manager must attach effects to the active scene");
+    require(effect_service->request_animation_effect(scene_request),
+        "effect service must attach effects to the active scene");
     scene_manager.on_update(0.1);
     scene_manager.on_update(0.1);
     scene_manager.on_update(0.2);
@@ -224,12 +234,12 @@ void test_animation_effect_creation_playback_and_scene_lifecycle(AnimationEffect
     scene_request.on_started = [&second_scene_started](effects::AnimationEffect&) { ++second_scene_started; };
     scene_request.on_finished = {};
     scene_request.scheduled_callbacks.clear();
-    require(effect_manager->spawn_animation_effect(scene_request),
-        "effect manager must rebind to the scene selected by a switch");
+    require(effect_service->request_animation_effect(scene_request),
+        "effect manager must rebind the service to the scene selected by a switch");
     scene_manager.on_update(0.0);
     require(second_scene_started == 1, "effects spawned after a switch must update in the new scene");
     scene_manager.shutdown();
-    require(!effect_manager->spawn_animation_effect(scene_request),
+    require(!effect_service->request_animation_effect(scene_request),
         "animation effect spawning must fail after active scene shutdown");
 
 }

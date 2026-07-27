@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../animation/animation.h"
-#include "../core/game_object.h"
-#include "../core/interface/updatable.h"
+#include "../../animation/animation.h"
+#include "../../core/game_object.h"
+#include "../../core/interface/updatable.h"
 
 #include <memory>
 #include <cstddef>

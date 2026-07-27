@@ -1,6 +1,6 @@
 #include "animation_effect.h"
 
-#include "../animation/animation_manager.h"
+#include "../../animation/animation_manager.h"
 
 #include <algorithm>
 

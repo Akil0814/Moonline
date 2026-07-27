@@ -3,7 +3,9 @@
 #include "engine/builtin/resources/builtin_asset_cache.h"
 #include "engine/builtin/resources/builtin_asset_catalog.h"
 #include "engine/core/time.h"
-#include "engine/effects/effect_manager.h"
+#include "engine/effects/runtime/effect_manager.h"
+#include "engine/effects/effect_service.h"
+#include "engine/effects/number/floating_number_effect_factory.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/localization/localization_manager.h"
 #include "engine/resources/resource_manager.h"
@@ -90,6 +92,8 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
     SDL_Renderer* renderer = fixture.renderer;
 
     effects::EffectManager* effect_manager = effects::EffectManager::instance();
+    effects::EffectService* effect_service = ELYSIA_EFFECTS;
+    effects::FloatingNumberEffectFactory effect_factory;
     localization::LocalizationManager* localization_manager = localization::LocalizationManager::instance();
     resources::ResourceManager* resource_manager = resources::ResourceManager::instance();
     io::PathManager* path_manager = io::PathManager::instance();
@@ -122,6 +126,7 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
         localization_manager->supported_languages()).has_value(),
         "floating number tests must configure Engine fonts");
     effect_manager->set_font_resolver(&font_resolver);
+    effect_factory.set_font_resolver(&font_resolver);
 
     effects::FloatingNumberEffectSpawnRequest request;
     request.text = "12%";
@@ -129,17 +134,17 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
     request.position = core::Vector2(50.0f, 50.0f);
     request.target_height = 20.0f;
     request.text.clear();
-    require(effect_manager->create_floating_number_effect(request) == nullptr,
+    require(effect_factory.create(request) == nullptr,
         "empty floating number text must be rejected");
     request.text = "12A";
-    require(effect_manager->create_floating_number_effect(request) == nullptr,
+    require(effect_factory.create(request) == nullptr,
         "letter characters must reject the complete floating number request");
     request.text = "12+";
-    require(effect_manager->create_floating_number_effect(request) == nullptr,
+    require(effect_factory.create(request) == nullptr,
         "unsupported symbols must reject the complete floating number request");
     request.text = "12%";
     request.lifetime_seconds = 0.0;
-    require(effect_manager->create_floating_number_effect(request) == nullptr,
+    require(effect_factory.create(request) == nullptr,
         "non-positive lifetimes must be rejected");
     request.lifetime_seconds = 0.6;
     request.effects.scale = effects::FloatingNumberScale{
@@ -147,7 +152,7 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
         .to_scale = 2.0f,
         .time_range = { .start_progress = 0.8f, .end_progress = 0.2f }
     };
-    require(effect_manager->create_floating_number_effect(request) == nullptr,
+    require(effect_factory.create(request) == nullptr,
         "invalid effect time ranges must be rejected");
 
     request.effects.motion = effects::FloatingNumberLinearMotion{
@@ -162,7 +167,7 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
         .to_alpha = 55
     };
     std::unique_ptr<effects::FloatingNumberEffect> effect =
-        effect_manager->create_floating_number_effect(request);
+        effect_factory.create(request);
     require(effect != nullptr, "valid floating number request must create an effect");
     std::vector<core::RenderCommand> commands;
     effect->submit_render_commands(commands);
@@ -175,7 +180,7 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
     effects::FloatingNumberEffectSpawnRequest left_request = request;
     left_request.alignment = effects::FloatingNumberAlignment::Left;
     std::unique_ptr<effects::FloatingNumberEffect> left_effect =
-        effect_manager->create_floating_number_effect(left_request);
+        effect_factory.create(left_request);
     require(left_effect != nullptr,"left-aligned floating number request must be created");
     commands.clear();
     left_effect->submit_render_commands(commands);
@@ -185,7 +190,7 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
     effects::FloatingNumberEffectSpawnRequest right_request = request;
     right_request.alignment = effects::FloatingNumberAlignment::Right;
     std::unique_ptr<effects::FloatingNumberEffect> right_effect =
-        effect_manager->create_floating_number_effect(right_request);
+        effect_factory.create(right_request);
     require(right_effect != nullptr,"right-aligned floating number request must be created");
     commands.clear();
     right_effect->submit_render_commands(commands);
@@ -209,7 +214,7 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
         .arc_height = 10.0f
     };
     std::unique_ptr<effects::FloatingNumberEffect> arc_effect =
-        effect_manager->create_floating_number_effect(arc_request);
+        effect_factory.create(arc_request);
     require(arc_effect != nullptr, "arc motion request must create an effect");
     arc_effect->update(0.3);
     require(arc_effect->position().nearly_equals(core::Vector2(60.0f, 30.0f)),
@@ -222,7 +227,7 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
     delayed_request.lifetime_seconds = 0.2;
     delayed_request.on_finished = [&finished](effects::FloatingNumberEffect&) { ++finished; };
     std::unique_ptr<effects::FloatingNumberEffect> delayed_effect =
-        effect_manager->create_floating_number_effect(delayed_request);
+        effect_factory.create(delayed_request);
     require(delayed_effect != nullptr, "delayed floating number request must create an effect");
     commands.clear();
     delayed_effect->submit_render_commands(commands);
@@ -241,7 +246,7 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
     scaled_request.lifetime_seconds = 0.2;
     scaled_request.time_scale = 0.5;
     std::unique_ptr<effects::FloatingNumberEffect> scaled_effect =
-        effect_manager->create_floating_number_effect(scaled_request);
+        effect_factory.create(scaled_request);
     require(scaled_effect != nullptr, "scaled floating number request must create an effect");
     scaled_effect->update(0.2);
     require(!scaled_effect->is_destroyed(), "local time scale must slow floating number lifetime");
@@ -252,7 +257,7 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
     global_scaled_request.text = "6";
     global_scaled_request.lifetime_seconds = 0.2;
     std::unique_ptr<effects::FloatingNumberEffect> global_scaled_effect =
-        effect_manager->create_floating_number_effect(global_scaled_request);
+        effect_factory.create(global_scaled_request);
     require(global_scaled_effect != nullptr, "global scaled floating number request must create an effect");
     core::Time::instance()->reset();
     core::Time::instance()->set_time_scale(0.5);
@@ -264,7 +269,7 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
     require(global_scaled_effect->is_destroyed(), "global time scale must flow through the floating number update delta");
     core::Time::instance()->reset();
 
-    require(!effect_manager->spawn_floating_number_effect(request),
+    require(!effect_service->request_floating_number_effect(request),
         "floating number spawning must fail without an active scene");
     scene::SceneManager scene_manager;
     constexpr scene::SceneKey first_scene_key = 111;
@@ -281,8 +286,8 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
     scene_request.text = "9";
     scene_request.lifetime_seconds = 0.2;
     scene_request.on_finished = [&scene_finished](effects::FloatingNumberEffect&) { ++scene_finished; };
-    require(effect_manager->spawn_floating_number_effect(scene_request),
-        "effect manager must attach floating numbers to the active scene");
+    require(effect_service->request_floating_number_effect(scene_request),
+        "effect service must attach floating numbers to the active scene");
     scene_manager.on_update(0.0);
     require(TestScene::instance != nullptr, "first test scene must be active");
     TestScene::instance->pause();
@@ -297,7 +302,7 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
     switch_pending_request.text = "4";
     switch_pending_request.lifetime_seconds = 2.0;
     switch_pending_request.on_finished = [&switch_finished](effects::FloatingNumberEffect&) { ++switch_finished; };
-    require(effect_manager->spawn_floating_number_effect(switch_pending_request),
+    require(effect_service->request_floating_number_effect(switch_pending_request),
         "a pending floating number must attach before a scene switch");
     scene::SceneRequest switch_request;
     switch_request.type = scene::SceneRequestType::Switch;
@@ -311,13 +316,13 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
     shutdown_request.text = "3";
     shutdown_request.lifetime_seconds = 2.0;
     shutdown_request.on_finished = [&shutdown_finished](effects::FloatingNumberEffect&) { ++shutdown_finished; };
-    require(effect_manager->spawn_floating_number_effect(scene_request),
+    require(effect_service->request_floating_number_effect(scene_request),
         "floating number effects must rebind to the switched scene");
-    require(effect_manager->spawn_floating_number_effect(shutdown_request),
+    require(effect_service->request_floating_number_effect(shutdown_request),
         "pending floating number effects must attach to the switched scene");
     scene_manager.shutdown();
     require(shutdown_finished == 0, "scene shutdown must not invoke pending floating number callbacks");
-    require(!effect_manager->spawn_floating_number_effect(scene_request),
+    require(!effect_service->request_floating_number_effect(scene_request),
         "floating number spawning must fail after active scene shutdown");
 
     effect_manager->set_font_resolver(nullptr);

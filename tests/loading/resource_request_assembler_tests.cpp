@@ -1,7 +1,8 @@
 #define SDL_MAIN_HANDLED
 
 #include "engine/animation/animation_manager.h"
-#include "engine/effects/effect_manager.h"
+#include "engine/effects/runtime/effect_manager.h"
+#include "engine/effects/animation/animation_effect_factory.h"
 #include "engine/io/loaders/content_registry_loader.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/loading/content_manifest_pipeline.h"
@@ -494,7 +495,12 @@ void test_runtime_resource_request_assembly()
 		"effect.test request must register with the effect manager");
 	elysia::effects::AnimationEffectSpawnRequest effect_spawn_request;
 	effect_spawn_request.effect_key = "effect.test";
-	require(effect_manager->create_animation_effect(effect_spawn_request) != nullptr,
+	const auto* effect_definition =
+		effect_manager->find_animation_effect_definition(effect_spawn_request.effect_key);
+	require(effect_definition != nullptr,
+		"effect.test definition must be available after registration");
+	elysia::effects::AnimationEffectFactory effect_factory;
+	require(effect_factory.create(effect_spawn_request,*effect_definition) != nullptr,
 		"effect.test must create an effect instance after registration");
 }
 }

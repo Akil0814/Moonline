@@ -11,7 +11,7 @@
 #include "../audio/audio_service.h"
 #include "../bootstrap/bootstrapper.h"
 #include "../core/time.h"
-#include "../effects/effect_manager.h"
+#include "../effects/runtime/effect_manager.h"
 #include "../loading/content_runtime_cleanup.h"
 #include "../localization/localization_manager.h"
 #include "../io/path/path_manager.h"

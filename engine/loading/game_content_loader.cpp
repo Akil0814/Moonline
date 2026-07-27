@@ -6,7 +6,7 @@
 #include "resource_request_assembler.h"
 #include "../animation/animation_manager.h"
 #include "../config/config_service.h"
-#include "../effects/effect_manager.h"
+#include "../effects/runtime/effect_manager.h"
 #include "../io/path/path_manager.h"
 #include "../resources/resource_manager.h"
 #include "../resources/texture/surface_loader.h"

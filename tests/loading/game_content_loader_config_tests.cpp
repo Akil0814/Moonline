@@ -2,7 +2,7 @@
 
 #include "engine/animation/animation_manager.h"
 #include "engine/config/config_service.h"
-#include "engine/effects/effect_manager.h"
+#include "engine/effects/runtime/effect_manager.h"
 #include "engine/io/loaders/content_registry_loader.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/loading/content_runtime_cleanup.h"
