@@ -26,10 +26,8 @@ public:
 
 	bool begin_build(const AtlasBuildRequest& request);
 	bool begin_builds(const std::vector<AtlasBuildRequest>& requests);
-	bool commit_prepared_frame(
-		SDL_Renderer* renderer,
-		const AtlasFramePreparedResult& prepared_result
-	);
+	bool commit_prepared_frame(SDL_Renderer* renderer,
+		const AtlasFramePreparedResult& prepared_result);
 
 	Atlas* find_atlas(const std::string_view& key) const;
 	bool has_in_progress_build(const std::string_view& key) const;

@@ -27,15 +27,10 @@ public:
 
 	bool begin_atlas_build(const AtlasBuildRequest& request);
 	bool begin_atlas_builds(const std::vector<AtlasBuildRequest>& requests);
-	bool commit_prepared_atlas_frame(
-		SDL_Renderer* renderer,
-		const AtlasFramePreparedResult& result
-	);
-	bool load_font(
-		const std::string& key,
-		const std::filesystem::path& file_path,
-		int point_size
-	);
+	bool commit_prepared_atlas_frame(SDL_Renderer* renderer,
+		const AtlasFramePreparedResult& result);
+	bool load_font(const std::string& key,
+		const std::filesystem::path& file_path,int point_size);
 	bool load_sounds(const std::vector<SoundLoadRequest>& requests);
 	bool load_music(const std::vector<MusicLoadRequest>& requests);
 

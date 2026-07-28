@@ -84,10 +84,9 @@ namespace arcneco::scene
 
         _main_window = Scene::create_and_add_object<elysia::ui::UiWindow>(elysia::core::Rect{ 0,0,1280,720 });
 
-        SDL_Texture* tex =
-            elysia::resources::ResourceManager::instance()->find_texture("ui.moon");
-        auto ui_background = std::make_unique<elysia::ui::UiImage>(tex, elysia::core::Rect{ 0,0,1280,720 }, -10);
-        _main_window->add_child(std::move(ui_background), { elysia::ui::UiLayoutAnchor::Center });
+        //SDL_Texture* tex = elysia::resources::ResourceManager::instance()->find_texture("ui.moon");
+        //auto ui_background = std::make_unique<elysia::ui::UiImage>(tex, elysia::core::Rect{ 0,0,1280,720 }, -10);
+        //_main_window->add_child(std::move(ui_background), { elysia::ui::UiLayoutAnchor::Center });
 
         build_left_panel();
         build_right_panel();
@@ -95,11 +94,11 @@ namespace arcneco::scene
         build_action_buttons();
         set_character_visuals_visible(false);
         set_character_details_visible(false);
-        _main_window->set_on_cancel([this]{
+        _main_window->set_on_cancel([this]{ 
             Scene::request_scene_switch(
                 MoonlineSceneKeys::MainMenu,
                 MainMenuEnterPayload{ .replay_theme_music = true });
-               });
+            });
 
     }
 
@@ -111,17 +110,14 @@ namespace arcneco::scene
         };
 
         auto* character_select_text = _main_window->create_child<elysia::ui::UiLabel>(
-        elysia::core::Rect{10,5,1000,75},0, elysia::ui::ui_text_key("character_select_scene.title")
-        );
+        elysia::core::Rect{10,5,1000,75},0, elysia::ui::ui_text_key("character_select_scene.title"));
 
         character_select_text->set_vertical_align(elysia::ui::TextVerticalAlign::Center);
         character_select_text->set_horizontal_align(elysia::ui::TextHorizontalAlign::Center);
-        character_select_text->set_typography_role(
-            elysia::typography::UiTypographyRole::Title);
+        character_select_text->set_typography_role(elysia::typography::UiTypographyRole::Title);
         character_select_text->set_text_fit_mode(elysia::ui::UiLabelTextFitMode::ScaleToFit);
 
-        auto* horizontal_scroll = _main_window->create_child<elysia::ui::UiScrollContainer>(
-            scroll_layout,elysia::core::Rect{ 0,0,800,198 });
+        auto* horizontal_scroll = _main_window->create_child<elysia::ui::UiScrollContainer>(scroll_layout,elysia::core::Rect{ 0,0,800,198 });
         if (!horizontal_scroll)
             return;
 
@@ -144,7 +140,7 @@ namespace arcneco::scene
 
         for (const std::string& character_key : _character_keys)
         {
-            for (int i = 0;i < 10;i++)
+            for (int i = 0;i < 10;i++)//for test
             {
                 SDL_Texture* avatar_tex =
                     elysia::resources::ResourceManager::instance()->find_texture(character_key + ".selecting_icon");
@@ -188,10 +184,8 @@ namespace arcneco::scene
 
     void CharacterSelectScene::build_right_panel()
     {
-        SDL_Texture* tex =
-            elysia::resources::ResourceManager::instance()->find_texture("RyougiShiki.full");
-        SDL_Texture* name_texture =
-            elysia::resources::ResourceManager::instance()->find_texture("RyougiShiki.name");
+        SDL_Texture* tex =elysia::resources::ResourceManager::instance()->find_texture("RyougiShiki.full");
+        SDL_Texture* name_texture =elysia::resources::ResourceManager::instance()->find_texture("RyougiShiki.name");
 
         auto ui_character_stand = std::make_unique<elysia::ui::UiImage>(tex, elysia::core::Rect{0,0,512,512}, 0);
         auto ui_character_name = std::make_unique<elysia::ui::UiImage>(name_texture, elysia::core::Rect{0,0,512,64}, 1);
@@ -211,16 +205,15 @@ namespace arcneco::scene
         auto info_panel = std::make_unique<elysia::ui::UiPanel>(elysia::core::Rect{ 0,0,420,250 });
         info_panel->set_visual_role(elysia::ui::UiPanelVisualRole::Dialog);
 
-        auto title = std::make_unique<elysia::ui::UiLabel>(
-            elysia::core::Rect{ 0,0,372,36 },0,elysia::ui::ui_raw_text("CHARACTER INFO"));
+        auto title = std::make_unique<elysia::ui::UiLabel>(elysia::core::Rect{ 0,0,372,36 },0,elysia::ui::ui_raw_text("CHARACTER INFO"));
         title->set_visual_role(elysia::ui::UiLabelVisualRole::Title);
-        title->set_typography_role(
-            elysia::typography::UiTypographyRole::DialogTitle);
+        title->set_typography_role(elysia::typography::UiTypographyRole::DialogTitle);
         _character_details.title_label = title.get();
         info_panel->add_child(std::move(title),{
             ._anchor = elysia::ui::UiLayoutAnchor::TopLeft,
             ._margin = elysia::ui::UiLayoutMargin{ .left = 24.0f,.top = 20.0f }
         });
+
 
         const auto add_section = [&info_panel](const char* text,float top)
         {
@@ -229,17 +222,12 @@ namespace arcneco::scene
             label->set_visual_role(elysia::ui::UiLabelVisualRole::Subtitle);
             info_panel->add_child(std::move(label),{
                 ._anchor = elysia::ui::UiLayoutAnchor::TopLeft,
-                ._margin = elysia::ui::UiLayoutMargin{ .left = 24.0f,.top = top }
             });
         };
-        add_section("Character details will appear here.",72.0f);
-        add_section("ATTRIBUTES  —  Coming soon",126.0f);
-        add_section("SKILLS      —  Coming soon",176.0f);
 
         _character_details.info_panel = info_panel.get();
         _main_window->add_child(std::move(info_panel),{
             ._anchor = elysia::ui::UiLayoutAnchor::Center,
-            ._margin = elysia::ui::UiLayoutMargin{ .top = 20.0f }
         });
     }
 
@@ -247,10 +235,9 @@ namespace arcneco::scene
     {
         auto action_row = std::make_unique<elysia::ui::UiListContainer>(elysia::core::Rect{ 0,0,400,52 });
         action_row->set_direction(elysia::ui::UiListDirection::Horizontal);
-        action_row->set_item_spacing(16.0f);
+        //action_row->set_item_spacing(16.0f);
 
-        auto confirm = std::make_unique<elysia::ui::UiButton>(
-            elysia::core::Rect{ 0,0,180,50 },
+        auto confirm = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,180,50 },
             elysia::ui::UiButtonConfig{ .content = elysia::ui::ui_text_key("character_select_scene.actions.confirm") });
         confirm->set_visual_role(elysia::ui::UiButtonVisualRole::Primary);
         confirm->set_on_click([this]()
@@ -260,13 +247,11 @@ namespace arcneco::scene
         _character_details.confirm_button = confirm.get();
         action_row->add_back(std::move(confirm));
 
-        auto back = std::make_unique<elysia::ui::UiButton>(
-            elysia::core::Rect{ 0,0,180,50 },
+        auto back = std::make_unique<elysia::ui::UiButton>(elysia::core::Rect{ 0,0,180,50 },
             elysia::ui::UiButtonConfig{ .content = elysia::ui::ui_text_key("character_select_scene.actions.back") });
         back->set_on_click([this]()
         {
-                Scene::request_scene_switch(
-                    MoonlineSceneKeys::MainMenu,
+                Scene::request_scene_switch(MoonlineSceneKeys::MainMenu,
                     MainMenuEnterPayload{ .replay_theme_music = true });
         });
         _character_details.back_button = back.get();
@@ -294,24 +279,21 @@ namespace arcneco::scene
 
         if (_character_visuals.full_portrait)
         {
-            SDL_Texture* texture = elysia::resources::ResourceManager::instance()->find_texture(
-                _current_character_key + ".full");
+            SDL_Texture* texture = elysia::resources::ResourceManager::instance()->find_texture(_current_character_key + ".full");
             _character_visuals.full_portrait->set_texture(texture);
             _character_visuals.full_portrait->set_visible(texture != nullptr);
         }
 
         if (_character_visuals.name_image)
         {
-            SDL_Texture* texture = elysia::resources::ResourceManager::instance()->find_texture(
-                _current_character_key + ".name");
+            SDL_Texture* texture = elysia::resources::ResourceManager::instance()->find_texture(_current_character_key + ".name");
             _character_visuals.name_image->set_texture(texture);
             _character_visuals.name_image->set_visible(texture != nullptr);
         }
 
         if (_character_visuals.selected_background)
         {
-            const bool loaded = _character_visuals.selected_background->set_animation_key(
-                _current_character_key + ".selected_background");
+            const bool loaded = _character_visuals.selected_background->set_animation_key(_current_character_key + ".selected_background");
             _character_visuals.selected_background->set_visible(loaded);
             if (loaded)
                 _character_visuals.selected_background->play();
@@ -353,6 +335,7 @@ namespace arcneco::scene
     {
         if (_character_details.info_panel)
             _character_details.info_panel->set_visible(visible);
+
         if (_character_details.confirm_button)
         {
             _character_details.confirm_button->set_visible(visible);

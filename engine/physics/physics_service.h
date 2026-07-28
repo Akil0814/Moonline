@@ -8,14 +8,11 @@
 
 namespace elysia::physics
 {
-using BroadPhaseStrategyFactory =
-    std::function<std::unique_ptr<IBroadPhaseStrategy>()>;
+using BroadPhaseStrategyFactory =std::function<std::unique_ptr<IBroadPhaseStrategy>()>;
 
-using CollisionDetectionStrategyFactory =
-    std::function<std::unique_ptr<ICollisionDetectionStrategy>()>;
+using CollisionDetectionStrategyFactory =std::function<std::unique_ptr<ICollisionDetectionStrategy>()>;
 
-using CollisionResponseStrategyFactory =
-    std::function<std::unique_ptr<ICollisionResponseStrategy>()>;
+using CollisionResponseStrategyFactory =std::function<std::unique_ptr<ICollisionResponseStrategy>()>;
 
 struct CollisionStrategyFactories
 {
