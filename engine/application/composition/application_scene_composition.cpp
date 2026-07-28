@@ -1,12 +1,12 @@
 #include "application_scene_composition.h"
 
-#include "../builtin/builtin_scene_keys.h"
-#include "../builtin/scenes/settings_scene.h"
-#include "../builtin/scenes/application_failure_scene.h"
-#include "../builtin/scenes/startup_loading_scene.h"
-#include "../elysia/realm_scene_composition.h"
-#include "../scene/scene_manager.h"
-#include "../testbed/testbed_scene_composition.h"
+#include "../../builtin/builtin_scene_keys.h"
+#include "../../builtin/scenes/settings_scene.h"
+#include "../../builtin/scenes/application_failure_scene.h"
+#include "../../builtin/scenes/startup_loading_scene.h"
+#include "../../elysia/realm_scene_composition.h"
+#include "../../scene/scene_manager.h"
+#include "../../testbed/testbed_scene_composition.h"
 
 namespace elysia::application
 {

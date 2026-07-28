@@ -1,6 +1,6 @@
 #define SDL_MAIN_HANDLED
 
-#include "engine/application/application_event_boundary.h"
+#include "engine/application/lifecycle/application_event_boundary.h"
 #include "engine/scene/scene.h"
 #include "engine/ui/containers/ui_button_group.h"
 #include "engine/ui/containers/ui_panel.h"

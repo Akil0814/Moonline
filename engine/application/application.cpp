@@ -1,11 +1,11 @@
 #include "application.h"
 
-#include "application_event_boundary.h"
-#include "application_window_settings.h"
-#include "application_exit_policy.h"
-#include "application_scene_composition.h"
-#include "application_sdl_presentation.h"
-#include "application_termination_logging.h"
+#include "lifecycle/application_event_boundary.h"
+#include "presentation/application_window_settings.h"
+#include "lifecycle/application_exit_policy.h"
+#include "composition/application_scene_composition.h"
+#include "presentation/application_sdl_presentation.h"
+#include "lifecycle/application_termination_logging.h"
 
 #include "../builtin/resources/builtin_asset_catalog.h"
 #include "../audio/audio_service.h"

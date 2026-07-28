@@ -1,8 +1,8 @@
 #pragma once
 
 #include "application_exit_policy.h"
-#include "../tools/logger.h"
-#include "../tools/termination_manager.h"
+#include "../../tools/logger.h"
+#include "../../tools/termination_manager.h"
 
 #include <optional>
 #include <source_location>

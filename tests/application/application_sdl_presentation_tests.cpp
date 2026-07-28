@@ -1,6 +1,6 @@
 #define SDL_MAIN_HANDLED
 
-#include "engine/application/application_sdl_presentation.h"
+#include "engine/application/presentation/application_sdl_presentation.h"
 #include "tests/support/test_assertions.h"
 
 #include <SDL.h>

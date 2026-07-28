@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../config/user_config_data.h"
+#include "../../config/user_config_data.h"
 
 #include <SDL.h>
 

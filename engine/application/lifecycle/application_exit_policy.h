@@ -1,7 +1,7 @@
 #pragma once
 
-#include "application_run_result.h"
-#include "../tools/termination_manager.h"
+#include "../application_run_result.h"
+#include "../../tools/termination_manager.h"
 
 namespace elysia::application
 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "game_module.h"
+#include "../game_module.h"
 
 namespace elysia::application
 {

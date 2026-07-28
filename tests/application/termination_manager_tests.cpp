@@ -1,5 +1,5 @@
-#include "engine/application/application_event_boundary.h"
-#include "engine/application/application_exit_policy.h"
+#include "engine/application/lifecycle/application_event_boundary.h"
+#include "engine/application/lifecycle/application_exit_policy.h"
 #include "engine/tools/termination_manager.h"
 #include "tests/support/test_assertions.h"
 
