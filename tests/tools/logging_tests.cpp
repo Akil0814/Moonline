@@ -1,6 +1,6 @@
 #define SDL_MAIN_HANDLED
 
-#include "engine/application/application_termination_logging.h"
+#include "engine/application/lifecycle/application_termination_logging.h"
 #include "engine/io/loaders/content_registry_loader.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/loading/content_manifest_pipeline.h"

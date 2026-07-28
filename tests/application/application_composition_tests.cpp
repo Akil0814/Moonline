@@ -1,6 +1,6 @@
 #define SDL_MAIN_HANDLED
 
-#include "engine/application/application_scene_composition.h"
+#include "engine/application/composition/application_scene_composition.h"
 #include "engine/io/loaders/asset_config_types.h"
 #include "engine/scene/scene.h"
 #include "engine/scene/scene_manager.h"
