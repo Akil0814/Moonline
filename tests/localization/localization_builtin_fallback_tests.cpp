@@ -5,7 +5,8 @@
 #include "engine/builtin/resources/builtin_asset_catalog.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/localization/localization_manager.h"
-#include "engine/resources/resource_manager.h"
+#include "engine/resources/resource_service.h"
+#include "engine/resources/runtime/resource_manager.h"
 #include "engine/typography/font_resolver.h"
 #include "tests/support/test_assertions.h"
 
@@ -98,7 +99,7 @@ int main()
     require(font_resolver.configure(
         *resolved_font_settings,
         cache,
-        *elysia::resources::ResourceManager::instance(),
+        *elysia::resources::ResourceService::instance(),
         localization->supported_languages()).has_value(),
         "FontResolver must configure after localization publishes its languages");
     require(localization->tr("common.save") == "Save",
@@ -173,7 +174,7 @@ int main()
         "active project fonts must render localized text");
     int project_width = 0;
     int project_height = 0;
-    require(TTF_SizeUTF8(resources->find_font("ui.latin.20"), "Moon", &project_width, &project_height) == 0,
+    require(TTF_SizeUTF8(ELYSIA_RESOURCES->find_font("ui.latin.20"), "Moon", &project_width, &project_height) == 0,
         "project font must measure the fallback probe text");
     require(localized_width == project_width && localized_height == project_height,
         "LocalizationManager must render through the active project font");

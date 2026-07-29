@@ -5,7 +5,8 @@
 #include "engine/io/path/path_manager.h"
 #include "engine/loading/content_manifest_pipeline.h"
 #include "engine/resources/pipeline/resource_request_builder.h"
-#include "engine/resources/resource_manager.h"
+#include "engine/resources/resource_service.h"
+#include "engine/resources/runtime/resource_manager.h"
 #include "engine/tools/logger.h"
 #include "tests/support/test_assertions.h"
 
@@ -142,6 +143,7 @@ void test_logger_console_sink()
         "recoverable resource request failures must log at Warn level");
 
     resources::ResourceManager* resource_manager = resources::ResourceManager::instance();
+    resources::ResourceService* resource_service = ELYSIA_RESOURCES;
     resource_manager->clear();
     auto require_missing_resource_logs = [&](const std::string& resource_type,auto&& find_resource)
     {
@@ -169,23 +171,23 @@ void test_logger_console_sink()
     };
     require_missing_resource_logs("texture",[&](const std::string_view key)
     {
-        return resource_manager->find_texture(key);
+        return resource_service->find_texture(key);
     });
     require_missing_resource_logs("font",[&](const std::string_view key)
     {
-        return resource_manager->find_font(key);
+        return resource_service->find_font(key);
     });
     require_missing_resource_logs("sound",[&](const std::string_view key)
     {
-        return resource_manager->find_sound(key);
+        return resource_service->find_sound(key);
     });
     require_missing_resource_logs("music",[&](const std::string_view key)
     {
-        return resource_manager->find_music(key);
+        return resource_service->find_music(key);
     });
     require_missing_resource_logs("atlas",[&](const std::string_view key)
     {
-        return resource_manager->find_atlas(key);
+        return resource_service->find_atlas(key);
     });
 
     captured.messages.clear();

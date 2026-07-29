@@ -7,7 +7,7 @@
 #include "moonline_scene_keys.h"
 
 #include "../../engine/audio/audio_service.h"
-#include "../../engine/resources/resource_manager.h"
+#include "../../engine/resources/resource_service.h"
 
 #include "../../engine/ui/widgets/image/ui_animation.h"
 #include "../../engine/ui/widgets/image/ui_image.h"
@@ -84,7 +84,7 @@ namespace arcneco::scene
 
         _main_window = Scene::create_and_add_object<elysia::ui::UiWindow>(elysia::core::Rect{ 0,0,1280,720 });
 
-        //SDL_Texture* tex = elysia::resources::ResourceManager::instance()->find_texture("ui.moon");
+        //SDL_Texture* tex = ELYSIA_RESOURCES->find_texture("ui.moon");
         //auto ui_background = std::make_unique<elysia::ui::UiImage>(tex, elysia::core::Rect{ 0,0,1280,720 }, -10);
         //_main_window->add_child(std::move(ui_background), { elysia::ui::UiLayoutAnchor::Center });
 
@@ -143,7 +143,7 @@ namespace arcneco::scene
             for (int i = 0;i < 10;i++)//for test
             {
                 SDL_Texture* avatar_tex =
-                    elysia::resources::ResourceManager::instance()->find_texture(character_key + ".selecting_icon");
+                    ELYSIA_RESOURCES->find_texture(character_key + ".selecting_icon");
                 auto character_button = std::make_unique<elysia::ui::UiButton>(
                     elysia::core::Rect{ 0,0,character_ui_width,character_ui_height },
                     elysia::ui::UiButtonConfig{
@@ -184,8 +184,8 @@ namespace arcneco::scene
 
     void CharacterSelectScene::build_right_panel()
     {
-        SDL_Texture* tex =elysia::resources::ResourceManager::instance()->find_texture("RyougiShiki.full");
-        SDL_Texture* name_texture =elysia::resources::ResourceManager::instance()->find_texture("RyougiShiki.name");
+        SDL_Texture* tex = ELYSIA_RESOURCES->find_texture("RyougiShiki.full");
+        SDL_Texture* name_texture = ELYSIA_RESOURCES->find_texture("RyougiShiki.name");
 
         auto ui_character_stand = std::make_unique<elysia::ui::UiImage>(tex, elysia::core::Rect{0,0,512,512}, 0);
         auto ui_character_name = std::make_unique<elysia::ui::UiImage>(name_texture, elysia::core::Rect{0,0,512,64}, 1);
@@ -279,14 +279,14 @@ namespace arcneco::scene
 
         if (_character_visuals.full_portrait)
         {
-            SDL_Texture* texture = elysia::resources::ResourceManager::instance()->find_texture(_current_character_key + ".full");
+            SDL_Texture* texture = ELYSIA_RESOURCES->find_texture(_current_character_key + ".full");
             _character_visuals.full_portrait->set_texture(texture);
             _character_visuals.full_portrait->set_visible(texture != nullptr);
         }
 
         if (_character_visuals.name_image)
         {
-            SDL_Texture* texture = elysia::resources::ResourceManager::instance()->find_texture(_current_character_key + ".name");
+            SDL_Texture* texture = ELYSIA_RESOURCES->find_texture(_current_character_key + ".name");
             _character_visuals.name_image->set_texture(texture);
             _character_visuals.name_image->set_visible(texture != nullptr);
         }

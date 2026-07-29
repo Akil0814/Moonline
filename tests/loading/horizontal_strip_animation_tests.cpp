@@ -11,7 +11,8 @@
 #include "engine/io/loaders/i18n_manifest_loader.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/resources/atlas/atlas_build_preparer.h"
-#include "engine/resources/resource_manager.h"
+#include "engine/resources/resource_service.h"
+#include "engine/resources/runtime/resource_manager.h"
 #include "engine/resources/texture/surface_loader.h"
 #include "engine/ui/widgets/image/ui_animation.h"
 #include "tests/support/test_assertions.h"
@@ -293,7 +294,7 @@ void test_horizontal_strip_build_and_render_commands()
 	require(resource_manager->commit_prepared_atlas_frame(renderer, prepared),
 		"horizontal strip atlas must commit from one prepared image");
 
-	const resources::Atlas* atlas = resource_manager->find_atlas(request.atlas_key);
+	const resources::Atlas* atlas = ELYSIA_RESOURCES->find_atlas(request.atlas_key);
 	require(atlas && atlas->size() == 14,
 		"horizontal strip atlas must expose fourteen logical frames");
 	const resources::FrameInfo* first = atlas->frame_at(0);
@@ -305,7 +306,7 @@ void test_horizontal_strip_build_and_render_commands()
 		&& first->_coverage_mask == second->_coverage_mask
 		&& second->_coverage_mask == last->_coverage_mask,
 		"horizontal strip frames must share one base and coverage mask texture pair");
-	require(resource_manager->texture_manager().resource_count() == 1,
+	require(resource_manager->texture_resource_count() == 1,
 		"horizontal strip atlas must store exactly one owned texture");
 	require(first->_width == 146 && first->_height == 146
 		&& first->_source_rect.has_value()
@@ -545,8 +546,8 @@ void test_directory_frames_publish_transactionally()
 		request.atlas_key,0,request.frame_count,true);
 	require(resource_manager->commit_prepared_atlas_frame(
 			renderer,first_prepared)
-			&& resource_manager->texture_manager().resource_count() == 0
-			&& resource_manager->atlas_manager().resource_count() == 0,
+			&& resource_manager->texture_resource_count() == 0
+			&& resource_manager->atlas_resource_count() == 0,
 		"incomplete directory atlas resources must remain private to assembly");
 	auto second_prepared = make_directory_frame(
 		request.atlas_key,1,request.frame_count,true);
@@ -554,7 +555,7 @@ void test_directory_frames_publish_transactionally()
 			renderer,second_prepared),
 		"complete directory atlas must commit");
 	const resources::Atlas* atlas =
-		resource_manager->find_atlas(request.atlas_key);
+		ELYSIA_RESOURCES->find_atlas(request.atlas_key);
 	const resources::FrameInfo* first = atlas ? atlas->frame_at(0) : nullptr;
 	const resources::FrameInfo* second = atlas ? atlas->frame_at(1) : nullptr;
 	require(first && second
@@ -562,12 +563,12 @@ void test_directory_frames_publish_transactionally()
 			&& first->_coverage_mask != nullptr
 			&& second->_coverage_mask != nullptr
 			&& first->_coverage_mask != second->_coverage_mask
-			&& resource_manager->texture_manager().resource_count() == 2,
+			&& resource_manager->texture_resource_count() == 2,
 		"directory frames must publish one distinct base/mask pair per logical frame");
 
 	resource_manager->clear();
-	require(resource_manager->texture_manager().resource_count() == 0
-			&& resource_manager->atlas_manager().resource_count() == 0,
+	require(resource_manager->texture_resource_count() == 0
+			&& resource_manager->atlas_resource_count() == 0,
 		"resource cleanup must release both base and mask ownership together");
 
 	request.atlas_key = "directory.failed";
@@ -582,8 +583,8 @@ void test_directory_frames_publish_transactionally()
 		request.atlas_key,1,request.frame_count,false);
 	require(!resource_manager->commit_prepared_atlas_frame(
 			renderer,second_prepared)
-			&& resource_manager->texture_manager().resource_count() == 0
-			&& resource_manager->atlas_manager().resource_count() == 0,
+			&& resource_manager->texture_resource_count() == 0
+			&& resource_manager->atlas_resource_count() == 0,
 		"a missing mask must fail without publishing partial textures or Atlas");
 
 	resource_manager->clear();

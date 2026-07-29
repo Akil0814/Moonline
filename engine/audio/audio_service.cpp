@@ -1,7 +1,7 @@
 #include "../tools/logger.h"
 #include "audio_service.h"
 
-#include "../resources/resource_manager.h"
+#include "../resources/resource_service.h"
 
 #include <SDL_mixer.h>
 
@@ -53,7 +53,7 @@ SoundRequestResult AudioService::request_sound(const std::string_view& key, cons
         return {};
     }
 
-    Mix_Chunk* sound = elysia::resources::ResourceManager::instance()->find_sound(key);
+    Mix_Chunk* sound = ELYSIA_RESOURCES->find_sound(key);
     if (!sound)
     {
         ELYSIA_LOG_WARN("audio","Play sound failed: sound does not exist: " << key);
@@ -151,7 +151,7 @@ bool AudioService::play_music(const std::string_view& key, int loops)
         return false;
     }
 
-    Mix_Music* music = elysia::resources::ResourceManager::instance()->find_music(key);
+    Mix_Music* music = ELYSIA_RESOURCES->find_music(key);
     if (!music)
     {
         ELYSIA_LOG_WARN("audio","Play music failed: music does not exist: " << key);
@@ -209,7 +209,7 @@ const AudioSettings& AudioService::settings() const
 
 int AudioService::start_sound(const std::string_view& key, int loops, SoundGroup group)
 {
-    Mix_Chunk* sound = elysia::resources::ResourceManager::instance()->find_sound(key);
+    Mix_Chunk* sound = ELYSIA_RESOURCES->find_sound(key);
     if (!sound)
     {
         ELYSIA_LOG_WARN("audio","Play sound failed: sound does not exist: " << key);

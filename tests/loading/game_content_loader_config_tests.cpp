@@ -7,7 +7,8 @@
 #include "engine/io/path/path_manager.h"
 #include "engine/loading/content_runtime_cleanup.h"
 #include "engine/loading/game_content_loader.h"
-#include "engine/resources/resource_manager.h"
+#include "engine/resources/resource_service.h"
+#include "engine/resources/runtime/resource_manager.h"
 #include "tests/support/test_assertions.h"
 
 #include <SDL.h>
@@ -54,6 +55,7 @@ int main()
     auto* configs = elysia::config::ConfigService::instance();
     elysia::loading::clear_loaded_content();
 	elysia::resources::ResourceManager* resources = elysia::resources::ResourceManager::instance();
+	elysia::resources::ResourceService* resource_service = ELYSIA_RESOURCES;
 	elysia::animation::AnimationManager* animations = elysia::animation::AnimationManager::instance();
 	elysia::effects::EffectManager* effects = elysia::effects::EffectManager::instance();
 	elysia::io::ContentRegistry content_registry;
@@ -72,6 +74,12 @@ int main()
 		&& animations->find_definition("test.animation") != nullptr
 		&& effects->find_animation_effect_definition("effect.test") != nullptr,
 		"a finished content load must register resources, animations, and effects together");
+	require(resource_service->find_atlas("test.animation") != nullptr
+		&& resource_service->find_texture("ui.moon") != nullptr
+		&& resource_service->find_font("ui.latin.20") != nullptr
+		&& resource_service->find_sound("in_game.atk.atk_bladeslash") != nullptr
+		&& resource_service->find_music("scene.character_select_scene_main") != nullptr,
+		"ResourceService must expose every loaded runtime resource category");
 
     loader.reset();
     require(configs->is_initialized()

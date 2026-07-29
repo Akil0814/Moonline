@@ -1,7 +1,7 @@
 #include "../tools/logger.h"
 #include "animation_manager.h"
 
-#include "../resources/resource_manager.h"
+#include "../resources/resource_service.h"
 namespace elysia::animation
 {
 bool AnimationManager::register_animation(
@@ -46,11 +46,11 @@ bool AnimationManager::register_animation(
 }
 
 bool AnimationManager::register_animations(const std::vector<elysia::resources::AnimationBuildRequest>& requests,
-	const elysia::resources::ResourceManager& resource_manager)
+	const elysia::resources::ResourceService& resource_service)
 {
 	for (const elysia::resources::AnimationBuildRequest& request : requests)
 	{
-		const elysia::resources::Atlas* atlas = resource_manager.find_atlas(request.atlas_key);
+		const elysia::resources::Atlas* atlas = resource_service.find_atlas(request.atlas_key);
 		if (!register_animation(request, atlas))
 			return false;
 	}

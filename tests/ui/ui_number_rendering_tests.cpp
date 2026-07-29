@@ -4,7 +4,8 @@
 #include "engine/builtin/resources/builtin_asset_catalog.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/localization/localization_manager.h"
-#include "engine/resources/resource_manager.h"
+#include "engine/resources/runtime/resource_manager.h"
+#include "engine/resources/resource_service.h"
 #include "engine/typography/font_resolver.h"
 #include "engine/ui/widgets/number/ui_number.h"
 #include "tests/support/test_assertions.h"
@@ -77,7 +78,7 @@ void test_ui_number_uses_shared_localized_glyphs()
     require(font_resolver.configure(
         *resolved_font_settings,
         engine_cache,
-        *resources,
+        *resources::ResourceService::instance(),
         localization->supported_languages()).has_value(),
         "UI number tests must configure Engine fonts");
 

@@ -3,7 +3,7 @@
 #include "../animation/animation_manager.h"
 #include "../config/config_service.h"
 #include "../effects/runtime/effect_manager.h"
-#include "../resources/resource_manager.h"
+#include "../resources/runtime/resource_manager.h"
 
 namespace elysia::loading
 {

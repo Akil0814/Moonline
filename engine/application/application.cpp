@@ -15,7 +15,7 @@
 #include "../loading/content_runtime_cleanup.h"
 #include "../localization/localization_manager.h"
 #include "../io/path/path_manager.h"
-#include "../resources/resource_manager.h"
+#include "../resources/resource_service.h"
 #include "../tools/logger.h"
 #include "../ui/style/ui_theme_defaults.h"
 
@@ -169,7 +169,7 @@ bool Application::init(
     if (const auto font_result = _font_resolver.configure(
             *resolved_font_settings,
             _builtin_asset_cache,
-            *elysia::resources::ResourceManager::instance(),
+            *elysia::resources::ResourceService::instance(),
             elysia::localization::LocalizationManager::instance()
                 ->supported_languages());
         !font_result)

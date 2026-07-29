@@ -2,7 +2,8 @@
 
 #include "engine/effects/number/floating_number_glyph_cache.h"
 #include "engine/io/path/path_manager.h"
-#include "engine/resources/resource_manager.h"
+#include "engine/resources/resource_service.h"
+#include "engine/resources/runtime/resource_manager.h"
 #include "tests/support/test_assertions.h"
 
 #include <SDL.h>
@@ -34,7 +35,7 @@ struct GlyphCacheFixture
             elysia::io::PathManager::instance()->fonts() / "fusion-pixel-10px-proportional-latin.ttf",
             20
         ),"glyph cache tests must load the floating-number font");
-        font = elysia::resources::ResourceManager::instance()->find_font("ui.latin.20");
+        font = ELYSIA_RESOURCES->find_font("ui.latin.20");
         require(font != nullptr,"loaded floating-number font must be available");
     }
 

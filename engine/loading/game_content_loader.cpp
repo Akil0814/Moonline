@@ -8,7 +8,8 @@
 #include "../config/config_service.h"
 #include "../effects/runtime/effect_manager.h"
 #include "../io/path/path_manager.h"
-#include "../resources/resource_manager.h"
+#include "../resources/resource_service.h"
+#include "../resources/runtime/resource_manager.h"
 #include "../resources/texture/surface_loader.h"
 #include "../resources/texture/texture_loader.h"
 
@@ -490,7 +491,7 @@ bool GameContentLoader::commit_texture_result(const elysia::resources::SurfaceLo
 	}
 
 	elysia::resources::ResourceManager* resource_manager = elysia::resources::ResourceManager::instance();
-	if (!resource_manager->texture_manager().store_texture(
+	if (!resource_manager->store_texture(
 		surface_result._asset_key,
 		std::move(texture_result._texture)))
 	{
@@ -555,7 +556,7 @@ bool GameContentLoader::is_streaming_phase_complete()
 		}
 	}
 
-	return elysia::resources::ResourceManager::instance()->atlas_manager().in_progress_build_count() == 0;
+	return !elysia::resources::ResourceManager::instance()->has_in_progress_atlas_builds();
 }
 
 bool GameContentLoader::load_fonts()
@@ -585,7 +586,7 @@ bool GameContentLoader::load_audio()
 	{
 		const elysia::resources::SoundLoadRequest& request =
 			_load_plan.sound_requests()[_next_sound_request_index];
-		if (!resource_manager->audio_manager().load_sound(request.key, request.file_path))
+		if (!resource_manager->load_sound(request))
 		{
 			fail("GameContentLoader sound load failed.");
 			return false;
@@ -601,7 +602,7 @@ bool GameContentLoader::load_audio()
 	{
 		const elysia::resources::MusicLoadRequest& request =
 			_load_plan.music_requests()[_next_music_request_index];
-		if (!resource_manager->audio_manager().load_music(request))
+		if (!resource_manager->load_music(request))
 		{
 			fail("GameContentLoader music load failed.");
 			return false;
@@ -619,11 +620,11 @@ bool GameContentLoader::load_audio()
 
 bool GameContentLoader::register_animations()
 {
-	elysia::resources::ResourceManager* resource_manager = elysia::resources::ResourceManager::instance();
 	elysia::animation::AnimationManager* animation_manager = elysia::animation::AnimationManager::instance();
 	for (const elysia::resources::AnimationBuildRequest& request : _load_plan.animation_build_requests())
 	{
-		const elysia::resources::Atlas* atlas = resource_manager->find_atlas(request.atlas_key);
+		const elysia::resources::Atlas* atlas =
+			elysia::resources::ResourceService::instance()->find_atlas(request.atlas_key);
 		if (!animation_manager->register_animation(request, atlas))
 		{
 			fail("GameContentLoader animation registration failed.");

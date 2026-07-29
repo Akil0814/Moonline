@@ -8,7 +8,8 @@
 #include "engine/effects/number/floating_number_effect_factory.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/localization/localization_manager.h"
-#include "engine/resources/resource_manager.h"
+#include "engine/resources/resource_service.h"
+#include "engine/resources/runtime/resource_manager.h"
 #include "engine/scene/scene.h"
 #include "engine/scene/scene_manager.h"
 #include "engine/typography/font_resolver.h"
@@ -122,7 +123,7 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
     require(font_resolver.configure(
         *resolved_font_settings,
         engine_cache,
-        *resource_manager,
+        *resources::ResourceService::instance(),
         localization_manager->supported_languages()).has_value(),
         "floating number tests must configure Engine fonts");
     effect_manager->set_font_resolver(&font_resolver);

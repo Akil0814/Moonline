@@ -7,7 +7,7 @@
 #include "engine/config/user_config_service.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/loading/content_runtime_cleanup.h"
-#include "engine/resources/resource_manager.h"
+#include "engine/resources/runtime/resource_manager.h"
 #include "engine/builtin/scenes/startup_loading_scene.h"
 #include "tests/support/test_assertions.h"
 

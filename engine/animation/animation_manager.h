@@ -1,7 +1,7 @@
 #pragma once
 
 #include "animation.h"
-#include "../resources/resource_manager.h"
+#include "../resources/resource_service.h"
 #include "../tools/singleton.h"
 #include "../resources/resource_types.h"
 
@@ -30,7 +30,7 @@ class AnimationManager : public elysia::tools::Singleton<AnimationManager>
 public:
 	bool register_animation(const elysia::resources::AnimationBuildRequest& request,const elysia::resources::Atlas* atlas);
 	bool register_animations(const std::vector<elysia::resources::AnimationBuildRequest>& requests,
-		const elysia::resources::ResourceManager& resource_manager);
+		const elysia::resources::ResourceService& resource_service);
 
 	const AnimationDefinition* find_definition(const std::string_view& key) const;
 	std::unique_ptr<Animation> create_animation(const std::string_view& key) const;

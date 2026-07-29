@@ -6,7 +6,8 @@
 #include "engine/loading/content_manifest_pipeline.h"
 #include "engine/localization/localization_manager.h"
 #include "engine/resources/pipeline/resource_request_builder.h"
-#include "engine/resources/resource_manager.h"
+#include "engine/resources/runtime/resource_manager.h"
+#include "engine/resources/resource_service.h"
 #include "engine/typography/font_resolver.h"
 #include "engine/ui/widgets/ui_text_input.h"
 #include "tests/support/test_assertions.h"
@@ -84,7 +85,7 @@ void test_text_input_uses_private_editing_texture()
     require(font_resolver.configure(
         *resolved_font_settings,
         engine_cache,
-        *resource_manager,
+        *resources::ResourceService::instance(),
         localization_manager->supported_languages()).has_value(),
         "text input texture test must configure Engine fonts");
 

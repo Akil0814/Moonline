@@ -5,7 +5,8 @@
 #include "engine/builtin/resources/builtin_asset_catalog.h"
 #include "engine/io/loaders/asset_config_types.h"
 #include "engine/io/path/path_manager.h"
-#include "engine/resources/resource_manager.h"
+#include "engine/resources/resource_service.h"
+#include "engine/resources/runtime/resource_manager.h"
 #include "engine/builtin/builtin_scene_keys.h"
 #include "engine/builtin/scenes/application_failure_scene.h"
 #include "engine/scene/runtime/scene_runtime_context.h"
@@ -99,6 +100,11 @@ public:
         return *elysia::resources::ResourceManager::instance();
     }
 
+    [[nodiscard]] elysia::resources::ResourceService& resource_service() noexcept
+    {
+        return *elysia::resources::ResourceService::instance();
+    }
+
 private:
     SDL_Surface* _surface = nullptr;
     SDL_Renderer* _renderer = nullptr;
@@ -169,7 +175,7 @@ void test_engine_resolution_and_validation(FontResolverFixture& fixture)
             FontSource::EngineBuiltIn,
             24),
         fixture.engine_cache(),
-        fixture.resources(),
+        fixture.resource_service(),
         languages);
     require(configured.has_value(),
         "FontResolver must configure with complete Engine fonts");
@@ -237,7 +243,7 @@ void test_atomic_project_activation(FontResolverFixture& fixture)
             FontSource::Project,
             24),
         fixture.engine_cache(),
-        fixture.resources(),
+        fixture.resource_service(),
         languages);
     require(configured.has_value(),
         "project FontResolver settings must configure against Engine bootstrap fonts");
@@ -393,7 +399,7 @@ void test_invalid_configuration(FontResolverFixture& fixture)
             FontSource::EngineBuiltIn,
             20),
         fixture.engine_cache(),
-        fixture.resources(),
+        fixture.resource_service(),
         no_languages);
     require(!invalid
         && invalid.error().code == FontResolveErrorCode::UnsupportedLanguage,
