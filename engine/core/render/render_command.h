@@ -281,13 +281,9 @@ inline void set_ui_command_clip_rect(UiRenderCommand& command, const Rect& clip_
 
 // Emits a header fill whose top corners match its outer surface while its
 // bottom edge remains square. Radius normalization happens exactly once here.
-inline void append_ui_fill_top_rounded_rect_commands(
-    std::vector<UiRenderCommand>& out_commands,
-    const Rect& outer_rect,
-    const Rect& header_rect,
-    Color color,
-    float corner_radius
-) noexcept
+inline void append_ui_fill_top_rounded_rect_commands(std::vector<UiRenderCommand>& out_commands,
+    const Rect& outer_rect,const Rect& header_rect,
+    Color color,float corner_radius) noexcept
 {
     if (header_rect.is_empty())
         return;
