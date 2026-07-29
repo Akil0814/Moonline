@@ -1,6 +1,6 @@
 #include "animation_effect_factory.h"
 
-#include "../../animation/animation_manager.h"
+#include "../../animation/animation_service.h"
 #include "../../tools/logger.h"
 
 #include <algorithm>
@@ -65,7 +65,7 @@ std::unique_ptr<AnimationEffect> AnimationEffectFactory::create(
 	const AnimationEffectDefinition& definition) const
 {
 	std::unique_ptr<elysia::animation::Animation> animation =
-		elysia::animation::AnimationManager::instance()->create_animation(definition.animation_key);
+		ELYSIA_ANIMATIONS->create_animation(definition.animation_key);
 	if (!animation)
 	{
 		ELYSIA_LOG_WARN("effects","Create effect failed: animation creation failed: "

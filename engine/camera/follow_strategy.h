@@ -17,21 +17,15 @@ class IFollowStrategy
 public:
     virtual ~IFollowStrategy() = default;
 
-    [[nodiscard]] virtual elysia::core::Vector2 update_center(
-        const CameraFollowContext& context,
-        const elysia::core::Rect& focus_rect,
-        double delta_seconds
-    ) const = 0;
+    [[nodiscard]] virtual elysia::core::Vector2 update_center(const CameraFollowContext& context,
+        const elysia::core::Rect& focus_rect,double delta_seconds) const = 0;
 };
 
 class HardFollowStrategy final : public IFollowStrategy
 {
 public:
-    [[nodiscard]] elysia::core::Vector2 update_center(
-        const CameraFollowContext& context,
-        const elysia::core::Rect& focus_rect,
-        double delta_seconds
-    ) const override;
+    [[nodiscard]] elysia::core::Vector2 update_center(const CameraFollowContext& context,
+        const elysia::core::Rect& focus_rect,double delta_seconds) const override;
 };
 
 class DeadZoneFollowStrategy final : public IFollowStrategy
@@ -42,11 +36,8 @@ public:
     void set_dead_zone_rect(const elysia::core::Rect& dead_zone_rect) noexcept;
     [[nodiscard]] const elysia::core::Rect& dead_zone_rect() const noexcept;
 
-    [[nodiscard]] elysia::core::Vector2 update_center(
-        const CameraFollowContext& context,
-        const elysia::core::Rect& focus_rect,
-        double delta_seconds
-    ) const override;
+    [[nodiscard]] elysia::core::Vector2 update_center(const CameraFollowContext& context,
+        const elysia::core::Rect& focus_rect,double delta_seconds) const override;
 
 private:
     elysia::core::Rect _dead_zone_rect{};
@@ -60,11 +51,8 @@ public:
     void set_follow_speed_units_per_second(double follow_speed_units_per_second) noexcept;
     [[nodiscard]] double follow_speed_units_per_second() const noexcept;
 
-    [[nodiscard]] elysia::core::Vector2 update_center(
-        const CameraFollowContext& context,
-        const elysia::core::Rect& focus_rect,
-        double delta_seconds
-    ) const override;
+    [[nodiscard]] elysia::core::Vector2 update_center(const CameraFollowContext& context,
+        const elysia::core::Rect& focus_rect,double delta_seconds) const override;
 
 private:
     double _follow_speed_units_per_second = 0.0;

@@ -1,5 +1,7 @@
 #define SDL_MAIN_HANDLED
 
+#include "engine/animation/animation_service.h"
+#include "engine/animation/runtime/animation_manager.h"
 #include "engine/application/lifecycle/application_termination_logging.h"
 #include "engine/io/loaders/content_registry_loader.h"
 #include "engine/io/path/path_manager.h"
@@ -189,6 +191,17 @@ void test_logger_console_sink()
     {
         return resource_service->find_atlas(key);
     });
+
+    animation::AnimationManager::instance()->clear();
+    captured.messages.clear();
+    require(ELYSIA_ANIMATIONS->create_animation("missing.animation") == nullptr,
+        "AnimationService must reject an animation key without a registered definition");
+    require(captured.messages.size() == 2
+            && captured.messages[0].find("Find animation failed: definition does not exist: missing.animation")
+                != std::string::npos
+            && captured.messages[1].find("Create animation failed: definition does not exist: missing.animation")
+                != std::string::npos,
+        "missing animation creation must preserve its Find and Create warnings");
 
     captured.messages.clear();
     io::ContentRegistry content_registry;

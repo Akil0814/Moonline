@@ -1,6 +1,7 @@
 #define SDL_MAIN_HANDLED
 
-#include "engine/animation/animation_manager.h"
+#include "engine/animation/animation_service.h"
+#include "engine/animation/runtime/animation_manager.h"
 #include "engine/camera/camera.h"
 #include "engine/core/render/render_command_projection.h"
 #include "engine/core/render/sdl_render_command_executor.h"
@@ -325,7 +326,7 @@ void test_horizontal_strip_build_and_render_commands()
 	require(animation::AnimationManager::instance()->register_animation(animation_request, atlas),
 		"horizontal strip animation must register");
 	std::unique_ptr<animation::Animation> animation =
-		animation::AnimationManager::instance()->create_animation(animation_request.animation_key);
+		ELYSIA_ANIMATIONS->create_animation(animation_request.animation_key);
 	require(animation != nullptr,
 		"horizontal strip animation must create a playback instance");
 	core::RenderCommand render_command;

@@ -72,10 +72,8 @@ private:
     };
 
     using RequestPayload = std::variant<
-        ShakeRequest,
-        ZoomToRequest,
-        SnapToFocusRequest,
-        ClearEffectsRequest
+        ShakeRequest,ZoomToRequest,
+        SnapToFocusRequest,ClearEffectsRequest
     >;
 
     struct CameraRequest

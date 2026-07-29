@@ -1,6 +1,6 @@
 #include "animation_effect.h"
 
-#include "../../animation/animation_manager.h"
+#include "../../animation/animation_service.h"
 
 #include <algorithm>
 
@@ -80,7 +80,7 @@ void AnimationEffect::update(double delta)
 std::unique_ptr<AnimationEffect> AnimationEffect::clone() const
 {
     std::unique_ptr<elysia::animation::Animation> animation =
-        elysia::animation::AnimationManager::instance()->create_animation(_animation_key);
+        ELYSIA_ANIMATIONS->create_animation(_animation_key);
 
 	std::unique_ptr<AnimationEffect> effect = std::make_unique<AnimationEffect>(
         _effect_key,

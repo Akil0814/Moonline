@@ -1,6 +1,7 @@
 #define SDL_MAIN_HANDLED
 
-#include "engine/animation/animation_manager.h"
+#include "engine/animation/animation_service.h"
+#include "engine/animation/runtime/animation_manager.h"
 #include "engine/effects/runtime/effect_manager.h"
 #include "engine/effects/animation/animation_effect_factory.h"
 #include "engine/io/loaders/content_registry_loader.h"
@@ -475,7 +476,7 @@ void test_runtime_resource_request_assembly()
 		elysia::animation::AnimationManager::instance();
 	require(animation_manager->register_animation(*animation_request, &atlas),
 		"test.animation request must register with the animation manager");
-	require(animation_manager->create_animation("test.animation") != nullptr,
+	require(ELYSIA_ANIMATIONS->create_animation("test.animation") != nullptr,
 		"test.animation must create a playback instance after registration");
 
 	const auto effect_request = std::find_if(

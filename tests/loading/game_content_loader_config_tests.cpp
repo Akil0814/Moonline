@@ -1,6 +1,6 @@
 #define SDL_MAIN_HANDLED
 
-#include "engine/animation/animation_manager.h"
+#include "engine/animation/animation_service.h"
 #include "engine/config/config_service.h"
 #include "engine/effects/runtime/effect_manager.h"
 #include "engine/io/loaders/content_registry_loader.h"
@@ -56,7 +56,7 @@ int main()
     elysia::loading::clear_loaded_content();
 	elysia::resources::ResourceManager* resources = elysia::resources::ResourceManager::instance();
 	elysia::resources::ResourceService* resource_service = ELYSIA_RESOURCES;
-	elysia::animation::AnimationManager* animations = elysia::animation::AnimationManager::instance();
+	elysia::animation::AnimationService* animations = ELYSIA_ANIMATIONS;
 	elysia::effects::EffectManager* effects = elysia::effects::EffectManager::instance();
 	elysia::io::ContentRegistry content_registry;
 	require(elysia::io::ContentRegistryLoader{}.load(paths->content_registry(), content_registry),

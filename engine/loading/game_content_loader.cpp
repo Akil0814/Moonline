@@ -4,7 +4,7 @@
 #include "content_manifest_pipeline.h"
 #include "content_runtime_cleanup.h"
 #include "resource_request_assembler.h"
-#include "../animation/animation_manager.h"
+#include "../animation/runtime/animation_manager.h"
 #include "../config/config_service.h"
 #include "../effects/runtime/effect_manager.h"
 #include "../io/path/path_manager.h"

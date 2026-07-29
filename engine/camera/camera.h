@@ -13,11 +13,8 @@ public:
     static constexpr float k_max_zoom = 10.0f;
 
     Camera() = default;
-    Camera(
-        const elysia::core::Vector2& center,
-        const elysia::core::Vector2& viewport_size,
-        float zoom = k_default_zoom
-    ) noexcept;
+    Camera(const elysia::core::Vector2& center,const elysia::core::Vector2& viewport_size,
+        float zoom = k_default_zoom) noexcept;
 
     void set_center(const elysia::core::Vector2& center) noexcept;
     void set_viewport_size(const elysia::core::Vector2& viewport_size) noexcept;

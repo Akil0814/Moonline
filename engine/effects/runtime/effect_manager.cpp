@@ -1,6 +1,6 @@
 #include "effect_manager.h"
 
-#include "../../animation/animation_manager.h"
+#include "../../animation/animation_service.h"
 #include "../../scene/scene.h"
 #include "../../tools/logger.h"
 
@@ -46,7 +46,7 @@ bool EffectManager::register_animation_effect(
 		return false;
 	}
 
-	if (!elysia::animation::AnimationManager::instance()->find_definition(request.animation_key))
+	if (!ELYSIA_ANIMATIONS->find_definition(request.animation_key))
 	{
 		ELYSIA_LOG_WARN("effects","Register effect failed: can't find animation definition.");
 		return false;
