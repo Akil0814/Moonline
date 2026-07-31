@@ -18,13 +18,14 @@ const std::array<BuiltinAssetDescriptor, 5> kFontDescriptors = {
     BuiltinAssetDescriptor{"engine.font.ko", "fonts/NotoSansKR-Regular.ttf"},
 };
 
-const std::array<BuiltinAssetDescriptor, 6> kTextureDescriptors = {
+const std::array<BuiltinAssetDescriptor, 7> kTextureDescriptors = {
     BuiltinAssetDescriptor{"engine.brand.elysia.default", "textures/elysia.png"},
     BuiltinAssetDescriptor{"engine.brand.elysia.black", "textures/elysia_black.png"},
     BuiltinAssetDescriptor{"engine.brand.elysia.black_alpha_inverse","textures/elysia_black_alpha_inverse.png"},
     BuiltinAssetDescriptor{"engine.brand.elysia.light_edge", "textures/elysia_light_edge.png"},
     BuiltinAssetDescriptor{asset_keys::ElysiaWhiteTexture,"textures/elysia_white.png"},
-    BuiltinAssetDescriptor{"engine.test.sprite", "textures/engine_test.png"},
+    BuiltinAssetDescriptor{"engine.character.sprite.move", "textures/character_move.png"},
+    BuiltinAssetDescriptor{"engine.character.sprite.idle", "textures/character_idle.png"},
 };
 
 const std::array<BuiltinLocaleDescriptor, 5> kLocaleDescriptors = {
@@ -35,10 +36,19 @@ const std::array<BuiltinLocaleDescriptor, 5> kLocaleDescriptors = {
     BuiltinLocaleDescriptor{elysia::localization::kKoreanLocale, "i18n/ko/engine.json"},
 };
 
-const std::array<BuiltinAnimationDescriptor, 1> kAnimationDescriptors = {
+const std::array<BuiltinAnimationDescriptor, 2> kAnimationDescriptors = {
     BuiltinAnimationDescriptor{
-        .key = "engine.test.idle",
-        .texture_key = "engine.test.sprite",
+        .key = "engine.character.idle",
+        .texture_key = "engine.character.sprite.idle",
+        .frame_width = 32,
+        .frame_height = 32,
+        .frame_count = 8,
+        .fps = 8.0,
+        .loop = true
+    },
+    BuiltinAnimationDescriptor{
+        .key = "engine.character.move",
+        .texture_key = "engine.character.sprite.move",
         .frame_width = 32,
         .frame_height = 32,
         .frame_count = 8,

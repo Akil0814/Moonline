@@ -86,14 +86,14 @@ void EngineFeatureTestScene::on_enter(const elysia::scene::ScenePayload& payload
     {
         _primary_animation = create_and_add_object<elysia::ui::UiAnimation>(
             elysia::core::Rect{ 160.0f,200.0f,292.0f,292.0f });
-        if (!_primary_animation->set_engine_animation(*cache,"engine.test.idle"))
+        if (!_primary_animation->set_engine_animation(*cache,"engine.character.move"))
             throw std::logic_error("EngineFeatureTestScene could not bind engine.test.idle.");
     }
     if (!_secondary_animation)
     {
         _secondary_animation = create_and_add_object<elysia::ui::UiAnimation>(
             elysia::core::Rect{ 760.0f,204.0f,324.0f,284.0f });
-        if (!_secondary_animation->set_engine_animation(*cache,"engine.test.idle"))
+        if (!_secondary_animation->set_engine_animation(*cache,"engine.character.move"))
             throw std::logic_error("EngineFeatureTestScene could not bind engine.test.idle.");
     }
     _primary_animation->play();
