@@ -1,7 +1,7 @@
 #include "settings_scene.h"
 
 #include "../../config/user_config_service.h"
-#include "../../localization/localization_manager.h"
+#include "../../localization/localization_service.h"
 #include "../../tools/logger.h"
 #include "../../ui/layout/ui_layout_types.h"
 #include "../../ui/presets/settings_panel.h"
@@ -65,8 +65,7 @@ elysia::ui::SettingsPanelOptions make_panel_options(const elysia::config::UserCo
         });
 
     const auto& supported_languages =
-        elysia::localization::LocalizationManager::instance()
-            ->supported_languages();
+        ELYSIA_LOCALIZATION->supported_languages();
     return elysia::ui::SettingsPanelOptions{
         .window_sizes = std::move(window_sizes),
         .languages = supported_languages

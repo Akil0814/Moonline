@@ -5,7 +5,7 @@
 #include "../../audio/audio_service.h"
 #include "../../core/render/colors.h"
 #include "../../core/render/render_command.h"
-#include "../../localization/localization_manager.h"
+#include "../../localization/localization_service.h"
 #include "../../localization/localized_text_style.h"
 
 #include <SDL.h>
@@ -221,9 +221,7 @@ void UiButton::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
     if (_text_content.empty())
         return;
 
-    elysia::localization::LocalizationManager* localization_manager = elysia::localization::LocalizationManager::instance();
-    if (!localization_manager)
-        return;
+    elysia::localization::LocalizationService* localization_service = ELYSIA_LOCALIZATION;
 
     const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
     elysia::localization::LocalizedTextStyle text_style;
@@ -234,9 +232,9 @@ void UiButton::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
 
     SDL_Texture* text_texture = nullptr;
     if (_text_content.kind == UiTextContentKind::TextKey)
-        text_texture = localization_manager->get_text_texture(_text_content.value,text_style);
+        text_texture = localization_service->get_text_texture(_text_content.value,text_style);
     else if (_text_content.kind == UiTextContentKind::RawText)
-        text_texture = localization_manager->get_raw_text_texture(_text_content.value,text_style);
+        text_texture = localization_service->get_raw_text_texture(_text_content.value,text_style);
     if (!text_texture)
         return;
 

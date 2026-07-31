@@ -4,6 +4,7 @@
 #include "engine/builtin/resources/builtin_asset_catalog.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/localization/localization_manager.h"
+#include "engine/localization/localization_service.h"
 #include "engine/resources/runtime/resource_manager.h"
 #include "engine/resources/resource_service.h"
 #include "engine/typography/font_resolver.h"
@@ -53,7 +54,8 @@ void test_ui_number_uses_shared_localized_glyphs()
 
     auto* paths = io::PathManager::instance();
     auto* resources = resources::ResourceManager::instance();
-    auto* localization = localization::LocalizationManager::instance();
+    auto* localization_manager = localization::LocalizationManager::instance();
+    auto* localization = ELYSIA_LOCALIZATION;
     require(paths->init(),"UI number tests must initialize paths");
     resources->clear();
     const auto resolved_font_settings =
@@ -67,8 +69,8 @@ void test_ui_number_uses_shared_localized_glyphs()
         resolved_font_settings->engine_point_sizes()).has_value(),
         "UI number tests must initialize built-in fonts");
     typography::FontResolver font_resolver;
-    localization->shutdown();
-    require(localization->init(
+    localization_manager->shutdown();
+    require(localization_manager->init(
         renderer,
         paths->configs() / "manifests" / "i18n_manifest.json",
         "en",
@@ -113,7 +115,7 @@ void test_ui_number_uses_shared_localized_glyphs()
         for (std::size_t index = 0; index < first.size(); ++index)
             require(repeated[index].texture == first[index].texture,"UI numbers must reuse localized glyph textures");
 
-        localization->clear_texture_cache();
+        localization_manager->clear_texture_cache();
         commands.clear();
         number.submit_ui_render_commands(commands);
         require(texture_commands(commands).size() == 6,"UI numbers must rebuild after shared cache clearing");
@@ -133,7 +135,7 @@ void test_ui_number_uses_shared_localized_glyphs()
             "right and top alignment must be applied by the UI widget");
     }
 
-    localization->shutdown();
+    localization_manager->shutdown();
     font_resolver.shutdown();
     resources->clear();
     engine_cache.shutdown();

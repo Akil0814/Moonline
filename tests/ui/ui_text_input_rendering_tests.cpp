@@ -5,6 +5,7 @@
 #include "engine/io/path/path_manager.h"
 #include "engine/loading/content_manifest_pipeline.h"
 #include "engine/localization/localization_manager.h"
+#include "engine/localization/localization_service.h"
 #include "engine/resources/pipeline/resource_request_builder.h"
 #include "engine/resources/runtime/resource_manager.h"
 #include "engine/resources/resource_service.h"
@@ -59,6 +60,7 @@ void test_text_input_uses_private_editing_texture()
     auto* path_manager = io::PathManager::instance();
     auto* resource_manager = resources::ResourceManager::instance();
     auto* localization_manager = localization::LocalizationManager::instance();
+    auto* localization_service = ELYSIA_LOCALIZATION;
     require(path_manager->init(),"text input texture test must initialize the project path manager");
 
     resource_manager->clear();
@@ -86,7 +88,7 @@ void test_text_input_uses_private_editing_texture()
         *resolved_font_settings,
         engine_cache,
         *resources::ResourceService::instance(),
-        localization_manager->supported_languages()).has_value(),
+        localization_service->supported_languages()).has_value(),
         "text input texture test must configure Engine fonts");
 
     {
@@ -97,7 +99,7 @@ void test_text_input_uses_private_editing_texture()
         input_style.typography_role =
             typography::UiTypographyRole::Input;
         input_style.color = input.style().text.enabled;
-        SDL_Texture* shared_texture = localization_manager->get_raw_text_texture("draft",input_style);
+        SDL_Texture* shared_texture = localization_service->get_raw_text_texture("draft",input_style);
         require(shared_texture != nullptr,"text input texture test must create the comparison cache texture");
 
         std::vector<core::UiRenderCommand> commands;
@@ -166,14 +168,14 @@ void test_text_input_uses_private_editing_texture()
             "input typography changes must rebuild the private texture");
         SDL_Texture* typography_texture = typography_command->texture;
 
-        require(localization_manager->set_language("zh-Hans"),
+        require(localization_service->set_language("zh-Hans"),
             "text input texture test must switch to a loaded language");
         commands.clear();
         input.submit_ui_render_commands(commands);
         const core::UiRenderCommand* language_command = find_command(commands,core::UiRenderCommandType::Texture);
         require(language_command && language_command->texture != typography_texture,
             "language changes must rebuild the private texture");
-        require(localization_manager->set_language("en"),
+        require(localization_service->set_language("en"),
             "text input texture test must restore the default language");
 
         input.set_font_source_override(typography::FontSource::Project);
@@ -193,7 +195,7 @@ void test_text_input_uses_private_editing_texture()
         placeholder_style.typography_role =
             typography::UiTypographyRole::InputPlaceholder;
         placeholder_style.color = input.style().placeholder.enabled;
-        SDL_Texture* placeholder_texture = localization_manager->get_raw_text_texture("placeholder",placeholder_style);
+        SDL_Texture* placeholder_texture = localization_service->get_raw_text_texture("placeholder",placeholder_style);
         require(placeholder_texture != nullptr,"text input texture test must create the placeholder cache texture");
 
         commands.clear();

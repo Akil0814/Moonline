@@ -1,6 +1,5 @@
 #include "floating_number_effect_factory.h"
 
-#include "../../localization/localization_manager.h"
 #include "../../tools/logger.h"
 #include "../../typography/font_resolver.h"
 
@@ -17,13 +16,15 @@ bool is_finite_vector(const elysia::core::Vector2& value) noexcept
 }
 }
 
-void FloatingNumberEffectFactory::set_font_resolver(
+void FloatingNumberEffectFactory::set_runtime_dependencies(
+	SDL_Renderer* renderer,
 	const elysia::typography::FontResolver* font_resolver) noexcept
 {
-	if (_font_resolver == font_resolver)
+	if (_renderer == renderer && _font_resolver == font_resolver)
 		return;
 
 	_glyph_cache.reset();
+	_renderer = renderer;
 	_font_resolver = font_resolver;
 }
 
@@ -61,7 +62,11 @@ std::unique_ptr<FloatingNumberEffect> FloatingNumberEffectFactory::create(
 		}
 	}
 
-	SDL_Renderer* renderer = elysia::localization::LocalizationManager::instance()->renderer();
+	if (!_renderer)
+	{
+		ELYSIA_LOG_WARN("effects","Create floating number effect failed: renderer is unavailable.");
+		return nullptr;
+	}
 	if (!_font_resolver)
 	{
 		ELYSIA_LOG_WARN("effects","Create floating number effect failed: FontResolver is unavailable.");
@@ -77,7 +82,7 @@ std::unique_ptr<FloatingNumberEffect> FloatingNumberEffectFactory::create(
 		return nullptr;
 	}
 
-	if (!_glyph_cache.configure(renderer,resolved_font->font,resolved_font->generation))
+	if (!_glyph_cache.configure(_renderer,resolved_font->font,resolved_font->generation))
 	{
 		ELYSIA_LOG_WARN("effects","Create floating number effect failed: glyph cache dependencies are unavailable.");
 		return nullptr;

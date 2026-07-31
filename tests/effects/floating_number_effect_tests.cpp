@@ -8,6 +8,7 @@
 #include "engine/effects/number/floating_number_effect_factory.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/localization/localization_manager.h"
+#include "engine/localization/localization_service.h"
 #include "engine/resources/resource_service.h"
 #include "engine/resources/runtime/resource_manager.h"
 #include "engine/scene/scene.h"
@@ -96,6 +97,7 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
     effects::EffectService* effect_service = ELYSIA_EFFECTS;
     effects::FloatingNumberEffectFactory effect_factory;
     localization::LocalizationManager* localization_manager = localization::LocalizationManager::instance();
+    localization::LocalizationService* localization_service = ELYSIA_LOCALIZATION;
     resources::ResourceManager* resource_manager = resources::ResourceManager::instance();
     io::PathManager* path_manager = io::PathManager::instance();
 
@@ -124,10 +126,9 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
         *resolved_font_settings,
         engine_cache,
         *resources::ResourceService::instance(),
-        localization_manager->supported_languages()).has_value(),
+        localization_service->supported_languages()).has_value(),
         "floating number tests must configure Engine fonts");
-    effect_manager->set_font_resolver(&font_resolver);
-    effect_factory.set_font_resolver(&font_resolver);
+    effect_manager->set_runtime_dependencies(renderer,&font_resolver);
 
     effects::FloatingNumberEffectSpawnRequest request;
     request.text = "12%";
@@ -167,6 +168,12 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
         .from_alpha = 255,
         .to_alpha = 55
     };
+    require(effect_factory.create(request) == nullptr,
+        "floating number creation must reject a missing renderer");
+    effect_factory.set_runtime_dependencies(renderer,nullptr);
+    require(effect_factory.create(request) == nullptr,
+        "floating number creation must reject a missing FontResolver");
+    effect_factory.set_runtime_dependencies(renderer,&font_resolver);
     std::unique_ptr<effects::FloatingNumberEffect> effect =
         effect_factory.create(request);
     require(effect != nullptr, "valid floating number request must create an effect");
@@ -326,7 +333,7 @@ void test_floating_number_validation_motion_timing_and_scene_lifecycle(FloatingN
     require(!effect_service->request_floating_number_effect(scene_request),
         "floating number spawning must fail after active scene shutdown");
 
-    effect_manager->set_font_resolver(nullptr);
+    effect_manager->set_runtime_dependencies(nullptr,nullptr);
     localization_manager->shutdown();
     font_resolver.shutdown();
     engine_cache.shutdown();

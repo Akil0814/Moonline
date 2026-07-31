@@ -27,9 +27,12 @@ class FontResolver;
 
 namespace elysia::localization
 {
+class LocalizationService;
+
 class LocalizationManager : public elysia::tools::Singleton<LocalizationManager>
 {
 	friend elysia::tools::Singleton<LocalizationManager>;
+	friend class LocalizationService;
 
 public:
 	bool init(
@@ -40,7 +43,9 @@ public:
 		const elysia::builtin::BuiltinAssetCache* builtin_asset_cache = nullptr
 	);
 	void shutdown();
+	void clear_texture_cache();
 
+private:
 	std::string_view tr(std::string_view key) const;
 	SDL_Texture* get_text_texture(std::string_view key, const LocalizedTextStyle& style);
 	SDL_Texture* get_raw_text_texture(std::string_view text, const LocalizedTextStyle& style);
@@ -50,15 +55,12 @@ public:
 		const LocalizedTextStyle& style
 	);
 	bool measure_raw_text(std::string_view text,const LocalizedTextStyle& style,int& out_width,int& out_height) const;
-	[[nodiscard]] SDL_Renderer* renderer() const noexcept;
 	[[nodiscard]] std::uint64_t font_generation() const noexcept;
 
 	bool set_language(std::string language);
 	const std::string& current_language() const;
 	const std::vector<std::string>& supported_languages() const;
-	void clear_texture_cache();
 
-private:
 	using TranslationTable = std::unordered_map<std::string, std::string>;
 
 	bool is_supported_language(const std::string& language) const;

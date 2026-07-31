@@ -30,6 +30,11 @@ endfunction()
 
 find_package(Threads REQUIRED)
 
+add_moonline_test(save_service_tests
+    LABEL save
+    SOURCES save/save_service_tests.cpp
+)
+
 add_moonline_test(glyph_run_layout_tests
     LABEL core
     SOURCES core/glyph_run_layout_tests.cpp

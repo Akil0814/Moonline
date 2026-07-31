@@ -11,6 +11,8 @@
 #include <optional>
 #include <variant>
 
+#define ELYSIA_CAMERA (::elysia::camera::CameraManager::instance())
+
 namespace elysia::camera
 {
 enum class CameraSlot : std::size_t

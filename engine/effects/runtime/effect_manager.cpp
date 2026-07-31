@@ -6,10 +6,11 @@
 
 namespace elysia::effects
 {
-void EffectManager::set_font_resolver(
+void EffectManager::set_runtime_dependencies(
+	SDL_Renderer* renderer,
 	const elysia::typography::FontResolver* font_resolver) noexcept
 {
-	_floating_number_effect_factory.set_font_resolver(font_resolver);
+	_floating_number_effect_factory.set_runtime_dependencies(renderer,font_resolver);
 }
 
 bool EffectManager::register_animation_effect(

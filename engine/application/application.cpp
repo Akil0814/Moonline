@@ -14,8 +14,10 @@
 #include "../effects/runtime/effect_manager.h"
 #include "../loading/content_runtime_cleanup.h"
 #include "../localization/localization_manager.h"
+#include "../localization/localization_service.h"
 #include "../io/path/path_manager.h"
 #include "../resources/resource_service.h"
+#include "../save/save_service.h"
 #include "../tools/logger.h"
 #include "../ui/style/ui_theme_defaults.h"
 
@@ -130,6 +132,13 @@ bool Application::init(
     _content_registry = std::move(bootstrap_output.content_registry);
     elysia::tools::Logger::instance()->initialize();
 
+    if (const auto save_result = ELYSIA_SAVE->initialize(
+            elysia::io::PathManager::instance()->saves());
+        !save_result)
+    {
+        return startup_fail("save",save_result.error().message);
+    }
+
     if (!bootstrap_output.warning.empty())
         ELYSIA_LOG_WARN(
             "application",
@@ -170,13 +179,13 @@ bool Application::init(
             *resolved_font_settings,
             _builtin_asset_cache,
             *elysia::resources::ResourceService::instance(),
-            elysia::localization::LocalizationManager::instance()
-                ->supported_languages());
+            ELYSIA_LOCALIZATION->supported_languages());
         !font_result)
     {
         return startup_fail("typography",font_result.error().message);
     }
-    elysia::effects::EffectManager::instance()->set_font_resolver(
+    elysia::effects::EffectManager::instance()->set_runtime_dependencies(
+        _renderer,
         &_font_resolver);
 
     elysia::config::UserConfigService::instance()->register_user_config_change_handler(*this);
@@ -185,10 +194,10 @@ bool Application::init(
     elysia::config::UserConfig& user_config =
         elysia::config::UserConfigService::instance()->user_config();
     if (user_config.language()
-        != elysia::localization::LocalizationManager::instance()->current_language())
+        != ELYSIA_LOCALIZATION->current_language())
     {
         const auto language_result = user_config.set_language(
-            elysia::localization::LocalizationManager::instance()->current_language());
+            ELYSIA_LOCALIZATION->current_language());
         if (!language_result)
         {
             ELYSIA_LOG_WARN("application",
@@ -475,11 +484,12 @@ void Application::shutdown()
     _scene_manager.detach(this);
     _scene_manager.shutdown();
     _scene_runtime_context.reset();
+    ELYSIA_SAVE->shutdown();
 
     elysia::localization::LocalizationManager::instance()->shutdown();
     elysia::bootstrap::Bootstrapper::instance()->release_preload_textures();
     _font_resolver.deactivate_project_fonts();
-    elysia::effects::EffectManager::instance()->set_font_resolver(nullptr);
+    elysia::effects::EffectManager::instance()->set_runtime_dependencies(nullptr,nullptr);
     elysia::audio::AudioService::instance()->shutdown();
     _builtin_audio_player.unbind();
     elysia::loading::clear_loaded_content();
@@ -574,13 +584,11 @@ Application::apply_sound_volume(int value)
 std::expected<void,elysia::config::UserConfigFailure>
 Application::apply_language(std::string_view language)
 {
-    if (!elysia::localization::LocalizationManager::instance()->set_language(
-        std::string(language)))
+    if (!ELYSIA_LOCALIZATION->set_language(std::string(language)))
     {
         return runtime_apply_failure("language","Runtime language change failed.");
     }
 
-    elysia::localization::LocalizationManager::instance()->clear_texture_cache();
     return {};
 }
 

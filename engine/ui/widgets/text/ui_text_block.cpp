@@ -2,7 +2,7 @@
 
 #include "../../style/ui_style_defaults.h"
 #include "../../../core/render/render_command.h"
-#include "../../../localization/localization_manager.h"
+#include "../../../localization/localization_service.h"
 #include "../../../localization/localized_text_style.h"
 
 #include <SDL.h>
@@ -66,9 +66,7 @@ elysia::core::Vector2 UiTextBlock::content_extent() const noexcept
     if (!has_text() || width <= 0.0f)
         return elysia::core::Vector2(std::max(0.0f,size().x),std::max(0.0f,size().y));
 
-    auto* localization_manager = elysia::localization::LocalizationManager::instance();
-    if (!localization_manager)
-        return elysia::core::Vector2(std::max(0.0f,size().x),std::max(0.0f,size().y));
+    auto* localization_service = ELYSIA_LOCALIZATION;
 
     const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
     elysia::localization::LocalizedTextStyle text_style;
@@ -80,7 +78,7 @@ elysia::core::Vector2 UiTextBlock::content_extent() const noexcept
     int measured_width = 0;
     int measured_height = 0;
     const std::string text = resolved_text();
-    if (!localization_manager->measure_raw_text(text,text_style,measured_width,measured_height))
+    if (!localization_service->measure_raw_text(text,text_style,measured_width,measured_height))
         return elysia::core::Vector2(std::max(0.0f,size().x),std::max(0.0f,size().y));
 
     const float padding = static_cast<float>(_padding);
@@ -105,9 +103,7 @@ void UiTextBlock::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
     if (!has_text())
         return;
 
-    auto* localization_manager = elysia::localization::LocalizationManager::instance();
-    if (!localization_manager)
-        return;
+    auto* localization_service = ELYSIA_LOCALIZATION;
 
     const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
     elysia::localization::LocalizedTextStyle text_style;
@@ -120,10 +116,10 @@ void UiTextBlock::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
     switch (_text_content.kind)
     {
     case UiTextContentKind::TextKey:
-        text_texture = localization_manager->get_text_texture(_text_content.value,text_style);
+        text_texture = localization_service->get_text_texture(_text_content.value,text_style);
         break;
     case UiTextContentKind::RawText:
-        text_texture = localization_manager->get_raw_text_texture(_text_content.value,text_style);
+        text_texture = localization_service->get_raw_text_texture(_text_content.value,text_style);
         break;
     case UiTextContentKind::None:
     default:
@@ -322,10 +318,7 @@ std::string UiTextBlock::resolved_text() const
     if (_text_content.kind == UiTextContentKind::RawText)
         return _text_content.value;
 
-    auto* localization_manager = elysia::localization::LocalizationManager::instance();
-    if (!localization_manager)
-        return {};
-    return std::string(localization_manager->tr(_text_content.value));
+    return std::string(ELYSIA_LOCALIZATION->tr(_text_content.value));
 }
 
 }

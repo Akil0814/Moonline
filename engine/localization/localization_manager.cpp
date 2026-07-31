@@ -278,11 +278,6 @@ bool LocalizationManager::measure_raw_text(
 	return true;
 }
 
-SDL_Renderer* LocalizationManager::renderer() const noexcept
-{
-	return _renderer;
-}
-
 std::uint64_t LocalizationManager::font_generation() const noexcept
 {
 	return _font_resolver ? _font_resolver->generation() : 0;
