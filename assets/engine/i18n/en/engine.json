@@ -48,10 +48,10 @@
       },
       "languages": {
         "en": "English",
-        "zh_hans": "Simplified Chinese",
-        "zh_hant": "Traditional Chinese",
-        "ja": "Japanese",
-        "ko": "Korean"
+        "zh_hans": "简体中文",
+        "zh_hant": "繁體中文",
+        "ja": "日本語",
+        "ko": "한국어"
       },
       "status": {
         "saved": "Settings saved."

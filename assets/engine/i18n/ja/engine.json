@@ -47,11 +47,11 @@
         "borderless_fullscreen": "ボーダーレスフルスクリーン"
       },
       "languages": {
-        "en": "英語",
-        "zh_hans": "簡体中国語",
-        "zh_hant": "繁体中国語",
+        "en": "English",
+        "zh_hans": "简体中文",
+        "zh_hant": "繁體中文",
         "ja": "日本語",
-        "ko": "韓国語"
+        "ko": "한국어"
       },
       "status": {
         "saved": "設定を保存しました。"
