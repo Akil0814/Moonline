@@ -1,11 +1,10 @@
 #pragma once
 
-#include "animation.h"
-#include "../resources/resource_manager.h"
-#include "../tools/singleton.h"
-#include "../resources/resource_types.h"
+#include "../animation_types.h"
+#include "../../resources/resource_service.h"
+#include "../../tools/singleton.h"
+#include "../../resources/resource_types.h"
 
-#include <memory>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -13,30 +12,25 @@
 
 namespace elysia::animation
 {
-struct AnimationDefinition
-{
-	std::string animation_key;
-	std::string atlas_key;
-	double fps = 10.0;
-	bool loop = true;
-	size_t segment_index = 0;
-	const elysia::resources::Atlas* atlas = nullptr;
-};
+class AnimationService;
 
 class AnimationManager : public elysia::tools::Singleton<AnimationManager>
 {
 	friend elysia::tools::Singleton<AnimationManager>;
+	friend class AnimationService;
 
 public:
 	bool register_animation(const elysia::resources::AnimationBuildRequest& request,const elysia::resources::Atlas* atlas);
 	bool register_animations(const std::vector<elysia::resources::AnimationBuildRequest>& requests,
-		const elysia::resources::ResourceManager& resource_manager);
+		const elysia::resources::ResourceService& resource_service);
 
-	const AnimationDefinition* find_definition(const std::string_view& key) const;
-	std::unique_ptr<Animation> create_animation(const std::string_view& key) const;
 	void clear() noexcept;
 
 private:
+	AnimationManager() = default;
+
+	[[nodiscard]] const AnimationDefinition* find_definition(std::string_view key) const;
+
 	std::unordered_map<std::string, AnimationDefinition> _definitions;
 };
 

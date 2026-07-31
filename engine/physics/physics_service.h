@@ -6,6 +6,8 @@
 #include <functional>
 #include <memory>
 
+#define ELYSIA_PHYSICS (::elysia::physics::PhysicsService::instance())
+
 namespace elysia::physics
 {
 using BroadPhaseStrategyFactory =std::function<std::unique_ptr<IBroadPhaseStrategy>()>;

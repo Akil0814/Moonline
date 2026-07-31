@@ -5,7 +5,7 @@
 #include "../window/ui_window.h"
 
 #include "../../core/render/render_command.h"
-#include "../../localization/localization_manager.h"
+#include "../../localization/localization_service.h"
 #include "../../localization/localized_text_style.h"
 
 #include <SDL.h>
@@ -104,7 +104,6 @@ struct UiTextInput::EditingTextTexture
     elysia::localization::CachedTexturePtr texture;
     std::string display_text;
     std::string language;
-    SDL_Renderer* renderer = nullptr;
     UiTypographyRole typography_role = UiTypographyRole::Input;
     std::optional<elysia::typography::FontSource> font_source_override;
     std::uint64_t font_generation = 0;
@@ -291,9 +290,7 @@ void UiTextInput::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
     if (show_placeholder)
         _editing_text_texture.reset();
 
-    elysia::localization::LocalizationManager* localization_manager = elysia::localization::LocalizationManager::instance();
-    if (!localization_manager)
-        return;
+    elysia::localization::LocalizationService* localization_service = ELYSIA_LOCALIZATION;
 
     if (show_placeholder ? !_placeholder_content.empty() : !layout.display_text.empty())
     {
@@ -310,42 +307,39 @@ void UiTextInput::submit_ui_render_commands(std::vector<elysia::core::UiRenderCo
         if (show_placeholder)
         {
             if (_placeholder_content.kind == UiTextContentKind::TextKey)
-                text_texture = localization_manager->get_text_texture(_placeholder_content.value,text_style);
+                text_texture = localization_service->get_text_texture(_placeholder_content.value,text_style);
             else if (_placeholder_content.kind == UiTextContentKind::RawText)
-                text_texture = localization_manager->get_raw_text_texture(_placeholder_content.value,text_style);
+                text_texture = localization_service->get_raw_text_texture(_placeholder_content.value,text_style);
         }
         else
         {
-            const std::string& language = localization_manager->current_language();
-            SDL_Renderer* renderer = localization_manager->renderer();
+            const std::string& language = localization_service->current_language();
             const bool has_matching_texture = _editing_text_texture
                 && _editing_text_texture->display_text == layout.display_text
                 && _editing_text_texture->language == language
-                && _editing_text_texture->renderer == renderer
                 && _editing_text_texture->typography_role
                     == text_style.typography_role
                 && _editing_text_texture->font_source_override
                     == text_style.font_source_override
                 && _editing_text_texture->font_generation
-                    == localization_manager->font_generation()
+                    == localization_service->font_generation()
                 && _editing_text_texture->color == text_style.color;
 
             if (!has_matching_texture)
             {
                 elysia::localization::CachedTexturePtr texture =
-                    localization_manager->create_uncached_raw_text_texture(layout.display_text,text_style);
+                    localization_service->create_uncached_raw_text_texture(layout.display_text,text_style);
                 if (texture)
                 {
                     auto next_texture = std::make_unique<EditingTextTexture>();
                     next_texture->texture = std::move(texture);
                     next_texture->display_text = layout.display_text;
                     next_texture->language = language;
-                    next_texture->renderer = renderer;
                     next_texture->typography_role = text_style.typography_role;
                     next_texture->font_source_override =
                         text_style.font_source_override;
                     next_texture->font_generation =
-                        localization_manager->font_generation();
+                        localization_service->font_generation();
                     next_texture->color = text_style.color;
                     _editing_text_texture = std::move(next_texture);
                 }
@@ -670,9 +664,7 @@ std::size_t UiTextInput::codepoint_index_at_x(int mouse_x) const
     if (codepoint_count == 0)
         return 0;
 
-    elysia::localization::LocalizationManager* localization_manager = elysia::localization::LocalizationManager::instance();
-    if (!localization_manager)
-        return codepoint_count;
+    elysia::localization::LocalizationService* localization_service = ELYSIA_LOCALIZATION;
 
     const TextLayout layout = compute_text_layout();
     if (layout.content_rect.is_empty())
@@ -697,7 +689,7 @@ std::size_t UiTextInput::codepoint_index_at_x(int mouse_x) const
 
         int current_width = 0;
         int current_height = 0;
-        if (!localization_manager->measure_raw_text(prefix,style,current_width,current_height))
+        if (!localization_service->measure_raw_text(prefix,style,current_width,current_height))
             return codepoint_count;
 
         const float midpoint = (static_cast<float>(previous_width) + static_cast<float>(current_width)) * 0.5f;
@@ -773,9 +765,7 @@ UiTextInput::TextLayout UiTextInput::compute_text_layout() const
     layout.composition_display_start_codepoint_index = _composition_insert_codepoint_index + clamped_composition_start;
     layout.composition_display_length = clamped_composition_length;
 
-    elysia::localization::LocalizationManager* localization_manager = elysia::localization::LocalizationManager::instance();
-    if (!localization_manager)
-        return layout;
+    elysia::localization::LocalizationService* localization_service = ELYSIA_LOCALIZATION;
 
     elysia::localization::LocalizedTextStyle style;
     style.typography_role = _typography_role;
@@ -785,21 +775,21 @@ UiTextInput::TextLayout UiTextInput::compute_text_layout() const
 
     int total_text_width = 0;
     int total_text_height = 0;
-    (void)localization_manager->measure_raw_text(layout.display_text,style,total_text_width,total_text_height);
+    (void)localization_service->measure_raw_text(layout.display_text,style,total_text_width,total_text_height);
 
     const std::string caret_prefix = layout.display_text.substr(
         0,
         utf8_byte_offset_from_codepoint_index(layout.display_text,layout.visible_caret_codepoint_index));
     int caret_prefix_width = 0;
     int caret_prefix_height = 0;
-    (void)localization_manager->measure_raw_text(caret_prefix,style,caret_prefix_width,caret_prefix_height);
+    (void)localization_service->measure_raw_text(caret_prefix,style,caret_prefix_width,caret_prefix_height);
 
     int highlight_prefix_width = 0;
     int highlight_prefix_height = 0;
     const std::string highlight_prefix = layout.display_text.substr(
         0,
         utf8_byte_offset_from_codepoint_index(layout.display_text,layout.composition_display_start_codepoint_index));
-    (void)localization_manager->measure_raw_text(highlight_prefix,style,highlight_prefix_width,highlight_prefix_height);
+    (void)localization_service->measure_raw_text(highlight_prefix,style,highlight_prefix_width,highlight_prefix_height);
 
     int highlight_full_width = highlight_prefix_width;
     int highlight_full_height = 0;
@@ -808,7 +798,7 @@ UiTextInput::TextLayout UiTextInput::compute_text_layout() const
         utf8_byte_offset_from_codepoint_index(
             layout.display_text,
             layout.composition_display_start_codepoint_index + layout.composition_display_length));
-    (void)localization_manager->measure_raw_text(highlight_full_prefix,style,highlight_full_width,highlight_full_height);
+    (void)localization_service->measure_raw_text(highlight_full_prefix,style,highlight_full_width,highlight_full_height);
 
     layout.text_height = static_cast<float>(std::max({
         total_text_height,

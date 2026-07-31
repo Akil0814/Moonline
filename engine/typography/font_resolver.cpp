@@ -2,7 +2,7 @@
 
 #include "../builtin/resources/builtin_asset_cache.h"
 #include "../localization/locale.h"
-#include "../resources/resource_manager.h"
+#include "../resources/resource_service.h"
 
 #include <unordered_set>
 
@@ -43,7 +43,7 @@ namespace
 std::expected<void,FontResolveError> FontResolver::configure(
     const ResolvedFontSettings& settings,
     const elysia::builtin::BuiltinAssetCache& builtin_asset_cache,
-    const elysia::resources::ResourceManager& resource_manager,
+    const elysia::resources::ResourceService& resource_service,
     std::span<const std::string> supported_languages)
 {
     shutdown();
@@ -57,7 +57,7 @@ std::expected<void,FontResolveError> FontResolver::configure(
 
     _settings = settings;
     _builtin_asset_cache = &builtin_asset_cache;
-    _resource_manager = &resource_manager;
+    _resource_service = &resource_service;
     _supported_languages.assign(
         supported_languages.begin(),
         supported_languages.end());
@@ -77,7 +77,7 @@ void FontResolver::shutdown() noexcept
 {
     _settings.reset();
     _builtin_asset_cache = nullptr;
-    _resource_manager = nullptr;
+    _resource_service = nullptr;
     _supported_languages.clear();
     _project_fonts_active = false;
     _configured = false;
@@ -277,8 +277,8 @@ std::expected<TTF_Font*,FontResolveError> FontResolver::find_font(
                     + std::string(language)));
         }
 
-        TTF_Font* font = _resource_manager
-            ? _resource_manager->find_font(key)
+        TTF_Font* font = _resource_service
+            ? _resource_service->find_font(key)
             : nullptr;
         if (font)
             return font;

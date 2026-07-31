@@ -5,7 +5,9 @@
 #include "engine/builtin/resources/builtin_asset_catalog.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/localization/localization_manager.h"
-#include "engine/resources/resource_manager.h"
+#include "engine/localization/localization_service.h"
+#include "engine/resources/resource_service.h"
+#include "engine/resources/runtime/resource_manager.h"
 #include "engine/typography/font_resolver.h"
 #include "tests/support/test_assertions.h"
 
@@ -74,9 +76,10 @@ int main()
         std::array{20}).has_value(),
         "localization fallback tests must initialize built-in asset cache");
 
-    auto* localization = elysia::localization::LocalizationManager::instance();
+    auto* localization_manager = elysia::localization::LocalizationManager::instance();
+    auto* localization = ELYSIA_LOCALIZATION;
     elysia::typography::FontResolver font_resolver;
-    require(localization->init(
+    require(localization_manager->init(
         fixture.renderer(),
         source_root / "assets" / "configs" / "manifests" / "i18n_manifest.json",
         "en",
@@ -98,7 +101,7 @@ int main()
     require(font_resolver.configure(
         *resolved_font_settings,
         cache,
-        *elysia::resources::ResourceManager::instance(),
+        *elysia::resources::ResourceService::instance(),
         localization->supported_languages()).has_value(),
         "FontResolver must configure after localization publishes its languages");
     require(localization->tr("common.save") == "Save",
@@ -113,7 +116,7 @@ int main()
     for (const std::string& legacy_locale : legacy_locales)
     {
         require(!localization->set_language(legacy_locale),
-            "LocalizationManager must reject every legacy locale spelling");
+            "LocalizationService must reject every legacy locale spelling");
     }
 
     const elysia::localization::LocalizedTextStyle style{
@@ -173,10 +176,10 @@ int main()
         "active project fonts must render localized text");
     int project_width = 0;
     int project_height = 0;
-    require(TTF_SizeUTF8(resources->find_font("ui.latin.20"), "Moon", &project_width, &project_height) == 0,
+    require(TTF_SizeUTF8(ELYSIA_RESOURCES->find_font("ui.latin.20"), "Moon", &project_width, &project_height) == 0,
         "project font must measure the fallback probe text");
     require(localized_width == project_width && localized_height == project_height,
-        "LocalizationManager must render through the active project font");
+        "LocalizationService must render through the active project font");
 
     elysia::localization::LocalizedTextStyle engine_override_style = style;
     engine_override_style.font_source_override =
@@ -198,9 +201,9 @@ int main()
             overridden_height)
             && overridden_width == engine_width
             && overridden_height == engine_height,
-        "LocalizationManager measurement must honor an explicit Engine font source");
+        "LocalizationService measurement must honor an explicit Engine font source");
 
-    localization->shutdown();
+    localization_manager->shutdown();
     font_resolver.shutdown();
     cache.shutdown();
     return 0;

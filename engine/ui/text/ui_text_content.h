@@ -13,7 +13,8 @@ enum class UiTextContentKind
     RawText
 };
 
-// Lightweight text source shared by widgets; resolving and caching remain LocalizationManager concerns.
+// Lightweight text source shared by widgets; runtime resolving is exposed by
+// LocalizationService while LocalizationManager owns the backing cache.
 struct UiTextContent
 {
     UiTextContentKind kind = UiTextContentKind::None;

@@ -1,11 +1,14 @@
 #define SDL_MAIN_HANDLED
 
+#include "engine/animation/animation_service.h"
+#include "engine/animation/runtime/animation_manager.h"
 #include "engine/application/lifecycle/application_termination_logging.h"
 #include "engine/io/loaders/content_registry_loader.h"
 #include "engine/io/path/path_manager.h"
 #include "engine/loading/content_manifest_pipeline.h"
 #include "engine/resources/pipeline/resource_request_builder.h"
-#include "engine/resources/resource_manager.h"
+#include "engine/resources/resource_service.h"
+#include "engine/resources/runtime/resource_manager.h"
 #include "engine/tools/logger.h"
 #include "tests/support/test_assertions.h"
 
@@ -142,6 +145,7 @@ void test_logger_console_sink()
         "recoverable resource request failures must log at Warn level");
 
     resources::ResourceManager* resource_manager = resources::ResourceManager::instance();
+    resources::ResourceService* resource_service = ELYSIA_RESOURCES;
     resource_manager->clear();
     auto require_missing_resource_logs = [&](const std::string& resource_type,auto&& find_resource)
     {
@@ -169,24 +173,35 @@ void test_logger_console_sink()
     };
     require_missing_resource_logs("texture",[&](const std::string_view key)
     {
-        return resource_manager->find_texture(key);
+        return resource_service->find_texture(key);
     });
     require_missing_resource_logs("font",[&](const std::string_view key)
     {
-        return resource_manager->find_font(key);
+        return resource_service->find_font(key);
     });
     require_missing_resource_logs("sound",[&](const std::string_view key)
     {
-        return resource_manager->find_sound(key);
+        return resource_service->find_sound(key);
     });
     require_missing_resource_logs("music",[&](const std::string_view key)
     {
-        return resource_manager->find_music(key);
+        return resource_service->find_music(key);
     });
     require_missing_resource_logs("atlas",[&](const std::string_view key)
     {
-        return resource_manager->find_atlas(key);
+        return resource_service->find_atlas(key);
     });
+
+    animation::AnimationManager::instance()->clear();
+    captured.messages.clear();
+    require(ELYSIA_ANIMATIONS->create_animation("missing.animation") == nullptr,
+        "AnimationService must reject an animation key without a registered definition");
+    require(captured.messages.size() == 2
+            && captured.messages[0].find("Find animation failed: definition does not exist: missing.animation")
+                != std::string::npos
+            && captured.messages[1].find("Create animation failed: definition does not exist: missing.animation")
+                != std::string::npos,
+        "missing animation creation must preserve its Find and Create warnings");
 
     captured.messages.clear();
     io::ContentRegistry content_registry;

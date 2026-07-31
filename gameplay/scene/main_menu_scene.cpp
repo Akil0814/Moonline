@@ -3,7 +3,7 @@
 #include "moonline_scene_keys.h"
 
 #include "../../engine/audio/audio_service.h"
-#include "../../engine/resources/resource_manager.h"
+#include "../../engine/resources/resource_service.h"
 #include "../../engine/builtin/builtin_scene_keys.h"
 #include "../../engine/builtin/scenes/settings_scene.h"
 #include "../../engine/testbed/scene/testbed_scene_payload.h"
@@ -174,7 +174,7 @@ void MainMenuScene::build_menu_buttons()
     });
 
     SDL_Texture* tex =
-        elysia::resources::ResourceManager::instance()->find_texture("ui.moon");
+        ELYSIA_RESOURCES->find_texture("ui.moon");
     auto ui_background = std::make_unique<elysia::ui::UiImage>(tex, elysia::core::Rect{ 0,0,1404,844 }, -10);
     _main_menu_window->add_child(std::move(ui_background), { elysia::ui::UiLayoutAnchor::Center });
 

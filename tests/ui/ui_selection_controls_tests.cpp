@@ -172,7 +172,7 @@ void test_settings_panel_keeps_draft_local_and_normalizes_options()
         && panel.options().window_sizes[2] == ui::SettingsWindowSize{ 1920,1080 },
         "settings panel must normalize window sizes and retain the active value");
     require(panel.options().languages == std::vector<std::string>{ "en","zh-Hans" },
-        "settings panel must deduplicate language identifiers from LocalizationManager");
+        "settings panel must deduplicate language identifiers from LocalizationService");
 
     int save_count = 0;
     int back_count = 0;

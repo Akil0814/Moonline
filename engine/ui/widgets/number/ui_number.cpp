@@ -3,7 +3,7 @@
 #include "../../style/ui_style_defaults.h"
 #include "../../../core/render/glyph_run_layout.h"
 #include "../../../core/render/render_command.h"
-#include "../../../localization/localization_manager.h"
+#include "../../../localization/localization_service.h"
 #include "../../../localization/localized_text_style.h"
 
 #include <SDL.h>
@@ -90,10 +90,8 @@ void UiNumber::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
     if (available_rect.is_empty())
         return;
 
-    elysia::localization::LocalizationManager* localization_manager =
-        elysia::localization::LocalizationManager::instance();
-    if (!localization_manager)
-        return;
+    elysia::localization::LocalizationService* localization_service =
+        ELYSIA_LOCALIZATION;
 
     const UiResolvedTextStyle typography = resolve_ui_typography(_typography_role);
     elysia::localization::LocalizedTextStyle text_style;
@@ -107,7 +105,7 @@ void UiNumber::submit_ui_render_commands(std::vector<elysia::core::UiRenderComma
     source_sizes.reserve(text.size());
     for (const char ch : text)
     {
-        SDL_Texture* texture = localization_manager->get_raw_text_texture(
+        SDL_Texture* texture = localization_service->get_raw_text_texture(
             std::string_view(&ch,1),
             text_style
         );

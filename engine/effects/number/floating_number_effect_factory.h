@@ -5,6 +5,8 @@
 
 #include <memory>
 
+struct SDL_Renderer;
+
 namespace elysia::typography
 {
 class FontResolver;
@@ -15,7 +17,9 @@ namespace elysia::effects
 class FloatingNumberEffectFactory
 {
 public:
-	void set_font_resolver(const elysia::typography::FontResolver* font_resolver) noexcept;
+	void set_runtime_dependencies(
+		SDL_Renderer* renderer,
+		const elysia::typography::FontResolver* font_resolver) noexcept;
 	void clear_cache() noexcept;
 
 	[[nodiscard]] std::unique_ptr<FloatingNumberEffect> create(
@@ -23,6 +27,7 @@ public:
 
 private:
 	FloatingNumberGlyphCache _glyph_cache;
+	SDL_Renderer* _renderer = nullptr;
 	const elysia::typography::FontResolver* _font_resolver = nullptr;
 };
 }

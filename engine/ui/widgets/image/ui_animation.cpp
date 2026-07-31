@@ -1,7 +1,7 @@
 #include "ui_animation.h"
 
 #include "../../../builtin/resources/builtin_asset_cache.h"
-#include "../../../animation/animation_manager.h"
+#include "../../../animation/animation_service.h"
 #include "../../../core/render/render_command.h"
 
 namespace elysia::ui
@@ -43,7 +43,7 @@ UiAnimation::UiAnimation(
 bool UiAnimation::set_animation_key(std::string_view animation_key)
 {
     std::unique_ptr<elysia::animation::Animation> animation =
-        elysia::animation::AnimationManager::instance()->create_animation(animation_key);
+        ELYSIA_ANIMATIONS->create_animation(animation_key);
     if (!animation)
     {
         _animation_key.clear();
@@ -57,8 +57,7 @@ bool UiAnimation::set_animation_key(std::string_view animation_key)
 
     _animation_key = animation_key;
     _animation = std::move(animation);
-    const auto* definition = elysia::animation::AnimationManager::instance()
-        ->find_definition(animation_key);
+    const auto* definition = ELYSIA_ANIMATIONS->find_definition(animation_key);
     _default_loop = definition ? std::optional<bool>(definition->loop) : std::nullopt;
     _animation->reset();
     return true;

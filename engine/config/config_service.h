@@ -14,6 +14,9 @@
 #include <unordered_set>
 #include <vector>
 
+
+#define ELYSIA_CONFIG (::elysia::config::ConfigService::instance())
+
 namespace elysia::config
 {
 class ConfigSnapshot;

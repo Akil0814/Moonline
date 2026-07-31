@@ -1,15 +1,16 @@
 #include "effect_manager.h"
 
-#include "../../animation/animation_manager.h"
+#include "../../animation/animation_service.h"
 #include "../../scene/scene.h"
 #include "../../tools/logger.h"
 
 namespace elysia::effects
 {
-void EffectManager::set_font_resolver(
+void EffectManager::set_runtime_dependencies(
+	SDL_Renderer* renderer,
 	const elysia::typography::FontResolver* font_resolver) noexcept
 {
-	_floating_number_effect_factory.set_font_resolver(font_resolver);
+	_floating_number_effect_factory.set_runtime_dependencies(renderer,font_resolver);
 }
 
 bool EffectManager::register_animation_effect(
@@ -46,7 +47,7 @@ bool EffectManager::register_animation_effect(
 		return false;
 	}
 
-	if (!elysia::animation::AnimationManager::instance()->find_definition(request.animation_key))
+	if (!ELYSIA_ANIMATIONS->find_definition(request.animation_key))
 	{
 		ELYSIA_LOG_WARN("effects","Register effect failed: can't find animation definition.");
 		return false;

@@ -1,6 +1,7 @@
 #define SDL_MAIN_HANDLED
 
-#include "engine/animation/animation_manager.h"
+#include "engine/animation/animation_service.h"
+#include "engine/animation/runtime/animation_manager.h"
 #include "engine/core/time.h"
 #include "engine/effects/animation/animation_effect_factory.h"
 #include "engine/effects/runtime/effect_manager.h"
@@ -100,6 +101,22 @@ void test_animation_effect_creation_playback_and_scene_lifecycle(AnimationEffect
 
     SDL_Texture* texture = fixture.texture;
 
+    animation::AnimationManager* animation_manager = animation::AnimationManager::instance();
+    resources::AnimationBuildRequest invalid_animation_request;
+    require(!animation_manager->register_animation(invalid_animation_request,nullptr),
+        "animation registration must reject an empty animation key");
+    invalid_animation_request.animation_key = "animation_effect_test.animation.invalid";
+    require(!animation_manager->register_animation(invalid_animation_request,nullptr),
+        "animation registration must reject an empty atlas key");
+    invalid_animation_request.atlas_key = "animation_effect_test.atlas.invalid";
+    require(!animation_manager->register_animation(invalid_animation_request,nullptr),
+        "animation registration must reject a null atlas");
+    resources::Atlas invalid_animation_atlas("animation_effect_test.atlas.invalid");
+    invalid_animation_request.fps = 0.0;
+    require(!animation_manager->register_animation(
+            invalid_animation_request,&invalid_animation_atlas),
+        "animation registration must reject a non-positive FPS");
+
     register_animation_effect(texture, false, "oneshot");
     effects::AnimationEffectSpawnRequest request;
     request.effect_key = "animation_effect_test.effect.oneshot";
@@ -123,7 +140,7 @@ void test_animation_effect_creation_playback_and_scene_lifecycle(AnimationEffect
     natural_animation_request.fps = 10.0;
     natural_animation_request.loop = false;
     require(animation::AnimationManager::instance()->register_animation(natural_animation_request,
-        animation::AnimationManager::instance()->find_definition("animation_effect_test.animation.oneshot")->atlas),
+        ELYSIA_ANIMATIONS->find_definition("animation_effect_test.animation.oneshot")->atlas),
         "natural-size animation must register");
     resources::AnimationEffectBuildRequest natural_effect_request;
     natural_effect_request.effect_key = "animation_effect_test.effect.natural";

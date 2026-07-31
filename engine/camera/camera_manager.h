@@ -11,6 +11,8 @@
 #include <optional>
 #include <variant>
 
+#define ELYSIA_CAMERA (::elysia::camera::CameraManager::instance())
+
 namespace elysia::camera
 {
 enum class CameraSlot : std::size_t
@@ -72,10 +74,8 @@ private:
     };
 
     using RequestPayload = std::variant<
-        ShakeRequest,
-        ZoomToRequest,
-        SnapToFocusRequest,
-        ClearEffectsRequest
+        ShakeRequest,ZoomToRequest,
+        SnapToFocusRequest,ClearEffectsRequest
     >;
 
     struct CameraRequest

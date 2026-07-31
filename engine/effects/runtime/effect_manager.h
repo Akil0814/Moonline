@@ -33,7 +33,8 @@ class EffectManager : public elysia::tools::Singleton<EffectManager>
 	friend class elysia::scene::SceneManager;
 
 public:
-	void set_font_resolver(
+	void set_runtime_dependencies(
+		SDL_Renderer* renderer,
 		const elysia::typography::FontResolver* font_resolver) noexcept;
 
 	bool register_animation_effect(

@@ -1,7 +1,8 @@
-#include "../tools/logger.h"
 #include "animation_manager.h"
 
-#include "../resources/resource_manager.h"
+#include "../../tools/logger.h"
+
+#include "../../resources/resource_service.h"
 namespace elysia::animation
 {
 bool AnimationManager::register_animation(
@@ -46,11 +47,11 @@ bool AnimationManager::register_animation(
 }
 
 bool AnimationManager::register_animations(const std::vector<elysia::resources::AnimationBuildRequest>& requests,
-	const elysia::resources::ResourceManager& resource_manager)
+	const elysia::resources::ResourceService& resource_service)
 {
 	for (const elysia::resources::AnimationBuildRequest& request : requests)
 	{
-		const elysia::resources::Atlas* atlas = resource_manager.find_atlas(request.atlas_key);
+		const elysia::resources::Atlas* atlas = resource_service.find_atlas(request.atlas_key);
 		if (!register_animation(request, atlas))
 			return false;
 	}
@@ -58,7 +59,7 @@ bool AnimationManager::register_animations(const std::vector<elysia::resources::
 	return true;
 }
 
-const AnimationDefinition* AnimationManager::find_definition(const std::string_view& key) const
+const AnimationDefinition* AnimationManager::find_definition(std::string_view key) const
 {
 	std::unordered_map<std::string, AnimationDefinition>::const_iterator iterator =
 		_definitions.find(std::string(key));
@@ -69,22 +70,6 @@ const AnimationDefinition* AnimationManager::find_definition(const std::string_v
 	}
 
 	return &iterator->second;
-}
-
-std::unique_ptr<Animation> AnimationManager::create_animation(const std::string_view& key) const
-{
-	const AnimationDefinition* definition = find_definition(key);
-	if (!definition)
-	{
-		ELYSIA_LOG_WARN("animation","Create animation failed: definition does not exist: "<< key);
-		return nullptr;
-	}
-
-	std::unique_ptr<Animation> animation = std::make_unique<Animation>();
-	animation->set_atlas(definition->atlas);
-	animation->set_loop(definition->loop);
-	animation->set_interval_seconds(1.0 / definition->fps);
-	return animation;
 }
 
 void AnimationManager::clear() noexcept
