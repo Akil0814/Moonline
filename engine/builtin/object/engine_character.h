@@ -21,7 +21,7 @@ public:
 	void update(double delta)override;
 	bool on_raw_input_event(const elysia::input::RawInputEvent& event)override;
 	void submit_render_commands(std::vector<elysia::core::RenderCommand>& out_commands) const override;
-	std::span<const elysia::physics::Collider> colliders() const noexcept override;
+	[[nodiscard]] std::span<const elysia::physics::Collider> colliders() const noexcept override;
 
 	bool set_animation(std::string idle_key,std::string move_key);
 
