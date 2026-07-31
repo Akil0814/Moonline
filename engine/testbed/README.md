@@ -16,4 +16,7 @@ must not depend on Testbed code.
 
 The animation comparison keeps the left sprite unmodified and applies a coverage
 mask color overlay to the right sprite. Press `Space` to cycle through no
-overlay, white, blue, purple, and gray. Press `Escape` to return to the caller.
+overlay, white, blue, purple, and gray. The world-space `EngineCharacter` at the
+center uses the built-in idle and move animations; move it with WASD or the arrow
+keys. Its green AABB is submitted through the `PhysicsCollider` debug category.
+Press `Escape` to return to the caller.

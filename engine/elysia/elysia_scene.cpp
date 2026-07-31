@@ -162,7 +162,8 @@ void ElysiaScene::build_ui()
     if (!cache)
         throw std::logic_error("ElysiaScene requires BuiltinAssetCache while building UI.");
 
-    SDL_Texture* texture = cache->find_texture("engine.brand.elysia.default");
+    SDL_Texture* texture = cache->find_texture(
+        elysia::builtin::asset_keys::ElysiaDefaultTexture);
     if (!texture)
         throw std::logic_error("ElysiaScene requires engine.brand.elysia.default.");
 

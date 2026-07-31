@@ -11,6 +11,7 @@
 #include "engine/testbed/scene/testbed_scene_payload.h"
 #include "engine/testbed/scene/ui_test_scene.h"
 #include "engine/testbed/testbed_scene_keys.h"
+#include "engine/tools/debug_draw.h"
 #include "tests/support/test_assertions.h"
 
 #include <SDL.h>
@@ -24,6 +25,7 @@
 #include <functional>
 #include <stdexcept>
 #include <string>
+#include <variant>
 
 namespace
 {
@@ -215,6 +217,12 @@ void test_escape_returns_the_full_caller_route()
     require(scene_manager.current_scene_key() == 1 && FirstReturnScene::marker == 17,
         "UiTestScene Escape must return the caller key and payload");
 
+    auto* debug_draw = elysia::tools::DebugDraw::instance();
+    debug_draw->clear();
+    debug_draw->set_enabled(false);
+    debug_draw->set_enabled_categories(
+        elysia::tools::DebugDrawCategory::Gameplay);
+
     scene_manager.on_scene_request(elysia::scene::SceneRequest{
         .type = elysia::scene::SceneRequestType::Switch,
         .route = elysia::scene::SceneRoute{
@@ -229,9 +237,36 @@ void test_escape_returns_the_full_caller_route()
         }
     });
     scene_manager.on_update(0.0);
+    require(debug_draw->is_enabled(
+                elysia::tools::DebugDrawCategory::PhysicsCollider)
+            && debug_draw->commands().size() == 1,
+        "Engine feature test must temporarily enable and submit the character collider");
+    const auto* initial_collider = std::get_if<elysia::tools::DebugDrawRect>(
+        &debug_draw->commands().front().primitive);
+    require(initial_collider != nullptr,
+        "Engine feature test character must submit an AABB debug command");
+    const float initial_collider_x = initial_collider->rect.x();
+
+    scene_manager.on_input(
+        elysia::input::RawInputFrame{},
+        {elysia::input::RawInputEvent{
+            .control = elysia::input::RawInputControl::KeyD,
+            .type = elysia::input::RawInputEventType::ControlPressed,
+            .device = elysia::input::InputDevice::Keyboard
+        }});
+    scene_manager.on_update(0.25);
+    const auto* moved_collider = std::get_if<elysia::tools::DebugDrawRect>(
+        &debug_draw->commands().front().primitive);
+    require(debug_draw->commands().size() == 1 && moved_collider
+            && moved_collider->rect.x() > initial_collider_x,
+        "Engine feature test must refresh one collider snapshot at the moved character position");
     send_escape(scene_manager);
     require(scene_manager.current_scene_key() == 2 && SecondReturnScene::marker == 29,
         "EngineFeatureTestScene Escape must return the caller key and payload");
+    require(!debug_draw->enabled()
+            && debug_draw->enabled_categories()
+                == elysia::tools::DebugDrawCategory::Gameplay,
+        "leaving EngineFeatureTestScene must restore the previous DebugDraw settings");
 
     const elysia::scene::SceneRoute original_caller{
         .target = 1,

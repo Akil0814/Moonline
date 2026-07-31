@@ -11,21 +11,21 @@ namespace elysia::builtin
 namespace
 {
 const std::array<BuiltinAssetDescriptor, 5> kFontDescriptors = {
-    BuiltinAssetDescriptor{"engine.font.latin", "fonts/NotoSans-Regular.ttf"},
-    BuiltinAssetDescriptor{"engine.font.zh_hans", "fonts/NotoSansSC-Regular.ttf"},
-    BuiltinAssetDescriptor{"engine.font.zh_hant", "fonts/NotoSansTC-Regular.ttf"},
-    BuiltinAssetDescriptor{"engine.font.ja", "fonts/NotoSansJP-Regular.ttf"},
-    BuiltinAssetDescriptor{"engine.font.ko", "fonts/NotoSansKR-Regular.ttf"},
+    BuiltinAssetDescriptor{asset_keys::LatinFont, "fonts/NotoSans-Regular.ttf"},
+    BuiltinAssetDescriptor{asset_keys::SimplifiedChineseFont, "fonts/NotoSansSC-Regular.ttf"},
+    BuiltinAssetDescriptor{asset_keys::TraditionalChineseFont, "fonts/NotoSansTC-Regular.ttf"},
+    BuiltinAssetDescriptor{asset_keys::JapaneseFont, "fonts/NotoSansJP-Regular.ttf"},
+    BuiltinAssetDescriptor{asset_keys::KoreanFont, "fonts/NotoSansKR-Regular.ttf"},
 };
 
 const std::array<BuiltinAssetDescriptor, 7> kTextureDescriptors = {
-    BuiltinAssetDescriptor{"engine.brand.elysia.default", "textures/elysia.png"},
-    BuiltinAssetDescriptor{"engine.brand.elysia.black", "textures/elysia_black.png"},
-    BuiltinAssetDescriptor{"engine.brand.elysia.black_alpha_inverse","textures/elysia_black_alpha_inverse.png"},
-    BuiltinAssetDescriptor{"engine.brand.elysia.light_edge", "textures/elysia_light_edge.png"},
+    BuiltinAssetDescriptor{asset_keys::ElysiaDefaultTexture, "textures/elysia.png"},
+    BuiltinAssetDescriptor{asset_keys::ElysiaBlackTexture, "textures/elysia_black.png"},
+    BuiltinAssetDescriptor{asset_keys::ElysiaBlackAlphaInverseTexture,"textures/elysia_black_alpha_inverse.png"},
+    BuiltinAssetDescriptor{asset_keys::ElysiaLightEdgeTexture, "textures/elysia_light_edge.png"},
     BuiltinAssetDescriptor{asset_keys::ElysiaWhiteTexture,"textures/elysia_white.png"},
-    BuiltinAssetDescriptor{"engine.character.sprite.move", "textures/character_move.png"},
-    BuiltinAssetDescriptor{"engine.character.sprite.idle", "textures/character_idle.png"},
+    BuiltinAssetDescriptor{asset_keys::EngineCharacterMoveTexture, "textures/character_move.png"},
+    BuiltinAssetDescriptor{asset_keys::EngineCharacterIdleTexture, "textures/character_idle.png"},
 };
 
 const std::array<BuiltinLocaleDescriptor, 5> kLocaleDescriptors = {
@@ -38,8 +38,8 @@ const std::array<BuiltinLocaleDescriptor, 5> kLocaleDescriptors = {
 
 const std::array<BuiltinAnimationDescriptor, 2> kAnimationDescriptors = {
     BuiltinAnimationDescriptor{
-        .key = "engine.character.idle",
-        .texture_key = "engine.character.sprite.idle",
+        .key = asset_keys::EngineCharacterIdleAnimation,
+        .texture_key = asset_keys::EngineCharacterIdleTexture,
         .frame_width = 32,
         .frame_height = 32,
         .frame_count = 8,
@@ -47,8 +47,8 @@ const std::array<BuiltinAnimationDescriptor, 2> kAnimationDescriptors = {
         .loop = true
     },
     BuiltinAnimationDescriptor{
-        .key = "engine.character.move",
-        .texture_key = "engine.character.sprite.move",
+        .key = asset_keys::EngineCharacterMoveAnimation,
+        .texture_key = asset_keys::EngineCharacterMoveTexture,
         .frame_width = 32,
         .frame_height = 32,
         .frame_count = 8,
@@ -60,7 +60,7 @@ const std::array<BuiltinAnimationDescriptor, 2> kAnimationDescriptors = {
 const std::array<BuiltinAudioDescriptor, 0> kSoundDescriptors = {};
 
 const std::array<BuiltinAudioDescriptor, 1> kMusicDescriptors = {
-    BuiltinAudioDescriptor{"engine.elysia.music","audio\\Elysian_Realm.ogg"}
+    BuiltinAudioDescriptor{asset_keys::ElysianRealm,"audio\\Elysian_Realm.ogg"}
 };
 
 constexpr std::string_view kRequiredMarkerFileName = ".elysia_engine_required";

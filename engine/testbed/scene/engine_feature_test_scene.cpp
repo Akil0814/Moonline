@@ -3,6 +3,7 @@
 #include "../../builtin/resources/builtin_asset_cache.h"
 #include "../../builtin/audio/builtin_audio_player.h"
 #include "../../builtin/resources/builtin_asset_keys.h"
+#include "../../builtin/object/engine_character.h"
 #include "../../core/render/colors.h"
 #include "../../input/raw_input_types.h"
 #include "../../ui/containers/ui_list_container.h"
@@ -39,6 +40,12 @@ std::unique_ptr<elysia::ui::UiButton> make_audio_button(const char* label)
     button->set_text_content(elysia::ui::ui_raw_text(label));
     return button;
 }
+}
+
+void EngineFeatureTestScene::on_update(double delta)
+{
+    elysia::scene::Scene::on_update(delta);
+    refresh_character_debug_draw();
 }
 
 void EngineFeatureTestScene::on_input(
@@ -82,19 +89,52 @@ void EngineFeatureTestScene::on_enter(const elysia::scene::ScenePayload& payload
         throw std::logic_error(
             "EngineFeatureTestScene requires a bound BuiltinAudioPlayer.");
     }
+    if (!_character || _character->is_destroyed())
+    {
+        _character = create_and_add_object<elysia::builtin::EngineCharacter>(
+            *cache);
+        if (!_character)
+        {
+            throw std::runtime_error(
+                "EngineFeatureTestScene could not create EngineCharacter.");
+        }
+        _character->set_center(elysia::core::Vector2::zero());
+    }
+
+    elysia::core::Rect movement_bounds = camera().view_rect();
+    if (movement_bounds.is_empty())
+    {
+        movement_bounds = elysia::core::Rect::from_center(
+            elysia::core::Vector2::zero(),
+            elysia::core::Vector2{
+                static_cast<float>(runtime_context().logical_width()),
+                static_cast<float>(runtime_context().logical_height())});
+    }
+    _character->set_movement_bounds(movement_bounds);
+
     if (!_primary_animation)
     {
         _primary_animation = create_and_add_object<elysia::ui::UiAnimation>(
             elysia::core::Rect{ 160.0f,200.0f,292.0f,292.0f });
-        if (!_primary_animation->set_engine_animation(*cache,"engine.character.move"))
-            throw std::logic_error("EngineFeatureTestScene could not bind engine.test.idle.");
+        if (!_primary_animation->set_engine_animation(
+                *cache,
+                elysia::builtin::asset_keys::EngineCharacterMoveAnimation))
+        {
+            throw std::logic_error(
+                "EngineFeatureTestScene could not bind the character move animation.");
+        }
     }
     if (!_secondary_animation)
     {
         _secondary_animation = create_and_add_object<elysia::ui::UiAnimation>(
             elysia::core::Rect{ 760.0f,204.0f,324.0f,284.0f });
-        if (!_secondary_animation->set_engine_animation(*cache,"engine.character.move"))
-            throw std::logic_error("EngineFeatureTestScene could not bind engine.test.idle.");
+        if (!_secondary_animation->set_engine_animation(
+                *cache,
+                elysia::builtin::asset_keys::EngineCharacterMoveAnimation))
+        {
+            throw std::logic_error(
+                "EngineFeatureTestScene could not bind the character move animation.");
+        }
     }
     _primary_animation->play();
     _secondary_animation->play();
@@ -105,11 +145,16 @@ void EngineFeatureTestScene::on_enter(const elysia::scene::ScenePayload& payload
     _audio_window->set_visible(true);
     _audio_window->set_active(true);
     _audio_window->focus_first_available_scope();
+
+    enable_character_debug_draw();
+    refresh_character_debug_draw();
 }
 
 void EngineFeatureTestScene::on_exit()
 {
     _paused = false;
+    if (_character)
+        _character->clear_movement_input();
     if (_primary_animation)
         _primary_animation->pause();
     if (_secondary_animation)
@@ -119,6 +164,9 @@ void EngineFeatureTestScene::on_exit()
         _audio_window->set_active(false);
         _audio_window->set_visible(false);
     }
+    elysia::tools::DebugDraw::instance()->clear_categories(
+        elysia::tools::DebugDrawCategory::PhysicsCollider);
+    restore_character_debug_draw();
 }
 
 void EngineFeatureTestScene::reset()
@@ -129,11 +177,17 @@ void EngineFeatureTestScene::reset()
         _primary_animation->destroy();
     if (_secondary_animation)
         _secondary_animation->destroy();
+    if (_character)
+        _character->destroy();
     _primary_animation = nullptr;
     _secondary_animation = nullptr;
+    _character = nullptr;
     destroy_audio_controls();
     _audio_player = nullptr;
     _color_overlay_index = 2;
+    elysia::tools::DebugDraw::instance()->clear_categories(
+        elysia::tools::DebugDrawCategory::PhysicsCollider);
+    restore_character_debug_draw();
 }
 
 std::size_t EngineFeatureTestScene::color_overlay_index() const noexcept
@@ -204,6 +258,45 @@ void EngineFeatureTestScene::destroy_audio_controls() noexcept
     if (_audio_window)
         _audio_window->destroy();
     _audio_window = nullptr;
+}
+
+void EngineFeatureTestScene::enable_character_debug_draw()
+{
+    elysia::tools::DebugDraw* debug_draw =
+        elysia::tools::DebugDraw::instance();
+    if (!_debug_draw_state_captured)
+    {
+        _previous_debug_draw_enabled = debug_draw->enabled();
+        _previous_debug_draw_categories = debug_draw->enabled_categories();
+        _debug_draw_state_captured = true;
+    }
+
+    debug_draw->set_enabled(true);
+    debug_draw->set_enabled_categories(
+        debug_draw->enabled_categories()
+        | elysia::tools::DebugDrawCategory::PhysicsCollider);
+}
+
+void EngineFeatureTestScene::restore_character_debug_draw() noexcept
+{
+    if (!_debug_draw_state_captured)
+        return;
+
+    elysia::tools::DebugDraw* debug_draw =
+        elysia::tools::DebugDraw::instance();
+    debug_draw->set_enabled(_previous_debug_draw_enabled);
+    debug_draw->set_enabled_categories(_previous_debug_draw_categories);
+    _debug_draw_state_captured = false;
+}
+
+void EngineFeatureTestScene::refresh_character_debug_draw()
+{
+    elysia::tools::DebugDraw* debug_draw =
+        elysia::tools::DebugDraw::instance();
+    debug_draw->clear_categories(
+        elysia::tools::DebugDrawCategory::PhysicsCollider);
+    if (_character && !_character->is_destroyed())
+        _character->submit_debug_draw();
 }
 
 void EngineFeatureTestScene::return_to_caller()

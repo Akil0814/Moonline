@@ -65,6 +65,16 @@ target_compile_definitions(builtin_asset_cache_tests
     PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
 )
 
+add_moonline_test(engine_character_tests
+    LABEL builtin
+    SOURCES builtin/engine_character_tests.cpp
+    LIBRARIES ${SDL2_LIBRARIES}
+    SDL
+)
+target_compile_definitions(engine_character_tests
+    PRIVATE MOONLINE_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+)
+
 foreach(INPUT_TEST_TARGET IN ITEMS
     input_action_mapping_tests
     input_system_controller_lifecycle_tests

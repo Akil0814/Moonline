@@ -1,6 +1,7 @@
 #include "ui_test_scene.h"
 
 #include "../../builtin/resources/builtin_asset_cache.h"
+#include "../../builtin/resources/builtin_asset_keys.h"
 #include "../../ui/composites/ui_confirmation_dialog.h"
 #include "../../ui/composites/ui_dialog.h"
 #include "../../ui/composites/ui_dropdown.h"
@@ -178,7 +179,8 @@ void UiTestScene::rebuild_ui()
     clear_ui();
     const auto* cache = runtime_context().builtin_asset_cache();
     if (!cache) throw std::logic_error("UiTestScene requires BuiltinAssetCache while building UI.");
-    SDL_Texture* image_texture = cache->find_texture("engine.brand.elysia.default");
+    SDL_Texture* image_texture = cache->find_texture(
+        elysia::builtin::asset_keys::ElysiaDefaultTexture);
     if (!image_texture) throw std::logic_error("UiTestScene requires engine.brand.elysia.default.");
 
     _root_window = create_and_add_object<UiWindow>(elysia::core::Rect{ 80,52,1120,616 },100);
@@ -227,7 +229,7 @@ void UiTestScene::rebuild_ui()
     auto number = std::make_unique<UiNumber>(elysia::core::Rect{ 0,0,240,42 }); number->set_value(73.25); number->set_decimal_places(2); number->set_suffix(UiNumberSuffix::Percent); media_section->add_back(std::move(number));
     for (const auto direction : { BarFillDirection::LeftToRight,BarFillDirection::RightToLeft,BarFillDirection::TopToBottom,BarFillDirection::BottomToTop }) { auto bar = std::make_unique<UiBar>(elysia::core::Rect{ 0,0,300,20 }); bar->set_ratio(0.58f); bar->set_fill_direction(direction); media_section->add_back(std::move(bar)); }
     media_section->add_back(std::make_unique<UiImage>(image_texture,elysia::core::Rect{ 0,0,120,80 })); auto fade = std::make_unique<UiFadeImage>(image_texture,elysia::core::Rect{ 0,0,120,80 }); fade->configure_playback(effects::UiOpacityFadeMode::FadeInOut,0.1,0.35,0.35); fade->play(); media_section->add_back(std::move(fade)); auto blink = std::make_unique<UiBlinkImage>(image_texture,elysia::core::Rect{ 0,0,120,80 }); blink->configure_playback(effects::UiOpacityBlinkMode::VisibleFirst,0.0,0.25,0.25,2); blink->play(); media_section->add_back(std::move(blink)); auto pulse = std::make_unique<UiPulseImage>(image_texture,elysia::core::Rect{ 0,0,120,80 }); pulse->configure_playback(effects::UiOpacityPulseMode::MinToMax,0.0,0.3,0.3,2); pulse->play(); media_section->add_back(std::move(pulse));
-    auto animation = std::make_unique<UiAnimation>(elysia::core::Rect{ 0,0,120,120 }); if (!animation->set_engine_animation(*cache,"engine.character.move")) throw std::logic_error("UiTestScene could not bind engine.test.idle."); animation->play(); media_section->add_back(std::move(animation));
+    auto animation = std::make_unique<UiAnimation>(elysia::core::Rect{ 0,0,120,120 }); if (!animation->set_engine_animation(*cache,elysia::builtin::asset_keys::EngineCharacterMoveAnimation)) throw std::logic_error("UiTestScene could not bind the character move animation."); animation->play(); media_section->add_back(std::move(animation));
     (void)tabs->add_tab(ui_text_key("engine.ui_test.pages.media"),std::move(media));
 
     UiListContainer* containers_list = nullptr; auto containers = page_scroll(containers_list); auto* container_section = add_section(*containers_list,"engine.ui_test.pages.containers","engine.ui_test.sections.containers");
