@@ -151,6 +151,13 @@ add_moonline_test(scene_core_tests
     SDL
 )
 
+add_moonline_test(game_object_query_tests
+    LABEL object_query
+    SOURCES object_query/game_object_query_tests.cpp
+    LIBRARIES ${SDL2_LIBRARIES}
+    SDL
+)
+
 add_moonline_test(startup_loading_flow_tests
     LABEL scene
     SOURCES scene/startup_loading_flow_tests.cpp

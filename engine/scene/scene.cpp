@@ -237,6 +237,19 @@ void Scene::register_scene_object_interfaces(elysia::core::SceneObject* object)
     on_scene_object_registered(*object);
 }
 
+void Scene::visit_game_objects(
+    const elysia::object_query::GameObjectVisitor& visitor) const
+{
+    for (const auto& layer : _object_layers)
+    {
+        for (const std::unique_ptr<elysia::core::GameObject>& object : layer)
+        {
+            if (object && !visitor(*object))
+                return;
+        }
+    }
+}
+
 void Scene::dispatch_ui_frame(const elysia::ui::UiInputFrame& input)
 {
     for (const UiInputFrameReceiverEntry& entry : _ui_frame_receivers)

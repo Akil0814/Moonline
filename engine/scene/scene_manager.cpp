@@ -2,6 +2,7 @@
 
 #include "../camera/camera_manager.h"
 #include "../effects/runtime/effect_manager.h"
+#include "../object_query/runtime/game_object_query_manager.h"
 #include "../tools/debug_draw.h"
 #include "../tools/logger.h"
 
@@ -226,6 +227,7 @@ void SceneManager::attach_to_scene(Scene* scene)
         return;
 
 	elysia::effects::EffectManager::instance()->bind_active_scene(*scene);
+	elysia::object_query::GameObjectQueryManager::instance()->bind_active_runtime(*scene);
 	scene->attach(this);
 }
 
@@ -234,6 +236,7 @@ void SceneManager::detach_from_scene(Scene* scene)
     if (!scene)
         return;
 
+	elysia::object_query::GameObjectQueryManager::instance()->unbind_active_runtime(*scene);
 	elysia::effects::EffectManager::instance()->unbind_active_scene(*scene);
 	scene->detach(this);
 }

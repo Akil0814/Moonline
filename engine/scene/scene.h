@@ -26,6 +26,7 @@
 #include "../input/contracts/raw_input_frame_receiver.h"
 #include "../input/raw_input_frame.h"
 #include "../input/raw_input_types.h"
+#include "../object_query/runtime/game_object_query_runtime.h"
 #include "../ui/core/ui_element.h"
 #include "../ui/input/contracts/ui_input_event_receiver.h"
 #include "../ui/input/contracts/ui_input_frame_receiver.h"
@@ -36,7 +37,9 @@ namespace elysia::scene
 class SceneFactory;
 class SceneManager;
 
-class Scene : public elysia::core::Subject<SceneRequestObserver>
+class Scene
+    : public elysia::core::Subject<SceneRequestObserver>
+    , public elysia::object_query::IGameObjectQueryRuntime
 {
 public:
     Scene() = default;
@@ -126,6 +129,8 @@ private:
     void bind_runtime_context(const SceneRuntimeContext& context) noexcept;
     void clear_runtime_context() noexcept;
     void register_scene_object_interfaces(elysia::core::SceneObject* object);
+    void visit_game_objects(
+        const elysia::object_query::GameObjectVisitor& visitor) const override;
     void dispatch_ui_frame(const elysia::ui::UiInputFrame& input);
     void dispatch_ui_events(const std::vector<elysia::ui::UiInputEvent>& events);
     void remove_destroyed_objects();
