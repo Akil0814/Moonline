@@ -4,7 +4,7 @@
 
 Moonline is a C++ 2D game project
 
-The tracked C/C++ code in `engine/`, `gameplay/`
+The tracked C/C++ code in `engine/`, `game/`
 is already about 25.6k LOC, excluding `thirdparty/`.
 
 That means the older "around 25k LOC" estimate is no longer realistic as a final project-size
@@ -17,7 +17,7 @@ The current source layout shows a clear separation between:
 
 - `engine/application/`: reusable application startup, runtime ownership, and main loop
 - `engine/`: reusable game engine foundation and its developer documentation
-- `gameplay/`: game-specific logic
+- `game/`: game-specific logic
 - `assets/`: textures, audio, fonts, configs, preload resources
 - `docs/`: project notes and planning documents
 
@@ -34,7 +34,7 @@ shared API contracts, and a header coverage checklist.
 
 ## Input Documentation
 
-The current Raw Input, Action Mapping, Gameplay Support, and GameplayScene pipeline is documented
+The current Raw Input, Action Mapping, Engine Gameplay, and GameplayScene pipeline is documented
 in Chinese in [`engine/docs/input/`](../engine/docs/input/README.md). It covers the implemented Button/Axis value model,
 keyboard and controller bindings, runtime rebinding APIs, scene receiver lifecycle, and tests.
 

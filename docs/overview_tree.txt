@@ -15,7 +15,7 @@ Moonline/
 |   |   `-- builtin/                 -> StartupLoadingScene and SettingsScene
 |   `-- ui/
 |
-|-- gameplay/                        -> Moonline-specific assembly and logic
+|-- game/                            -> Moonline-specific assembly and logic
 |   |-- CMakeLists.txt
 |   |-- application/                 -> MoonlineGameModule
 |   `-- scene/                       -> project Scene types and MoonlineSceneKeys
@@ -30,7 +30,7 @@ Moonline/
 
 Dependency direction:
 
-MoonLine -> gameplay_lib -> engine_lib -> SDL
+MoonLine -> game_lib -> engine_lib -> SDL
 
 Notes:
 1. Application is part of the reusable engine and must not include gameplay types.

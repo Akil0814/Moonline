@@ -68,7 +68,7 @@
 
 `RayCastQuery` 和 `SegmentCastQuery` 只描述最近命中查询；`ICollisionQueryService` 是纯接口，当前没有实现。Ray 与 Segment 是瞬时查询，不属于 `ColliderShape`，也不能作为零厚度 Block Collider。
 
-### `engine/gameplay_support/collision`
+### `engine/gameplay/collision`
 
 Gameplay 便利层把通用 Collider 绑定为 Actor 相关语义：
 

@@ -1,7 +1,7 @@
 #define SDL_MAIN_HANDLED
 
-#include "engine/gameplay_support/input/gameplay_input_frame.h"
-#include "engine/gameplay_support/input/gameplay_input_map.h"
+#include "engine/gameplay/input/gameplay_input_frame.h"
+#include "engine/gameplay/input/gameplay_input_map.h"
 #include "tests/support/test_assertions.h"
 
 #include <iostream>
@@ -40,6 +40,6 @@ int main()
     require(map.resolve(raw).frame.is_just_pressed(actions::Jump),
         "Rebound standard gameplay actions must resolve immediately");
 
-    std::cout << "gameplay support tests passed\n";
+    std::cout << "engine gameplay tests passed\n";
     return 0;
 }

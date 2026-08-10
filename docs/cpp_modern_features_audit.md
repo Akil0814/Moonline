@@ -1,7 +1,7 @@
 # Moonline：C++11 及以上特性审查
 
 > 审查日期：2026-07-13  
-> 审查范围：`engine/`、`gameplay/`、`tests/` 与 `main.cpp` 中的 `.cpp` / `.h` 文件；不含 `thirdparty/`、`build/`、`out/` 和二进制产物。
+> 审查范围：`engine/`、`game/`、`tests/` 与 `main.cpp` 中的 `.cpp` / `.h` 文件；不含 `thirdparty/`、`build/`、`out/` 和二进制产物。
 > 审查方式：静态检索结合代表性源码阅读。本文只记录在项目自有代码中能确认的实际使用，不将 `CMAKE_CXX_STANDARD 23` 视为“使用了全部 C++23 特性”。
 
 ## 结论概览
@@ -39,7 +39,7 @@
 
 ### 语言基础：类型推导、范围 for、强类型枚举、空指针与虚函数控制
 
-- `auto` 与范围 for：例如 `engine/gameplay_support/scene/gameplay_scene.cpp`、`engine/core/render/sdl_render_command_executor.h:256`。
+- `auto` 与范围 for：例如 `engine/gameplay/scene/gameplay_scene.cpp`、`engine/core/render/sdl_render_command_executor.h:256`。
 - `enum class`：例如 `engine/ui/core/ui_child_host.h:21` 的 `UiChildStyleRelation`，防止枚举值隐式转换。
 - `nullptr`、`override`、`final`、`noexcept`：遍布引擎接口和测试桩；例如 `tests/ui/ui_focus_routing_tests.cpp:49-56`。
 - `= delete` / `= default`：例如 `engine/ui/core/ui_child_host.h:49-59`，明确对象可复制/可移动语义。
@@ -64,7 +64,7 @@
 
 ### lambda 初始化捕获
 
-- `gameplay/scene/character_select_scene.cpp:153`：`[this, selected_key = character_key]` 将选中的角色键复制到回调中。
+- `game/scene/character_select_scene.cpp:153`：`[this, selected_key = character_key]` 将选中的角色键复制到回调中。
 - `engine/testbed/scene/ui_test_scene.cpp:251`：`[this, theme = themes[index]]` 捕获循环当前主题值，避免悬空或错误引用循环变量。
 - `engine/ui/widgets/ui_button.cpp:329`：`[before = std::move(on_click), after = std::move(existing)]` 以移动方式组合回调。
 
@@ -78,7 +78,7 @@
 
 - `std::optional`：在 70 个自有源码文件中出现；例如 `engine/camera/camera_controller.h:18-47` 用可选矩形表达可缺省的相机焦点和世界边界。
 - `std::variant`：`engine/ui/widgets/ui_button.h:43-48` 使用 `UiButtonContent` 表示按钮可承载的多种内容；`engine/loading/game_content_loader.h:51-54` 为预加载任务建立类型安全的联合数据。
-- `std::any`：`engine/scene/routing/scene_payload.h` 定义场景负载，`gameplay/scene/main_menu_scene.cpp:25` 通过指针版 `std::any_cast` 做无异常类型检查。
+- `std::any`：`engine/scene/routing/scene_payload.h` 定义场景负载，`game/scene/main_menu_scene.cpp:25` 通过指针版 `std::any_cast` 做无异常类型检查。
 
 ### `std::string_view` 与 `std::filesystem`
 

@@ -129,7 +129,7 @@ elseif(APPLE)
 endif()
 
 add_subdirectory(engine)
-add_subdirectory(gameplay)
+add_subdirectory(game)
 
 if(MOONLINE_ENABLE_ASAN AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     include(CheckCXXSourceCompiles)
@@ -141,7 +141,7 @@ if(MOONLINE_ENABLE_ASAN AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     if(NOT MOONLINE_ASAN_AVAILABLE)
         message(FATAL_ERROR "MOONLINE_ENABLE_ASAN=ON, but this compiler has no usable AddressSanitizer runtime.")
     endif()
-    foreach(MOONLINE_ASAN_TARGET engine_lib gameplay_lib)
+    foreach(MOONLINE_ASAN_TARGET engine_lib game_lib)
         target_compile_options(${MOONLINE_ASAN_TARGET} PRIVATE -fsanitize=address -fno-omit-frame-pointer)
         target_link_options(${MOONLINE_ASAN_TARGET} INTERFACE -fsanitize=address)
     endforeach()
@@ -153,4 +153,4 @@ endif()
 
 add_executable(MoonLine "main.cpp")
 
-target_link_libraries(MoonLine PRIVATE gameplay_lib)
+target_link_libraries(MoonLine PRIVATE game_lib)

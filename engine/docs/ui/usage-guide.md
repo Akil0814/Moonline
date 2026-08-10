@@ -5,7 +5,7 @@
 ## 最小窗口
 
 `UiWindow` 是场景 UI 树的根。场景对象负责其生命周期；窗口负责子节点、焦点域、
-overlay 与 popup 的协调。以下模式来自 `gameplay/scene/main_menu_scene.cpp`：
+overlay 与 popup 的协调。以下模式来自 `game/scene/main_menu_scene.cpp`：
 
 ```cpp
 auto* window = Scene::create_and_add_object<elysia::ui::UiWindow>(

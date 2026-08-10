@@ -7,7 +7,7 @@
 | 平台翻译 | `InputSystem`、各类 `InputTranslator` | 将 SDL 事件归一化为键盘、鼠标、手柄 Control/Axis | Jump、Attack 等游戏语义 |
 | Raw Input | `RawInputState`、`RawInputFrame`、`RawInputEvent` | 保存物理输入当前状态、设备和离散事件 | 可改键的逻辑 Action |
 | Action Input | `InputActionMap`、`ActionInputFrame`、`ActionInputEvent` | 将物理 Control/Axis 映射为稳定 Action ID 和统一值 | MoonLine 特有玩法规则 |
-| Gameplay Support | 标准 `actions`、`GameplayInputFrame` | 提供 Move、Jump、Primary 等可复用语义 | 角色具体如何响应动作 |
+| Engine Gameplay | 标准 `actions`、`GameplayInputFrame` | 提供 Move、Jump、Primary 等可复用语义 | 角色具体如何响应动作 |
 | 场景分发 | `GameplayScene`、两个 receiver contract | 选择何时翻译，并按 SceneObject 顺序分发 | 输入配置持久化 |
 
 ```mermaid
@@ -80,10 +80,10 @@ sequenceDiagram
 
 ```text
 gameplay scene
-  -> engine/gameplay_support
+  -> engine/gameplay
        -> engine/input/action
             -> engine/input/raw
 ```
 
-`engine/application` 负责主循环和内建 Scene 注册；项目 Scene 由 `IGameModule` 注册。标准 gameplay input 不依赖项目的 `gameplay/` 目录，也不依赖 UserConfig。
+`engine/application` 负责主循环和内建 Scene 注册；项目 Scene 由 `IGameModule` 注册。标准 gameplay input 不依赖项目的 `game/` 目录，也不依赖 UserConfig。
 

@@ -79,7 +79,7 @@ foreach(INPUT_TEST_TARGET IN ITEMS
     input_action_mapping_tests
     input_system_controller_lifecycle_tests
     input_system_pointer_coordinates_tests
-    gameplay_support_tests
+    engine_gameplay_tests
     gameplay_scene_input_tests
 )
     add_moonline_test(${INPUT_TEST_TARGET}

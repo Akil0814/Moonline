@@ -1,6 +1,6 @@
 #define SDL_MAIN_HANDLED
 
-#include "engine/gameplay_support/scene/gameplay_scene.h"
+#include "engine/gameplay/scene/gameplay_scene.h"
 #include "tests/support/test_assertions.h"
 
 #include <iostream>

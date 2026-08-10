@@ -5,7 +5,7 @@
 | 测试 | 覆盖重点 |
 | --- | --- |
 | [`input_action_mapping_tests.cpp`](../../../tests/input/input_action_mapping_tests.cpp) | ID 校验、多键绑定、同键多 Action、按钮边沿、事件去重、轴 dead zone、数字/模拟二维合成、运行时改绑 |
-| [`gameplay_support_tests.cpp`](../../../tests/input/gameplay_support_tests.cpp) | 标准默认 map、GameplayInputFrame 访问器、自定义 Action、标准 Action 换绑 |
+| [`engine_gameplay_tests.cpp`](../../../tests/input/engine_gameplay_tests.cpp) | 标准默认 map、GameplayInputFrame 访问器、自定义 Action、标准 Action 换绑 |
 | [`gameplay_scene_input_tests.cpp`](../../../tests/input/gameplay_scene_input_tests.cpp) | 普通 Scene 与 GameplayScene 边界、receiver 顺序/消费、inactive、paused、禁用与 destroyed 清理 |
 
 只运行输入测试：

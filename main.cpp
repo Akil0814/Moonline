@@ -1,6 +1,6 @@
 #define SDL_MAIN_HANDLED
 #include "engine/application/application.h"
-#include "gameplay/application/moonline_game_module.h"
+#include "game/application/moonline_game_module.h"
 
 #include <cstdlib>
 

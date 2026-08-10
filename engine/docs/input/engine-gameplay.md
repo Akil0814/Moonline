@@ -1,6 +1,6 @@
-# Gameplay Support 参考
+# Engine Gameplay 参考
 
-Gameplay Support 位于 `engine/gameplay_support`，建立在通用 Action Input 之上。它提供一套适合动作游戏的标准 Action、默认 binding、`GameplayInputFrame` 语义门面和 receiver contract，但不包含 MoonLine 的角色或战斗规则。
+Engine Gameplay 位于 `engine/gameplay`，建立在通用 Action Input 之上。它提供一套适合动作游戏的标准 Action、默认 binding、`GameplayInputFrame` 语义门面和 receiver contract，但不包含 MoonLine 的角色或战斗规则。
 
 ## 标准 Actions
 
@@ -90,7 +90,7 @@ BattleScene::BattleScene()
 }
 ```
 
-若多个场景需要同一组项目扩展，应由 `gameplay/` 提供一个统一注册函数，避免每个场景复制默认表。引擎的标准工厂不会自动知道 MoonLine 特有 Action。
+若多个场景需要同一组项目扩展，应由 `game/` 提供一个统一注册函数，避免每个场景复制默认表。引擎的标准工厂不会自动知道 MoonLine 特有 Action。
 
 ## Receiver Contracts
 
@@ -107,4 +107,3 @@ receiver 的生命周期、排序与暂停规则详见 [GameplayScene 集成指�
 - 右摇杆 Aim/Camera 标准语义；
 - 自动阻止 UI 已处理输入进入 gameplay；
 - 鼠标位置、滚轮、文本输入和 IME 的 Action 化。
-

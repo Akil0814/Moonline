@@ -1,4 +1,4 @@
-#include "engine/gameplay_support/collision/gameplay_collision_service.h"
+#include "engine/gameplay/collision/gameplay_collision_service.h"
 #include "tests/support/test_assertions.h"
 
 #include <functional>
